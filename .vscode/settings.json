@@ -1,0 +1,8 @@
+{
+  "python.pythonPath": ".venv/bin/python",
+  "python.linting.pylintEnabled": false,
+  "python.formatting.provider": "black",
+  "editor.formatOnSave": true,
+  "python.linting.enabled": true,
+  "python.linting.flake8Enabled": true
+}
