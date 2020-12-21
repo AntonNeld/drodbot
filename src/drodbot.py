@@ -3,8 +3,11 @@ import random
 
 import pyautogui
 
+from drod_interface import DrodInterface
+from common import Action
 
 if __name__ == "__main__":
+    drod = DrodInterface()
     pyautogui.alert(
         "I will now move randomly. Focus the DROD window,"
         " then focus this window and press OK."
@@ -13,21 +16,7 @@ if __name__ == "__main__":
     try:
         while True:
             time.sleep(0.1)
-            key = random.choice(
-                (
-                    "q",
-                    "w",
-                    "num1",
-                    "num2",
-                    "num3",
-                    "num4",
-                    "num5",
-                    "num6",
-                    "num7",
-                    "num8",
-                    "num9",
-                )
-            )
-            pyautogui.press(key)
+            action = random.choice(list(Action))
+            drod.do_action(action)
     except pyautogui.FailSafeException:
         print("Bye!")
