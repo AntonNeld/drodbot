@@ -20,3 +20,6 @@ Then run:
 ```sh
 pipenv run python src/drodbot.py
 ```
+
+On Linux, you may also be asked to install system-wide dependencies
+before it will work.
