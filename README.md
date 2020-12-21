@@ -5,21 +5,22 @@ This is going to be some kind of automatic player of
 
 We'll see how far it gets.
 
-## Running it
+## Prerequisites
 
 > **Note:** I'm trying to use platform-independent dependencies, but I have only tried running it on Linux.
 
-Right now it's just a simple "hello world" program. To try it, install dependencies:
+Make sure you have Python and pipenv installed. Then install the Python packages:
 
 ```sh
-pipenv install --dev
+pipenv install
 ```
 
-Then run:
+On Linux, you may also be asked to install some system-wide dependencies the first time you run it.
+
+## Running it
+
+Open DROD, and enter the game proper (where you can control Beethro). From the root of the repo, run:
 
 ```sh
 pipenv run python src/drodbot.py
 ```
-
-On Linux, you may also be asked to install system-wide dependencies
-before it will work.
