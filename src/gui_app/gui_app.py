@@ -1,5 +1,6 @@
 import asyncio
 import tkinter
+import traceback
 
 INSTRUCTIONS = "Press 'Go' and focus the DROD window to move randomly."
 
@@ -24,7 +25,14 @@ class GuiApp(tkinter.Frame):
         self.go = tkinter.Button(self, text="Go", command=self.move_randomly_forever)
         self.go.pack(side=tkinter.RIGHT)
 
+    def run_coroutine(self, coroutine):
+        async def wrapped_coroutine():
+            try:
+                await coroutine
+            except Exception:
+                traceback.print_exc()
+
+        asyncio.run_coroutine_threadsafe(wrapped_coroutine(), self.event_loop)
+
     def move_randomly_forever(self):
-        asyncio.run_coroutine_threadsafe(
-            self.bot.move_randomly_forever(), self.event_loop
-        )
+        self.run_coroutine(self.bot.move_randomly_forever())
