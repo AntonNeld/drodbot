@@ -1,4 +1,5 @@
 import asyncio
+import queue
 import threading
 import tkinter
 
@@ -16,8 +17,10 @@ if __name__ == "__main__":
     asyncio_thread = threading.Thread(target=loop.run_forever)
     asyncio_thread.start()
 
+    window_queue = queue.Queue()
+
     window = tkinter.Tk()
-    app = GuiApp(root=window, event_loop=loop, bot=bot)
+    app = GuiApp(root=window, event_loop=loop, queue=window_queue, bot=bot)
     try:
         app.mainloop()
     finally:
