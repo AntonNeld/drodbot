@@ -15,6 +15,6 @@ class DrodBot:
             action = random.choice(list(Action))
             await self._interface.do_action(action)
 
-    async def show_view(self):
-        image = await self._interface.get_view()
+    async def show_view(self, step):
+        image = await self._interface.get_view(step)
         self._queue.put((GUIEvent.DISPLAY_IMAGE, image))

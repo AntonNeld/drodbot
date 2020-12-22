@@ -1,6 +1,6 @@
 import pyautogui
 
-from common import Action
+from common import Action, ImageProcessingStep
 
 
 class DrodInterface:
@@ -29,5 +29,10 @@ class DrodInterface:
             key = "w"
         pyautogui.press(key)
 
-    async def get_view(self):
-        return pyautogui.screenshot()
+    async def get_view(self, step=None):
+        raw_image = pyautogui.screenshot()
+        if step == ImageProcessingStep.SCREENSHOT:
+            return raw_image
+
+        rotated_image = raw_image.rotate(45)
+        return rotated_image

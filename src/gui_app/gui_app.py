@@ -4,7 +4,7 @@ from queue import Empty
 import tkinter
 import traceback
 
-from common import GUIEvent
+from common import GUIEvent, ImageProcessingStep
 
 QUEUE_POLL_INTERVAL = 50
 
@@ -21,6 +21,8 @@ class GuiApp(tkinter.Frame):
         self.event_loop = event_loop
         self.queue = queue
         self.bot = bot
+        self.selected_view_step = tkinter.StringVar(self)
+        self.selected_view_step.set(list(ImageProcessingStep)[0].value)
         self.pack()
         self.create_widgets()
         self.root.after(QUEUE_POLL_INTERVAL, self.check_queue)
@@ -39,8 +41,12 @@ class GuiApp(tkinter.Frame):
         self.quit.pack(side=tkinter.RIGHT)
         self.go = tkinter.Button(self, text="Go", command=self.move_randomly_forever)
         self.go.pack(side=tkinter.RIGHT)
-        self.go = tkinter.Button(self, text="Get view", command=self.show_view)
-        self.go.pack(side=tkinter.RIGHT)
+        self.get_view = tkinter.Button(self, text="Get view", command=self.show_view)
+        self.get_view.pack(side=tkinter.RIGHT)
+        self.view_step_dropdown = tkinter.OptionMenu(
+            self, self.selected_view_step, *[s.value for s in ImageProcessingStep]
+        )
+        self.view_step_dropdown.pack(side=tkinter.RIGHT)
 
     def check_queue(self):
         try:
@@ -71,4 +77,6 @@ class GuiApp(tkinter.Frame):
         self.run_coroutine(self.bot.move_randomly_forever())
 
     def show_view(self):
-        self.run_coroutine(self.bot.show_view())
+        step_value = self.selected_view_step.get()
+        step = next(e for e in ImageProcessingStep if e.value == step_value)
+        self.run_coroutine(self.bot.show_view(step))

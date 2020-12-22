@@ -18,3 +18,9 @@ class Action(Enum):
 class GUIEvent(Enum):
     QUIT = "quit"
     DISPLAY_IMAGE = "display_image"
+
+
+# The values are also what will be displayed in the GUI
+class ImageProcessingStep(Enum):
+    SCREENSHOT = "Screenshot"
+    FUNKY = "Funky"
