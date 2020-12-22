@@ -14,20 +14,11 @@ class GuiApp(tkinter.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        self.text = tkinter.Text(
+        self.label = tkinter.Label(
             self,
-            wrap=tkinter.WORD,
-            borderwidth=0,
-            background=self.root["bg"],
-            width=52,
-            height=3,
+            text=INSTRUCTIONS,
         )
-        self.text.insert(
-            "1.0",
-            INSTRUCTIONS,
-        )
-        # self.text.configure(state=tkinter.DISABLED)
-        self.text.pack(side=tkinter.TOP)
+        self.label.pack(side=tkinter.TOP)
         self.quit = tkinter.Button(self, text="Quit", command=self.root.destroy)
         self.quit.pack(side=tkinter.RIGHT)
         self.go = tkinter.Button(self, text="Go", command=self.move_randomly_forever)
