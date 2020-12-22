@@ -4,26 +4,27 @@ from common import Action
 
 
 class DrodInterface:
-    def do_action(self, action):
+    async def do_action(self, action):
         if action == Action.SW:
-            pyautogui.press("num1")
+            key = "num1"
         elif action == Action.S:
-            pyautogui.press("num2")
+            key = "num2"
         elif action == Action.SE:
-            pyautogui.press("num3")
+            key = "num3"
         elif action == Action.W:
-            pyautogui.press("num4")
+            key = "num4"
         elif action == Action.WAIT:
-            pyautogui.press("num5")
+            key = "num5"
         elif action == Action.E:
-            pyautogui.press("num6")
+            key = "num6"
         elif action == Action.NW:
-            pyautogui.press("num7")
+            key = "num7"
         elif action == Action.N:
-            pyautogui.press("num8")
+            key = "num8"
         elif action == Action.NE:
-            pyautogui.press("num9")
+            key = "num9"
         elif action == Action.CCW:
-            pyautogui.press("q")
+            key = "q"
         elif action == Action.CW:
-            pyautogui.press("w")
+            key = "w"
+        pyautogui.press(key)
