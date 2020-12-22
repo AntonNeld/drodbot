@@ -28,3 +28,6 @@ class DrodInterface:
         elif action == Action.CW:
             key = "w"
         pyautogui.press(key)
+
+    async def get_view(self):
+        return pyautogui.screenshot()

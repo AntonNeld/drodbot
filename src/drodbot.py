@@ -9,15 +9,15 @@ from gui_app import GuiApp
 
 
 if __name__ == "__main__":
-    interface = DrodInterface()
-    bot = DrodBot(interface)
+    window_queue = queue.Queue()
 
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     asyncio_thread = threading.Thread(target=loop.run_forever)
     asyncio_thread.start()
 
-    window_queue = queue.Queue()
+    interface = DrodInterface()
+    bot = DrodBot(interface, window_queue)
 
     window = tkinter.Tk()
     app = GuiApp(root=window, event_loop=loop, queue=window_queue, bot=bot)
