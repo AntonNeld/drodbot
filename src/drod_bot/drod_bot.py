@@ -1,7 +1,7 @@
 import asyncio
 import random
 
-from common import Action
+from common import Action, GUIEvent
 
 
 class DrodBot:
@@ -17,4 +17,4 @@ class DrodBot:
 
     async def show_view(self):
         image = await self._interface.get_view()
-        self._queue.put(("display_image", image))
+        self._queue.put((GUIEvent.DISPLAY_IMAGE, image))

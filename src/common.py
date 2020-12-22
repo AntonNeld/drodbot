@@ -13,3 +13,8 @@ class Action(Enum):
     WAIT = 5
     CW = 10
     CCW = 11
+
+
+class GUIEvent(Enum):
+    QUIT = "quit"
+    DISPLAY_IMAGE = "display_image"

@@ -4,6 +4,8 @@ from queue import Empty
 import tkinter
 import traceback
 
+from common import GUIEvent
+
 QUEUE_POLL_INTERVAL = 50
 
 INSTRUCTIONS = "Press 'Go' and focus the DROD window to move randomly."
@@ -43,9 +45,9 @@ class GuiApp(tkinter.Frame):
     def check_queue(self):
         try:
             item, detail = self.queue.get(block=False)
-            if item == "quit":
+            if item == GUIEvent.QUIT:
                 self.root.destroy()
-            elif item == "display_image":
+            elif item == GUIEvent.DISPLAY_IMAGE:
                 resized_image = detail.resize(
                     (CANVAS_WIDTH, CANVAS_HEIGHT), Image.LANCZOS
                 )
