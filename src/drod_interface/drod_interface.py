@@ -1,6 +1,6 @@
 import pyautogui
 
-from common import Action, ImageProcessingStep
+from common import Action, ImageProcessingStep, UserError
 from .image_processing import (
     find_color,
     find_horizontal_lines,
@@ -11,9 +11,12 @@ from .image_processing import (
 OVERLAY_COLOR = (0, 255, 0)
 OVERLAY_WIDTH = 5
 
-# Also known as #203c4a
-ROOM_UPPER_EDGE_COLOR = (32, 60, 74)
+DROD_WINDOW_WIDTH = 1024
+DROD_WINDOW_HEIGHT = 768
+ROOM_UPPER_EDGE_COLOR = (32, 60, 74)  # Also known as #203c4a
 ROOM_UPPER_EDGE_LENGTH = 838
+ROOM_UPPER_EDGE_START_X = 162
+ROOM_UPPER_EDGE_START_Y = 39
 
 
 class DrodInterface:
@@ -66,5 +69,24 @@ class DrodInterface:
                     start_y : start_y + OVERLAY_WIDTH, start_x:end_x, :
                 ] = OVERLAY_COLOR
             return array_to_pil(with_lines)
+
+        if len(lines) > 1:
+            raise UserError("Cannot identify DROD window, too many candidate lines")
+        elif len(lines) == 0:
+            raise UserError("Cannot identify DROD window, is it open and unblocked?")
+        line_start_x = lines[0][0]
+        line_start_y = lines[0][1]
+        window_start_x = line_start_x - ROOM_UPPER_EDGE_START_X
+        window_start_y = line_start_y - ROOM_UPPER_EDGE_START_Y
+        window_end_x = window_start_x + DROD_WINDOW_WIDTH
+        window_end_y = window_start_y + DROD_WINDOW_HEIGHT
+        drod_window = raw_image[
+            window_start_y:window_end_y,
+            window_start_x:window_end_x,
+            :,
+        ]
+
+        if step == ImageProcessingStep.CROP_WINDOW:
+            return array_to_pil(drod_window)
 
         raise RuntimeError(f"Unknown step {step}")

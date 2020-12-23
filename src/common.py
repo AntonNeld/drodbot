@@ -1,6 +1,10 @@
 from enum import Enum
 
 
+class UserError(Exception):
+    pass
+
+
 class Action(Enum):
     N = 8
     NE = 9
@@ -25,3 +29,4 @@ class ImageProcessingStep(Enum):
     SCREENSHOT = "Screenshot"
     FIND_UPPER_EDGE_COLOR = "Find upper edge color"
     FIND_UPPER_EDGE_LINE = "Find upper edge line"
+    CROP_WINDOW = "Extract DROD window"
