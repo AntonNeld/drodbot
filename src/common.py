@@ -42,3 +42,7 @@ class Strategy(Enum):
 # The values are also what will be displayed with "Get view"
 class Entity(Enum):
     UNKNOWN = "?"
+    WALL = "#"
+    BEETHRO = "B"
+    VICTORY_TOKEN = "V"
+    FLOOR = "."

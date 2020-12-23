@@ -1,4 +1,3 @@
-import cv2
 import pyautogui
 
 from common import Action, ImageProcessingStep, UserError
@@ -119,6 +118,9 @@ class DrodInterface:
         # == Classify stuff in the room ==
 
         room_entities = {}
+        # If a step is specified, we will probably return a modified image
+        if step is not None:
+            annotated_room = room.copy()
         for x in range(ROOM_WIDTH_IN_TILES):
             for y in range(ROOM_HEIGHT_IN_TILES):
                 start_x = x * TILE_WIDTH
@@ -126,24 +128,14 @@ class DrodInterface:
                 start_y = y * TILE_HEIGHT
                 end_y = (y + 1) * TILE_HEIGHT
                 tile = room[start_y:end_y, start_x:end_x, :]
-                room_entities[(x, y)] = classify_tile(tile)
+                room_entities[(x, y)], modified_tile = classify_tile(tile, step)
+                if step is not None:
+                    annotated_room[start_y:end_y, start_x:end_x] = modified_tile
         visual_info["entities"] = room_entities
 
-        if step == ImageProcessingStep.CLASSIFY_TILES:
-            annotated_room = room.copy()
-            for (x, y), entities in room_entities.items():
-                for entity in entities:
-                    cv2.putText(
-                        annotated_room,
-                        entity.value,
-                        (x * TILE_WIDTH, (y + 1) * TILE_HEIGHT),
-                        cv2.FONT_HERSHEY_PLAIN,
-                        2,
-                        (0, 0, 0),
-                    )
-
+        if step is not None:
             visual_info["image"] = array_to_pil(annotated_room)
             return visual_info
 
-        # If no step is specified, don't include an image
+        # If no step is specified, just don't include an image
         return visual_info
