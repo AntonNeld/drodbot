@@ -24,3 +24,7 @@ Open DROD, and enter the game proper (where you can control Beethro). From the r
 ```sh
 pipenv run python src/drodbot.py
 ```
+
+## What it can do
+
+Not much, for now. It can focus the DROD window and move around randomly.
