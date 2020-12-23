@@ -8,7 +8,6 @@ from common import GUIEvent, ImageProcessingStep
 
 QUEUE_POLL_INTERVAL = 50
 
-INSTRUCTIONS = "Press 'Go' and focus the DROD window to move randomly."
 # The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
 CANVAS_WIDTH = 418
 CANVAS_HEIGHT = 352
@@ -28,18 +27,15 @@ class GuiApp(tkinter.Frame):
         self.root.after(QUEUE_POLL_INTERVAL, self.check_queue)
 
     def create_widgets(self):
-        self.label = tkinter.Label(
-            self,
-            text=INSTRUCTIONS,
-        )
-        self.label.pack(side=tkinter.TOP)
         self.canvas = tkinter.Canvas(
             self, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg="white"
         )
         self.canvas.pack(side=tkinter.LEFT)
         self.quit = tkinter.Button(self, text="Quit", command=self.root.destroy)
         self.quit.pack(side=tkinter.RIGHT)
-        self.go = tkinter.Button(self, text="Go", command=self.move_randomly_forever)
+        self.go = tkinter.Button(
+            self, text="Move randomly", command=self.move_randomly_forever
+        )
         self.go.pack(side=tkinter.RIGHT)
         self.get_view = tkinter.Button(self, text="Get view", command=self.show_view)
         self.get_view.pack(side=tkinter.RIGHT)

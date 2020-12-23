@@ -52,17 +52,24 @@ class DrodInterface:
             key = "w"
         pyautogui.press(key)
 
-    async def get_view(self, step):
+    async def focus_window(self, visual_info):
+        pyautogui.moveTo(x=visual_info["x_origin"] + 3, y=visual_info["y_origin"] + 3)
+        pyautogui.click()
+
+    async def get_view(self, step=None):
+        visual_info = {}
         raw_image = pil_to_array(pyautogui.screenshot())
         if step == ImageProcessingStep.SCREENSHOT:
-            return array_to_pil(raw_image)
+            visual_info["image"] = array_to_pil(raw_image)
+            return visual_info
 
         # == Identify the DROD window and room ==
 
         # Try finding the upper edge of the room, which is a long line of constant color
         correct_color = find_color(raw_image, ROOM_UPPER_EDGE_COLOR)
         if step == ImageProcessingStep.FIND_UPPER_EDGE_COLOR:
-            return array_to_pil(correct_color)
+            visual_info["image"] = array_to_pil(correct_color)
+            return visual_info
 
         lines = find_horizontal_lines(correct_color, ROOM_UPPER_EDGE_LENGTH)
         if step == ImageProcessingStep.FIND_UPPER_EDGE_LINE:
@@ -75,7 +82,8 @@ class DrodInterface:
                 with_lines[
                     start_y : start_y + OVERLAY_WIDTH, start_x:end_x, :
                 ] = OVERLAY_COLOR
-            return array_to_pil(with_lines)
+            visual_info["image"] = array_to_pil(with_lines)
+            return visual_info
 
         if len(lines) > 1:
             raise UserError("Cannot identify DROD window, too many candidate lines")
@@ -92,9 +100,11 @@ class DrodInterface:
             window_start_x:window_end_x,
             :,
         ]
-
+        visual_info["x_origin"] = window_start_x
+        visual_info["y_origin"] = window_start_y
         if step == ImageProcessingStep.CROP_WINDOW:
-            return array_to_pil(drod_window)
+            visual_info["image"] = array_to_pil(drod_window)
+            return visual_info
 
         room_start_x = ROOM_UPPER_EDGE_START_X + 1
         room_end_x = room_start_x + ROOM_WIDTH_IN_TILES * TILE_WIDTH
@@ -103,7 +113,8 @@ class DrodInterface:
         room = drod_window[room_start_y:room_end_y, room_start_x:room_end_x, :]
 
         if step == ImageProcessingStep.CROP_ROOM:
-            return array_to_pil(room)
+            visual_info["image"] = array_to_pil(room)
+            return visual_info
 
         # == Classify stuff in the room ==
 
@@ -116,6 +127,7 @@ class DrodInterface:
                 end_y = (y + 1) * TILE_HEIGHT
                 tile = room[start_y:end_y, start_x:end_x, :]
                 room_entities[(x, y)] = classify_tile(tile)
+        visual_info["entities"] = room_entities
 
         if step == ImageProcessingStep.CLASSIFY_TILES:
             annotated_room = room.copy()
@@ -130,6 +142,8 @@ class DrodInterface:
                         (0, 0, 0),
                     )
 
-            return array_to_pil(annotated_room)
+            visual_info["image"] = array_to_pil(annotated_room)
+            return visual_info
 
-        raise RuntimeError(f"Unknown step {step}")
+        # If no step is specified, don't include an image
+        return visual_info
