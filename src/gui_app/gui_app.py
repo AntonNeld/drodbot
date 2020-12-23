@@ -4,7 +4,7 @@ from queue import Empty
 import tkinter
 import traceback
 
-from common import GUIEvent, ImageProcessingStep
+from common import GUIEvent, ImageProcessingStep, Strategy
 
 QUEUE_POLL_INTERVAL = 50
 
@@ -22,6 +22,8 @@ class GuiApp(tkinter.Frame):
         self.bot = bot
         self.selected_view_step = tkinter.StringVar(self)
         self.selected_view_step.set(list(ImageProcessingStep)[-1].value)
+        self.selected_strategy = tkinter.StringVar(self)
+        self.selected_strategy.set(list(Strategy)[0].value)
         self.pack()
         self.create_widgets()
         self.root.after(QUEUE_POLL_INTERVAL, self.check_queue)
@@ -31,18 +33,34 @@ class GuiApp(tkinter.Frame):
             self, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg="white"
         )
         self.canvas.pack(side=tkinter.LEFT)
-        self.quit = tkinter.Button(self, text="Quit", command=self.root.destroy)
-        self.quit.pack(side=tkinter.RIGHT)
-        self.go = tkinter.Button(
-            self, text="Move randomly", command=self.move_randomly_forever
+        self.control_panel = tkinter.Frame(self)
+        self.control_panel.pack(side=tkinter.RIGHT)
+        self.view_controls = tkinter.Frame(self.control_panel)
+        self.view_controls.pack(side=tkinter.TOP)
+        self.get_view = tkinter.Button(
+            self.view_controls, text="Get view", command=self.show_view
         )
-        self.go.pack(side=tkinter.RIGHT)
-        self.get_view = tkinter.Button(self, text="Get view", command=self.show_view)
         self.get_view.pack(side=tkinter.RIGHT)
         self.view_step_dropdown = tkinter.OptionMenu(
-            self, self.selected_view_step, *[s.value for s in ImageProcessingStep]
+            self.view_controls,
+            self.selected_view_step,
+            *[s.value for s in ImageProcessingStep]
         )
-        self.view_step_dropdown.pack(side=tkinter.RIGHT)
+        self.view_step_dropdown.pack(side=tkinter.LEFT)
+        self.run_controls = tkinter.Frame(self.control_panel)
+        self.run_controls.pack(side=tkinter.TOP)
+        self.strategy_dropdown = tkinter.OptionMenu(
+            self.run_controls, self.selected_strategy, *[s.value for s in Strategy]
+        )
+        self.strategy_dropdown.pack(side=tkinter.LEFT)
+        self.go = tkinter.Button(
+            self.run_controls, text="Go", command=self.run_strategy
+        )
+        self.go.pack(side=tkinter.RIGHT)
+        self.quit = tkinter.Button(
+            self.control_panel, text="Quit", command=self.root.destroy
+        )
+        self.quit.pack(side=tkinter.TOP)
 
     def check_queue(self):
         try:
@@ -69,7 +87,8 @@ class GuiApp(tkinter.Frame):
 
         asyncio.run_coroutine_threadsafe(wrapped_coroutine(), self.event_loop)
 
-    def move_randomly_forever(self):
+    def run_strategy(self):
+        # Currently only moves randomly
         self.run_coroutine(self.bot.move_randomly_forever())
 
     def show_view(self):

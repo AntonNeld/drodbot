@@ -34,6 +34,11 @@ class ImageProcessingStep(Enum):
     CLASSIFY_TILES = "Classify tiles"
 
 
+# The values are also what will be displayed in the GUI
+class Strategy(Enum):
+    MOVE_RANDOMLY = "Move randomly"
+
+
 # The values are also what will be displayed with "Get view"
 class Entity(Enum):
     UNKNOWN = "?"
