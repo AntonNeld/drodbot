@@ -1,6 +1,8 @@
+import cv2
 import pyautogui
 
 from common import Action, ImageProcessingStep, UserError
+from .classify import classify_tile
 from .image_processing import (
     find_color,
     find_horizontal_lines,
@@ -102,5 +104,32 @@ class DrodInterface:
 
         if step == ImageProcessingStep.CROP_ROOM:
             return array_to_pil(room)
+
+        # == Classify stuff in the room ==
+
+        room_entities = {}
+        for x in range(ROOM_WIDTH_IN_TILES):
+            for y in range(ROOM_HEIGHT_IN_TILES):
+                start_x = x * TILE_WIDTH
+                end_x = (x + 1) * TILE_WIDTH
+                start_y = y * TILE_HEIGHT
+                end_y = (y + 1) * TILE_HEIGHT
+                tile = room[start_y:end_y, start_x:end_x, :]
+                room_entities[(x, y)] = classify_tile(tile)
+
+        if step == ImageProcessingStep.CLASSIFY_TILES:
+            annotated_room = room.copy()
+            for (x, y), entities in room_entities.items():
+                for entity in entities:
+                    cv2.putText(
+                        annotated_room,
+                        entity.value,
+                        (x * TILE_WIDTH, (y + 1) * TILE_HEIGHT),
+                        cv2.FONT_HERSHEY_PLAIN,
+                        2,
+                        (0, 0, 0),
+                    )
+
+            return array_to_pil(annotated_room)
 
         raise RuntimeError(f"Unknown step {step}")

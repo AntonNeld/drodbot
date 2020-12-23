@@ -31,3 +31,9 @@ class ImageProcessingStep(Enum):
     FIND_UPPER_EDGE_LINE = "Find upper edge line"
     CROP_WINDOW = "Extract DROD window"
     CROP_ROOM = "Extract room"
+    CLASSIFY_TILES = "Classify tiles"
+
+
+# The values are also what will be displayed with "Get view"
+class Entity(Enum):
+    UNKNOWN = "?"
