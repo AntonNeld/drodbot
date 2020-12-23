@@ -30,3 +30,4 @@ class ImageProcessingStep(Enum):
     FIND_UPPER_EDGE_COLOR = "Find upper edge color"
     FIND_UPPER_EDGE_LINE = "Find upper edge line"
     CROP_WINDOW = "Extract DROD window"
+    CROP_ROOM = "Extract room"

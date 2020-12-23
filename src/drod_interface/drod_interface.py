@@ -18,6 +18,11 @@ ROOM_UPPER_EDGE_LENGTH = 838
 ROOM_UPPER_EDGE_START_X = 162
 ROOM_UPPER_EDGE_START_Y = 39
 
+TILE_WIDTH = 22
+TILE_HEIGHT = 22
+ROOM_WIDTH_IN_TILES = 38
+ROOM_HEIGHT_IN_TILES = 32
+
 
 class DrodInterface:
     async def do_action(self, action):
@@ -50,7 +55,7 @@ class DrodInterface:
         if step == ImageProcessingStep.SCREENSHOT:
             return array_to_pil(raw_image)
 
-        # == Identify the DROD window ==
+        # == Identify the DROD window and room ==
 
         # Try finding the upper edge of the room, which is a long line of constant color
         correct_color = find_color(raw_image, ROOM_UPPER_EDGE_COLOR)
@@ -88,5 +93,14 @@ class DrodInterface:
 
         if step == ImageProcessingStep.CROP_WINDOW:
             return array_to_pil(drod_window)
+
+        room_start_x = ROOM_UPPER_EDGE_START_X + 1
+        room_end_x = room_start_x + ROOM_WIDTH_IN_TILES * TILE_WIDTH
+        room_start_y = ROOM_UPPER_EDGE_START_Y + 1
+        room_end_y = room_start_y + ROOM_HEIGHT_IN_TILES * TILE_HEIGHT
+        room = drod_window[room_start_y:room_end_y, room_start_x:room_end_x, :]
+
+        if step == ImageProcessingStep.CROP_ROOM:
+            return array_to_pil(room)
 
         raise RuntimeError(f"Unknown step {step}")
