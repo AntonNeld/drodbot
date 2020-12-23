@@ -24,3 +24,4 @@ class GUIEvent(Enum):
 class ImageProcessingStep(Enum):
     SCREENSHOT = "Screenshot"
     FIND_UPPER_EDGE_COLOR = "Find upper edge color"
+    FIND_UPPER_EDGE_LINE = "Find upper edge line"
