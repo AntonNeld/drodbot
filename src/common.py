@@ -23,4 +23,4 @@ class GUIEvent(Enum):
 # The values are also what will be displayed in the GUI
 class ImageProcessingStep(Enum):
     SCREENSHOT = "Screenshot"
-    FUNKY = "Funky"
+    FIND_UPPER_EDGE_COLOR = "Find upper edge color"

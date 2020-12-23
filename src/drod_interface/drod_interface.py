@@ -1,6 +1,12 @@
 import pyautogui
 
 from common import Action, ImageProcessingStep
+from .image_processing import (
+    find_color,
+    ROOM_UPPER_EDGE_COLOR,
+    pil_to_array,
+    array_to_pil,
+)
 
 
 class DrodInterface:
@@ -29,10 +35,14 @@ class DrodInterface:
             key = "w"
         pyautogui.press(key)
 
-    async def get_view(self, step=None):
-        raw_image = pyautogui.screenshot()
+    async def get_view(self, step):
+        raw_image = pil_to_array(pyautogui.screenshot())
         if step == ImageProcessingStep.SCREENSHOT:
-            return raw_image
+            return array_to_pil(raw_image)
 
-        rotated_image = raw_image.rotate(45)
-        return rotated_image
+        # Try finding the upper edge of the room, which is a long line of constant color
+        correct_color = find_color(raw_image, ROOM_UPPER_EDGE_COLOR)
+        if step == ImageProcessingStep.FIND_UPPER_EDGE_COLOR:
+            return array_to_pil(correct_color)
+
+        raise RuntimeError(f"Unknown step {step}")

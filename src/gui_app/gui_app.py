@@ -22,7 +22,7 @@ class GuiApp(tkinter.Frame):
         self.queue = queue
         self.bot = bot
         self.selected_view_step = tkinter.StringVar(self)
-        self.selected_view_step.set(list(ImageProcessingStep)[0].value)
+        self.selected_view_step.set(list(ImageProcessingStep)[-1].value)
         self.pack()
         self.create_widgets()
         self.root.after(QUEUE_POLL_INTERVAL, self.check_queue)
