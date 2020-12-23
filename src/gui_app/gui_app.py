@@ -9,9 +9,9 @@ from common import GUIEvent, ImageProcessingStep
 QUEUE_POLL_INTERVAL = 50
 
 INSTRUCTIONS = "Press 'Go' and focus the DROD window to move randomly."
-# The DROD window size is 1024x768, use half that for canvas to preserve aspect ratio
-CANVAS_WIDTH = 512
-CANVAS_HEIGHT = 384
+# The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
+CANVAS_WIDTH = 418
+CANVAS_HEIGHT = 352
 
 
 class GuiApp(tkinter.Frame):
