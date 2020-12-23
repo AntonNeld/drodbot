@@ -88,8 +88,9 @@ class GuiApp(tkinter.Frame):
         asyncio.run_coroutine_threadsafe(wrapped_coroutine(), self.event_loop)
 
     def run_strategy(self):
-        # Currently only moves randomly
-        self.run_coroutine(self.bot.move_randomly_forever())
+        strategy_value = self.selected_strategy.get()
+        strategy = next(e for e in Strategy if e.value == strategy_value)
+        self.run_coroutine(self.bot.run_strategy(strategy))
 
     def show_view(self):
         step_value = self.selected_view_step.get()

@@ -36,7 +36,7 @@ class ImageProcessingStep(Enum):
 
 # The values are also what will be displayed in the GUI
 class Strategy(Enum):
-    MOVE_RANDOMLY = "Move randomly"
+    MOVE_RANDOMLY = "30 random moves"
 
 
 # The values are also what will be displayed with "Get view"
