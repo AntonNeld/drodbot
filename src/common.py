@@ -47,4 +47,5 @@ class Entity(Enum):
     WALL = "#"
     BEETHRO = "B"
     VICTORY_TOKEN = "V"
+    TRIGGERED_VICTORY_TOKEN = "v"
     FLOOR = "."
