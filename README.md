@@ -7,7 +7,7 @@ It will attempt to solve some types of rooms (see [What it can do](#what-it-can-
 
 > **Note:** I'm trying to use platform-independent dependencies, but I have only tried running it on Linux.
 
-Make sure you have Python and pipenv installed. Then install the Python packages:
+You need Python 3.8 and pipenv installed. Then install the Python packages:
 
 ```sh
 pipenv install
