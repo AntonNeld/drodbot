@@ -8,7 +8,7 @@ from common import Entity, ImageProcessingStep
 # - Wall
 # - Beethro
 # - Victory token
-# - (Floor)
+# - Floor
 # This should be enough to solve mazes in that style
 
 
@@ -17,7 +17,25 @@ def classify_tile(tile, step=None):
     if step == ImageProcessingStep.AVERAGE_TILE_COLOR:
         return [], numpy.ones(tile.shape) * average_color
 
-    entities = [Entity.UNKNOWN]
+    hsv_color = cv2.cvtColor(
+        numpy.float32(numpy.ones((1, 1, 1)) * average_color), cv2.COLOR_RGB2HSV
+    )
+    hue = hsv_color[0, 0, 0]
+    saturation = hsv_color[0, 0, 1]
+    # If the saturation is low, it's probably empty floor
+    if saturation < 0.1:
+        entities = [Entity.FLOOR]
+    # Else, if the hue is purplish, it's probably a wall
+    elif hue > 275 and hue < 295:
+        entities = [Entity.WALL]
+    # Else, if the hue is yellowish, it's probably Beethro
+    elif hue > 30 and hue < 40:
+        entities = [Entity.FLOOR, Entity.BEETHRO]
+    # Else, if the hue is greenish, it's probably a victory token
+    elif hue > 110 and hue < 120:
+        entities = [Entity.FLOOR, Entity.VICTORY_TOKEN]
+    else:
+        entities = [Entity.UNKNOWN]
     if step == ImageProcessingStep.CLASSIFY_TILES:
         # Convert the tile to grayscale to make the text stand out.
         # We're converting it back to RGB so we can add the text, but
