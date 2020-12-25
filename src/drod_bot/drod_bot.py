@@ -1,7 +1,8 @@
 import asyncio
 import random
 
-from common import Action, GUIEvent, Strategy
+from common import Action, GUIEvent, Strategy, Entity
+from .pathfinding import find_path
 
 ACTION_DELAY = 0.1
 
@@ -16,6 +17,21 @@ class DrodBot:
         await self._interface.focus_window(visual_info)
         if strategy == Strategy.MOVE_RANDOMLY:
             actions = random.choices(list(Action), k=30)
+            await self.do_actions(actions)
+        if strategy == Strategy.MOVE_TO_VICTORY_TOKEN:
+            player_position = next(
+                pos
+                for pos, entities in visual_info["entities"].items()
+                if Entity.BEETHRO in entities
+            )
+            victory_positions = [
+                pos
+                for pos, entities in visual_info["entities"].items()
+                if Entity.VICTORY_TOKEN in entities
+            ]
+            actions = find_path(
+                player_position, victory_positions, visual_info["entities"]
+            )
             await self.do_actions(actions)
         else:
             raise RuntimeError(f"Unknown strategy {strategy}")

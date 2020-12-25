@@ -37,6 +37,7 @@ class ImageProcessingStep(Enum):
 
 # The values are also what will be displayed in the GUI
 class Strategy(Enum):
+    MOVE_TO_VICTORY_TOKEN = "Move to a victory token"
     MOVE_RANDOMLY = "30 random moves"
 
 
