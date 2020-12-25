@@ -1,9 +1,7 @@
 # DRODbot
 
-This is going to be some kind of automatic player of
-[Deadly Rooms of Death](https://drod.caravelgames.com) (DROD).
-
-We'll see how far it gets.
+This is a program that plays [Deadly Rooms of Death](https://drod.caravelgames.com) (DROD) automatically.
+It will attempt to solve some types of rooms (see [What it can do](#what-it-can-do)).
 
 ## Prerequisites
 
