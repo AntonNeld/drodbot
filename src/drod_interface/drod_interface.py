@@ -1,3 +1,4 @@
+import numpy
 import pyautogui
 
 from common import Action, ImageProcessingStep, UserError
@@ -118,9 +119,9 @@ class DrodInterface:
         # == Classify stuff in the room ==
 
         room_entities = {}
-        # If a step is specified, we will probably return a modified image
+        # If a step is specified, we will return an image composed of modified tiles
         if step is not None:
-            annotated_room = room.copy()
+            annotated_room = numpy.zeros(room.shape, numpy.uint8)
         for x in range(ROOM_WIDTH_IN_TILES):
             for y in range(ROOM_HEIGHT_IN_TILES):
                 start_x = x * TILE_WIDTH
