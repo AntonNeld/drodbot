@@ -18,7 +18,7 @@ class DrodBot:
         if strategy == Strategy.MOVE_RANDOMLY:
             actions = random.choices(list(Action), k=30)
             await self.do_actions(actions)
-        if strategy == Strategy.MOVE_TO_VICTORY_TOKEN:
+        elif strategy == Strategy.MOVE_TO_VICTORY_TOKEN:
             player_position = next(
                 pos
                 for pos, entities in visual_info["entities"].items()
