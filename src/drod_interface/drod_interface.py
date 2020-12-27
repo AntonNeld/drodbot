@@ -20,10 +20,20 @@ ROOM_UPPER_EDGE_LENGTH = 838
 ROOM_UPPER_EDGE_START_X = 162
 ROOM_UPPER_EDGE_START_Y = 39
 
-TILE_WIDTH = 22
-TILE_HEIGHT = 22
+TILE_SIZE = 22
 ROOM_WIDTH_IN_TILES = 38
 ROOM_HEIGHT_IN_TILES = 32
+
+EDITOR_ROOM_PIECES_TAB = (24, 20)
+EDITOR_FLOOR_CONTROLS_TAB = (60, 20)
+EDITOR_ITEMS_TAB = (100, 20)
+EDITOR_MONSTERS_TAB = (135, 20)
+
+EDITOR_FLOOR = (25, 300)
+
+EDITOR_FORCE_ARROW = (30, 50)
+EDITOR_CHECKPOINT = (120, 50)
+EDITOR_WALL_LIGHT = (25, 85)
 
 
 class DrodInterface:
@@ -53,8 +63,43 @@ class DrodInterface:
         pyautogui.press(key)
 
     async def focus_window(self, visual_info):
-        pyautogui.moveTo(x=visual_info["x_origin"] + 3, y=visual_info["y_origin"] + 3)
-        pyautogui.click()
+        await self._click_in_window(visual_info, 3, 3)
+
+    async def _click_in_window(self, visual_info, x, y):
+        pyautogui.click(x=visual_info["x_origin"] + x, y=visual_info["y_origin"] + y)
+
+    async def editor_clear_room(self, visual_info):
+        await self._click_in_window(visual_info, *EDITOR_ROOM_PIECES_TAB)
+        # Select the normal floor, so clearing doesn't use mosaic floors
+        await self._click_in_window(visual_info, *EDITOR_FLOOR)
+        await self._editor_clear_layer(visual_info)
+
+        await self._click_in_window(visual_info, *EDITOR_FLOOR_CONTROLS_TAB)
+        # This tab contains three layers (disregarding level entrances),
+        # which need to be cleared separately
+        await self._click_in_window(visual_info, *EDITOR_FORCE_ARROW)
+        await self._editor_clear_layer(visual_info)
+        await self._click_in_window(visual_info, *EDITOR_CHECKPOINT)
+        await self._editor_clear_layer(visual_info)
+        await self._click_in_window(visual_info, *EDITOR_WALL_LIGHT)
+        await self._editor_clear_layer(visual_info)
+
+        await self._click_in_window(visual_info, *EDITOR_ITEMS_TAB)
+        await self._editor_clear_layer(visual_info)
+
+        await self._click_in_window(visual_info, *EDITOR_MONSTERS_TAB)
+        await self._editor_clear_layer(visual_info)
+
+    async def _editor_clear_layer(self, visual_info):
+        pyautogui.moveTo(
+            x=visual_info["x_origin"] + ROOM_UPPER_EDGE_START_X + TILE_SIZE * 1.5,
+            y=visual_info["y_origin"] + ROOM_UPPER_EDGE_START_Y + TILE_SIZE * 1.5,
+        )
+        pyautogui.dragRel(
+            xOffset=(ROOM_WIDTH_IN_TILES - 3) * TILE_SIZE,
+            yOffset=(ROOM_HEIGHT_IN_TILES - 3) * TILE_SIZE,
+            button="right",
+        )
 
     async def get_view(self, step=None):
         visual_info = {}
@@ -107,9 +152,9 @@ class DrodInterface:
             return visual_info
 
         room_start_x = ROOM_UPPER_EDGE_START_X + 1
-        room_end_x = room_start_x + ROOM_WIDTH_IN_TILES * TILE_WIDTH
+        room_end_x = room_start_x + ROOM_WIDTH_IN_TILES * TILE_SIZE
         room_start_y = ROOM_UPPER_EDGE_START_Y + 1
-        room_end_y = room_start_y + ROOM_HEIGHT_IN_TILES * TILE_HEIGHT
+        room_end_y = room_start_y + ROOM_HEIGHT_IN_TILES * TILE_SIZE
         room = drod_window[room_start_y:room_end_y, room_start_x:room_end_x, :]
 
         if step == ImageProcessingStep.CROP_ROOM:
@@ -121,10 +166,10 @@ class DrodInterface:
         tiles = {}
         for x in range(ROOM_WIDTH_IN_TILES):
             for y in range(ROOM_HEIGHT_IN_TILES):
-                start_x = x * TILE_WIDTH
-                end_x = (x + 1) * TILE_WIDTH
-                start_y = y * TILE_HEIGHT
-                end_y = (y + 1) * TILE_HEIGHT
+                start_x = x * TILE_SIZE
+                end_x = (x + 1) * TILE_SIZE
+                start_y = y * TILE_SIZE
+                end_y = (y + 1) * TILE_SIZE
                 tiles[(x, y)] = room[start_y:end_y, start_x:end_x, :]
         visual_info["tiles"] = tiles
 
@@ -138,10 +183,10 @@ class DrodInterface:
             annotated_room = numpy.zeros(room.shape, numpy.uint8)
         room_entities = {}
         for (x, y), tile in tiles.items():
-            start_x = x * TILE_WIDTH
-            end_x = (x + 1) * TILE_WIDTH
-            start_y = y * TILE_HEIGHT
-            end_y = (y + 1) * TILE_HEIGHT
+            start_x = x * TILE_SIZE
+            end_x = (x + 1) * TILE_SIZE
+            start_y = y * TILE_SIZE
+            end_y = (y + 1) * TILE_SIZE
             room_entities[(x, y)], modified_tile = classify_tile(tile, step)
             if step is not None:
                 annotated_room[start_y:end_y, start_x:end_x] = modified_tile
