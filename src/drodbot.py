@@ -3,6 +3,7 @@ import queue
 import threading
 import tkinter
 
+from classification_trainer import ClassificationTrainer
 from drod_bot import DrodBot
 from drod_interface import DrodInterface
 from gui_app import GuiApp
@@ -17,10 +18,13 @@ if __name__ == "__main__":
     asyncio_thread.start()
 
     interface = DrodInterface()
+    trainer = ClassificationTrainer("training_data", interface)
     bot = DrodBot(interface, window_queue)
 
     window = tkinter.Tk()
-    app = GuiApp(root=window, event_loop=loop, queue=window_queue, bot=bot)
+    app = GuiApp(
+        root=window, event_loop=loop, queue=window_queue, bot=bot, trainer=trainer
+    )
     try:
         app.mainloop()
     finally:

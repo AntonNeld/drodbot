@@ -16,12 +16,13 @@ LARGE_CANVAS_HEIGHT = 704
 
 
 class GuiApp(tkinter.Frame):
-    def __init__(self, root, event_loop, queue, bot):
+    def __init__(self, root, event_loop, queue, bot, trainer):
         super().__init__(root)
         self.root = root
         self.event_loop = event_loop
         self.queue = queue
         self.bot = bot
+        self.trainer = trainer
         self.selected_view_step = tkinter.StringVar(self)
         self.selected_view_step.set(list(ImageProcessingStep)[-1].value)
         self.selected_strategy = tkinter.StringVar(self)
@@ -55,6 +56,8 @@ class GuiApp(tkinter.Frame):
             *[s.value for s in ImageProcessingStep]
         )
         self.view_step_dropdown.pack(side=tkinter.LEFT)
+        self.playing_label = tkinter.Label(self.control_panel, text="While playing:")
+        self.playing_label.pack(side=tkinter.TOP)
         self.run_controls = tkinter.Frame(self.control_panel)
         self.run_controls.pack(side=tkinter.TOP)
         self.strategy_dropdown = tkinter.OptionMenu(
@@ -65,6 +68,16 @@ class GuiApp(tkinter.Frame):
             self.run_controls, text="Go", command=self.run_strategy
         )
         self.go.pack(side=tkinter.RIGHT)
+        self.editor_label = tkinter.Label(self.control_panel, text="In the editor:")
+        self.editor_label.pack(side=tkinter.TOP)
+        self.training_controls = tkinter.Frame(self.control_panel)
+        self.training_controls.pack(side=tkinter.TOP)
+        self.procure_training_data_button = tkinter.Button(
+            self.training_controls,
+            text="Procure training data",
+            command=self.procure_training_data,
+        )
+        self.procure_training_data_button.pack(side=tkinter.LEFT)
         self.quit = tkinter.Button(
             self.control_panel, text="Quit", command=self.root.destroy
         )
@@ -121,3 +134,6 @@ class GuiApp(tkinter.Frame):
             self.canvas.configure(height=LARGE_CANVAS_HEIGHT, width=LARGE_CANVAS_WIDTH)
             self.toggle_view_size_button.configure(text="Ensmall view")
             self.draw_view()
+
+    def procure_training_data(self):
+        self.run_coroutine(self.trainer.procure_training_data())
