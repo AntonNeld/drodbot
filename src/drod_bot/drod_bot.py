@@ -13,8 +13,8 @@ class DrodBot:
         self._queue = window_queue
 
     async def run_strategy(self, strategy):
+        await self._interface.initialize()
         visual_info = await self._interface.get_view()
-        await self._interface.focus_window(visual_info)
         if strategy == Strategy.MOVE_RANDOMLY:
             actions = random.choices(list(Action), k=30)
             await self.do_actions(actions)

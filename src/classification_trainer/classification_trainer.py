@@ -24,11 +24,8 @@ class ClassificationTrainer:
 
         Work in progress.
         """
-        visual_info = await self._interface.get_view(
-            step=ImageProcessingStep.CROP_WINDOW
-        )
-        await self._interface.focus_window(visual_info)
-        await self._interface.editor_clear_room(visual_info)
+        await self._interface.initialize()
+        await self._interface.editor_clear_room()
         # TODO: place some elements, and keep track of where
         visual_info = await self._interface.get_view(
             step=ImageProcessingStep.EXTRACT_TILES

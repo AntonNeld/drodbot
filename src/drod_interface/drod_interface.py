@@ -37,6 +37,22 @@ EDITOR_WALL_LIGHT = (25, 85)
 
 
 class DrodInterface:
+    def __init__(self):
+        # Will be set by initialize()
+        self.origin_x = None
+        self.origin_y = None
+
+    async def initialize(self):
+        """Find the DROD window and focus it.
+
+        This should be done before each user-triggered action, as the
+        window will have lost focus.
+        """
+        visual_info = await self.get_view(step=ImageProcessingStep.CROP_ROOM)
+        self.origin_x = visual_info["origin_x"]
+        self.origin_y = visual_info["origin_y"]
+        await self._click((3, 3))
+
     async def do_action(self, action):
         if action == Action.SW:
             key = "num1"
@@ -62,38 +78,35 @@ class DrodInterface:
             key = "w"
         pyautogui.press(key)
 
-    async def focus_window(self, visual_info):
-        await self._click_in_window(visual_info, 3, 3)
+    async def _click(self, position):
+        pyautogui.click(x=self.origin_x + position[0], y=self.origin_y + position[1])
 
-    async def _click_in_window(self, visual_info, x, y):
-        pyautogui.click(x=visual_info["x_origin"] + x, y=visual_info["y_origin"] + y)
-
-    async def editor_clear_room(self, visual_info):
-        await self._click_in_window(visual_info, *EDITOR_ROOM_PIECES_TAB)
+    async def editor_clear_room(self):
+        await self._click(EDITOR_ROOM_PIECES_TAB)
         # Select the normal floor, so clearing doesn't use mosaic floors
-        await self._click_in_window(visual_info, *EDITOR_FLOOR)
-        await self._editor_clear_layer(visual_info)
+        await self._click(EDITOR_FLOOR)
+        await self._editor_clear_layer()
 
-        await self._click_in_window(visual_info, *EDITOR_FLOOR_CONTROLS_TAB)
+        await self._click(EDITOR_FLOOR_CONTROLS_TAB)
         # This tab contains three layers (disregarding level entrances),
         # which need to be cleared separately
-        await self._click_in_window(visual_info, *EDITOR_FORCE_ARROW)
-        await self._editor_clear_layer(visual_info)
-        await self._click_in_window(visual_info, *EDITOR_CHECKPOINT)
-        await self._editor_clear_layer(visual_info)
-        await self._click_in_window(visual_info, *EDITOR_WALL_LIGHT)
-        await self._editor_clear_layer(visual_info)
+        await self._click(EDITOR_FORCE_ARROW)
+        await self._editor_clear_layer()
+        await self._click(EDITOR_CHECKPOINT)
+        await self._editor_clear_layer()
+        await self._click(EDITOR_WALL_LIGHT)
+        await self._editor_clear_layer()
 
-        await self._click_in_window(visual_info, *EDITOR_ITEMS_TAB)
-        await self._editor_clear_layer(visual_info)
+        await self._click(EDITOR_ITEMS_TAB)
+        await self._editor_clear_layer()
 
-        await self._click_in_window(visual_info, *EDITOR_MONSTERS_TAB)
-        await self._editor_clear_layer(visual_info)
+        await self._click(EDITOR_MONSTERS_TAB)
+        await self._editor_clear_layer()
 
-    async def _editor_clear_layer(self, visual_info):
+    async def _editor_clear_layer(self):
         pyautogui.moveTo(
-            x=visual_info["x_origin"] + ROOM_UPPER_EDGE_START_X + TILE_SIZE * 1.5,
-            y=visual_info["y_origin"] + ROOM_UPPER_EDGE_START_Y + TILE_SIZE * 1.5,
+            x=self.origin_x + ROOM_UPPER_EDGE_START_X + TILE_SIZE * 1.5,
+            y=self.origin_y + ROOM_UPPER_EDGE_START_Y + TILE_SIZE * 1.5,
         )
         pyautogui.dragRel(
             xOffset=(ROOM_WIDTH_IN_TILES - 3) * TILE_SIZE,
@@ -145,8 +158,8 @@ class DrodInterface:
             window_start_x:window_end_x,
             :,
         ]
-        visual_info["x_origin"] = window_start_x
-        visual_info["y_origin"] = window_start_y
+        visual_info["origin_x"] = window_start_x
+        visual_info["origin_y"] = window_start_y
         if step == ImageProcessingStep.CROP_WINDOW:
             visual_info["image"] = array_to_pil(drod_window)
             return visual_info
