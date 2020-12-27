@@ -18,19 +18,19 @@ class DrodBot:
         if strategy == Strategy.MOVE_RANDOMLY:
             actions = random.choices(list(Action), k=30)
             await self.do_actions(actions)
-        elif strategy == Strategy.MOVE_TO_VICTORY_TOKEN:
+        elif strategy == Strategy.MOVE_TO_CONQUER_TOKEN:
             player_position = next(
                 pos
                 for pos, entities in visual_info["entities"].items()
                 if Element.BEETHRO in entities
             )
-            victory_positions = [
+            conquer_positions = [
                 pos
                 for pos, entities in visual_info["entities"].items()
-                if Element.VICTORY_TOKEN in entities
+                if Element.CONQUER_TOKEN in entities
             ]
             actions = find_path(
-                player_position, victory_positions, visual_info["entities"]
+                player_position, conquer_positions, visual_info["entities"]
             )
             await self.do_actions(actions)
         else:

@@ -38,7 +38,7 @@ EDITOR_WALL_LIGHT = (25, 85)
 
 EDITOR_MIMIC = (60, 50)
 EDITOR_TOKEN = (30, 180)
-EDITOR_VICTORY_TOKEN_IN_MENU = (265, 150)
+EDITOR_CONQUER_TOKEN_IN_MENU = (265, 150)
 
 
 class DrodInterface:
@@ -123,14 +123,14 @@ class DrodInterface:
         if element == Element.WALL:
             await self._click(EDITOR_ROOM_PIECES_TAB)
             await self._click(EDITOR_WALL)
-        elif element == Element.VICTORY_TOKEN:
+        elif element == Element.CONQUER_TOKEN:
             await self._click(EDITOR_ITEMS_TAB)
             # Click the mimic to make sure the tokens are not already selected.
             # Otherwise we may close the menu instead of opening it.
             await self._click(EDITOR_MIMIC)
             await self._click(EDITOR_TOKEN)
             await self._click(EDITOR_TOKEN)
-            await self._click(EDITOR_VICTORY_TOKEN_IN_MENU)
+            await self._click(EDITOR_CONQUER_TOKEN_IN_MENU)
         else:
             raise RuntimeError(f"Unknown element {element}")
         if end_position is None:

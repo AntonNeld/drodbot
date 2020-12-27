@@ -7,7 +7,7 @@ from common import Element, ImageProcessingStep
 # but let's limit ourselves a few elements in the "Foundation" style for now:
 # - Wall
 # - Beethro
-# - Victory token
+# - Conquer token
 # - Floor
 # This should be enough to solve mazes in that style
 
@@ -31,15 +31,15 @@ def classify_tile(tile, step=None):
     # Else, if the hue is yellowish, it's probably Beethro.
     elif hue > 33 and hue < 38:
         elements = [Element.FLOOR, Element.BEETHRO]
-    # If it's a little more green, it's probably Beethro standing on a victory token
+    # If it's a little more green, it's probably Beethro standing on a conquer token
     elif hue > 38 and hue < 42:
-        elements = [Element.FLOOR, Element.TRIGGERED_VICTORY_TOKEN, Element.BEETHRO]
-    # Else, if the hue is greenish, it's probably a victory token
+        elements = [Element.FLOOR, Element.TRIGGERED_CONQUER_TOKEN, Element.BEETHRO]
+    # Else, if the hue is greenish, it's probably a conquer token
     elif hue > 110 and hue < 120:
-        elements = [Element.FLOOR, Element.VICTORY_TOKEN]
-    # If it's this other shade of green, it's probably a triggered victory token
+        elements = [Element.FLOOR, Element.CONQUER_TOKEN]
+    # If it's this other shade of green, it's probably a triggered conquer token
     elif hue > 95 and hue < 110:
-        elements = [Element.FLOOR, Element.TRIGGERED_VICTORY_TOKEN]
+        elements = [Element.FLOOR, Element.TRIGGERED_CONQUER_TOKEN]
     else:
         print(f"Found unknown tile with hue {hue} and saturation {saturation}")
         elements = [Element.UNKNOWN]

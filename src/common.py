@@ -38,7 +38,7 @@ class ImageProcessingStep(Enum):
 
 # The values are also what will be displayed in the GUI
 class Strategy(Enum):
-    MOVE_TO_VICTORY_TOKEN = "Move to a victory token"
+    MOVE_TO_CONQUER_TOKEN = "Move to a conquer token"
     MOVE_RANDOMLY = "30 random moves"
 
 
@@ -47,6 +47,6 @@ class Element(Enum):
     UNKNOWN = "?"
     WALL = "#"
     BEETHRO = "B"
-    VICTORY_TOKEN = "V"
-    TRIGGERED_VICTORY_TOKEN = "v"
+    CONQUER_TOKEN = "V"
+    TRIGGERED_CONQUER_TOKEN = "v"
     FLOOR = "."

@@ -27,11 +27,11 @@ pipenv run python src/drodbot.py
 
 It can handle the following elements (in the "Foundation" room style):
 
-- Victory tokens
+- Conquer tokens
 - Beethro
 - Walls
 - Floors
 
 As long as a room is limited to those, it can:
 
-- Move to a victory token using the shortest path
+- Move to a conquer token using the shortest path
