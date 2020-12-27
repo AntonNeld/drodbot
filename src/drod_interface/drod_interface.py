@@ -116,22 +116,35 @@ class DrodInterface:
             visual_info["image"] = array_to_pil(room)
             return visual_info
 
-        # == Classify stuff in the room ==
+        # == Extract and classify tiles in the room ==
 
-        room_entities = {}
-        # If a step is specified, we will return an image composed of modified tiles
-        if step is not None:
-            annotated_room = numpy.zeros(room.shape, numpy.uint8)
+        tiles = {}
         for x in range(ROOM_WIDTH_IN_TILES):
             for y in range(ROOM_HEIGHT_IN_TILES):
                 start_x = x * TILE_WIDTH
                 end_x = (x + 1) * TILE_WIDTH
                 start_y = y * TILE_HEIGHT
                 end_y = (y + 1) * TILE_HEIGHT
-                tile = room[start_y:end_y, start_x:end_x, :]
-                room_entities[(x, y)], modified_tile = classify_tile(tile, step)
-                if step is not None:
-                    annotated_room[start_y:end_y, start_x:end_x] = modified_tile
+                tiles[(x, y)] = room[start_y:end_y, start_x:end_x, :]
+        visual_info["tiles"] = tiles
+
+        if step == ImageProcessingStep.EXTRACT_TILES:
+            # We can't show anything more interesting here
+            visual_info["image"] = array_to_pil(room)
+            return visual_info
+
+        # If a step is specified, we will return an image composed of modified tiles
+        if step is not None:
+            annotated_room = numpy.zeros(room.shape, numpy.uint8)
+        room_entities = {}
+        for (x, y), tile in tiles.items():
+            start_x = x * TILE_WIDTH
+            end_x = (x + 1) * TILE_WIDTH
+            start_y = y * TILE_HEIGHT
+            end_y = (y + 1) * TILE_HEIGHT
+            room_entities[(x, y)], modified_tile = classify_tile(tile, step)
+            if step is not None:
+                annotated_room[start_y:end_y, start_x:end_x] = modified_tile
         visual_info["entities"] = room_entities
 
         if step is not None:
