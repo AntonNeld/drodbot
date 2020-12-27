@@ -5,7 +5,7 @@ import string
 
 import PIL
 
-from common import ImageProcessingStep
+from common import ImageProcessingStep, Element
 
 
 class ClassificationTrainer:
@@ -27,6 +27,9 @@ class ClassificationTrainer:
         await self._interface.initialize()
         await self._interface.editor_clear_room()
         # TODO: place some elements, and keep track of where
+        await self._interface.editor_place_element(Element.WALL, (5, 5), (6, 8))
+        await self._interface.editor_place_element(Element.VICTORY_TOKEN, (10, 20))
+
         visual_info = await self._interface.get_view(
             step=ImageProcessingStep.EXTRACT_TILES
         )

@@ -1,4 +1,4 @@
-from common import Entity, Action
+from common import Element, Action
 from .search import a_star_graph
 
 
@@ -90,7 +90,7 @@ def find_path(start, goals, room):
     list of Action
         The shortest sequence of actions to reach a goal position.
     """
-    walls = [pos for pos, entities in room.items() if Entity.WALL in entities]
+    walls = [pos for pos, entities in room.items() if Element.WALL in entities]
     problem = _PathfindingProblem(start, goals, walls)
     solution = a_star_graph(problem, _get_heuristic(goals))
     return solution

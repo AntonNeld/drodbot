@@ -1,7 +1,7 @@
 import asyncio
 import random
 
-from common import Action, GUIEvent, Strategy, Entity
+from common import Action, GUIEvent, Strategy, Element
 from .pathfinding import find_path
 
 ACTION_DELAY = 0.1
@@ -22,12 +22,12 @@ class DrodBot:
             player_position = next(
                 pos
                 for pos, entities in visual_info["entities"].items()
-                if Entity.BEETHRO in entities
+                if Element.BEETHRO in entities
             )
             victory_positions = [
                 pos
                 for pos, entities in visual_info["entities"].items()
-                if Entity.VICTORY_TOKEN in entities
+                if Element.VICTORY_TOKEN in entities
             ]
             actions = find_path(
                 player_position, victory_positions, visual_info["entities"]

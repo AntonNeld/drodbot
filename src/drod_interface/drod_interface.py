@@ -1,7 +1,7 @@
 import numpy
 import pyautogui
 
-from common import Action, ImageProcessingStep, UserError
+from common import Action, ImageProcessingStep, UserError, Element
 from .classify import classify_tile
 from .image_processing import (
     find_color,
@@ -29,11 +29,16 @@ EDITOR_FLOOR_CONTROLS_TAB = (60, 20)
 EDITOR_ITEMS_TAB = (100, 20)
 EDITOR_MONSTERS_TAB = (135, 20)
 
+EDITOR_WALL = (30, 60)
 EDITOR_FLOOR = (25, 300)
 
 EDITOR_FORCE_ARROW = (30, 50)
 EDITOR_CHECKPOINT = (120, 50)
 EDITOR_WALL_LIGHT = (25, 85)
+
+EDITOR_MIMIC = (60, 50)
+EDITOR_TOKEN = (30, 180)
+EDITOR_VICTORY_TOKEN_IN_MENU = (265, 150)
 
 
 class DrodInterface:
@@ -113,6 +118,41 @@ class DrodInterface:
             yOffset=(ROOM_HEIGHT_IN_TILES - 3) * TILE_SIZE,
             button="right",
         )
+
+    async def editor_place_element(self, element, position, end_position=None):
+        if element == Element.WALL:
+            await self._click(EDITOR_ROOM_PIECES_TAB)
+            await self._click(EDITOR_WALL)
+        elif element == Element.VICTORY_TOKEN:
+            await self._click(EDITOR_ITEMS_TAB)
+            # Click the mimic to make sure the tokens are not already selected.
+            # Otherwise we may close the menu instead of opening it.
+            await self._click(EDITOR_MIMIC)
+            await self._click(EDITOR_TOKEN)
+            await self._click(EDITOR_TOKEN)
+            await self._click(EDITOR_VICTORY_TOKEN_IN_MENU)
+        else:
+            raise RuntimeError(f"Unknown element {element}")
+        if end_position is None:
+            await self._click(
+                (
+                    ROOM_UPPER_EDGE_START_X + (position[0] + 0.5) * TILE_SIZE,
+                    ROOM_UPPER_EDGE_START_Y + (position[1] + 0.5) * TILE_SIZE,
+                )
+            )
+        else:
+            pyautogui.moveTo(
+                x=self.origin_x
+                + ROOM_UPPER_EDGE_START_X
+                + TILE_SIZE * (position[0] + 0.5),
+                y=self.origin_y
+                + ROOM_UPPER_EDGE_START_Y
+                + TILE_SIZE * (position[1] + 0.5),
+            )
+            pyautogui.dragRel(
+                xOffset=(end_position[0] - position[0]) * TILE_SIZE,
+                yOffset=(end_position[1] - position[1]) * TILE_SIZE,
+            )
 
     async def get_view(self, step=None):
         visual_info = {}
