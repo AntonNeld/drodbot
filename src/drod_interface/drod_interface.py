@@ -44,6 +44,8 @@ EDITOR_MIMIC = (60, 50)
 EDITOR_TOKEN = (30, 180)
 EDITOR_CONQUER_TOKEN_IN_MENU = (265, 150)
 
+EDITOR_ROACH = (30, 50)
+
 
 class DrodInterface:
     def __init__(self):
@@ -90,8 +92,14 @@ class DrodInterface:
     async def _click(self, position):
         pyautogui.click(x=self.origin_x + position[0], y=self.origin_y + position[1])
 
-    async def editor_clear_room(self):
+    async def editor_reset_state(self):
         await self._click(EDITOR_ROOM_PIECES_TAB)
+        # Make sure the wall is normal, not hard
+        await self._click(EDITOR_WALL)
+        image = (await self.get_view(step=ImageProcessingStep.CROP_WINDOW))["image"]
+        while image[457, 62, 0] == 22:  # Part of the "(hard)" text
+            await self._click(EDITOR_WALL)
+            image = (await self.get_view(step=ImageProcessingStep.CROP_WINDOW))["image"]
         # Select the normal floor, so clearing doesn't use mosaic floors
         await self._click(EDITOR_FLOOR)
         await self._editor_clear_layer()
@@ -110,6 +118,13 @@ class DrodInterface:
         await self._editor_clear_layer()
 
         await self._click(EDITOR_MONSTERS_TAB)
+        await self._click(EDITOR_ROACH)  # To move the mouse away from the tab
+        # Make sure the monsters are facing SE
+        image = (await self.get_view(step=ImageProcessingStep.CROP_WINDOW))["image"]
+
+        while image[26, 140, 0] != 240:  # The roach's eye when facing SE
+            pyautogui.press("w")
+            image = (await self.get_view(step=ImageProcessingStep.CROP_WINDOW))["image"]
         await self._editor_clear_layer()
 
     async def _editor_clear_layer(self):
