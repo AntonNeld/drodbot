@@ -1,4 +1,6 @@
+from dataclasses import dataclass
 from enum import Enum
+from typing import Tuple, Optional, List
 
 
 class UserError(Exception):
@@ -65,6 +67,7 @@ class Direction(Enum):
     UNKNOWN = "?"
 
 
+@dataclass
 class Tile:
     """A representation of a tile.
 
@@ -87,23 +90,12 @@ class Tile:
         A list of elements in the swords layer.
     """
 
-    def __init__(
-        self,
-        room_piece,
-        floor_control=None,
-        checkpoint=None,
-        item=None,
-        monster=None,
-        swords=None,
-    ):
-        if room_piece is None:
-            raise RuntimeError("room_piece cannot be None")
-        self.room_piece = room_piece
-        self.floor_control = floor_control
-        self.checkpoint = checkpoint
-        self.item = item
-        self.monster = monster
-        self.swords = swords
+    room_piece: Tuple[Element, Direction]
+    floor_control: Optional[Tuple[Element, Direction]] = None
+    checkpoint: Optional[Tuple[Element, Direction]] = None
+    item: Optional[Tuple[Element, Direction]] = None
+    monster: Optional[Tuple[Element, Direction]] = None
+    swords: Optional[List[Tuple[Element, Direction]]] = None
 
     def get_elements(self):
         """Get all elements in the tile.
