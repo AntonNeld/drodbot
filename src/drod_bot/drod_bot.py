@@ -15,23 +15,14 @@ class DrodBot:
     async def run_strategy(self, strategy):
         await self._interface.initialize()
         visual_info = await self._interface.get_view()
+        room = visual_info["room"]
         if strategy == Strategy.MOVE_RANDOMLY:
             actions = random.choices(list(Action), k=30)
             await self.do_actions(actions)
         elif strategy == Strategy.MOVE_TO_CONQUER_TOKEN:
-            player_position = next(
-                pos
-                for pos, entities in visual_info["entities"].items()
-                if Element.BEETHRO in entities
-            )
-            conquer_positions = [
-                pos
-                for pos, entities in visual_info["entities"].items()
-                if Element.CONQUER_TOKEN in entities
-            ]
-            actions = find_path(
-                player_position, conquer_positions, visual_info["entities"]
-            )
+            player_position = room.find_player()
+            conquer_positions = room.find_coordinates(Element.CONQUER_TOKEN)
+            actions = find_path(player_position, conquer_positions, room)
             await self.do_actions(actions)
         else:
             raise RuntimeError(f"Unknown strategy {strategy}")

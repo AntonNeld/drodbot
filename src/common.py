@@ -50,3 +50,50 @@ class Element(Enum):
     CONQUER_TOKEN = "V"
     TRIGGERED_CONQUER_TOKEN = "v"
     FLOOR = "."
+
+
+class Room:
+    """A representation of a room."""
+
+    def __init__(self):
+        self._tiles = {}
+
+    def set_tile(self, position, elements):
+        """Set the contents of a tile.
+
+        Parameters
+        ----------
+        position
+            The coordinates of the tile, given as a tuple (x, y).
+        elements
+            The elements to put in the tile.
+        """
+        self._tiles[position] = elements
+
+    def find_coordinates(self, element):
+        """Find the coordinates of all elements of a type.
+
+        Parameters
+        ----------
+        element
+            The element to find the coordinates of.
+
+        Returns
+        -------
+        The coordinates of all elements of that type, as a list of (x, y) tuples.
+        """
+        return [pos for pos, entities in self._tiles.items() if element in entities]
+
+    def find_player(self):
+        """Find the coordinates of the player.
+
+        Returns
+        -------
+        The coordinates of the player, as an (x, y) tuple.
+        """
+        beethros = self.find_coordinates(Element.BEETHRO)
+        if len(beethros) < 1:
+            raise RuntimeError("Cannot find Beethro")
+        if len(beethros) > 1:
+            raise RuntimeError(f"Too many Beethros: {beethros}")
+        return beethros[0]

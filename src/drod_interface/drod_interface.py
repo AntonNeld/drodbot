@@ -1,7 +1,7 @@
 import numpy
 import pyautogui
 
-from common import Action, ImageProcessingStep, UserError, Element
+from common import Action, ImageProcessingStep, UserError, Element, Room
 from .classify import classify_tile
 from .image_processing import (
     find_color,
@@ -208,10 +208,10 @@ class DrodInterface:
         room_end_x = room_start_x + ROOM_WIDTH_IN_TILES * TILE_SIZE
         room_start_y = ROOM_UPPER_EDGE_START_Y + 1
         room_end_y = room_start_y + ROOM_HEIGHT_IN_TILES * TILE_SIZE
-        room = drod_window[room_start_y:room_end_y, room_start_x:room_end_x, :]
+        room_image = drod_window[room_start_y:room_end_y, room_start_x:room_end_x, :]
 
         if step == ImageProcessingStep.CROP_ROOM:
-            visual_info["image"] = array_to_pil(room)
+            visual_info["image"] = array_to_pil(room_image)
             return visual_info
 
         # == Extract and classify tiles in the room ==
@@ -223,27 +223,28 @@ class DrodInterface:
                 end_x = (x + 1) * TILE_SIZE
                 start_y = y * TILE_SIZE
                 end_y = (y + 1) * TILE_SIZE
-                tiles[(x, y)] = room[start_y:end_y, start_x:end_x, :]
+                tiles[(x, y)] = room_image[start_y:end_y, start_x:end_x, :]
         visual_info["tiles"] = tiles
 
         if step == ImageProcessingStep.EXTRACT_TILES:
             # We can't show anything more interesting here
-            visual_info["image"] = array_to_pil(room)
+            visual_info["image"] = array_to_pil(room_image)
             return visual_info
 
         # If a step is specified, we will return an image composed of modified tiles
         if step is not None:
-            annotated_room = numpy.zeros(room.shape, numpy.uint8)
-        room_entities = {}
+            annotated_room = numpy.zeros(room_image.shape, numpy.uint8)
+        room = Room()
         for (x, y), tile in tiles.items():
             start_x = x * TILE_SIZE
             end_x = (x + 1) * TILE_SIZE
             start_y = y * TILE_SIZE
             end_y = (y + 1) * TILE_SIZE
-            room_entities[(x, y)], modified_tile = classify_tile(tile, step)
+            elements, modified_tile = classify_tile(tile, step)
+            room.set_tile((x, y), elements)
             if step is not None:
                 annotated_room[start_y:end_y, start_x:end_x] = modified_tile
-        visual_info["entities"] = room_entities
+        visual_info["room"] = room
 
         if step is not None:
             visual_info["image"] = array_to_pil(annotated_room)

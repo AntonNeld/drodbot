@@ -90,7 +90,7 @@ def find_path(start, goals, room):
     list of Action
         The shortest sequence of actions to reach a goal position.
     """
-    walls = [pos for pos, entities in room.items() if Element.WALL in entities]
+    walls = room.find_coordinates(Element.WALL)
     problem = _PathfindingProblem(start, goals, walls)
     solution = a_star_graph(problem, _get_heuristic(goals))
     return solution
