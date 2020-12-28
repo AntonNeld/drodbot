@@ -240,8 +240,8 @@ class DrodInterface:
             end_x = (x + 1) * TILE_SIZE
             start_y = y * TILE_SIZE
             end_y = (y + 1) * TILE_SIZE
-            elements, modified_tile = classify_tile(tile, step)
-            room.set_tile((x, y), elements)
+            tile_info, modified_tile = classify_tile(tile, step)
+            room.set_tile((x, y), tile_info)
             if step is not None:
                 annotated_room[start_y:end_y, start_x:end_x] = modified_tile
         visual_info["room"] = room

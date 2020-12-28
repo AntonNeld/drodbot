@@ -52,13 +52,86 @@ class Element(Enum):
     FLOOR = "."
 
 
+class Direction(Enum):
+    N = "N"
+    NE = "NE"
+    E = "E"
+    SE = "SE"
+    S = "S"
+    SW = "SW"
+    W = "W"
+    NW = "NW"
+    NONE = "N/A"
+    UNKNOWN = "?"
+
+
+class Tile:
+    """A representation of a tile.
+
+    This contains information about what element is in each layer, as a tuple of
+    (Element, Direction). If a layer has nothing in it, the value is None.
+
+    Parameters
+    ----------
+    room_piece
+        The element in the "room pieces" layer. This cannot be None.
+    floor_control
+        The element in the "floor controls" layer (excluding checkpoints and lighting).
+    checkpoint
+        The element in the checkpoints layer.
+    item
+        The element in the "items" layer.
+    monster
+        The element in the "monsters" layer.
+    swords
+        A list of elements in the swords layer.
+    """
+
+    def __init__(
+        self,
+        room_piece,
+        floor_control=None,
+        checkpoint=None,
+        item=None,
+        monster=None,
+        swords=None,
+    ):
+        if room_piece is None:
+            raise RuntimeError("room_piece cannot be None")
+        self.room_piece = room_piece
+        self.floor_control = floor_control
+        self.checkpoint = checkpoint
+        self.item = item
+        self.monster = monster
+        self.swords = swords
+
+    def get_elements(self):
+        """Get all elements in the tile.
+
+        Returns
+        -------
+        A list of all elements (without directions) in the tile.
+        """
+        elements = []
+        for element in [
+            self.room_piece,
+            self.floor_control,
+            self.checkpoint,
+            self.item,
+            self.monster,
+        ] + (self.swords if self.swords is not None else []):
+            if element is not None:
+                elements.append(element[0])
+        return elements
+
+
 class Room:
     """A representation of a room."""
 
     def __init__(self):
         self._tiles = {}
 
-    def set_tile(self, position, elements):
+    def set_tile(self, position, tile):
         """Set the contents of a tile.
 
         Parameters
@@ -66,9 +139,9 @@ class Room:
         position
             The coordinates of the tile, given as a tuple (x, y).
         elements
-            The elements to put in the tile.
+            A Tile instance containing the elements of the tile.
         """
-        self._tiles[position] = elements
+        self._tiles[position] = tile
 
     def find_coordinates(self, element):
         """Find the coordinates of all elements of a type.
@@ -82,7 +155,9 @@ class Room:
         -------
         The coordinates of all elements of that type, as a list of (x, y) tuples.
         """
-        return [pos for pos, entities in self._tiles.items() if element in entities]
+        return [
+            pos for pos, tile in self._tiles.items() if element in tile.get_elements()
+        ]
 
     def find_player(self):
         """Find the coordinates of the player.
