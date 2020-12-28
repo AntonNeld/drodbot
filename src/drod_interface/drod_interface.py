@@ -1,7 +1,15 @@
 import numpy
 import pyautogui
 
-from common import Action, ImageProcessingStep, UserError, Element, Room
+from common import (
+    ROOM_WIDTH_IN_TILES,
+    ROOM_HEIGHT_IN_TILES,
+    Action,
+    ImageProcessingStep,
+    UserError,
+    Element,
+    Room,
+)
 from .classify import classify_tile
 from .image_processing import (
     find_color,
@@ -21,8 +29,6 @@ ROOM_UPPER_EDGE_START_X = 162
 ROOM_UPPER_EDGE_START_Y = 39
 
 TILE_SIZE = 22
-ROOM_WIDTH_IN_TILES = 38
-ROOM_HEIGHT_IN_TILES = 32
 
 EDITOR_ROOM_PIECES_TAB = (24, 20)
 EDITOR_FLOOR_CONTROLS_TAB = (60, 20)

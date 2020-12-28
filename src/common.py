@@ -1,7 +1,12 @@
+import copy
 from dataclasses import dataclass
 from enum import Enum
 import json
 from typing import Tuple, Optional, List
+
+
+ROOM_WIDTH_IN_TILES = 38
+ROOM_HEIGHT_IN_TILES = 32
 
 
 class UserError(Exception):
@@ -50,9 +55,18 @@ class Element(Enum):
     UNKNOWN = "?"
     WALL = "#"
     BEETHRO = "B"
+    BEETHRO_SWORD = "S"
     CONQUER_TOKEN = "V"
     TRIGGERED_CONQUER_TOKEN = "v"
     FLOOR = "."
+
+
+ROOM_PIECES = [Element.WALL, Element.FLOOR]
+ITEMS = [Element.CONQUER_TOKEN, Element.TRIGGERED_CONQUER_TOKEN]
+MONSTERS = [Element.BEETHRO]
+SWORDS = [Element.BEETHRO_SWORD]
+
+SWORDED_MONSTERS = {Element.BEETHRO: Element.BEETHRO_SWORD}
 
 
 class Direction(Enum):
@@ -150,6 +164,12 @@ class Room:
 
     def __init__(self):
         self._tiles = {}
+        # Since this class is used when generating training data, and
+        # we don't want to use classification then, initialize the room
+        # as empty.
+        for x in range(ROOM_WIDTH_IN_TILES):
+            for y in range(ROOM_HEIGHT_IN_TILES):
+                self._tiles[(x, y)] = Tile(room_piece=(Element.FLOOR, Direction.NONE))
 
     def set_tile(self, position, tile):
         """Set the contents of a tile.
@@ -162,6 +182,92 @@ class Room:
             A Tile instance containing the elements of the tile.
         """
         self._tiles[position] = tile
+
+    def get_tile(self, position):
+        """Get the contents of a tile.
+
+        Parameters
+        ----------
+        position
+            The coordinates of the tile, given as a tuple (x, y).
+
+        Returns
+        -------
+        The Tile object for the given position.
+        """
+        return self._tiles[position]
+
+    def place_element_like_editor(
+        self, element, direction, position, end_position=None
+    ):
+        """Place an element, like in the editor.
+
+        If an element already exists in the square, and it would block
+        the new element from being placed, the element is not placed.
+
+        Parameters
+        ----------
+        element
+            The element to place.
+        direction
+            The direction the element is facing. Use Direction.NONE if not applicable.
+        position
+            The position to place the element as a tuple (x, y). If `end_position`
+            is not None, this is the upper left corner of the square.
+        end_position
+            If this is not None, place elements in a square with this as the lower
+            right corner.
+        """
+        if element in ROOM_PIECES:
+            layer = "room_piece"
+        elif element in ITEMS:
+            layer = "item"
+        elif element in MONSTERS:
+            layer = "monster"
+        else:
+            raise RuntimeError(f"Element {element} not in any layer")
+        for x in range(
+            position[0],
+            end_position[0] + 1 if end_position is not None else position[0] + 1,
+        ):
+            for y in range(
+                position[1],
+                end_position[1] + 1 if end_position is not None else position[1] + 1,
+            ):
+                tile = copy.deepcopy(self._tiles[(x, y)])
+                # Cannot place things on same layer as something else. We don't need to
+                # worry about swords, since they can't be placed individually.
+                if getattr(tile, layer) is not None:
+                    continue
+                # TODO: There are some elements that block each other, even if they are
+                #       on different layers. Once we use enough elements that it is
+                #       relevant, take care of this here.
+                setattr(tile, layer, (element, direction))
+                self._tiles[(x, y)] = tile
+                if element in SWORDED_MONSTERS:
+                    sword = SWORDED_MONSTERS[element]
+                    if direction == Direction.N:
+                        sword_pos = (x, y - 1)
+                    elif direction == Direction.NE:
+                        sword_pos = (x + 1, y - 1)
+                    elif direction == Direction.E:
+                        sword_pos = (x + 1, y)
+                    elif direction == Direction.SE:
+                        sword_pos = (x + 1, y + 1)
+                    elif direction == Direction.S:
+                        sword_pos = (x, y + 1)
+                    elif direction == Direction.SW:
+                        sword_pos = (x - 1, y + 1)
+                    elif direction == Direction.W:
+                        sword_pos = (x - 1, y)
+                    elif direction == Direction.NW:
+                        sword_pos = (x - 1, y - 1)
+                    else:
+                        raise RuntimeError(f"Sword cannot have direction {direction}")
+                    sword_tile = copy.deepcopy(self._tiles[sword_pos])
+                    if sword_tile.swords is None:
+                        sword_tile.swords = []
+                    sword_tile.swords.append((sword, direction))
 
     def find_coordinates(self, element):
         """Find the coordinates of all elements of a type.
