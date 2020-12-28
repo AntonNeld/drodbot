@@ -1,4 +1,3 @@
-import PIL
 import numpy
 
 
@@ -33,11 +32,3 @@ def find_horizontal_lines(boolean_array, length):
             # We have an uninterrupted line of the specified length
             lines.append((start_x, start_y, start_x + length, start_y))
     return lines
-
-
-def pil_to_array(pil_image):
-    return numpy.array(pil_image)
-
-
-def array_to_pil(image):
-    return PIL.Image.fromarray(image)

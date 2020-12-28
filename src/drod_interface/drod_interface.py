@@ -14,8 +14,6 @@ from .classify import classify_tile
 from .image_processing import (
     find_color,
     find_horizontal_lines,
-    pil_to_array,
-    array_to_pil,
 )
 
 OVERLAY_COLOR = (0, 255, 0)
@@ -162,9 +160,9 @@ class DrodInterface:
 
     async def get_view(self, step=None):
         visual_info = {}
-        raw_image = pil_to_array(pyautogui.screenshot())
+        raw_image = numpy.array(pyautogui.screenshot())
         if step == ImageProcessingStep.SCREENSHOT:
-            visual_info["image"] = array_to_pil(raw_image)
+            visual_info["image"] = raw_image
             return visual_info
 
         # == Identify the DROD window and room ==
@@ -172,7 +170,7 @@ class DrodInterface:
         # Try finding the upper edge of the room, which is a long line of constant color
         correct_color = find_color(raw_image, ROOM_UPPER_EDGE_COLOR)
         if step == ImageProcessingStep.FIND_UPPER_EDGE_COLOR:
-            visual_info["image"] = array_to_pil(correct_color)
+            visual_info["image"] = correct_color
             return visual_info
 
         lines = find_horizontal_lines(correct_color, ROOM_UPPER_EDGE_LENGTH)
@@ -186,7 +184,7 @@ class DrodInterface:
                 with_lines[
                     start_y : start_y + OVERLAY_WIDTH, start_x:end_x, :
                 ] = OVERLAY_COLOR
-            visual_info["image"] = array_to_pil(with_lines)
+            visual_info["image"] = with_lines
             return visual_info
 
         if len(lines) > 1:
@@ -207,7 +205,7 @@ class DrodInterface:
         visual_info["origin_x"] = window_start_x
         visual_info["origin_y"] = window_start_y
         if step == ImageProcessingStep.CROP_WINDOW:
-            visual_info["image"] = array_to_pil(drod_window)
+            visual_info["image"] = drod_window
             return visual_info
 
         room_start_x = ROOM_UPPER_EDGE_START_X + 1
@@ -217,7 +215,7 @@ class DrodInterface:
         room_image = drod_window[room_start_y:room_end_y, room_start_x:room_end_x, :]
 
         if step == ImageProcessingStep.CROP_ROOM:
-            visual_info["image"] = array_to_pil(room_image)
+            visual_info["image"] = room_image
             return visual_info
 
         # == Extract and classify tiles in the room ==
@@ -234,7 +232,7 @@ class DrodInterface:
 
         if step == ImageProcessingStep.EXTRACT_TILES:
             # We can't show anything more interesting here
-            visual_info["image"] = array_to_pil(room_image)
+            visual_info["image"] = room_image
             return visual_info
 
         # If a step is specified, we will return an image composed of modified tiles
@@ -253,7 +251,7 @@ class DrodInterface:
         visual_info["room"] = room
 
         if step is not None:
-            visual_info["image"] = array_to_pil(annotated_room)
+            visual_info["image"] = annotated_room
             return visual_info
 
         # If no step is specified, just don't include an image

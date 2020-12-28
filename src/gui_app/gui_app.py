@@ -1,4 +1,5 @@
 import asyncio
+import PIL
 from PIL import ImageTk, Image
 from queue import Empty
 import tkinter
@@ -89,7 +90,7 @@ class GuiApp(tkinter.Frame):
             if item == GUIEvent.QUIT:
                 self.root.destroy()
             elif item == GUIEvent.DISPLAY_IMAGE:
-                self.raw_view_image = detail
+                self.raw_view_image = PIL.Image.fromarray(detail)
                 self.draw_view()
         except Empty:
             pass
