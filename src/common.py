@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
+import json
 from typing import Tuple, Optional, List
 
 
@@ -115,6 +116,33 @@ class Tile:
             if element is not None:
                 elements.append(element[0])
         return elements
+
+    def to_json(self):
+        """Encodes the tile as JSON.
+
+        Returns
+        -------
+        The JSON-encoded tile.
+        """
+
+        return json.dumps(
+            {
+                "room_piece": [e.value for e in self.room_piece],
+                "floor_control": [e.value for e in self.floor_control]
+                if self.floor_control is not None
+                else None,
+                "checkpoint": [e.value for e in self.checkpoint]
+                if self.checkpoint is not None
+                else None,
+                "item": [e.value for e in self.item] if self.item is not None else None,
+                "monster": [e.value for e in self.monster]
+                if self.monster is not None
+                else None,
+                "swords": [[e.value for e in element] for element in self.swords]
+                if self.swords is not None
+                else None,
+            }
+        )
 
 
 class Room:
