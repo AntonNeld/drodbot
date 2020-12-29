@@ -264,10 +264,13 @@ class Room:
                         sword_pos = (x - 1, y - 1)
                     else:
                         raise RuntimeError(f"Sword cannot have direction {direction}")
-                    sword_tile = copy.deepcopy(self._tiles[sword_pos])
-                    if sword_tile.swords is None:
-                        sword_tile.swords = []
-                    sword_tile.swords.append((sword, direction))
+                    try:
+                        sword_tile = copy.deepcopy(self._tiles[sword_pos])
+                        if sword_tile.swords is None:
+                            sword_tile.swords = []
+                        sword_tile.swords.append((sword, direction))
+                    except KeyError:
+                        pass  # Don't place a sword outside the room
 
     def find_coordinates(self, element):
         """Find the coordinates of all elements of a type.

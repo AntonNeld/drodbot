@@ -40,7 +40,8 @@ class ClassificationTrainer:
         )
         room.place_element_like_editor(Element.BEETHRO, Direction.NE, (11, 20))
 
-        await self._interface.editor_start_test_room((0, 0), Direction.N)
+        await self._interface.editor_start_test_room((37, 31), Direction.SE)
+        room.place_element_like_editor(Element.BEETHRO, Direction.SE, (37, 31))
 
         visual_info = await self._interface.get_view(
             step=ImageProcessingStep.EXTRACT_TILES
