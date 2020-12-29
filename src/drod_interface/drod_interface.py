@@ -108,7 +108,7 @@ class DrodInterface:
             # Make sure the monsters are facing SE
             image = (await self.get_view(step=ImageProcessingStep.CROP_WINDOW))["image"]
             while image[26, 140, 0] != 240:  # The roach's eye when facing SE
-                pyautogui.press("w")
+                pyautogui.press("q")
                 image = (await self.get_view(step=ImageProcessingStep.CROP_WINDOW))[
                     "image"
                 ]
