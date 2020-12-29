@@ -187,8 +187,31 @@ class DrodInterface:
             button="right",
         )
 
+    async def _editor_set_monster_direction(self, direction):
+        direction_to_number = {
+            Direction.N: 0,
+            Direction.NE: 1,
+            Direction.E: 2,
+            Direction.SE: 3,
+            Direction.S: 4,
+            Direction.SW: 5,
+            Direction.W: 6,
+            Direction.NW: 7,
+        }
+        clockwise_rotations = (
+            direction_to_number[direction]
+            - direction_to_number[self.editor_monster_direction]
+        ) % 8
+        if clockwise_rotations <= 4:
+            for _ in range(clockwise_rotations):
+                pyautogui.press("w")
+        else:  # Quicker to go counterclockwise
+            for _ in range(8 - clockwise_rotations):
+                pyautogui.press("q")
+        self.editor_monster_direction = direction
+
     async def editor_place_element(
-        self, element, position, end_position=None, hard_wall=False
+        self, element, direction, position, end_position=None, hard_wall=False
     ):
         """Place an element in the editor.
 
@@ -219,6 +242,7 @@ class DrodInterface:
         elif element == Element.BEETHRO:
             # We cannot place a Beethro, so we'll make a character that looks like him
             await self._editor_select_element(EDITOR_MONSTERS_TAB, EDITOR_CHARACTER)
+            await self._editor_set_monster_direction(direction)
             if end_position is not None:
                 raise RuntimeError("Cannot place character in a rectangle")
         else:
