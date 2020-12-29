@@ -54,6 +54,13 @@ class DrodInterface:
         self.origin_x = None
         self.origin_y = None
         # Editor state, will be set by initialize(editor=True)
+        self.editor_selected_tab = None
+        self.editor_selected_element = {
+            EDITOR_ROOM_PIECES_TAB: None,
+            EDITOR_FLOOR_CONTROLS_TAB: None,
+            EDITOR_ITEMS_TAB: None,
+            EDITOR_MONSTERS_TAB: None,
+        }
         self.editor_hard_walls = None
         self.editor_monster_direction = None
 
@@ -73,16 +80,31 @@ class DrodInterface:
         self.origin_x = visual_info["origin_x"]
         self.origin_y = visual_info["origin_y"]
         await self._click((3, 3))
+        # Let's use raw clicks here instead of editor_select_element().
+        # The latter depend on the state being set up.
         if editor:
             await self._click(EDITOR_ROOM_PIECES_TAB)
             # Check whether the wall is normal or hard
             await self._click(EDITOR_WALL)
+            self.editor_selected_element[EDITOR_ROOM_PIECES_TAB] = EDITOR_WALL
             image = (await self.get_view(step=ImageProcessingStep.CROP_WINDOW))["image"]
             # Check for part of the "(hard)" text
             self.editor_hard_walls = image[457, 62, 0] == 22
 
+            # For now, only select the force arrow. Once we start using it, we need to
+            # check its direction as well.
+            await self._click(EDITOR_FLOOR_CONTROLS_TAB)
+            await self._click(EDITOR_FORCE_ARROW)
+            self.editor_selected_element[EDITOR_FLOOR_CONTROLS_TAB] = EDITOR_FORCE_ARROW
+
+            await self._click(EDITOR_ITEMS_TAB)
+            await self._click(EDITOR_MIMIC)
+            self.editor_selected_element[EDITOR_ITEMS_TAB] = EDITOR_MIMIC
+
             await self._click(EDITOR_MONSTERS_TAB)
-            await self._click(EDITOR_ROACH)  # To move the mouse away from the tab
+            self.editor_selected_tab = EDITOR_MONSTERS_TAB
+            await self._click(EDITOR_ROACH)
+            self.editor_selected_element[EDITOR_MONSTERS_TAB] = EDITOR_ROACH
             # Make sure the monsters are facing SE
             image = (await self.get_view(step=ImageProcessingStep.CROP_WINDOW))["image"]
             while image[26, 140, 0] != 240:  # The roach's eye when facing SE
@@ -120,26 +142,32 @@ class DrodInterface:
     async def _click(self, position):
         pyautogui.click(x=self.origin_x + position[0], y=self.origin_y + position[1])
 
+    async def _editor_select_element(self, tab_position, element_position):
+        if self.editor_selected_tab != tab_position:
+            await self._click(tab_position)
+            self.editor_selected_tab = tab_position
+        if self.editor_selected_element[tab_position] != element_position:
+            await self._click(element_position)
+            self.editor_selected_element[tab_position] = element_position
+
     async def editor_clear_room(self):
-        await self._click(EDITOR_ROOM_PIECES_TAB)
         # Select the normal floor, so clearing doesn't use mosaic floors
-        await self._click(EDITOR_FLOOR)
+        await self._editor_select_element(EDITOR_ROOM_PIECES_TAB, EDITOR_FLOOR)
         await self._editor_clear_layer()
 
-        await self._click(EDITOR_FLOOR_CONTROLS_TAB)
-        # This tab contains three layers (disregarding level entrances),
+        # The floor controls tab contains three layers (disregarding level entrances),
         # which need to be cleared separately
-        await self._click(EDITOR_FORCE_ARROW)
+        await self._editor_select_element(EDITOR_FLOOR_CONTROLS_TAB, EDITOR_FORCE_ARROW)
         await self._editor_clear_layer()
-        await self._click(EDITOR_CHECKPOINT)
+        await self._editor_select_element(EDITOR_FLOOR_CONTROLS_TAB, EDITOR_CHECKPOINT)
         await self._editor_clear_layer()
-        await self._click(EDITOR_WALL_LIGHT)
-        await self._editor_clear_layer()
-
-        await self._click(EDITOR_ITEMS_TAB)
+        await self._editor_select_element(EDITOR_FLOOR_CONTROLS_TAB, EDITOR_WALL_LIGHT)
         await self._editor_clear_layer()
 
-        await self._click(EDITOR_MONSTERS_TAB)
+        await self._editor_select_element(EDITOR_ITEMS_TAB, EDITOR_MIMIC)
+        await self._editor_clear_layer()
+
+        await self._editor_select_element(EDITOR_MONSTERS_TAB, EDITOR_ROACH)
         await self._editor_clear_layer()
 
     async def _editor_clear_layer(self):
@@ -155,14 +183,10 @@ class DrodInterface:
 
     async def editor_place_element(self, element, position, end_position=None):
         if element == Element.WALL:
-            await self._click(EDITOR_ROOM_PIECES_TAB)
-            await self._click(EDITOR_WALL)
+            await self._editor_select_element(EDITOR_ROOM_PIECES_TAB, EDITOR_WALL)
         elif element == Element.CONQUER_TOKEN:
-            await self._click(EDITOR_ITEMS_TAB)
-            # Click the mimic to make sure the tokens are not already selected.
-            # Otherwise we may close the menu instead of opening it.
-            await self._click(EDITOR_MIMIC)
-            await self._click(EDITOR_TOKEN)
+            await self._editor_select_element(EDITOR_ITEMS_TAB, EDITOR_TOKEN)
+            # Click it again to bring up the menu, and select it
             await self._click(EDITOR_TOKEN)
             await self._click(EDITOR_CONQUER_TOKEN_IN_MENU)
         else:
