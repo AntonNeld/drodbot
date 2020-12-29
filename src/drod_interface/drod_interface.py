@@ -180,12 +180,12 @@ class DrodInterface:
 
     async def _editor_clear_layer(self):
         pyautogui.moveTo(
-            x=self.origin_x + ROOM_UPPER_EDGE_START_X + TILE_SIZE * 1.5,
-            y=self.origin_y + ROOM_UPPER_EDGE_START_Y + TILE_SIZE * 1.5,
+            x=self.origin_x + ROOM_UPPER_EDGE_START_X + TILE_SIZE * 0.5,
+            y=self.origin_y + ROOM_UPPER_EDGE_START_Y + TILE_SIZE * 0.5,
         )
         pyautogui.dragRel(
-            xOffset=(ROOM_WIDTH_IN_TILES - 3) * TILE_SIZE,
-            yOffset=(ROOM_HEIGHT_IN_TILES - 3) * TILE_SIZE,
+            xOffset=(ROOM_WIDTH_IN_TILES - 1) * TILE_SIZE,
+            yOffset=(ROOM_HEIGHT_IN_TILES - 1) * TILE_SIZE,
             button="right",
         )
 
