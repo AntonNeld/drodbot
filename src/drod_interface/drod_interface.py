@@ -181,9 +181,29 @@ class DrodInterface:
             button="right",
         )
 
-    async def editor_place_element(self, element, position, end_position=None):
+    async def editor_place_element(
+        self, element, position, end_position=None, hard_wall=False
+    ):
+        """Place an element in the editor.
+
+        Parameters
+        ----------
+        element
+            The element to place.
+        position
+            The tile to place it in, as a tuple (x, y). If `end_position`
+            is not None, this is the upper left corner.
+        end_position
+            If this is set, place the element in a rectangle with this as
+            its lower right corner and `position` as its upper right corner.
+        hard_wall
+            Only used when placing walls. If this is true, the wall will be
+            of the hard variant.
+        """
         if element == Element.WALL:
             await self._editor_select_element(EDITOR_ROOM_PIECES_TAB, EDITOR_WALL)
+            if hard_wall != self.editor_hard_walls:
+                await self._click(EDITOR_WALL)
         elif element == Element.CONQUER_TOKEN:
             await self._editor_select_element(EDITOR_ITEMS_TAB, EDITOR_TOKEN)
             # Click it again to bring up the menu, and select it
