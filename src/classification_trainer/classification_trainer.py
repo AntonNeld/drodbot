@@ -23,8 +23,8 @@ class ClassificationTrainer:
 
         Work in progress.
         """
-        await self._interface.initialize()
-        await self._interface.editor_reset_state()
+        await self._interface.initialize(editor=True)
+        await self._interface.editor_clear_room()
         room = Room()
         # TODO: place elements in a more representative way
         await self._interface.editor_place_element(Element.WALL, (5, 5), (6, 8))
