@@ -46,6 +46,12 @@ EDITOR_TOKEN = (30, 180)
 EDITOR_CONQUER_TOKEN_IN_MENU = (265, 150)
 
 EDITOR_ROACH = (30, 50)
+EDITOR_CHARACTER = (110, 365)
+
+EDITOR_CHARACTER_WINDOW_SCROLL_UP = (960, 180)
+EDITOR_CHARACTER_WINDOW_FIRST_TYPE = (820, 180)
+EDITOR_CHARACTER_WINDOW_VISIBLE_CHECKBOX = (820, 700)
+EDITOR_CHARACTER_WINDOW_OKAY = (570, 710)
 
 
 class DrodInterface:
@@ -196,6 +202,7 @@ class DrodInterface:
         end_position
             If this is set, place the element in a rectangle with this as
             its lower right corner and `position` as its upper right corner.
+            Not all elements can be placed like this.
         hard_wall
             Only used when placing walls. If this is true, the wall will be
             of the hard variant.
@@ -209,6 +216,11 @@ class DrodInterface:
             # Click it again to bring up the menu, and select it
             await self._click(EDITOR_TOKEN)
             await self._click(EDITOR_CONQUER_TOKEN_IN_MENU)
+        elif element == Element.BEETHRO:
+            # We cannot place a Beethro, so we'll make a character that looks like him
+            await self._editor_select_element(EDITOR_MONSTERS_TAB, EDITOR_CHARACTER)
+            if end_position is not None:
+                raise RuntimeError("Cannot place character in a rectangle")
         else:
             raise RuntimeError(f"Unknown element {element}")
         if end_position is None:
@@ -231,6 +243,13 @@ class DrodInterface:
                 xOffset=(end_position[0] - position[0]) * TILE_SIZE,
                 yOffset=(end_position[1] - position[1]) * TILE_SIZE,
             )
+        # Go into the character menu to make the character look like Beethro.
+        if element == Element.BEETHRO:
+            await self._click(EDITOR_CHARACTER_WINDOW_SCROLL_UP)
+            await self._click(EDITOR_CHARACTER_WINDOW_SCROLL_UP)
+            await self._click(EDITOR_CHARACTER_WINDOW_FIRST_TYPE)
+            await self._click(EDITOR_CHARACTER_WINDOW_VISIBLE_CHECKBOX)
+            await self._click(EDITOR_CHARACTER_WINDOW_OKAY)
 
     async def get_view(self, step=None):
         visual_info = {}

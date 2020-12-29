@@ -31,6 +31,8 @@ class ClassificationTrainer:
         room.place_element_like_editor(Element.WALL, Direction.NONE, (5, 5), (6, 8))
         await self._interface.editor_place_element(Element.CONQUER_TOKEN, (10, 20))
         room.place_element_like_editor(Element.CONQUER_TOKEN, Direction.NONE, (10, 20))
+        await self._interface.editor_place_element(Element.BEETHRO, (11, 20))
+        room.place_element_like_editor(Element.BEETHRO, Direction.SE, (11, 20))
 
         visual_info = await self._interface.get_view(
             step=ImageProcessingStep.EXTRACT_TILES
