@@ -1,3 +1,5 @@
+import asyncio
+
 import numpy
 import pyautogui
 
@@ -274,6 +276,37 @@ class DrodInterface:
             await self._click(EDITOR_CHARACTER_WINDOW_FIRST_TYPE)
             await self._click(EDITOR_CHARACTER_WINDOW_VISIBLE_CHECKBOX)
             await self._click(EDITOR_CHARACTER_WINDOW_OKAY)
+
+    async def editor_start_test_room(self, position, direction):
+        """Start testing the room.
+
+        Parameters
+        ----------
+        position
+            The position to start in as a tuple (x, y).
+        direction
+            The direction to face when starting.
+        """
+        # Select the roach to make sure we can rotate monsters
+        await self._editor_select_element(EDITOR_MONSTERS_TAB, EDITOR_ROACH)
+        await self._editor_set_monster_direction(direction)
+        pyautogui.press("f5")
+        await self._click(
+            (
+                ROOM_UPPER_EDGE_START_X + (position[0] + 0.5) * TILE_SIZE,
+                ROOM_UPPER_EDGE_START_Y + (position[1] + 0.5) * TILE_SIZE,
+            )
+        )
+        # Move the mouse out of the way
+        pyautogui.moveTo(self.origin_x + 3, self.origin_y + 3)
+        # Sleep to let the transition finish
+        await asyncio.sleep(3)
+
+    async def editor_stop_test_room(self):
+        """Stop testing the room."""
+        pyautogui.press("esc")
+        # Sleep to let the transition finish
+        await asyncio.sleep(1)
 
     async def get_view(self, step=None):
         visual_info = {}

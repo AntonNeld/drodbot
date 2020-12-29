@@ -40,9 +40,13 @@ class ClassificationTrainer:
         )
         room.place_element_like_editor(Element.BEETHRO, Direction.NE, (11, 20))
 
+        await self._interface.editor_start_test_room((0, 0), Direction.N)
+
         visual_info = await self._interface.get_view(
             step=ImageProcessingStep.EXTRACT_TILES
         )
+
+        await self._interface.editor_stop_test_room()
 
         if not os.path.exists(self._training_data_dir):
             os.makedirs(self._training_data_dir)
