@@ -3,16 +3,29 @@ import os.path
 import random
 import string
 
+import numpy
 import PIL
 from PIL.PngImagePlugin import PngInfo
 
-from common import ImageProcessingStep, Element, Direction, Room
+from common import ImageProcessingStep, GUIEvent, Element, Direction, Room, Tile
 
 
 class ClassificationTrainer:
-    def __init__(self, training_data_dir, drod_interface):
+    def __init__(self, training_data_dir, drod_interface, window_queue):
         self._training_data_dir = training_data_dir
         self._interface = drod_interface
+        self._data = []
+        self._queue = window_queue
+
+    async def load_training_data(self):
+        """Load the training data and send it to the GUI."""
+        self._data = []
+        file_names = os.listdir(self._training_data_dir)
+        for file_name in file_names:
+            image = PIL.Image.open(os.path.join(self._training_data_dir, file_name))
+            content = Tile.from_json(image.info["tile_json"])
+            self._data.append({"image": numpy.array(image), "content": content})
+        self._queue.put((GUIEvent.TRAINING_DATA, self._data))
 
     async def procure_training_data(self):
         """Generate data for training the classification model.
@@ -20,8 +33,6 @@ class ClassificationTrainer:
         With the editor open, this method will add elements to the room
         with various floors, and save the tiles as images.
         The images are annotated with the tile contents as metadata.
-
-        Work in progress.
         """
         print("Generating training data")
         await self._interface.initialize(editor=True)

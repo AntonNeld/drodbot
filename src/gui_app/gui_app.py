@@ -50,6 +50,8 @@ class GuiApp(tkinter.Frame):
                 self.root.destroy()
             elif item == GUIEvent.DISPLAY_IMAGE:
                 self.interpret_screen_app.set_image(detail)
+            elif item == GUIEvent.TRAINING_DATA:
+                self.classification_training_app.set_data(detail)
         except Empty:
             pass
         self.root.after(QUEUE_POLL_INTERVAL, self.check_queue)

@@ -30,6 +30,7 @@ class Action(Enum):
 class GUIEvent(Enum):
     QUIT = "quit"
     DISPLAY_IMAGE = "display_image"
+    TRAINING_DATA = "training_data"
 
 
 # The values are also what will be displayed in the GUI
@@ -157,6 +158,30 @@ class Tile:
                 else None,
             }
         )
+
+    @staticmethod
+    def from_json(json_string):
+        json_dict = json.loads(json_string)
+        constructor_args = {
+            key: _element_tuple_from_json(value)
+            for key, value in json_dict.items()
+            if key != "swords"
+        }
+        if json_dict["swords"] is not None:
+            constructor_args["swords"] = [
+                _element_tuple_from_json(p) for p in json_dict["swords"]
+            ]
+        else:
+            constructor_args["swords"] = None
+        return Tile(**constructor_args)
+
+
+def _element_tuple_from_json(pair):
+    if pair is None:
+        return None
+    element = next(e for e in Element if e.value == pair[0])
+    direction = next(d for d in Direction if d.value == pair[1])
+    return (element, direction)
 
 
 class Room:
