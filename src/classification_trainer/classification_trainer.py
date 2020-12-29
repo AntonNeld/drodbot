@@ -26,20 +26,7 @@ class ClassificationTrainer:
         print("Generating training data")
         await self._interface.initialize(editor=True)
         await self._interface.editor_clear_room()
-        room = Room()
-        # TODO: place elements in a more representative way
-        await self._interface.editor_place_element(
-            Element.WALL, Direction.NONE, (5, 5), (6, 8)
-        )
-        room.place_element_like_editor(Element.WALL, Direction.NONE, (5, 5), (6, 8))
-        await self._interface.editor_place_element(
-            Element.CONQUER_TOKEN, Direction.NONE, (10, 20)
-        )
-        room.place_element_like_editor(Element.CONQUER_TOKEN, Direction.NONE, (10, 20))
-        await self._interface.editor_place_element(
-            Element.BEETHRO, Direction.NE, (11, 20)
-        )
-        room.place_element_like_editor(Element.BEETHRO, Direction.NE, (11, 20))
+        room = await self._generate_room()
 
         # Starting position when testing
         room.place_element_like_editor(Element.BEETHRO, Direction.SE, (37, 31))
@@ -80,6 +67,62 @@ class ClassificationTrainer:
                 coords, tile, tile_info, f"{random_string}v", self._training_data_dir
             )
         print("Finished generating training data")
+
+    async def _generate_room(self):
+        room = Room()
+        for start, end in [
+            ((6, 3), (13, 8)),
+            ((4, 5), (5, 5)),
+            ((10, 9), (10, 11)),
+            ((12, 9), (12, 11)),
+            ((14, 6), (23, 6)),
+            ((23, 7), (23, 9)),
+            ((9, 15), (11, 15)),
+            ((17, 15), (17, 16)),
+            ((18, 16), None),
+            ((22, 13), (24, 15)),
+            ((10, 26), None),
+            ((10, 27), (11, 28)),
+            ((10, 29), (12, 30)),
+            ((7, 31), (12, 31)),
+        ]:
+            await self._interface.editor_place_element(
+                Element.WALL, Direction.NONE, start, end
+            )
+            room.place_element_like_editor(Element.WALL, Direction.NONE, start, end)
+        for coords in [
+            (9, 5),
+            (6, 8),
+            (23, 9),
+            (29, 8),
+            (30, 8),
+            (6, 15),
+            (10, 16),
+            (21, 17),
+            (12, 28),
+        ]:
+            await self._interface.editor_place_element(
+                Element.CONQUER_TOKEN, Direction.NONE, coords
+            )
+            room.place_element_like_editor(
+                Element.CONQUER_TOKEN, Direction.NONE, coords
+            )
+        for coords, direction in [
+            ((3, 3), Direction.N),
+            ((5, 6), Direction.NE),
+            ((11, 9), Direction.SE),
+            ((28, 4), Direction.W),
+            ((17, 10), Direction.SW),
+            ((10, 14), Direction.E),
+            ((6, 17), Direction.NW),
+            ((19, 19), Direction.S),
+            ((13, 29), Direction.NW),
+        ]:
+            await self._interface.editor_place_element(
+                Element.BEETHRO, direction, coords
+            )
+            room.place_element_like_editor(Element.BEETHRO, direction, coords)
+        return room
 
 
 def _save_tile_png(coords, tile, tile_info, base_name, directory):
