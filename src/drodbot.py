@@ -25,6 +25,7 @@ if __name__ == "__main__":
     app = GuiApp(
         root=window, event_loop=loop, queue=window_queue, bot=bot, trainer=trainer
     )
+    app.pack()
     try:
         app.mainloop()
     finally:
