@@ -236,6 +236,7 @@ class DrodInterface:
             await self._editor_select_element(EDITOR_ROOM_PIECES_TAB, EDITOR_WALL)
             if hard_wall != self.editor_hard_walls:
                 await self._click(EDITOR_WALL)
+                self.editor_hard_walls = hard_wall
         elif element == Element.CONQUER_TOKEN:
             await self._editor_select_element(EDITOR_ITEMS_TAB, EDITOR_TOKEN)
             # Click it again to bring up the menu, and select it
