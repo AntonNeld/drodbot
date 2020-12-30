@@ -35,10 +35,11 @@ class ClassificationTrainer:
             self._data.append(
                 {
                     "image": numpy.array(image),
-                    "content": content,
+                    "real_content": content,
                     "file_name": file_name,
                 }
             )
+        self._classify_training_data()
         self._queue.put((GUIEvent.TRAINING_DATA, self._data))
 
     async def train_model(self):
@@ -47,7 +48,7 @@ class ClassificationTrainer:
         images_array = numpy.stack([t["image"] for t in self._data], axis=0)
         # For now, just check whether the tile has a wall
         is_wall = numpy.array(
-            [t["content"].room_piece == Element.WALL for t in self._data],
+            [t["real_content"].room_piece[0] == Element.WALL for t in self._data],
             dtype=numpy.uint8,
         )
         # Let 10% of our data be for validation
@@ -55,12 +56,48 @@ class ClassificationTrainer:
         self._model.fit(
             images_array[:validation_start],
             is_wall[:validation_start],
-            epochs=2,
+            epochs=10,
             validation_data=(
                 images_array[validation_start:],
                 is_wall[validation_start:],
             ),
         )
+        self._classify_training_data()
+        self._queue.put((GUIEvent.TRAINING_DATA, self._data))
+
+    def _classify_training_data(self):
+        predicted_contents = self.classify_tiles(
+            {t["file_name"]: t["image"] for t in self._data}
+        )
+        for entry in self._data:
+            entry["predicted_content"] = predicted_contents[entry["file_name"]]
+
+    def classify_tiles(self, tiles):
+        """Classify the given tiles according to the current model.
+
+        Parameters
+        ----------
+        tiles
+            A dict with tile images as the values.
+
+        Returns
+        -------
+        A dict with the same keys as `tiles`, but Tile objects
+        representing the tile contents as the values.
+        """
+        keys, images = zip(*tiles.items())
+        images_array = numpy.stack(images, axis=0)
+        results = self._model.predict(images_array)
+        best_guesses = numpy.argmax(results, axis=-1)
+        classified_tiles = {}
+        for index, key in enumerate(keys):
+            classified_tiles[key] = Tile(
+                room_piece=(
+                    Element.WALL if best_guesses[index] == 1 else Element.FLOOR,
+                    Direction.NONE,
+                )
+            )
+        return classified_tiles
 
     async def procure_training_data(self):
         """Generate data for training the classification model.
@@ -131,6 +168,11 @@ class ClassificationTrainer:
             ((10, 27), (11, 28)),
             ((10, 29), (12, 30)),
             ((7, 31), (12, 31)),
+            # ((23, 18), (25, 29)),
+            # ((27, 10), (36, 14)),
+            # ((3, 20), (17, 21)),
+            # ((3, 23), (17, 24)),
+            # ((0, 0), (37, 31)),
         ]:
             await self._interface.editor_place_element(
                 Element.WALL, Direction.NONE, start, end

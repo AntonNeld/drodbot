@@ -42,8 +42,12 @@ class ClassificationTrainingApp(tkinter.Frame):
         self.details_area.pack(side=tkinter.LEFT)
         self.tile_file_name = tkinter.Label(self.details_area, text="")
         self.tile_file_name.pack(side=tkinter.TOP)
-        self.tile_content = tkinter.Label(self.details_area, text="")
-        self.tile_content.pack(side=tkinter.TOP)
+        self.tile_content_area = tkinter.Frame(self.details_area)
+        self.tile_content_area.pack(side=tkinter.TOP)
+        self.real_tile_content = tkinter.Label(self.tile_content_area, text="")
+        self.real_tile_content.pack(side=tkinter.LEFT)
+        self.predicted_tile_content = tkinter.Label(self.tile_content_area, text="")
+        self.predicted_tile_content.pack(side=tkinter.LEFT)
 
         self.control_panel = tkinter.Frame(self)
         self.control_panel.pack(side=tkinter.LEFT)
@@ -104,18 +108,21 @@ class ClassificationTrainingApp(tkinter.Frame):
         self.canvas.create_image(0, 0, image=self.tile_image, anchor=tkinter.NW)
 
         self.tile_file_name.config(text=f"File: {self.data[index]['file_name']}")
-
-        tile = self.data[index]["content"]
-        lines = [
-            f"Room piece: {format_element(tile.room_piece)}",
-            f"Floor control: {format_element(tile.floor_control)}",
-            f"Checkpoint: {format_element(tile.checkpoint)}",
-            f"Item: {format_element(tile.item)}",
-            f"Monster: {format_element(tile.monster)}",
-            f"Swords: {','.join([format_element(sword) for sword in tile.swords])}",
-        ]
-
-        self.tile_content.config(text="\n".join(lines))
+        for widget, key in [
+            (self.real_tile_content, "real_content"),
+            (self.predicted_tile_content, "predicted_content"),
+        ]:
+            tile = self.data[index][key]
+            lines = [
+                f"=={key}==",
+                f"Room piece: {format_element(tile.room_piece)}",
+                f"Floor control: {format_element(tile.floor_control)}",
+                f"Checkpoint: {format_element(tile.checkpoint)}",
+                f"Item: {format_element(tile.item)}",
+                f"Monster: {format_element(tile.monster)}",
+                f"Swords: {','.join([format_element(sword) for sword in tile.swords])}",
+            ]
+            widget.config(text="\n".join(lines))
 
     def run_coroutine(self, coroutine):
         async def wrapped_coroutine():
