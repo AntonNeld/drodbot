@@ -265,9 +265,12 @@ class Room:
                 end_position[1] + 1 if end_position is not None else position[1] + 1,
             ):
                 tile = copy.deepcopy(self._tiles[(x, y)])
-                # Cannot place things on same layer as something else. We don't need to
-                # worry about swords, since they can't be placed individually.
-                if getattr(tile, layer) is not None:
+                # Cannot place things on same layer as something else, unless it's
+                # a floor. We don't need to worry about swords, since they can't be
+                # placed individually.
+                if getattr(tile, layer) is not None and getattr(tile, layer)[0] not in [
+                    Element.FLOOR
+                ]:
                     continue
                 # TODO: There are some elements that block each other, even if they are
                 #       on different layers. Once we use enough elements that it is
