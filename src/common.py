@@ -1,5 +1,5 @@
 import copy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 import json
 from typing import Tuple, Optional, List
@@ -111,7 +111,7 @@ class Tile:
     checkpoint: Optional[Tuple[Element, Direction]] = None
     item: Optional[Tuple[Element, Direction]] = None
     monster: Optional[Tuple[Element, Direction]] = None
-    swords: Optional[List[Tuple[Element, Direction]]] = None
+    swords: List[Tuple[Element, Direction]] = field(default_factory=list)
 
     def get_elements(self):
         """Get all elements in the tile.
@@ -127,7 +127,7 @@ class Tile:
             self.checkpoint,
             self.item,
             self.monster,
-        ] + (self.swords if self.swords is not None else []):
+        ] + self.swords:
             if element is not None:
                 elements.append(element[0])
         return elements
@@ -153,9 +153,7 @@ class Tile:
                 "monster": [e.value for e in self.monster]
                 if self.monster is not None
                 else None,
-                "swords": [[e.value for e in element] for element in self.swords]
-                if self.swords is not None
-                else None,
+                "swords": [[e.value for e in element] for element in self.swords],
             }
         )
 
@@ -167,12 +165,9 @@ class Tile:
             for key, value in json_dict.items()
             if key != "swords"
         }
-        if json_dict["swords"] is not None:
-            constructor_args["swords"] = [
-                _element_tuple_from_json(p) for p in json_dict["swords"]
-            ]
-        else:
-            constructor_args["swords"] = None
+        constructor_args["swords"] = [
+            _element_tuple_from_json(p) for p in json_dict["swords"]
+        ]
         return Tile(**constructor_args)
 
 
@@ -291,8 +286,6 @@ class Room:
                         raise RuntimeError(f"Sword cannot have direction {direction}")
                     try:
                         sword_tile = copy.deepcopy(self._tiles[sword_pos])
-                        if sword_tile.swords is None:
-                            sword_tile.swords = []
                         sword_tile.swords.append((sword, direction))
                     except KeyError:
                         pass  # Don't place a sword outside the room
