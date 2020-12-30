@@ -1,6 +1,13 @@
 import asyncio
+import PIL
+from PIL import ImageTk, Image
 import tkinter
 import traceback
+
+from common import Direction
+
+CANVAS_WIDTH = 88
+CANVAS_HEIGHT = 88
 
 
 class ClassificationTrainingApp(tkinter.Frame):
@@ -13,14 +20,26 @@ class ClassificationTrainingApp(tkinter.Frame):
         self.create_widgets()
 
     def create_widgets(self):
+        self.canvas = tkinter.Canvas(
+            self, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg="white"
+        )
+        self.canvas.pack(side=tkinter.LEFT)
+
+        self.details_area = tkinter.Frame(self)
+        self.details_area.pack(side=tkinter.LEFT)
+        self.tile_content = tkinter.Label(self, text="")
+        self.tile_content.pack(side=tkinter.LEFT)
+
+        self.control_panel = tkinter.Frame(self)
+        self.control_panel.pack(side=tkinter.LEFT)
         self.procure_training_data_button = tkinter.Button(
-            self,
+            self.control_panel,
             text="Procure training data",
             command=self.procure_training_data,
         )
         self.procure_training_data_button.pack(side=tkinter.TOP)
         self.load_training_data_button = tkinter.Button(
-            self,
+            self.control_panel,
             text="Load training data",
             command=self.load_training_data,
         )
@@ -28,6 +47,28 @@ class ClassificationTrainingApp(tkinter.Frame):
 
     def set_data(self, data):
         self.data = data
+        self.show_tile(0)
+
+    def show_tile(self, index):
+        image = PIL.Image.fromarray(self.data[index]["image"])
+        resized_image = image.resize(
+            (int(self.canvas["width"]), int(self.canvas["height"])), Image.NEAREST
+        )
+        # Assign to self.tile_imagew to prevent from being garbage collected
+        self.tile_image = ImageTk.PhotoImage(image=resized_image)
+        self.canvas.create_image(0, 0, image=self.tile_image, anchor=tkinter.NW)
+
+        tile = self.data[index]["content"]
+        lines = [
+            f"Room piece: {format_element(tile.room_piece)}",
+            f"Floor control: {format_element(tile.floor_control)}",
+            f"Checkpoint: {format_element(tile.checkpoint)}",
+            f"Item: {format_element(tile.item)}",
+            f"Monster: {format_element(tile.monster)}",
+            f"Swords: {','.join([format_element(sword) for sword in tile.swords])}",
+        ]
+
+        self.tile_content.config(text="\n".join(lines))
 
     def run_coroutine(self, coroutine):
         async def wrapped_coroutine():
@@ -43,3 +84,13 @@ class ClassificationTrainingApp(tkinter.Frame):
 
     def load_training_data(self):
         self.run_coroutine(self.trainer.load_training_data())
+
+
+def format_element(pair):
+    if pair is None:
+        return ""
+    element, direction = pair
+    if direction == Direction.NONE:
+        return element.value
+    else:
+        return f"{element.value} {direction.value}"
