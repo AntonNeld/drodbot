@@ -300,6 +300,7 @@ class Room:
                     try:
                         sword_tile = copy.deepcopy(self._tiles[sword_pos])
                         sword_tile.swords.append((sword, direction))
+                        self._tiles[sword_pos] = sword_tile
                     except KeyError:
                         pass  # Don't place a sword outside the room
 
