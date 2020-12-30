@@ -13,12 +13,17 @@ from common import ImageProcessingStep, GUIEvent, Element, Direction, Room, Tile
 
 
 class TileClassifier:
-    def __init__(self, training_data_dir, drod_interface, window_queue):
+    def __init__(self, training_data_dir, weights_dir, drod_interface, window_queue):
         self._training_data_dir = training_data_dir
+        self._weights_path = os.path.join(weights_dir, "tile_classifier_weights")
         self._interface = drod_interface
         self._data = []
         self._queue = window_queue
         self._model = _new_model()
+        try:
+            self._model.load_weights(self._weights_path)
+        except ValueError:
+            print("No model weights found, not loading any")
 
     async def load_training_data(self):
         """Load the training data and send it to the GUI."""
@@ -64,6 +69,11 @@ class TileClassifier:
         )
         self._classify_training_data()
         self._queue.put((GUIEvent.TRAINING_DATA, self._data))
+        print("Training complete")
+
+    async def save_model_weights(self):
+        self._model.save_weights(self._weights_path)
+        print("Saved model weights")
 
     def _classify_training_data(self):
         predicted_contents = self.classify_tiles(

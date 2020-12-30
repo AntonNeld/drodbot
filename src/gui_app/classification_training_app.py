@@ -69,6 +69,10 @@ class ClassificationTrainingApp(tkinter.Frame):
             command=self.train_model,
         )
         self.train_model_button.pack(side=tkinter.TOP)
+        self.save_weights_button = tkinter.Button(
+            self.control_panel, text="Save model weights", command=self.save_weights
+        )
+        self.save_weights_button.pack(side=tkinter.TOP)
 
     def set_data(self, data):
         old_filenames = [tile["file_name"] for tile in self.data]
@@ -141,6 +145,9 @@ class ClassificationTrainingApp(tkinter.Frame):
 
     def train_model(self):
         self.run_coroutine(self.classifier.train_model())
+
+    def save_weights(self):
+        self.run_coroutine(self.classifier.save_model_weights())
 
     def next_tile(self):
         self.data_index += 1

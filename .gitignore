@@ -1,5 +1,6 @@
 # My own stuff
 training_data
+model_weights
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -18,7 +18,9 @@ if __name__ == "__main__":
     asyncio_thread.start()
 
     interface = DrodInterface()
-    classifier = TileClassifier("training_data", interface, window_queue)
+    classifier = TileClassifier(
+        "training_data", "model_weights", interface, window_queue
+    )
     bot = DrodBot(interface, window_queue)
 
     window = tkinter.Tk()
