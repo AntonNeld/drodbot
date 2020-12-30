@@ -24,7 +24,13 @@ class ClassificationTrainer:
         for file_name in file_names:
             image = PIL.Image.open(os.path.join(self._training_data_dir, file_name))
             content = Tile.from_json(image.info["tile_json"])
-            self._data.append({"image": numpy.array(image), "content": content})
+            self._data.append(
+                {
+                    "image": numpy.array(image),
+                    "content": content,
+                    "file_name": file_name,
+                }
+            )
         self._queue.put((GUIEvent.TRAINING_DATA, self._data))
 
     async def procure_training_data(self):

@@ -27,8 +27,10 @@ class ClassificationTrainingApp(tkinter.Frame):
 
         self.details_area = tkinter.Frame(self)
         self.details_area.pack(side=tkinter.LEFT)
-        self.tile_content = tkinter.Label(self, text="")
-        self.tile_content.pack(side=tkinter.LEFT)
+        self.tile_file_name = tkinter.Label(self.details_area, text="")
+        self.tile_file_name.pack(side=tkinter.TOP)
+        self.tile_content = tkinter.Label(self.details_area, text="")
+        self.tile_content.pack(side=tkinter.TOP)
 
         self.control_panel = tkinter.Frame(self)
         self.control_panel.pack(side=tkinter.LEFT)
@@ -57,6 +59,8 @@ class ClassificationTrainingApp(tkinter.Frame):
         # Assign to self.tile_imagew to prevent from being garbage collected
         self.tile_image = ImageTk.PhotoImage(image=resized_image)
         self.canvas.create_image(0, 0, image=self.tile_image, anchor=tkinter.NW)
+
+        self.tile_file_name.config(text=f"File: {self.data[index]['file_name']}")
 
         tile = self.data[index]["content"]
         lines = [
