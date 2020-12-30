@@ -51,15 +51,14 @@ class Strategy(Enum):
     MOVE_RANDOMLY = "30 random moves"
 
 
-# The values are also what will be displayed with "Get view"
 class Element(Enum):
-    UNKNOWN = "?"
-    WALL = "#"
-    BEETHRO = "B"
-    BEETHRO_SWORD = "S"
-    CONQUER_TOKEN = "V"
-    TRIGGERED_CONQUER_TOKEN = "v"
-    FLOOR = "."
+    UNKNOWN = "Unknown"
+    WALL = "Wall"
+    BEETHRO = "Beethro"
+    BEETHRO_SWORD = "Really Big Sword (TM)"
+    CONQUER_TOKEN = "Conquer token"
+    TRIGGERED_CONQUER_TOKEN = "Triggered conquer token"
+    FLOOR = "Floor"
 
 
 ROOM_PIECES = [Element.WALL, Element.FLOOR]
@@ -68,6 +67,17 @@ MONSTERS = [Element.BEETHRO]
 SWORDS = [Element.BEETHRO_SWORD]
 
 SWORDED_MONSTERS = {Element.BEETHRO: Element.BEETHRO_SWORD}
+
+# These are overlaid over the room to show tile classifications
+ELEMENT_CHARACTERS = {
+    Element.UNKNOWN: "?",
+    Element.WALL: "#",
+    Element.BEETHRO: "B",
+    Element.BEETHRO_SWORD: "S",
+    Element.CONQUER_TOKEN: "V",
+    Element.TRIGGERED_CONQUER_TOKEN: "v",
+    Element.FLOOR: ".",
+}
 
 
 class Direction(Enum):

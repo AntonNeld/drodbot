@@ -1,7 +1,7 @@
 import cv2
 import numpy
 
-from common import Element, Direction, ImageProcessingStep, Tile
+from common import Element, Direction, ImageProcessingStep, Tile, ELEMENT_CHARACTERS
 
 # We will have to revisit this logic to make sure we don't have false positives,
 # but let's limit ourselves a few elements in the "Foundation" style for now:
@@ -69,7 +69,7 @@ def classify_tile(tile_image, step=None):
         for element in tile.get_elements():
             cv2.putText(
                 modified_tile,
-                element.value,
+                ELEMENT_CHARACTERS[element],
                 (0, tile_image.shape[0]),
                 cv2.FONT_HERSHEY_PLAIN,
                 2,
