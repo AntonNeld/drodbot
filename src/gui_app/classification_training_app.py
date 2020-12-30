@@ -21,10 +21,22 @@ class ClassificationTrainingApp(tkinter.Frame):
         self.create_widgets()
 
     def create_widgets(self):
+        self.tile_area = tkinter.Frame(self)
+        self.tile_area.pack(side=tkinter.LEFT)
         self.canvas = tkinter.Canvas(
-            self, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg="white"
+            self.tile_area, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg="white"
         )
-        self.canvas.pack(side=tkinter.LEFT)
+        self.canvas.pack(side=tkinter.TOP)
+        self.browse_buttons = tkinter.Frame(self.tile_area)
+        self.browse_buttons.pack(side=tkinter.TOP)
+        self.next_tile_button = tkinter.Button(
+            self.browse_buttons, text=">", state="disable", command=self.next_tile
+        )
+        self.next_tile_button.pack(side=tkinter.RIGHT)
+        self.previous_tile_button = tkinter.Button(
+            self.browse_buttons, text="<", state="disable", command=self.previous_tile
+        )
+        self.previous_tile_button.pack(side=tkinter.RIGHT)
 
         self.details_area = tkinter.Frame(self)
         self.details_area.pack(side=tkinter.LEFT)
@@ -47,16 +59,6 @@ class ClassificationTrainingApp(tkinter.Frame):
             command=self.load_training_data,
         )
         self.load_training_data_button.pack(side=tkinter.TOP)
-        self.browse_buttons = tkinter.Frame(self.control_panel)
-        self.browse_buttons.pack(side=tkinter.TOP)
-        self.next_tile_button = tkinter.Button(
-            self.browse_buttons, text=">", state="disable", command=self.next_tile
-        )
-        self.next_tile_button.pack(side=tkinter.RIGHT)
-        self.previous_tile_button = tkinter.Button(
-            self.browse_buttons, text="<", state="disable", command=self.previous_tile
-        )
-        self.previous_tile_button.pack(side=tkinter.RIGHT)
 
     def set_data(self, data):
         old_filenames = [tile["file_name"] for tile in self.data]
