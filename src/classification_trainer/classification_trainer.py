@@ -20,7 +20,12 @@ class ClassificationTrainer:
     async def load_training_data(self):
         """Load the training data and send it to the GUI."""
         self._data = []
-        file_names = os.listdir(self._training_data_dir)
+        try:
+            file_names = os.listdir(self._training_data_dir)
+        except FileNotFoundError:
+            print("No training data directory found")
+            self._queue.put((GUIEvent.TRAINING_DATA, self._data))
+            return
         for file_name in file_names:
             image = PIL.Image.open(os.path.join(self._training_data_dir, file_name))
             content = Tile.from_json(image.info["tile_json"])

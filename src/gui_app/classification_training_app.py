@@ -16,7 +16,8 @@ class ClassificationTrainingApp(tkinter.Frame):
         self.root = root
         self.event_loop = event_loop
         self.trainer = trainer
-        self.data = None
+        self.data = []
+        self.data_index = None
         self.create_widgets()
 
     def create_widgets(self):
@@ -46,17 +47,51 @@ class ClassificationTrainingApp(tkinter.Frame):
             command=self.load_training_data,
         )
         self.load_training_data_button.pack(side=tkinter.TOP)
+        self.browse_buttons = tkinter.Frame(self.control_panel)
+        self.browse_buttons.pack(side=tkinter.TOP)
+        self.next_tile_button = tkinter.Button(
+            self.browse_buttons, text=">", state="disable", command=self.next_tile
+        )
+        self.next_tile_button.pack(side=tkinter.RIGHT)
+        self.previous_tile_button = tkinter.Button(
+            self.browse_buttons, text="<", state="disable", command=self.previous_tile
+        )
+        self.previous_tile_button.pack(side=tkinter.RIGHT)
 
     def set_data(self, data):
         self.data = data
-        self.show_tile(0)
+        if len(self.data) > 0:
+            self.data_index = 0
+            self.next_tile_button.config(state="normal")
+            self.previous_tile_button.config(state="normal")
+            self.show_tile(self.data_index)
+        else:
+            self.data_index = None
+            self.next_tile_button.config(state="disable")
+            self.previous_tile_button.config(state="disable")
+            self.canvas.delete("all")
+            self.tile_file_name.config(text="")
+            self.tile_content.config(text="")
+        self.set_browse_button_state()
+
+    def set_browse_button_state(self):
+        if self.data_index is None:
+            self.next_tile_button.config(state="disable")
+            self.previous_tile_button.config(state="disable")
+        else:
+            self.next_tile_button.config(
+                state="disable" if self.data_index == len(self.data) - 1 else "normal"
+            )
+            self.previous_tile_button.config(
+                state="disable" if self.data_index == 0 else "normal"
+            )
 
     def show_tile(self, index):
         image = PIL.Image.fromarray(self.data[index]["image"])
         resized_image = image.resize(
             (int(self.canvas["width"]), int(self.canvas["height"])), Image.NEAREST
         )
-        # Assign to self.tile_imagew to prevent from being garbage collected
+        # Assign to self.tile_image to prevent from being garbage collected
         self.tile_image = ImageTk.PhotoImage(image=resized_image)
         self.canvas.create_image(0, 0, image=self.tile_image, anchor=tkinter.NW)
 
@@ -88,6 +123,16 @@ class ClassificationTrainingApp(tkinter.Frame):
 
     def load_training_data(self):
         self.run_coroutine(self.trainer.load_training_data())
+
+    def next_tile(self):
+        self.data_index += 1
+        self.show_tile(self.data_index)
+        self.set_browse_button_state()
+
+    def previous_tile(self):
+        self.data_index -= 1
+        self.show_tile(self.data_index)
+        self.set_browse_button_state()
 
 
 def format_element(pair):
