@@ -59,16 +59,16 @@ class ClassificationTrainingApp(tkinter.Frame):
         self.previous_tile_button.pack(side=tkinter.RIGHT)
 
     def set_data(self, data):
+        old_filenames = [tile["file_name"] for tile in self.data]
         self.data = data
         if len(self.data) > 0:
-            self.data_index = 0
-            self.next_tile_button.config(state="normal")
-            self.previous_tile_button.config(state="normal")
+            # Keep the index if it's the same files, since this means we're just
+            # updating the data
+            if [tile["file_name"] for tile in self.data] != old_filenames:
+                self.data_index = 0
             self.show_tile(self.data_index)
         else:
             self.data_index = None
-            self.next_tile_button.config(state="disable")
-            self.previous_tile_button.config(state="disable")
             self.canvas.delete("all")
             self.tile_file_name.config(text="")
             self.tile_content.config(text="")
