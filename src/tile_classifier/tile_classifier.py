@@ -12,7 +12,7 @@ from tensorflow import keras
 from common import ImageProcessingStep, GUIEvent, Element, Direction, Room, Tile
 
 
-class ClassificationTrainer:
+class TileClassifier:
     def __init__(self, training_data_dir, drod_interface, window_queue):
         self._training_data_dir = training_data_dir
         self._interface = drod_interface
@@ -99,7 +99,7 @@ class ClassificationTrainer:
             )
         return classified_tiles
 
-    async def procure_training_data(self):
+    async def generate_training_data(self):
         """Generate data for training the classification model.
 
         With the editor open, this method will add elements to the room
@@ -168,11 +168,6 @@ class ClassificationTrainer:
             ((10, 27), (11, 28)),
             ((10, 29), (12, 30)),
             ((7, 31), (12, 31)),
-            # ((23, 18), (25, 29)),
-            # ((27, 10), (36, 14)),
-            # ((3, 20), (17, 21)),
-            # ((3, 23), (17, 24)),
-            # ((0, 0), (37, 31)),
         ]:
             await self._interface.editor_place_element(
                 Element.WALL, Direction.NONE, start, end

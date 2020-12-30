@@ -11,11 +11,11 @@ CANVAS_HEIGHT = 88
 
 
 class ClassificationTrainingApp(tkinter.Frame):
-    def __init__(self, root, event_loop, trainer):
+    def __init__(self, root, event_loop, classifier):
         super().__init__(root)
         self.root = root
         self.event_loop = event_loop
-        self.trainer = trainer
+        self.classifier = classifier
         self.data = []
         self.data_index = None
         self.create_widgets()
@@ -51,12 +51,12 @@ class ClassificationTrainingApp(tkinter.Frame):
 
         self.control_panel = tkinter.Frame(self)
         self.control_panel.pack(side=tkinter.LEFT)
-        self.procure_training_data_button = tkinter.Button(
+        self.generate_training_data_button = tkinter.Button(
             self.control_panel,
-            text="Procure training data",
-            command=self.procure_training_data,
+            text="Generate training data",
+            command=self.generate_training_data,
         )
-        self.procure_training_data_button.pack(side=tkinter.TOP)
+        self.generate_training_data_button.pack(side=tkinter.TOP)
         self.load_training_data_button = tkinter.Button(
             self.control_panel,
             text="Load training data",
@@ -133,14 +133,14 @@ class ClassificationTrainingApp(tkinter.Frame):
 
         asyncio.run_coroutine_threadsafe(wrapped_coroutine(), self.event_loop)
 
-    def procure_training_data(self):
-        self.run_coroutine(self.trainer.procure_training_data())
+    def generate_training_data(self):
+        self.run_coroutine(self.classifier.generate_training_data())
 
     def load_training_data(self):
-        self.run_coroutine(self.trainer.load_training_data())
+        self.run_coroutine(self.classifier.load_training_data())
 
     def train_model(self):
-        self.run_coroutine(self.trainer.train_model())
+        self.run_coroutine(self.classifier.train_model())
 
     def next_tile(self):
         self.data_index += 1
