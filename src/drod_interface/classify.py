@@ -49,7 +49,10 @@ def classify_tile(tile_image, step=None):
         )
     # If it's this other shade of green, it's probably a triggered conquer token
     elif hue > 95 and hue < 110:
-        tile = Tile(room_piece=Element.FLOOR, item=Element.TRIGGERED_CONQUER_TOKEN)
+        tile = Tile(
+            room_piece=(Element.FLOOR, Direction.NONE),
+            item=(Element.TRIGGERED_CONQUER_TOKEN, Direction.NONE),
+        )
     else:
         print(f"Found unknown tile with hue {hue} and saturation {saturation}")
         tile = Tile(
