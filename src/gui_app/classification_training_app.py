@@ -59,6 +59,12 @@ class ClassificationTrainingApp(tkinter.Frame):
             command=self.load_training_data,
         )
         self.load_training_data_button.pack(side=tkinter.TOP)
+        self.train_model_button = tkinter.Button(
+            self.control_panel,
+            text="Train model",
+            command=self.train_model,
+        )
+        self.train_model_button.pack(side=tkinter.TOP)
 
     def set_data(self, data):
         old_filenames = [tile["file_name"] for tile in self.data]
@@ -125,6 +131,9 @@ class ClassificationTrainingApp(tkinter.Frame):
 
     def load_training_data(self):
         self.run_coroutine(self.trainer.load_training_data())
+
+    def train_model(self):
+        self.run_coroutine(self.trainer.train_model())
 
     def next_tile(self):
         self.data_index += 1

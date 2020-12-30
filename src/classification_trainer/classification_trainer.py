@@ -7,6 +7,8 @@ import numpy
 import PIL
 from PIL.PngImagePlugin import PngInfo
 
+from tensorflow import keras
+
 from common import ImageProcessingStep, GUIEvent, Element, Direction, Room, Tile
 
 
@@ -16,6 +18,7 @@ class ClassificationTrainer:
         self._interface = drod_interface
         self._data = []
         self._queue = window_queue
+        self._model = _new_model()
 
     async def load_training_data(self):
         """Load the training data and send it to the GUI."""
@@ -37,6 +40,27 @@ class ClassificationTrainer:
                 }
             )
         self._queue.put((GUIEvent.TRAINING_DATA, self._data))
+
+    async def train_model(self):
+        """Train a model from the current training data."""
+        self._model = _new_model()
+        images_array = numpy.stack([t["image"] for t in self._data], axis=0)
+        # For now, just check whether the tile has a wall
+        is_wall = numpy.array(
+            [t["content"].room_piece == Element.WALL for t in self._data],
+            dtype=numpy.uint8,
+        )
+        # Let 10% of our data be for validation
+        validation_start = images_array.shape[0] // 10
+        self._model.fit(
+            images_array[:validation_start],
+            is_wall[:validation_start],
+            epochs=2,
+            validation_data=(
+                images_array[validation_start:],
+                is_wall[validation_start:],
+            ),
+        )
 
     async def procure_training_data(self):
         """Generate data for training the classification model.
@@ -160,3 +184,23 @@ def _save_tile_png(coords, tile, tile_info, base_name, directory):
         "PNG",
         pnginfo=png_info,
     )
+
+
+def _new_model():
+    model = keras.models.Sequential(
+        [
+            keras.layers.experimental.preprocessing.Rescaling(scale=1.0 / 255),
+            keras.layers.Flatten(input_shape=[22, 22, 3]),
+            keras.layers.Dense(300, activation="relu"),
+            keras.layers.Dense(100, activation="relu"),
+            keras.layers.Dense(100, activation="relu"),
+            keras.layers.Dense(100, activation="relu"),
+            keras.layers.Dense(2, activation="softmax"),
+        ]
+    )
+    model.compile(
+        loss="sparse_categorical_crossentropy",
+        optimizer="sgd",
+        metrics=["accuracy"],
+    )
+    return model
