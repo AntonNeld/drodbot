@@ -5,7 +5,7 @@ import tkinter
 
 from tile_classifier import TileClassifier
 from drod_bot import DrodBot
-from drod_interface import DrodInterface
+from drod_interface import PlayInterface, EditorInterface
 from gui_app import GuiApp
 
 
@@ -17,11 +17,12 @@ if __name__ == "__main__":
     asyncio_thread = threading.Thread(target=loop.run_forever)
     asyncio_thread.start()
 
-    interface = DrodInterface(window_queue)
+    editor_interface = EditorInterface()
     classifier = TileClassifier(
-        "training_data", "model_weights", interface, window_queue
+        "training_data", "model_weights", editor_interface, window_queue
     )
-    bot = DrodBot(interface, window_queue)
+    play_interface = PlayInterface(window_queue)
+    bot = DrodBot(play_interface, window_queue)
 
     window = tkinter.Tk()
     app = GuiApp(
@@ -29,7 +30,7 @@ if __name__ == "__main__":
         event_loop=loop,
         queue=window_queue,
         bot=bot,
-        interface=interface,
+        play_interface=play_interface,
         classifier=classifier,
     )
     app.pack()

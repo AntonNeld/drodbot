@@ -9,7 +9,7 @@ from PIL.PngImagePlugin import PngInfo
 
 from tensorflow import keras
 
-from common import ImageProcessingStep, GUIEvent, Element, Direction, Room, Tile
+from common import GUIEvent, Element, Direction, Room, Tile
 
 
 class TileClassifier:
@@ -118,7 +118,7 @@ class TileClassifier:
         The images are annotated with the tile contents as metadata.
         """
         print("Generating training data")
-        await self._interface.initialize(editor=True)
+        await self._interface.initialize()
         await self._interface.editor_clear_room()
         room = await self._generate_room()
 
@@ -126,9 +126,7 @@ class TileClassifier:
         room.place_element_like_editor(Element.BEETHRO, Direction.SE, (37, 31))
 
         await self._interface.editor_start_test_room((37, 31), Direction.SE)
-        visual_info = await self._interface.get_view(
-            step=ImageProcessingStep.EXTRACT_TILES
-        )
+        tiles = await self._interface.get_tiles()
         await self._interface.editor_stop_test_room()
 
         if not os.path.exists(self._training_data_dir):
@@ -136,7 +134,7 @@ class TileClassifier:
         random_string = "".join(
             random.choices(string.ascii_uppercase + string.digits, k=5)
         )
-        for coords, tile in visual_info["tiles"].items():
+        for coords, tile in tiles.items():
             # Annotate the image with the tile contents
             tile_info = room.get_tile(coords)
             _save_tile_png(
@@ -149,12 +147,10 @@ class TileClassifier:
         )
         room.place_element_like_editor(Element.CONQUER_TOKEN, Direction.NONE, (37, 31))
         await self._interface.editor_start_test_room((37, 31), Direction.SE)
-        visual_info = await self._interface.get_view(
-            step=ImageProcessingStep.EXTRACT_TILES
-        )
+        tiles = await self._interface.get_tiles()
         await self._interface.editor_stop_test_room()
         for coords in room.find_coordinates(Element.CONQUER_TOKEN):
-            tile = visual_info["tiles"][coords]
+            tile = tiles[coords]
             tile_info = room.get_tile(coords)
             tile_info.item = (Element.TRIGGERED_CONQUER_TOKEN, Direction.NONE)
             _save_tile_png(

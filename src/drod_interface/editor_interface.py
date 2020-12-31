@@ -1,20 +1,14 @@
 import asyncio
 
-import numpy
 import pyautogui
 
 from common import (
     ROOM_WIDTH_IN_TILES,
     ROOM_HEIGHT_IN_TILES,
     TILE_SIZE,
-    Action,
-    GUIEvent,
-    ImageProcessingStep,
     Element,
     Direction,
-    Room,
 )
-from .classify import classify_tile
 from .util import get_drod_window
 
 ROOM_ORIGIN_X = 163
@@ -45,13 +39,11 @@ EDITOR_CHARACTER_WINDOW_VISIBLE_CHECKBOX = (820, 700)
 EDITOR_CHARACTER_WINDOW_OKAY = (570, 710)
 
 
-class DrodInterface:
-    def __init__(self, window_queue):
-        self._queue = window_queue
+class EditorInterface:
+    def __init__(self):
         # Will be set by initialize()
         self.origin_x = None
         self.origin_y = None
-        # Editor state, will be set by initialize(editor=True)
         self.editor_selected_tab = None
         self.editor_selected_element = {
             EDITOR_ROOM_PIECES_TAB: None,
@@ -62,17 +54,11 @@ class DrodInterface:
         self.editor_hard_walls = None
         self.editor_monster_direction = None
 
-    async def initialize(self, editor=False):
+    async def initialize(self):
         """Find the DROD window and focus it.
 
         This should be done before each user-triggered action, as the
         window will have lost focus.
-
-        Parameters
-        ----------
-        editor
-            Whether we are in the editor. If this is true, ensure the internal
-            state matches the editor's state.
         """
         origin_x, origin_y, _ = await get_drod_window()
         self.origin_x = origin_x
@@ -80,60 +66,34 @@ class DrodInterface:
         await self._click((3, 3))
         # Let's use raw clicks here instead of editor_select_element().
         # The latter depend on the state being set up.
-        if editor:
-            await self._click(EDITOR_ROOM_PIECES_TAB)
-            # Check whether the wall is normal or hard
-            await self._click(EDITOR_WALL)
-            self.editor_selected_element[EDITOR_ROOM_PIECES_TAB] = EDITOR_WALL
+        await self._click(EDITOR_ROOM_PIECES_TAB)
+        # Check whether the wall is normal or hard
+        await self._click(EDITOR_WALL)
+        self.editor_selected_element[EDITOR_ROOM_PIECES_TAB] = EDITOR_WALL
+        _, _, image = await get_drod_window()
+        # Check for part of the "(hard)" text
+        self.editor_hard_walls = image[457, 62, 0] == 22
+
+        # For now, only select the force arrow. Once we start using it, we need to
+        # check its direction as well.
+        await self._click(EDITOR_FLOOR_CONTROLS_TAB)
+        await self._click(EDITOR_FORCE_ARROW)
+        self.editor_selected_element[EDITOR_FLOOR_CONTROLS_TAB] = EDITOR_FORCE_ARROW
+
+        await self._click(EDITOR_ITEMS_TAB)
+        await self._click(EDITOR_MIMIC)
+        self.editor_selected_element[EDITOR_ITEMS_TAB] = EDITOR_MIMIC
+
+        await self._click(EDITOR_MONSTERS_TAB)
+        self.editor_selected_tab = EDITOR_MONSTERS_TAB
+        await self._click(EDITOR_ROACH)
+        self.editor_selected_element[EDITOR_MONSTERS_TAB] = EDITOR_ROACH
+        # Make sure the monsters are facing SE
+        _, _, image = await get_drod_window()
+        while image[26, 140, 0] != 240:  # The roach's eye when facing SE
+            pyautogui.press("q")
             _, _, image = await get_drod_window()
-            # Check for part of the "(hard)" text
-            self.editor_hard_walls = image[457, 62, 0] == 22
-
-            # For now, only select the force arrow. Once we start using it, we need to
-            # check its direction as well.
-            await self._click(EDITOR_FLOOR_CONTROLS_TAB)
-            await self._click(EDITOR_FORCE_ARROW)
-            self.editor_selected_element[EDITOR_FLOOR_CONTROLS_TAB] = EDITOR_FORCE_ARROW
-
-            await self._click(EDITOR_ITEMS_TAB)
-            await self._click(EDITOR_MIMIC)
-            self.editor_selected_element[EDITOR_ITEMS_TAB] = EDITOR_MIMIC
-
-            await self._click(EDITOR_MONSTERS_TAB)
-            self.editor_selected_tab = EDITOR_MONSTERS_TAB
-            await self._click(EDITOR_ROACH)
-            self.editor_selected_element[EDITOR_MONSTERS_TAB] = EDITOR_ROACH
-            # Make sure the monsters are facing SE
-            _, _, image = await get_drod_window()
-            while image[26, 140, 0] != 240:  # The roach's eye when facing SE
-                pyautogui.press("q")
-                _, _, image = await get_drod_window()
-            self.editor_monster_direction = Direction.SE
-
-    async def do_action(self, action):
-        if action == Action.SW:
-            key = "num1"
-        elif action == Action.S:
-            key = "num2"
-        elif action == Action.SE:
-            key = "num3"
-        elif action == Action.W:
-            key = "num4"
-        elif action == Action.WAIT:
-            key = "num5"
-        elif action == Action.E:
-            key = "num6"
-        elif action == Action.NW:
-            key = "num7"
-        elif action == Action.N:
-            key = "num8"
-        elif action == Action.NE:
-            key = "num9"
-        elif action == Action.CCW:
-            key = "q"
-        elif action == Action.CW:
-            key = "w"
-        pyautogui.press(key)
+        self.editor_monster_direction = Direction.SE
 
     async def _click(self, position):
         pyautogui.click(x=self.origin_x + position[0], y=self.origin_y + position[1])
@@ -293,30 +253,12 @@ class DrodInterface:
         # Sleep to let the transition finish
         await asyncio.sleep(1)
 
-    async def get_view(self, step=None):
-        visual_info = {}
-        if step in [
-            ImageProcessingStep.SCREENSHOT,
-            ImageProcessingStep.FIND_UPPER_EDGE_COLOR,
-            ImageProcessingStep.FIND_UPPER_EDGE_LINE,
-        ]:
-            _, _, image = await get_drod_window(stop_after=step)
-            visual_info["image"] = image
-            return visual_info
-        origin_x, origin_y, image = await get_drod_window()
-        visual_info["origin_x"] = origin_x
-        visual_info["origin_y"] = origin_y
-        if step == ImageProcessingStep.CROP_WINDOW:
-            visual_info["image"] = image
-            return visual_info
+    async def get_tiles(self):
+        _, _, image = await get_drod_window()
 
         room_end_x = ROOM_ORIGIN_X + ROOM_WIDTH_IN_TILES * TILE_SIZE
         room_end_y = ROOM_ORIGIN_Y + ROOM_HEIGHT_IN_TILES * TILE_SIZE
         room_image = image[ROOM_ORIGIN_Y:room_end_y, ROOM_ORIGIN_X:room_end_x, :]
-
-        if step == ImageProcessingStep.CROP_ROOM:
-            visual_info["image"] = room_image
-            return visual_info
 
         # == Extract and classify tiles in the room ==
 
@@ -328,53 +270,4 @@ class DrodInterface:
                 start_y = y * TILE_SIZE
                 end_y = (y + 1) * TILE_SIZE
                 tiles[(x, y)] = room_image[start_y:end_y, start_x:end_x, :]
-        visual_info["tiles"] = tiles
-
-        if step == ImageProcessingStep.EXTRACT_TILES:
-            # We can't show anything more interesting here
-            visual_info["image"] = room_image
-            return visual_info
-
-        # If a step is specified, we will return an image composed of modified tiles
-        if step == ImageProcessingStep.AVERAGE_TILE_COLOR:
-            averaged_room = numpy.zeros(room_image.shape, numpy.uint8)
-        room = Room()
-        for (x, y), tile in tiles.items():
-            start_x = x * TILE_SIZE
-            end_x = (x + 1) * TILE_SIZE
-            start_y = y * TILE_SIZE
-            end_y = (y + 1) * TILE_SIZE
-            tile_info, modified_tile = classify_tile(tile, step)
-            if step == ImageProcessingStep.AVERAGE_TILE_COLOR:
-                averaged_room[start_y:end_y, start_x:end_x] = modified_tile
-            else:
-                room.set_tile((x, y), tile_info)
-
-        if step == ImageProcessingStep.AVERAGE_TILE_COLOR:
-            visual_info["image"] = averaged_room
-            return visual_info
-
-        visual_info["room"] = room
-
-        # If no earlier step is specified, include the normal room image
-        visual_info["image"] = room_image
-        return visual_info
-
-    async def show_view_step(self, step):
-        """Show the given view step in the GUI.
-
-        This method will add the image and room to the window queue.
-
-        Parameters
-        ----------
-        step
-            The step to stop at.
-        """
-        visual_info = await self.get_view(step)
-        self._queue.put(
-            (
-                GUIEvent.SET_INTERPRET_SCREEN_DATA,
-                visual_info["image"],
-                visual_info["room"] if "room" in visual_info else None,
-            )
-        )
+        return tiles
