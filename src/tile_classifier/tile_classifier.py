@@ -13,10 +13,10 @@ from common import GUIEvent, Element, Direction, Room, Tile
 
 
 class TileClassifier:
-    def __init__(self, training_data_dir, weights_dir, drod_interface, window_queue):
+    def __init__(self, training_data_dir, weights_dir, editor_interface, window_queue):
         self._training_data_dir = training_data_dir
         self._weights_path = os.path.join(weights_dir, "tile_classifier_weights")
-        self._interface = drod_interface
+        self._interface = editor_interface
         self._data = []
         self._queue = window_queue
         self._model = _new_model()
@@ -119,15 +119,15 @@ class TileClassifier:
         """
         print("Generating training data")
         await self._interface.initialize()
-        await self._interface.editor_clear_room()
+        await self._interface.clear_room()
         room = await self._generate_room()
 
         # Starting position when testing
         room.place_element_like_editor(Element.BEETHRO, Direction.SE, (37, 31))
 
-        await self._interface.editor_start_test_room((37, 31), Direction.SE)
+        await self._interface.start_test_room((37, 31), Direction.SE)
         tiles = await self._interface.get_tiles()
-        await self._interface.editor_stop_test_room()
+        await self._interface.stop_test_room()
 
         if not os.path.exists(self._training_data_dir):
             os.makedirs(self._training_data_dir)
@@ -142,13 +142,13 @@ class TileClassifier:
             )
         # Place a conquer token under the starting position and go again,
         # to capture triggered conquer tokens in the screenshot
-        await self._interface.editor_place_element(
+        await self._interface.place_element(
             Element.CONQUER_TOKEN, Direction.NONE, (37, 31)
         )
         room.place_element_like_editor(Element.CONQUER_TOKEN, Direction.NONE, (37, 31))
-        await self._interface.editor_start_test_room((37, 31), Direction.SE)
+        await self._interface.start_test_room((37, 31), Direction.SE)
         tiles = await self._interface.get_tiles()
-        await self._interface.editor_stop_test_room()
+        await self._interface.stop_test_room()
         for coords in room.find_coordinates(Element.CONQUER_TOKEN):
             tile = tiles[coords]
             tile_info = room.get_tile(coords)
@@ -176,7 +176,7 @@ class TileClassifier:
             ((10, 29), (12, 30)),
             ((7, 31), (12, 31)),
         ]:
-            await self._interface.editor_place_element(
+            await self._interface.place_element(
                 Element.WALL, Direction.NONE, start, end
             )
             room.place_element_like_editor(Element.WALL, Direction.NONE, start, end)
@@ -191,7 +191,7 @@ class TileClassifier:
             (21, 17),
             (12, 28),
         ]:
-            await self._interface.editor_place_element(
+            await self._interface.place_element(
                 Element.CONQUER_TOKEN, Direction.NONE, coords
             )
             room.place_element_like_editor(
@@ -208,9 +208,7 @@ class TileClassifier:
             ((19, 19), Direction.S),
             ((13, 29), Direction.NW),
         ]:
-            await self._interface.editor_place_element(
-                Element.BEETHRO, direction, coords
-            )
+            await self._interface.place_element(Element.BEETHRO, direction, coords)
             room.place_element_like_editor(Element.BEETHRO, direction, coords)
         return room
 

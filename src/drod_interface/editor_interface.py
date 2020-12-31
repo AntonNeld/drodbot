@@ -12,29 +12,29 @@ from common import (
 from .consts import ROOM_ORIGIN_X, ROOM_ORIGIN_Y
 from .util import get_drod_window, extract_room, extract_tiles
 
-EDITOR_ROOM_PIECES_TAB = (24, 20)
-EDITOR_FLOOR_CONTROLS_TAB = (60, 20)
-EDITOR_ITEMS_TAB = (100, 20)
-EDITOR_MONSTERS_TAB = (135, 20)
+ROOM_PIECES_TAB = (24, 20)
+FLOOR_CONTROLS_TAB = (60, 20)
+ITEMS_TAB = (100, 20)
+MONSTERS_TAB = (135, 20)
 
-EDITOR_WALL = (30, 60)
-EDITOR_FLOOR = (25, 300)
+WALL = (30, 60)
+FLOOR = (25, 300)
 
-EDITOR_FORCE_ARROW = (30, 50)
-EDITOR_CHECKPOINT = (120, 50)
-EDITOR_WALL_LIGHT = (25, 85)
+FORCE_ARROW = (30, 50)
+CHECKPOINT = (120, 50)
+WALL_LIGHT = (25, 85)
 
-EDITOR_MIMIC = (60, 50)
-EDITOR_TOKEN = (30, 180)
-EDITOR_CONQUER_TOKEN_IN_MENU = (265, 150)
+MIMIC = (60, 50)
+TOKEN = (30, 180)
+CONQUER_TOKEN_IN_MENU = (265, 150)
 
-EDITOR_ROACH = (30, 50)
-EDITOR_CHARACTER = (110, 365)
+ROACH = (30, 50)
+CHARACTER = (110, 365)
 
-EDITOR_CHARACTER_WINDOW_SCROLL_UP = (960, 180)
-EDITOR_CHARACTER_WINDOW_FIRST_TYPE = (820, 180)
-EDITOR_CHARACTER_WINDOW_VISIBLE_CHECKBOX = (820, 700)
-EDITOR_CHARACTER_WINDOW_OKAY = (570, 710)
+CHARACTER_WINDOW_SCROLL_UP = (960, 180)
+CHARACTER_WINDOW_FIRST_TYPE = (820, 180)
+CHARACTER_WINDOW_VISIBLE_CHECKBOX = (820, 700)
+CHARACTER_WINDOW_OKAY = (570, 710)
 
 
 class EditorInterface:
@@ -42,15 +42,15 @@ class EditorInterface:
         # Will be set by initialize()
         self.origin_x = None
         self.origin_y = None
-        self.editor_selected_tab = None
-        self.editor_selected_element = {
-            EDITOR_ROOM_PIECES_TAB: None,
-            EDITOR_FLOOR_CONTROLS_TAB: None,
-            EDITOR_ITEMS_TAB: None,
-            EDITOR_MONSTERS_TAB: None,
+        self.selected_tab = None
+        self.selected_element = {
+            ROOM_PIECES_TAB: None,
+            FLOOR_CONTROLS_TAB: None,
+            ITEMS_TAB: None,
+            MONSTERS_TAB: None,
         }
-        self.editor_hard_walls = None
-        self.editor_monster_direction = None
+        self.hard_walls = None
+        self.monster_direction = None
 
     async def initialize(self):
         """Find the DROD window and focus it.
@@ -62,69 +62,69 @@ class EditorInterface:
         self.origin_x = origin_x
         self.origin_y = origin_y
         await self._click((3, 3))
-        # Let's use raw clicks here instead of editor_select_element().
+        # Let's use raw clicks here instead of select_element().
         # The latter depend on the state being set up.
-        await self._click(EDITOR_ROOM_PIECES_TAB)
+        await self._click(ROOM_PIECES_TAB)
         # Check whether the wall is normal or hard
-        await self._click(EDITOR_WALL)
-        self.editor_selected_element[EDITOR_ROOM_PIECES_TAB] = EDITOR_WALL
+        await self._click(WALL)
+        self.selected_element[ROOM_PIECES_TAB] = WALL
         _, _, image = await get_drod_window()
         # Check for part of the "(hard)" text
-        self.editor_hard_walls = image[457, 62, 0] == 22
+        self.hard_walls = image[457, 62, 0] == 22
 
         # For now, only select the force arrow. Once we start using it, we need to
         # check its direction as well.
-        await self._click(EDITOR_FLOOR_CONTROLS_TAB)
-        await self._click(EDITOR_FORCE_ARROW)
-        self.editor_selected_element[EDITOR_FLOOR_CONTROLS_TAB] = EDITOR_FORCE_ARROW
+        await self._click(FLOOR_CONTROLS_TAB)
+        await self._click(FORCE_ARROW)
+        self.selected_element[FLOOR_CONTROLS_TAB] = FORCE_ARROW
 
-        await self._click(EDITOR_ITEMS_TAB)
-        await self._click(EDITOR_MIMIC)
-        self.editor_selected_element[EDITOR_ITEMS_TAB] = EDITOR_MIMIC
+        await self._click(ITEMS_TAB)
+        await self._click(MIMIC)
+        self.selected_element[ITEMS_TAB] = MIMIC
 
-        await self._click(EDITOR_MONSTERS_TAB)
-        self.editor_selected_tab = EDITOR_MONSTERS_TAB
-        await self._click(EDITOR_ROACH)
-        self.editor_selected_element[EDITOR_MONSTERS_TAB] = EDITOR_ROACH
+        await self._click(MONSTERS_TAB)
+        self.selected_tab = MONSTERS_TAB
+        await self._click(ROACH)
+        self.selected_element[MONSTERS_TAB] = ROACH
         # Make sure the monsters are facing SE
         _, _, image = await get_drod_window()
         while image[26, 140, 0] != 240:  # The roach's eye when facing SE
             pyautogui.press("q")
             _, _, image = await get_drod_window()
-        self.editor_monster_direction = Direction.SE
+        self.monster_direction = Direction.SE
 
     async def _click(self, position):
         pyautogui.click(x=self.origin_x + position[0], y=self.origin_y + position[1])
 
-    async def _editor_select_element(self, tab_position, element_position):
-        if self.editor_selected_tab != tab_position:
+    async def _select_element(self, tab_position, element_position):
+        if self.selected_tab != tab_position:
             await self._click(tab_position)
-            self.editor_selected_tab = tab_position
-        if self.editor_selected_element[tab_position] != element_position:
+            self.selected_tab = tab_position
+        if self.selected_element[tab_position] != element_position:
             await self._click(element_position)
-            self.editor_selected_element[tab_position] = element_position
+            self.selected_element[tab_position] = element_position
 
-    async def editor_clear_room(self):
+    async def clear_room(self):
         # Select the normal floor, so clearing doesn't use mosaic floors
-        await self._editor_select_element(EDITOR_ROOM_PIECES_TAB, EDITOR_FLOOR)
-        await self._editor_clear_layer()
+        await self._select_element(ROOM_PIECES_TAB, FLOOR)
+        await self._clear_layer()
 
         # The floor controls tab contains three layers (disregarding level entrances),
         # which need to be cleared separately
-        await self._editor_select_element(EDITOR_FLOOR_CONTROLS_TAB, EDITOR_FORCE_ARROW)
-        await self._editor_clear_layer()
-        await self._editor_select_element(EDITOR_FLOOR_CONTROLS_TAB, EDITOR_CHECKPOINT)
-        await self._editor_clear_layer()
-        await self._editor_select_element(EDITOR_FLOOR_CONTROLS_TAB, EDITOR_WALL_LIGHT)
-        await self._editor_clear_layer()
+        await self._select_element(FLOOR_CONTROLS_TAB, FORCE_ARROW)
+        await self._clear_layer()
+        await self._select_element(FLOOR_CONTROLS_TAB, CHECKPOINT)
+        await self._clear_layer()
+        await self._select_element(FLOOR_CONTROLS_TAB, WALL_LIGHT)
+        await self._clear_layer()
 
-        await self._editor_select_element(EDITOR_ITEMS_TAB, EDITOR_MIMIC)
-        await self._editor_clear_layer()
+        await self._select_element(ITEMS_TAB, MIMIC)
+        await self._clear_layer()
 
-        await self._editor_select_element(EDITOR_MONSTERS_TAB, EDITOR_ROACH)
-        await self._editor_clear_layer()
+        await self._select_element(MONSTERS_TAB, ROACH)
+        await self._clear_layer()
 
-    async def _editor_clear_layer(self):
+    async def _clear_layer(self):
         pyautogui.moveTo(
             x=self.origin_x + ROOM_ORIGIN_X + TILE_SIZE * 0.5,
             y=self.origin_y + ROOM_ORIGIN_Y + TILE_SIZE * 0.5,
@@ -135,7 +135,7 @@ class EditorInterface:
             button="right",
         )
 
-    async def _editor_set_monster_direction(self, direction):
+    async def _set_monster_direction(self, direction):
         direction_to_number = {
             Direction.N: 0,
             Direction.NE: 1,
@@ -147,8 +147,7 @@ class EditorInterface:
             Direction.NW: 7,
         }
         clockwise_rotations = (
-            direction_to_number[direction]
-            - direction_to_number[self.editor_monster_direction]
+            direction_to_number[direction] - direction_to_number[self.monster_direction]
         ) % 8
         if clockwise_rotations <= 4:
             for _ in range(clockwise_rotations):
@@ -156,9 +155,9 @@ class EditorInterface:
         else:  # Quicker to go counterclockwise
             for _ in range(8 - clockwise_rotations):
                 pyautogui.press("q")
-        self.editor_monster_direction = direction
+        self.monster_direction = direction
 
-    async def editor_place_element(
+    async def place_element(
         self, element, direction, position, end_position=None, hard_wall=False
     ):
         """Place an element in the editor.
@@ -179,19 +178,19 @@ class EditorInterface:
             of the hard variant.
         """
         if element == Element.WALL:
-            await self._editor_select_element(EDITOR_ROOM_PIECES_TAB, EDITOR_WALL)
-            if hard_wall != self.editor_hard_walls:
-                await self._click(EDITOR_WALL)
-                self.editor_hard_walls = hard_wall
+            await self._select_element(ROOM_PIECES_TAB, WALL)
+            if hard_wall != self.hard_walls:
+                await self._click(WALL)
+                self.hard_walls = hard_wall
         elif element == Element.CONQUER_TOKEN:
-            await self._editor_select_element(EDITOR_ITEMS_TAB, EDITOR_TOKEN)
+            await self._select_element(ITEMS_TAB, TOKEN)
             # Click it again to bring up the menu, and select it
-            await self._click(EDITOR_TOKEN)
-            await self._click(EDITOR_CONQUER_TOKEN_IN_MENU)
+            await self._click(TOKEN)
+            await self._click(CONQUER_TOKEN_IN_MENU)
         elif element == Element.BEETHRO:
             # We cannot place a Beethro, so we'll make a character that looks like him
-            await self._editor_select_element(EDITOR_MONSTERS_TAB, EDITOR_CHARACTER)
-            await self._editor_set_monster_direction(direction)
+            await self._select_element(MONSTERS_TAB, CHARACTER)
+            await self._set_monster_direction(direction)
             if end_position is not None:
                 raise RuntimeError("Cannot place character in a rectangle")
         else:
@@ -214,13 +213,13 @@ class EditorInterface:
             )
         # Go into the character menu to make the character look like Beethro.
         if element == Element.BEETHRO:
-            await self._click(EDITOR_CHARACTER_WINDOW_SCROLL_UP)
-            await self._click(EDITOR_CHARACTER_WINDOW_SCROLL_UP)
-            await self._click(EDITOR_CHARACTER_WINDOW_FIRST_TYPE)
-            await self._click(EDITOR_CHARACTER_WINDOW_VISIBLE_CHECKBOX)
-            await self._click(EDITOR_CHARACTER_WINDOW_OKAY)
+            await self._click(CHARACTER_WINDOW_SCROLL_UP)
+            await self._click(CHARACTER_WINDOW_SCROLL_UP)
+            await self._click(CHARACTER_WINDOW_FIRST_TYPE)
+            await self._click(CHARACTER_WINDOW_VISIBLE_CHECKBOX)
+            await self._click(CHARACTER_WINDOW_OKAY)
 
-    async def editor_start_test_room(self, position, direction):
+    async def start_test_room(self, position, direction):
         """Start testing the room.
 
         Parameters
@@ -231,8 +230,8 @@ class EditorInterface:
             The direction to face when starting.
         """
         # Select the roach to make sure we can rotate monsters
-        await self._editor_select_element(EDITOR_MONSTERS_TAB, EDITOR_ROACH)
-        await self._editor_set_monster_direction(direction)
+        await self._select_element(MONSTERS_TAB, ROACH)
+        await self._set_monster_direction(direction)
         pyautogui.press("f5")
         await self._click(
             (
@@ -245,7 +244,7 @@ class EditorInterface:
         # Sleep to let the transition finish
         await asyncio.sleep(3)
 
-    async def editor_stop_test_room(self):
+    async def stop_test_room(self):
         """Stop testing the room."""
         pyautogui.press("esc")
         # Sleep to let the transition finish
