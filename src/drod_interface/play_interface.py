@@ -2,8 +2,6 @@ import numpy
 import pyautogui
 
 from common import (
-    ROOM_WIDTH_IN_TILES,
-    ROOM_HEIGHT_IN_TILES,
     TILE_SIZE,
     Action,
     GUIEvent,
@@ -11,10 +9,7 @@ from common import (
     Room,
 )
 from .classify import classify_tile
-from .util import get_drod_window
-
-ROOM_ORIGIN_X = 163
-ROOM_ORIGIN_Y = 40
+from .util import get_drod_window, extract_room, extract_tiles
 
 
 class PlayInterface:
@@ -80,9 +75,7 @@ class PlayInterface:
             visual_info["image"] = image
             return visual_info
 
-        room_end_x = ROOM_ORIGIN_X + ROOM_WIDTH_IN_TILES * TILE_SIZE
-        room_end_y = ROOM_ORIGIN_Y + ROOM_HEIGHT_IN_TILES * TILE_SIZE
-        room_image = image[ROOM_ORIGIN_Y:room_end_y, ROOM_ORIGIN_X:room_end_x, :]
+        room_image = extract_room(image)
 
         if step == ImageProcessingStep.CROP_ROOM:
             visual_info["image"] = room_image
@@ -90,14 +83,7 @@ class PlayInterface:
 
         # == Extract and classify tiles in the room ==
 
-        tiles = {}
-        for x in range(ROOM_WIDTH_IN_TILES):
-            for y in range(ROOM_HEIGHT_IN_TILES):
-                start_x = x * TILE_SIZE
-                end_x = (x + 1) * TILE_SIZE
-                start_y = y * TILE_SIZE
-                end_y = (y + 1) * TILE_SIZE
-                tiles[(x, y)] = room_image[start_y:end_y, start_x:end_x, :]
+        tiles = extract_tiles(room_image)
         visual_info["tiles"] = tiles
 
         if step == ImageProcessingStep.EXTRACT_TILES:

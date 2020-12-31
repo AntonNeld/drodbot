@@ -9,10 +9,8 @@ from common import (
     Element,
     Direction,
 )
-from .util import get_drod_window
-
-ROOM_ORIGIN_X = 163
-ROOM_ORIGIN_Y = 40
+from .consts import ROOM_ORIGIN_X, ROOM_ORIGIN_Y
+from .util import get_drod_window, extract_room, extract_tiles
 
 EDITOR_ROOM_PIECES_TAB = (24, 20)
 EDITOR_FLOOR_CONTROLS_TAB = (60, 20)
@@ -254,20 +252,6 @@ class EditorInterface:
         await asyncio.sleep(1)
 
     async def get_tiles(self):
-        _, _, image = await get_drod_window()
-
-        room_end_x = ROOM_ORIGIN_X + ROOM_WIDTH_IN_TILES * TILE_SIZE
-        room_end_y = ROOM_ORIGIN_Y + ROOM_HEIGHT_IN_TILES * TILE_SIZE
-        room_image = image[ROOM_ORIGIN_Y:room_end_y, ROOM_ORIGIN_X:room_end_x, :]
-
-        # == Extract and classify tiles in the room ==
-
-        tiles = {}
-        for x in range(ROOM_WIDTH_IN_TILES):
-            for y in range(ROOM_HEIGHT_IN_TILES):
-                start_x = x * TILE_SIZE
-                end_x = (x + 1) * TILE_SIZE
-                start_y = y * TILE_SIZE
-                end_y = (y + 1) * TILE_SIZE
-                tiles[(x, y)] = room_image[start_y:end_y, start_x:end_x, :]
-        return tiles
+        _, _, window_image = await get_drod_window()
+        room_image = extract_room(window_image)
+        return extract_tiles(room_image)

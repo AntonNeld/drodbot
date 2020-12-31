@@ -1,7 +1,14 @@
 import numpy
 import pyautogui
 
-from common import ImageProcessingStep, UserError
+from common import (
+    ImageProcessingStep,
+    UserError,
+    ROOM_HEIGHT_IN_TILES,
+    ROOM_WIDTH_IN_TILES,
+    TILE_SIZE,
+)
+from .consts import ROOM_ORIGIN_X, ROOM_ORIGIN_Y
 
 ROOM_UPPER_EDGE_COLOR = (32, 60, 74)  # Also known as #203c4a
 ROOM_UPPER_EDGE_LENGTH = 838
@@ -76,6 +83,47 @@ async def get_drod_window(stop_after=None):
         :,
     ]
     return window_start_x, window_start_y, drod_window
+
+
+def extract_room(window_image):
+    """Extract the room from a window image.
+
+    Parameters
+    ----------
+    window_image
+        The window to extract the room from.
+
+    Returns
+    -------
+    An image of the room.
+    """
+    room_end_x = ROOM_ORIGIN_X + ROOM_WIDTH_IN_TILES * TILE_SIZE
+    room_end_y = ROOM_ORIGIN_Y + ROOM_HEIGHT_IN_TILES * TILE_SIZE
+    room_image = window_image[ROOM_ORIGIN_Y:room_end_y, ROOM_ORIGIN_X:room_end_x, :]
+    return room_image
+
+
+def extract_tiles(room_image):
+    """Extract tiles from a room image.
+
+    Parameters
+    ----------
+    room_image
+        The room to extract tiles from.
+
+    Returns
+    -------
+    A dict with coordinates as keys and tile images as values.
+    """
+    tiles = {}
+    for x in range(ROOM_WIDTH_IN_TILES):
+        for y in range(ROOM_HEIGHT_IN_TILES):
+            start_x = x * TILE_SIZE
+            end_x = (x + 1) * TILE_SIZE
+            start_y = y * TILE_SIZE
+            end_y = (y + 1) * TILE_SIZE
+            tiles[(x, y)] = room_image[start_y:end_y, start_x:end_x, :]
+    return tiles
 
 
 def _find_color(image, color):
