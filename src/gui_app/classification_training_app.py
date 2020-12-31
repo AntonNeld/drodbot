@@ -4,7 +4,7 @@ from PIL import ImageTk, Image
 import tkinter
 import traceback
 
-from common import Direction
+from .util import tile_to_text
 
 CANVAS_WIDTH = 88
 CANVAS_HEIGHT = 88
@@ -112,21 +112,13 @@ class ClassificationTrainingApp(tkinter.Frame):
         self.canvas.create_image(0, 0, image=self.tile_image, anchor=tkinter.NW)
 
         self.tile_file_name.config(text=f"File: {self.data[index]['file_name']}")
-        for widget, key in [
-            (self.real_tile_content, "real_content"),
-            (self.predicted_tile_content, "predicted_content"),
-        ]:
-            tile = self.data[index][key]
-            lines = [
-                f"=={key}==",
-                f"Room piece: {format_element(tile.room_piece)}",
-                f"Floor control: {format_element(tile.floor_control)}",
-                f"Checkpoint: {format_element(tile.checkpoint)}",
-                f"Item: {format_element(tile.item)}",
-                f"Monster: {format_element(tile.monster)}",
-                f"Swords: {','.join([format_element(sword) for sword in tile.swords])}",
-            ]
-            widget.config(text="\n".join(lines))
+        self.real_tile_content.config(
+            text="==Real content==\n" + tile_to_text(self.data[index]["real_content"])
+        )
+        self.predicted_tile_content.config(
+            text="==Predicted content==\n"
+            + tile_to_text(self.data[index]["predicted_content"])
+        )
 
     def run_coroutine(self, coroutine):
         async def wrapped_coroutine():
@@ -158,13 +150,3 @@ class ClassificationTrainingApp(tkinter.Frame):
         self.data_index -= 1
         self.show_tile(self.data_index)
         self.set_browse_button_state()
-
-
-def format_element(pair):
-    if pair is None:
-        return ""
-    element, direction = pair
-    if direction == Direction.NONE:
-        return element.value
-    else:
-        return f"{element.value} {direction.value}"

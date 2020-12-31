@@ -14,6 +14,7 @@ from common import (
     TILE_SIZE,
     ELEMENT_CHARACTERS,
 )
+from .util import tile_to_text
 
 # The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
 CANVAS_WIDTH = 418
@@ -39,6 +40,7 @@ class InterpretScreenApp(tkinter.Frame):
         self.canvas = tkinter.Canvas(
             self, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg="white"
         )
+        self.canvas.bind("<Button-1>", self.clicked_canvas)
         self.canvas.pack(side=tkinter.LEFT)
         self.control_panel = tkinter.Frame(self)
         self.control_panel.pack(side=tkinter.RIGHT)
@@ -56,6 +58,8 @@ class InterpretScreenApp(tkinter.Frame):
             *[s.value for s in ImageProcessingStep]
         )
         self.view_step_dropdown.pack(side=tkinter.BOTTOM)
+        self.tile_content = tkinter.Label(self.control_panel, text="")
+        self.tile_content.pack(side=tkinter.BOTTOM)
 
     def set_data(self, image, room=None):
         self.raw_view_image = image
@@ -103,6 +107,19 @@ class InterpretScreenApp(tkinter.Frame):
             self.canvas.configure(height=LARGE_CANVAS_HEIGHT, width=LARGE_CANVAS_WIDTH)
             self.toggle_view_size_button.configure(text="Ensmall view")
             self.draw_view()
+
+    def clicked_canvas(self, event):
+        if self.room is None:
+            return
+
+        if self.enlarged_view:
+            x = event.x // TILE_SIZE
+            y = event.y // TILE_SIZE
+        else:
+            x = event.x // (TILE_SIZE // 2)
+            y = event.y // (TILE_SIZE // 2)
+        tile = self.room.get_tile((x, y))
+        self.tile_content.config(text=tile_to_text(tile))
 
 
 def annotate_image(image, room):
