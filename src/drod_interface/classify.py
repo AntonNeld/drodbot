@@ -1,7 +1,7 @@
 import cv2
 import numpy
 
-from common import Element, Direction, ImageProcessingStep, Tile, ELEMENT_CHARACTERS
+from common import Element, Direction, ImageProcessingStep, Tile
 
 # We will have to revisit this logic to make sure we don't have false positives,
 # but let's limit ourselves a few elements in the "Foundation" style for now:
@@ -15,7 +15,7 @@ from common import Element, Direction, ImageProcessingStep, Tile, ELEMENT_CHARAC
 def classify_tile(tile_image, step=None):
     average_color = numpy.average(tile_image, (0, 1))
     if step == ImageProcessingStep.AVERAGE_TILE_COLOR:
-        return [], numpy.ones(tile_image.shape) * average_color
+        return None, numpy.ones(tile_image.shape) * average_color
 
     hsv_color = cv2.cvtColor(
         numpy.float32(numpy.ones((1, 1, 1)) * average_color), cv2.COLOR_RGB2HSV
@@ -62,23 +62,6 @@ def classify_tile(tile_image, step=None):
             item=(Element.UNKNOWN, Direction.UNKNOWN),
             monster=(Element.UNKNOWN, Direction.UNKNOWN),
         )
-    if step == ImageProcessingStep.CLASSIFY_TILES:
-        # Convert the tile to grayscale to make the text stand out.
-        # We're converting it back to RGB so we can add the text, but
-        # the tile will still look grayscale since we lose color information.
-        modified_tile = cv2.cvtColor(
-            cv2.cvtColor(tile_image, cv2.COLOR_BGR2GRAY), cv2.COLOR_GRAY2RGB
-        )
-        for element in tile.get_elements():
-            cv2.putText(
-                modified_tile,
-                ELEMENT_CHARACTERS[element],
-                (0, tile_image.shape[0]),
-                cv2.FONT_HERSHEY_PLAIN,
-                2,
-                (255, 50, 0),
-            )
-        return tile, modified_tile
 
     # Don't return a modified tile if no step is specified
     return tile, None

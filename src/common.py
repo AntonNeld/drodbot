@@ -7,6 +7,7 @@ from typing import Tuple, Optional, List
 
 ROOM_WIDTH_IN_TILES = 38
 ROOM_HEIGHT_IN_TILES = 32
+TILE_SIZE = 22
 
 
 class UserError(Exception):

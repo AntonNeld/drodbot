@@ -1,10 +1,19 @@
 import asyncio
+
+import cv2
+import numpy
 import PIL
 from PIL import ImageTk, Image
 import tkinter
 import traceback
 
-from common import ImageProcessingStep
+from common import (
+    ImageProcessingStep,
+    ROOM_HEIGHT_IN_TILES,
+    ROOM_WIDTH_IN_TILES,
+    TILE_SIZE,
+    ELEMENT_CHARACTERS,
+)
 
 # The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
 CANVAS_WIDTH = 418
@@ -49,13 +58,20 @@ class InterpretScreenApp(tkinter.Frame):
         self.view_step_dropdown.pack(side=tkinter.BOTTOM)
 
     def set_data(self, image, room=None):
-        self.raw_view_image = PIL.Image.fromarray(image)
+        self.raw_view_image = image
         self.room = room
         self.draw_view()
 
     def draw_view(self):
         if self.raw_view_image is not None:
-            resized_image = self.raw_view_image.resize(
+            if self.room is not None:
+                # Let's assume the image is of the room here. If that is not the case,
+                # the below function will produce weird results.
+                image = annotate_image(self.raw_view_image, self.room)
+            else:
+                image = self.raw_view_image
+            pil_image = PIL.Image.fromarray(image)
+            resized_image = pil_image.resize(
                 (int(self.canvas["width"]), int(self.canvas["height"])), Image.LANCZOS
             )
             # Assign to self.view to prevent from being garbage collected
@@ -87,3 +103,32 @@ class InterpretScreenApp(tkinter.Frame):
             self.canvas.configure(height=LARGE_CANVAS_HEIGHT, width=LARGE_CANVAS_WIDTH)
             self.toggle_view_size_button.configure(text="Ensmall view")
             self.draw_view()
+
+
+def annotate_image(image, room):
+    annotated_image = numpy.zeros(image.shape, dtype=numpy.uint8)
+    for x in range(ROOM_WIDTH_IN_TILES):
+        for y in range(ROOM_HEIGHT_IN_TILES):
+            tile_image = image[
+                y * TILE_SIZE : (y + 1) * TILE_SIZE, x * TILE_SIZE : (x + 1) * TILE_SIZE
+            ]
+            tile = room.get_tile((x, y))
+            # Convert the tile to grayscale to make the text stand out.
+            # We're converting it back to RGB so we can add the text, but
+            # the tile will still look grayscale since we lose color information.
+            modified_tile = cv2.cvtColor(
+                cv2.cvtColor(tile_image, cv2.COLOR_RGB2GRAY), cv2.COLOR_GRAY2RGB
+            )
+            for element in tile.get_elements():
+                cv2.putText(
+                    modified_tile,
+                    ELEMENT_CHARACTERS[element],
+                    (0, tile_image.shape[0]),
+                    cv2.FONT_HERSHEY_PLAIN,
+                    2,
+                    (255, 50, 0),
+                )
+            annotated_image[
+                y * TILE_SIZE : (y + 1) * TILE_SIZE, x * TILE_SIZE : (x + 1) * TILE_SIZE
+            ] = modified_tile
+    return annotated_image

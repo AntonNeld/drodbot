@@ -6,6 +6,7 @@ import pyautogui
 from common import (
     ROOM_WIDTH_IN_TILES,
     ROOM_HEIGHT_IN_TILES,
+    TILE_SIZE,
     Action,
     GUIEvent,
     ImageProcessingStep,
@@ -18,8 +19,6 @@ from .util import get_drod_window
 
 ROOM_ORIGIN_X = 163
 ROOM_ORIGIN_Y = 40
-
-TILE_SIZE = 22
 
 EDITOR_ROOM_PIECES_TAB = (24, 20)
 EDITOR_FLOOR_CONTROLS_TAB = (60, 20)
@@ -337,8 +336,8 @@ class DrodInterface:
             return visual_info
 
         # If a step is specified, we will return an image composed of modified tiles
-        if step is not None:
-            annotated_room = numpy.zeros(room_image.shape, numpy.uint8)
+        if step == ImageProcessingStep.AVERAGE_TILE_COLOR:
+            averaged_room = numpy.zeros(room_image.shape, numpy.uint8)
         room = Room()
         for (x, y), tile in tiles.items():
             start_x = x * TILE_SIZE
@@ -346,16 +345,19 @@ class DrodInterface:
             start_y = y * TILE_SIZE
             end_y = (y + 1) * TILE_SIZE
             tile_info, modified_tile = classify_tile(tile, step)
-            room.set_tile((x, y), tile_info)
-            if step is not None:
-                annotated_room[start_y:end_y, start_x:end_x] = modified_tile
-        visual_info["room"] = room
+            if step == ImageProcessingStep.AVERAGE_TILE_COLOR:
+                averaged_room[start_y:end_y, start_x:end_x] = modified_tile
+            else:
+                room.set_tile((x, y), tile_info)
 
-        if step is not None:
-            visual_info["image"] = annotated_room
+        if step == ImageProcessingStep.AVERAGE_TILE_COLOR:
+            visual_info["image"] = averaged_room
             return visual_info
 
-        # If no step is specified, just don't include an image
+        visual_info["room"] = room
+
+        # If no earlier step is specified, include the normal room image
+        visual_info["image"] = room_image
         return visual_info
 
     async def show_view_step(self, step):
