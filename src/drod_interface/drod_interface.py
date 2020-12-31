@@ -8,26 +8,15 @@ from common import (
     ROOM_HEIGHT_IN_TILES,
     Action,
     ImageProcessingStep,
-    UserError,
     Element,
     Direction,
     Room,
 )
 from .classify import classify_tile
-from .image_processing import (
-    find_color,
-    find_horizontal_lines,
-)
+from .util import get_drod_window
 
-OVERLAY_COLOR = (0, 255, 0)
-OVERLAY_WIDTH = 5
-
-DROD_WINDOW_WIDTH = 1024
-DROD_WINDOW_HEIGHT = 768
-ROOM_UPPER_EDGE_COLOR = (32, 60, 74)  # Also known as #203c4a
-ROOM_UPPER_EDGE_LENGTH = 838
-ROOM_UPPER_EDGE_START_X = 162
-ROOM_UPPER_EDGE_START_Y = 39
+ROOM_ORIGIN_X = 163
+ROOM_ORIGIN_Y = 40
 
 TILE_SIZE = 22
 
@@ -84,9 +73,9 @@ class DrodInterface:
             Whether we are in the editor. If this is true, ensure the internal
             state matches the editor's state.
         """
-        visual_info = await self.get_view(step=ImageProcessingStep.CROP_ROOM)
-        self.origin_x = visual_info["origin_x"]
-        self.origin_y = visual_info["origin_y"]
+        origin_x, origin_y, _ = await get_drod_window()
+        self.origin_x = origin_x
+        self.origin_y = origin_y
         await self._click((3, 3))
         # Let's use raw clicks here instead of editor_select_element().
         # The latter depend on the state being set up.
@@ -95,7 +84,7 @@ class DrodInterface:
             # Check whether the wall is normal or hard
             await self._click(EDITOR_WALL)
             self.editor_selected_element[EDITOR_ROOM_PIECES_TAB] = EDITOR_WALL
-            image = (await self.get_view(step=ImageProcessingStep.CROP_WINDOW))["image"]
+            _, _, image = await get_drod_window()
             # Check for part of the "(hard)" text
             self.editor_hard_walls = image[457, 62, 0] == 22
 
@@ -114,12 +103,10 @@ class DrodInterface:
             await self._click(EDITOR_ROACH)
             self.editor_selected_element[EDITOR_MONSTERS_TAB] = EDITOR_ROACH
             # Make sure the monsters are facing SE
-            image = (await self.get_view(step=ImageProcessingStep.CROP_WINDOW))["image"]
+            _, _, image = await get_drod_window()
             while image[26, 140, 0] != 240:  # The roach's eye when facing SE
                 pyautogui.press("q")
-                image = (await self.get_view(step=ImageProcessingStep.CROP_WINDOW))[
-                    "image"
-                ]
+                _, _, image = await get_drod_window()
             self.editor_monster_direction = Direction.SE
 
     async def do_action(self, action):
@@ -180,8 +167,8 @@ class DrodInterface:
 
     async def _editor_clear_layer(self):
         pyautogui.moveTo(
-            x=self.origin_x + ROOM_UPPER_EDGE_START_X + TILE_SIZE * 0.5,
-            y=self.origin_y + ROOM_UPPER_EDGE_START_Y + TILE_SIZE * 0.5,
+            x=self.origin_x + ROOM_ORIGIN_X + TILE_SIZE * 0.5,
+            y=self.origin_y + ROOM_ORIGIN_Y + TILE_SIZE * 0.5,
         )
         pyautogui.dragRel(
             xOffset=(ROOM_WIDTH_IN_TILES - 1) * TILE_SIZE,
@@ -253,18 +240,14 @@ class DrodInterface:
         if end_position is None:
             await self._click(
                 (
-                    ROOM_UPPER_EDGE_START_X + (position[0] + 0.5) * TILE_SIZE,
-                    ROOM_UPPER_EDGE_START_Y + (position[1] + 0.5) * TILE_SIZE,
+                    ROOM_ORIGIN_X + (position[0] + 0.5) * TILE_SIZE,
+                    ROOM_ORIGIN_Y + (position[1] + 0.5) * TILE_SIZE,
                 )
             )
         else:
             pyautogui.moveTo(
-                x=self.origin_x
-                + ROOM_UPPER_EDGE_START_X
-                + TILE_SIZE * (position[0] + 0.5),
-                y=self.origin_y
-                + ROOM_UPPER_EDGE_START_Y
-                + TILE_SIZE * (position[1] + 0.5),
+                x=self.origin_x + ROOM_ORIGIN_X + TILE_SIZE * (position[0] + 0.5),
+                y=self.origin_y + ROOM_ORIGIN_Y + TILE_SIZE * (position[1] + 0.5),
             )
             pyautogui.dragRel(
                 xOffset=(end_position[0] - position[0]) * TILE_SIZE,
@@ -294,8 +277,8 @@ class DrodInterface:
         pyautogui.press("f5")
         await self._click(
             (
-                ROOM_UPPER_EDGE_START_X + (position[0] + 0.5) * TILE_SIZE,
-                ROOM_UPPER_EDGE_START_Y + (position[1] + 0.5) * TILE_SIZE,
+                ROOM_ORIGIN_X + (position[0] + 0.5) * TILE_SIZE,
+                ROOM_ORIGIN_Y + (position[1] + 0.5) * TILE_SIZE,
             )
         )
         # Move the mouse out of the way
@@ -311,59 +294,24 @@ class DrodInterface:
 
     async def get_view(self, step=None):
         visual_info = {}
-        raw_image = numpy.array(pyautogui.screenshot())
-        if step == ImageProcessingStep.SCREENSHOT:
-            visual_info["image"] = raw_image
+        if step in [
+            ImageProcessingStep.SCREENSHOT,
+            ImageProcessingStep.FIND_UPPER_EDGE_COLOR,
+            ImageProcessingStep.FIND_UPPER_EDGE_LINE,
+        ]:
+            _, _, image = await get_drod_window(stop_after=step)
+            visual_info["image"] = image
             return visual_info
-
-        # == Identify the DROD window and room ==
-
-        # Try finding the upper edge of the room, which is a long line of constant color
-        correct_color = find_color(raw_image, ROOM_UPPER_EDGE_COLOR)
-        if step == ImageProcessingStep.FIND_UPPER_EDGE_COLOR:
-            visual_info["image"] = correct_color
-            return visual_info
-
-        lines = find_horizontal_lines(correct_color, ROOM_UPPER_EDGE_LENGTH)
-        if step == ImageProcessingStep.FIND_UPPER_EDGE_LINE:
-            # We can't show the line coordinates directly, so we'll overlay lines on
-            # the screenshot
-            with_lines = raw_image.copy()
-            for (start_x, start_y, end_x, _) in lines:
-                # Since we're only dealing with horizontal lines, we can do the overlay
-                # by indexing the array directly
-                with_lines[
-                    start_y : start_y + OVERLAY_WIDTH, start_x:end_x, :
-                ] = OVERLAY_COLOR
-            visual_info["image"] = with_lines
-            return visual_info
-
-        if len(lines) > 1:
-            raise UserError("Cannot identify DROD window, too many candidate lines")
-        elif len(lines) == 0:
-            raise UserError("Cannot identify DROD window, is it open and unblocked?")
-        line_start_x = lines[0][0]
-        line_start_y = lines[0][1]
-        window_start_x = line_start_x - ROOM_UPPER_EDGE_START_X
-        window_start_y = line_start_y - ROOM_UPPER_EDGE_START_Y
-        window_end_x = window_start_x + DROD_WINDOW_WIDTH
-        window_end_y = window_start_y + DROD_WINDOW_HEIGHT
-        drod_window = raw_image[
-            window_start_y:window_end_y,
-            window_start_x:window_end_x,
-            :,
-        ]
-        visual_info["origin_x"] = window_start_x
-        visual_info["origin_y"] = window_start_y
+        origin_x, origin_y, image = await get_drod_window()
+        visual_info["origin_x"] = origin_x
+        visual_info["origin_y"] = origin_y
         if step == ImageProcessingStep.CROP_WINDOW:
-            visual_info["image"] = drod_window
+            visual_info["image"] = image
             return visual_info
 
-        room_start_x = ROOM_UPPER_EDGE_START_X + 1
-        room_end_x = room_start_x + ROOM_WIDTH_IN_TILES * TILE_SIZE
-        room_start_y = ROOM_UPPER_EDGE_START_Y + 1
-        room_end_y = room_start_y + ROOM_HEIGHT_IN_TILES * TILE_SIZE
-        room_image = drod_window[room_start_y:room_end_y, room_start_x:room_end_x, :]
+        room_end_x = ROOM_ORIGIN_X + ROOM_WIDTH_IN_TILES * TILE_SIZE
+        room_end_y = ROOM_ORIGIN_Y + ROOM_HEIGHT_IN_TILES * TILE_SIZE
+        room_image = image[ROOM_ORIGIN_Y:room_end_y, ROOM_ORIGIN_X:room_end_x, :]
 
         if step == ImageProcessingStep.CROP_ROOM:
             visual_info["image"] = room_image
