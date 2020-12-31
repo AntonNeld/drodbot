@@ -7,6 +7,7 @@ from common import (
     ROOM_WIDTH_IN_TILES,
     ROOM_HEIGHT_IN_TILES,
     Action,
+    GUIEvent,
     ImageProcessingStep,
     Element,
     Direction,
@@ -46,7 +47,8 @@ EDITOR_CHARACTER_WINDOW_OKAY = (570, 710)
 
 
 class DrodInterface:
-    def __init__(self):
+    def __init__(self, window_queue):
+        self._queue = window_queue
         # Will be set by initialize()
         self.origin_x = None
         self.origin_y = None
@@ -355,3 +357,22 @@ class DrodInterface:
 
         # If no step is specified, just don't include an image
         return visual_info
+
+    async def show_view_step(self, step):
+        """Show the given view step in the GUI.
+
+        This method will add the image and room to the window queue.
+
+        Parameters
+        ----------
+        step
+            The step to stop at.
+        """
+        visual_info = await self.get_view(step)
+        self._queue.put(
+            (
+                GUIEvent.SET_INTERPRET_SCREEN_DATA,
+                visual_info["image"],
+                visual_info["room"] if "room" in visual_info else None,
+            )
+        )

@@ -1,7 +1,7 @@
 import asyncio
 import random
 
-from common import Action, GUIEvent, Strategy, Element
+from common import Action, Strategy, Element
 from .pathfinding import find_path
 
 ACTION_DELAY = 0.1
@@ -26,10 +26,6 @@ class DrodBot:
             await self.do_actions(actions)
         else:
             raise RuntimeError(f"Unknown strategy {strategy}")
-
-    async def show_view(self, step):
-        visual_info = await self._interface.get_view(step)
-        self._queue.put((GUIEvent.DISPLAY_IMAGE, visual_info["image"]))
 
     async def do_actions(self, actions):
         for action in actions:

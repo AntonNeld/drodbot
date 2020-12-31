@@ -29,8 +29,8 @@ class Action(Enum):
 
 class GUIEvent(Enum):
     QUIT = "quit"
-    DISPLAY_IMAGE = "display_image"
-    TRAINING_DATA = "training_data"
+    SET_INTERPRET_SCREEN_DATA = "set_interpret_screen_data"
+    SET_TRAINING_DATA = "set_training_data"
 
 
 # The values are also what will be displayed in the GUI

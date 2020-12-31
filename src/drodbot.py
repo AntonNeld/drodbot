@@ -17,7 +17,7 @@ if __name__ == "__main__":
     asyncio_thread = threading.Thread(target=loop.run_forever)
     asyncio_thread.start()
 
-    interface = DrodInterface()
+    interface = DrodInterface(window_queue)
     classifier = TileClassifier(
         "training_data", "model_weights", interface, window_queue
     )
@@ -25,7 +25,12 @@ if __name__ == "__main__":
 
     window = tkinter.Tk()
     app = GuiApp(
-        root=window, event_loop=loop, queue=window_queue, bot=bot, classifier=classifier
+        root=window,
+        event_loop=loop,
+        queue=window_queue,
+        bot=bot,
+        interface=interface,
+        classifier=classifier,
     )
     app.pack()
     try:

@@ -14,15 +14,16 @@ LARGE_CANVAS_HEIGHT = 704
 
 
 class InterpretScreenApp(tkinter.Frame):
-    def __init__(self, root, event_loop, bot):
+    def __init__(self, root, event_loop, interface):
         super().__init__(root)
         self.root = root
         self.event_loop = event_loop
-        self.bot = bot
+        self.interface = interface
         self.selected_view_step = tkinter.StringVar(self)
         self.selected_view_step.set(list(ImageProcessingStep)[-1].value)
         self.enlarged_view = False
         self.raw_view_image = None
+        self.room = None
         self.create_widgets()
 
     def create_widgets(self):
@@ -47,8 +48,9 @@ class InterpretScreenApp(tkinter.Frame):
         )
         self.view_step_dropdown.pack(side=tkinter.BOTTOM)
 
-    def set_image(self, image):
+    def set_data(self, image, room=None):
         self.raw_view_image = PIL.Image.fromarray(image)
+        self.room = room
         self.draw_view()
 
     def draw_view(self):
@@ -72,7 +74,7 @@ class InterpretScreenApp(tkinter.Frame):
     def show_view(self):
         step_value = self.selected_view_step.get()
         step = next(e for e in ImageProcessingStep if e.value == step_value)
-        self.run_coroutine(self.bot.show_view(step))
+        self.run_coroutine(self.interface.show_view_step(step))
 
     def toggle_view_size(self):
         if self.enlarged_view:

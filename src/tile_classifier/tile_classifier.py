@@ -32,7 +32,7 @@ class TileClassifier:
             file_names = os.listdir(self._training_data_dir)
         except FileNotFoundError:
             print("No training data directory found")
-            self._queue.put((GUIEvent.TRAINING_DATA, self._data))
+            self._queue.put((GUIEvent.SET_TRAINING_DATA, self._data))
             return
         for file_name in file_names:
             image = PIL.Image.open(os.path.join(self._training_data_dir, file_name))
@@ -45,7 +45,8 @@ class TileClassifier:
                 }
             )
         self._classify_training_data()
-        self._queue.put((GUIEvent.TRAINING_DATA, self._data))
+        self._queue.put((GUIEvent.SET_TRAINING_DATA, self._data))
+        print("Loaded training data")
 
     async def train_model(self):
         """Train a model from the current training data."""
@@ -68,7 +69,7 @@ class TileClassifier:
             ),
         )
         self._classify_training_data()
-        self._queue.put((GUIEvent.TRAINING_DATA, self._data))
+        self._queue.put((GUIEvent.SET_TRAINING_DATA, self._data))
         print("Training complete")
 
     async def save_model_weights(self):

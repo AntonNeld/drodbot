@@ -14,16 +14,16 @@ DEFAULT_APP = 0
 
 
 class GuiApp(tkinter.Frame):
-    def __init__(self, root, event_loop, queue, bot, classifier):
+    def __init__(self, root, event_loop, queue, bot, interface, classifier):
         super().__init__(root)
         self.root = root
         self.queue = queue
         self.selected_app_var = tkinter.StringVar(self)
         self.selected_app_var.set(APPS[DEFAULT_APP])
-        self.create_widgets(event_loop, bot, classifier)
+        self.create_widgets(event_loop, bot, interface, classifier)
         self.root.after(QUEUE_POLL_INTERVAL, self.check_queue)
 
-    def create_widgets(self, event_loop, bot, classifier):
+    def create_widgets(self, event_loop, bot, interface, classifier):
         self.controls = tkinter.Frame(self)
         self.controls.pack(side=tkinter.BOTTOM)
         self.quit = tkinter.Button(
@@ -36,7 +36,7 @@ class GuiApp(tkinter.Frame):
         self.app_select_menu.pack(side=tkinter.LEFT)
         self.separator = ttk.Separator(self, orient="horizontal")
         self.separator.pack(side=tkinter.BOTTOM, fill=tkinter.X)
-        self.interpret_screen_app = InterpretScreenApp(self, event_loop, bot)
+        self.interpret_screen_app = InterpretScreenApp(self, event_loop, interface)
         self.playing_app = PlayingApp(self, event_loop, bot)
         self.classification_training_app = ClassificationTrainingApp(
             self, event_loop, classifier
@@ -45,13 +45,13 @@ class GuiApp(tkinter.Frame):
 
     def check_queue(self):
         try:
-            item, detail = self.queue.get(block=False)
+            item, *detail = self.queue.get(block=False)
             if item == GUIEvent.QUIT:
                 self.root.destroy()
-            elif item == GUIEvent.DISPLAY_IMAGE:
-                self.interpret_screen_app.set_image(detail)
-            elif item == GUIEvent.TRAINING_DATA:
-                self.classification_training_app.set_data(detail)
+            elif item == GUIEvent.SET_INTERPRET_SCREEN_DATA:
+                self.interpret_screen_app.set_data(*detail)
+            elif item == GUIEvent.SET_TRAINING_DATA:
+                self.classification_training_app.set_data(*detail)
         except Empty:
             pass
         self.root.after(QUEUE_POLL_INTERVAL, self.check_queue)
