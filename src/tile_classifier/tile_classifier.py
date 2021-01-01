@@ -1,3 +1,4 @@
+import copy
 import os
 import os.path
 import random
@@ -68,15 +69,35 @@ class TileClassifier:
         print("Loaded training data")
 
     async def train_model(self):
-        """Train a model from the current training data."""
-        images_array = numpy.stack([t["image"] for t in self._data], axis=0)
+        """Train a model from the current training data.
+
+        Set the resulting model as the current model.
+        """
         for layer, elements in LAYERS:
             print(f"Training model for {layer}")
+            # Remove excess data so there are equal amounts of each element
+            curated_data = copy.copy(self._data)
+            counts = {element: 0 for element in elements}
+            for t in curated_data:
+                element = getattr(t["real_content"], layer)[0]
+                counts[element] += 1
+            target_amount = min(counts.values())
+            print(f"Curating dataset to have {target_amount} of each type.")
+            for element, amount in counts.items():
+                for _ in range(amount - target_amount):
+                    index = next(
+                        i
+                        for i, t in enumerate(curated_data)
+                        if getattr(t["real_content"], layer)[0] == element
+                    )
+                    curated_data.pop(index)
+
+            images_array = numpy.stack([t["image"] for t in curated_data], axis=0)
             self._models[layer] = _new_model(len(elements))
             element = numpy.array(
                 [
                     elements.index(getattr(t["real_content"], layer)[0])
-                    for t in self._data
+                    for t in curated_data
                 ],
                 dtype=numpy.uint8,
             )
