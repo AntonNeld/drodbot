@@ -38,7 +38,7 @@ def classify_tile(tile_image, step=None):
     elif hue > 38 and hue < 42:
         tile = Tile(
             room_piece=(Element.FLOOR, Direction.NONE),
-            item=(Element.TRIGGERED_CONQUER_TOKEN, Direction.NONE),
+            item=(Element.CONQUER_TOKEN, Direction.NONE),
             monster=(Element.BEETHRO, Direction.SE),
         )
     # Else, if the hue is greenish, it's probably a conquer token
@@ -51,7 +51,7 @@ def classify_tile(tile_image, step=None):
     elif hue > 95 and hue < 110:
         tile = Tile(
             room_piece=(Element.FLOOR, Direction.NONE),
-            item=(Element.TRIGGERED_CONQUER_TOKEN, Direction.NONE),
+            item=(Element.CONQUER_TOKEN, Direction.NONE),
         )
     else:
         print(f"Found unknown tile with hue {hue} and saturation {saturation}")

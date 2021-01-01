@@ -60,12 +60,11 @@ class Element(Enum):
     BEETHRO = "Beethro"
     BEETHRO_SWORD = "Really Big Sword (TM)"
     CONQUER_TOKEN = "Conquer token"
-    TRIGGERED_CONQUER_TOKEN = "Triggered conquer token"
     FLOOR = "Floor"
 
 
 ROOM_PIECES = [Element.WALL, Element.FLOOR]
-ITEMS = [Element.CONQUER_TOKEN, Element.TRIGGERED_CONQUER_TOKEN, Element.NOTHING]
+ITEMS = [Element.CONQUER_TOKEN, Element.NOTHING]
 MONSTERS = [Element.BEETHRO, Element.NOTHING]
 SWORDS = [Element.BEETHRO_SWORD]
 
@@ -77,8 +76,7 @@ ELEMENT_CHARACTERS = {
     Element.WALL: "#",
     Element.BEETHRO: "B",
     Element.BEETHRO_SWORD: "S",
-    Element.CONQUER_TOKEN: "V",
-    Element.TRIGGERED_CONQUER_TOKEN: "v",
+    Element.CONQUER_TOKEN: "C",
     Element.FLOOR: ".",
 }
 

@@ -77,6 +77,7 @@ class TileClassifier:
             print(f"Training model for {layer}")
             # Remove excess data so there are equal amounts of each element
             curated_data = copy.copy(self._data)
+            random.shuffle(curated_data)
             counts = {element: 0 for element in elements}
             for t in curated_data:
                 element = getattr(t["real_content"], layer)[0]
@@ -200,7 +201,6 @@ class TileClassifier:
         for coords in room.find_coordinates(Element.CONQUER_TOKEN):
             tile = tiles[coords]
             tile_info = room.get_tile(coords)
-            tile_info.item = (Element.TRIGGERED_CONQUER_TOKEN, Direction.NONE)
             _save_tile_png(
                 coords, tile, tile_info, f"{random_string}v", self._training_data_dir
             )
