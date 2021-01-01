@@ -9,7 +9,15 @@ from PIL.PngImagePlugin import PngInfo
 
 from tensorflow import keras
 
-from common import GUIEvent, Element, Direction, Room, Tile
+from common import (
+    GUIEvent,
+    Element,
+    Direction,
+    Room,
+    Tile,
+    ROOM_WIDTH_IN_TILES,
+    ROOM_HEIGHT_IN_TILES,
+)
 
 
 class TileClassifier:
@@ -114,8 +122,8 @@ class TileClassifier:
         """Generate data for training the classification model.
 
         With the editor open, this method will add elements to the room
-        with various floors, and save the tiles as images.
-        The images are annotated with the tile contents as metadata.
+        and save the tiles as images. The images are annotated with the
+        tile contents as metadata.
         """
         print("Generating training data")
         await self._interface.initialize()
@@ -160,57 +168,64 @@ class TileClassifier:
 
     async def _generate_room(self):
         room = Room()
-        for start, end in [
-            ((6, 3), (13, 8)),
-            ((4, 5), (5, 5)),
-            ((10, 9), (10, 11)),
-            ((12, 9), (12, 11)),
-            ((14, 6), (23, 6)),
-            ((23, 7), (23, 9)),
-            ((9, 15), (11, 15)),
-            ((17, 15), (17, 16)),
-            ((18, 16), None),
-            ((22, 13), (24, 15)),
-            ((10, 26), None),
-            ((10, 27), (11, 28)),
-            ((10, 29), (12, 30)),
-            ((7, 31), (12, 31)),
-        ]:
-            await self._interface.place_element(
-                Element.WALL, Direction.NONE, start, end
-            )
-            room.place_element_like_editor(Element.WALL, Direction.NONE, start, end)
-        for coords in [
-            (9, 5),
-            (6, 8),
-            (23, 9),
-            (29, 8),
-            (30, 8),
-            (6, 15),
-            (10, 16),
-            (21, 17),
-            (12, 28),
-        ]:
-            await self._interface.place_element(
-                Element.CONQUER_TOKEN, Direction.NONE, coords
-            )
-            room.place_element_like_editor(
-                Element.CONQUER_TOKEN, Direction.NONE, coords
-            )
-        for coords, direction in [
-            ((3, 3), Direction.N),
-            ((5, 6), Direction.NE),
-            ((11, 9), Direction.SE),
-            ((28, 4), Direction.W),
-            ((17, 10), Direction.SW),
-            ((10, 14), Direction.E),
-            ((6, 17), Direction.NW),
-            ((19, 19), Direction.S),
-            ((13, 29), Direction.NW),
-        ]:
-            await self._interface.place_element(Element.BEETHRO, direction, coords)
-            room.place_element_like_editor(Element.BEETHRO, direction, coords)
+        await self._randomly_place_element(room, Element.WALL, Direction.NONE, 0.5)
+        await self._randomly_place_element(
+            room, Element.CONQUER_TOKEN, Direction.NONE, 0.05
+        )
+        await self._randomly_place_element(
+            room,
+            Element.BEETHRO,
+            [
+                Direction.N,
+                Direction.NE,
+                Direction.E,
+                Direction.SE,
+                Direction.S,
+                Direction.SW,
+                Direction.W,
+                Direction.NW,
+            ],
+            0.05,
+        )
+
         return room
+
+    async def _randomly_place_element(self, room, element, direction, probability):
+        """Place the given element randomly in the editor and given room.
+
+        Parameters
+        ----------
+        room
+            A Room instance to keep track of the room contents. If it matches the
+            room state before this method is called, it will also match it after.
+        element
+            The element to place.
+        direction
+            The direction of the element to place. If it is an iterable, choose
+            randomly from the given directions for each tile.
+        probability
+            The probability of a given tile containing the element.
+
+        Returns
+        -------
+        The locations where the element was placed, as a boolean numpy array.
+        """
+        mask = (
+            numpy.random.default_rng().random(
+                (ROOM_WIDTH_IN_TILES, ROOM_HEIGHT_IN_TILES)
+            )
+            < probability
+        )
+
+        for position in numpy.argwhere(mask):
+            try:
+                element_direction = random.choice(direction)
+            except TypeError:  # Not an iterable
+                element_direction = direction
+            await self._interface.place_element(element, element_direction, position)
+            room.place_element_like_editor(element, element_direction, position)
+
+        return mask
 
 
 def _save_tile_png(coords, tile, tile_info, base_name, directory):
