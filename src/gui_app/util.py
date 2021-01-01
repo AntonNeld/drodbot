@@ -14,8 +14,6 @@ def tile_to_text(tile):
 
 
 def _format_element(pair):
-    if pair is None:
-        return ""
     element, direction = pair
     if direction == Direction.NONE:
         return element.value

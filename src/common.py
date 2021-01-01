@@ -55,6 +55,7 @@ class Strategy(Enum):
 
 class Element(Enum):
     UNKNOWN = "Unknown"
+    NOTHING = "Nothing"
     WALL = "Wall"
     BEETHRO = "Beethro"
     BEETHRO_SWORD = "Really Big Sword (TM)"
@@ -64,8 +65,8 @@ class Element(Enum):
 
 
 ROOM_PIECES = [Element.WALL, Element.FLOOR]
-ITEMS = [Element.CONQUER_TOKEN, Element.TRIGGERED_CONQUER_TOKEN]
-MONSTERS = [Element.BEETHRO]
+ITEMS = [Element.CONQUER_TOKEN, Element.TRIGGERED_CONQUER_TOKEN, Element.NOTHING]
+MONSTERS = [Element.BEETHRO, Element.NOTHING]
 SWORDS = [Element.BEETHRO_SWORD]
 
 SWORDED_MONSTERS = {Element.BEETHRO: Element.BEETHRO_SWORD}
@@ -119,14 +120,16 @@ class Tile:
     """
 
     room_piece: Tuple[Element, Direction]
-    floor_control: Optional[Tuple[Element, Direction]] = None
-    checkpoint: Optional[Tuple[Element, Direction]] = None
-    item: Optional[Tuple[Element, Direction]] = None
-    monster: Optional[Tuple[Element, Direction]] = None
+    floor_control: Tuple[Element, Direction] = (Element.NOTHING, Direction.NONE)
+    checkpoint: Optional[Tuple[Element, Direction]] = (Element.NOTHING, Direction.NONE)
+    item: Optional[Tuple[Element, Direction]] = (Element.NOTHING, Direction.NONE)
+    monster: Optional[Tuple[Element, Direction]] = (Element.NOTHING, Direction.NONE)
     swords: List[Tuple[Element, Direction]] = field(default_factory=list)
 
     def get_elements(self):
         """Get all elements in the tile.
+
+        Element.NOTHING is skipped.
 
         Returns
         -------
@@ -140,7 +143,7 @@ class Tile:
             self.item,
             self.monster,
         ] + self.swords:
-            if element is not None:
+            if element[0] != Element.NOTHING:
                 elements.append(element[0])
         return elements
 
@@ -155,16 +158,10 @@ class Tile:
         return json.dumps(
             {
                 "room_piece": [e.value for e in self.room_piece],
-                "floor_control": [e.value for e in self.floor_control]
-                if self.floor_control is not None
-                else None,
-                "checkpoint": [e.value for e in self.checkpoint]
-                if self.checkpoint is not None
-                else None,
-                "item": [e.value for e in self.item] if self.item is not None else None,
-                "monster": [e.value for e in self.monster]
-                if self.monster is not None
-                else None,
+                "floor_control": [e.value for e in self.floor_control],
+                "checkpoint": [e.value for e in self.checkpoint],
+                "item": [e.value for e in self.item],
+                "monster": [e.value for e in self.monster],
                 "swords": [[e.value for e in element] for element in self.swords],
             }
         )
@@ -184,8 +181,6 @@ class Tile:
 
 
 def _element_tuple_from_json(pair):
-    if pair is None:
-        return None
     element = next(e for e in Element if e.value == pair[0])
     direction = next(d for d in Direction if d.value == pair[1])
     return (element, direction)
@@ -270,9 +265,7 @@ class Room:
                 # Cannot place things on same layer as something else, unless it's
                 # a floor. We don't need to worry about swords, since they can't be
                 # placed individually.
-                if getattr(tile, layer) is not None and getattr(tile, layer)[0] not in [
-                    Element.FLOOR
-                ]:
+                if getattr(tile, layer)[0] not in [Element.FLOOR, Element.NOTHING]:
                     continue
                 # TODO: There are some elements that block each other, even if they are
                 #       on different layers. Once we use enough elements that it is
