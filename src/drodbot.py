@@ -21,7 +21,7 @@ if __name__ == "__main__":
     classifier = TileClassifier(
         "training_data", "model_weights", editor_interface, window_queue
     )
-    play_interface = PlayInterface(window_queue)
+    play_interface = PlayInterface(window_queue, classifier)
     bot = DrodBot(play_interface, window_queue)
 
     window = tkinter.Tk()

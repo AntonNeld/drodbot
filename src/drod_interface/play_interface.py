@@ -13,8 +13,9 @@ from .util import get_drod_window, extract_room, extract_tiles
 
 
 class PlayInterface:
-    def __init__(self, window_queue):
+    def __init__(self, window_queue, classifier):
         self._queue = window_queue
+        self._classifier = classifier
         # Will be set by initialize()
         self.origin_x = None
         self.origin_y = None
@@ -89,6 +90,15 @@ class PlayInterface:
         if step == ImageProcessingStep.EXTRACT_TILES:
             # We can't show anything more interesting here
             visual_info["image"] = room_image
+            return visual_info
+
+        if step == ImageProcessingStep.AI_CLASSIFY_TILES:
+            tile_contents = self._classifier.classify_tiles(tiles)
+            room = Room()
+            for coords, tile in tile_contents.items():
+                room.set_tile(coords, tile)
+            visual_info["image"] = room_image
+            visual_info["room"] = room
             return visual_info
 
         # If a step is specified, we will return an image composed of modified tiles

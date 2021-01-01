@@ -42,6 +42,7 @@ class ImageProcessingStep(Enum):
     CROP_WINDOW = "Extract DROD window"
     CROP_ROOM = "Extract room"
     EXTRACT_TILES = "Extract tiles"
+    AI_CLASSIFY_TILES = "AI classify tiles (experimental)"
     AVERAGE_TILE_COLOR = "Average tile color"
     CLASSIFY_TILES = "Classify tiles"
 
