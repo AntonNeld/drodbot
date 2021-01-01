@@ -15,17 +15,30 @@ pipenv install
 
 On Linux, you may also be asked to install some system-wide dependencies the first time you run it.
 
-## Running it
+## Running DRODbot
 
-Open DROD, and enter the game proper (where you can control Beethro). From the root of the repo, run:
+From the root of the repo, run:
 
 ```sh
 pipenv run python src/drodbot.py
 ```
 
+Open DROD in a separate window.
+
+### Training the tile classification
+
+Before DRODbot can play any rooms (competently), it needs to learn how to interpret what it is seeing.
+Enter "Train classifier" mode in the DRODbot window, and:
+
+- Open the editor in DROD, and begin editing a new room (I have only tested the Foundation style,
+  but in theory any style should work).
+- In the DRODbot window, click "Generate training data" and wait for it to finish. This will take a bit over 5 minutes.
+- Click "Load training data", "Traing model" and "Save model weights" in that order. Wait for the previous
+  command to finish before starting the next.
+
 ## What it can do
 
-It can handle the following elements (in the "Foundation" room style):
+It can handle the following elements (in the same room style that was used when training):
 
 - Conquer tokens
 - Beethro

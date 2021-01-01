@@ -1,14 +1,11 @@
-import numpy
 import pyautogui
 
 from common import (
-    TILE_SIZE,
     Action,
     GUIEvent,
     ImageProcessingStep,
     Room,
 )
-from .classify import classify_tile
 from .util import get_drod_window, extract_room, extract_tiles
 
 
@@ -92,34 +89,10 @@ class PlayInterface:
             visual_info["image"] = room_image
             return visual_info
 
-        if step == ImageProcessingStep.AI_CLASSIFY_TILES:
-            tile_contents = self._classifier.classify_tiles(tiles)
-            room = Room()
-            for coords, tile in tile_contents.items():
-                room.set_tile(coords, tile)
-            visual_info["image"] = room_image
-            visual_info["room"] = room
-            return visual_info
-
-        # If a step is specified, we will return an image composed of modified tiles
-        if step == ImageProcessingStep.AVERAGE_TILE_COLOR:
-            averaged_room = numpy.zeros(room_image.shape, numpy.uint8)
+        tile_contents = self._classifier.classify_tiles(tiles)
         room = Room()
-        for (x, y), tile in tiles.items():
-            start_x = x * TILE_SIZE
-            end_x = (x + 1) * TILE_SIZE
-            start_y = y * TILE_SIZE
-            end_y = (y + 1) * TILE_SIZE
-            tile_info, modified_tile = classify_tile(tile, step)
-            if step == ImageProcessingStep.AVERAGE_TILE_COLOR:
-                averaged_room[start_y:end_y, start_x:end_x] = modified_tile
-            else:
-                room.set_tile((x, y), tile_info)
-
-        if step == ImageProcessingStep.AVERAGE_TILE_COLOR:
-            visual_info["image"] = averaged_room
-            return visual_info
-
+        for coords, tile in tile_contents.items():
+            room.set_tile(coords, tile)
         visual_info["room"] = room
 
         # If no earlier step is specified, include the normal room image
