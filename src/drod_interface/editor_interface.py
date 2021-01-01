@@ -51,6 +51,7 @@ class EditorInterface:
         }
         self.hard_walls = None
         self.monster_direction = None
+        self.selected_token = None
 
     async def initialize(self):
         """Find the DROD window and focus it.
@@ -184,9 +185,11 @@ class EditorInterface:
                 self.hard_walls = hard_wall
         elif element == Element.CONQUER_TOKEN:
             await self._select_element(ITEMS_TAB, TOKEN)
-            # Click it again to bring up the menu, and select it
-            await self._click(TOKEN)
-            await self._click(CONQUER_TOKEN_IN_MENU)
+            if self.selected_token != CONQUER_TOKEN_IN_MENU:
+                # Click it again to bring up the menu, and select it
+                await self._click(TOKEN)
+                await self._click(CONQUER_TOKEN_IN_MENU)
+                self.selected_token = CONQUER_TOKEN_IN_MENU
         elif element == Element.BEETHRO:
             # We cannot place a Beethro, so we'll make a character that looks like him
             await self._select_element(MONSTERS_TAB, CHARACTER)
