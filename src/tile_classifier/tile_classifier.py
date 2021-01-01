@@ -233,8 +233,10 @@ class TileClassifier:
         await self._randomly_place_element(
             room, Element.WALL, Direction.NONE, 0.5, mask=mask
         )
+        # Since we will duplicate the tiles with conquer tokens, decrease the
+        # probability so the number of tiles with and without will match
         await self._randomly_place_element(
-            room, Element.CONQUER_TOKEN, Direction.NONE, 0.5, mask=mask
+            room, Element.CONQUER_TOKEN, Direction.NONE, 0.33, mask=mask
         )
 
         return room
