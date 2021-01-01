@@ -216,14 +216,14 @@ class TileClassifier:
             room,
             Element.BEETHRO,
             [
-                Direction.N,
-                Direction.NE,
-                Direction.E,
                 Direction.SE,
                 Direction.S,
                 Direction.SW,
                 Direction.W,
                 Direction.NW,
+                Direction.N,
+                Direction.NE,
+                Direction.E,
             ],
             0.5,
         )
@@ -250,22 +250,34 @@ class TileClassifier:
         -------
         The locations where the element was placed, as a boolean numpy array.
         """
-        mask = (
+        has_element = (
             numpy.random.default_rng().random(
                 (ROOM_WIDTH_IN_TILES, ROOM_HEIGHT_IN_TILES)
             )
             < probability
         )
 
-        for position in numpy.argwhere(mask):
-            try:
-                element_direction = random.choice(direction)
-            except TypeError:  # Not an iterable
-                element_direction = direction
-            await self._interface.place_element(element, element_direction, position)
-            room.place_element_like_editor(element, element_direction, position)
+        try:
+            len(direction)
+            directions = direction
+        except TypeError:  # direction is not an iterable
+            directions = [direction]
 
-        return mask
+        direction_map = numpy.random.default_rng().integers(
+            0, len(directions), size=has_element.shape
+        )
+
+        for direction_index in range(len(directions)):
+            for position in numpy.argwhere(
+                numpy.logical_and(direction_map == direction_index, has_element)
+            ):
+                element_direction = directions[direction_index]
+                await self._interface.place_element(
+                    element, element_direction, position
+                )
+                room.place_element_like_editor(element, element_direction, position)
+
+        return has_element
 
 
 def _save_tile_png(coords, tile, tile_info, base_name, directory):
