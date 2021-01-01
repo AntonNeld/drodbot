@@ -106,26 +106,9 @@ class EditorInterface:
             self.selected_element[tab_position] = element_position
 
     async def clear_room(self):
-        # Select the normal floor, so clearing doesn't use mosaic floors
+        # Select the normal floor, to make sure clearing doesn't use mosaic floors
         await self._select_element(ROOM_PIECES_TAB, FLOOR)
-        await self._clear_layer()
-
-        # The floor controls tab contains three layers (disregarding level entrances),
-        # which need to be cleared separately
-        await self._select_element(FLOOR_CONTROLS_TAB, FORCE_ARROW)
-        await self._clear_layer()
-        await self._select_element(FLOOR_CONTROLS_TAB, CHECKPOINT)
-        await self._clear_layer()
-        await self._select_element(FLOOR_CONTROLS_TAB, WALL_LIGHT)
-        await self._clear_layer()
-
-        await self._select_element(ITEMS_TAB, MIMIC)
-        await self._clear_layer()
-
-        await self._select_element(MONSTERS_TAB, ROACH)
-        await self._clear_layer()
-
-    async def _clear_layer(self):
+        pyautogui.keyDown("shift")
         pyautogui.moveTo(
             x=self.origin_x + ROOM_ORIGIN_X + TILE_SIZE * 0.5,
             y=self.origin_y + ROOM_ORIGIN_Y + TILE_SIZE * 0.5,
@@ -135,6 +118,7 @@ class EditorInterface:
             yOffset=(ROOM_HEIGHT_IN_TILES - 1) * TILE_SIZE,
             button="right",
         )
+        pyautogui.keyUp("shift")
 
     async def _set_monster_direction(self, direction):
         direction_to_number = {
