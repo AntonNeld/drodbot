@@ -107,7 +107,7 @@ class TileClassifier:
             self._models[layer].fit(
                 images_array[:validation_start],
                 element[:validation_start],
-                epochs=10,
+                epochs=15,
                 validation_data=(
                     images_array[validation_start:],
                     element[validation_start:],
