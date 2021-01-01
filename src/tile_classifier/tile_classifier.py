@@ -17,21 +17,32 @@ from common import (
     Tile,
     ROOM_WIDTH_IN_TILES,
     ROOM_HEIGHT_IN_TILES,
+    ROOM_PIECES,
+    ITEMS,
+    MONSTERS,
 )
+
+LAYERS = [
+    ("room_piece", ROOM_PIECES),
+    ("item", ITEMS),
+    ("monster", MONSTERS),
+]
 
 
 class TileClassifier:
     def __init__(self, training_data_dir, weights_dir, editor_interface, window_queue):
         self._training_data_dir = training_data_dir
-        self._weights_path = os.path.join(weights_dir, "tile_classifier_weights")
+        self._weights_dir = weights_dir
         self._interface = editor_interface
         self._data = []
         self._queue = window_queue
-        self._model = _new_model()
-        try:
-            self._model.load_weights(self._weights_path)
-        except ValueError:
-            print("No model weights found, not loading any")
+        self._models = {}
+        for layer, elements in LAYERS:
+            self._models[layer] = _new_model(len(elements))
+            try:
+                self._models[layer].load_weights(os.path.join(self._weights_dir, layer))
+            except ValueError:
+                print(f"No model weights found for {layer}, not loading any")
 
     async def load_training_data(self):
         """Load the training data and send it to the GUI."""
@@ -58,30 +69,35 @@ class TileClassifier:
 
     async def train_model(self):
         """Train a model from the current training data."""
-        self._model = _new_model()
         images_array = numpy.stack([t["image"] for t in self._data], axis=0)
-        # For now, just check whether the tile has a wall
-        is_wall = numpy.array(
-            [t["real_content"].room_piece[0] == Element.WALL for t in self._data],
-            dtype=numpy.uint8,
-        )
-        # Let 10% of our data be for validation
-        validation_start = images_array.shape[0] // 10
-        self._model.fit(
-            images_array[:validation_start],
-            is_wall[:validation_start],
-            epochs=10,
-            validation_data=(
-                images_array[validation_start:],
-                is_wall[validation_start:],
-            ),
-        )
+        for layer, elements in LAYERS:
+            print(f"Training model for {layer}")
+            self._models[layer] = _new_model(len(elements))
+            element = numpy.array(
+                [
+                    elements.index(getattr(t["real_content"], layer)[0])
+                    for t in self._data
+                ],
+                dtype=numpy.uint8,
+            )
+            # Let 10% of our data be for validation
+            validation_start = images_array.shape[0] // 10
+            self._models[layer].fit(
+                images_array[:validation_start],
+                element[:validation_start],
+                epochs=10,
+                validation_data=(
+                    images_array[validation_start:],
+                    element[validation_start:],
+                ),
+            )
         self._classify_training_data()
         self._queue.put((GUIEvent.SET_TRAINING_DATA, self._data))
         print("Training complete")
 
     async def save_model_weights(self):
-        self._model.save_weights(self._weights_path)
+        for layer, _ in LAYERS:
+            self._models[layer].save_weights(os.path.join(self._weights_dir, layer))
         print("Saved model weights")
 
     def _classify_training_data(self):
@@ -106,16 +122,19 @@ class TileClassifier:
         """
         keys, images = zip(*tiles.items())
         images_array = numpy.stack(images, axis=0)
-        results = self._model.predict(images_array)
-        best_guesses = numpy.argmax(results, axis=-1)
-        classified_tiles = {}
-        for index, key in enumerate(keys):
-            classified_tiles[key] = Tile(
-                room_piece=(
-                    Element.WALL if best_guesses[index] == 1 else Element.FLOOR,
-                    Direction.NONE,
+        classified_tiles = {key: Tile(room_piece=Element.UNKNOWN) for key in keys}
+        for layer, elements in LAYERS:
+            results = self._models[layer].predict(images_array)
+            best_guesses = numpy.argmax(results, axis=-1)
+            for index, key in enumerate(keys):
+                setattr(
+                    classified_tiles[key],
+                    layer,
+                    (
+                        elements[best_guesses[index]],
+                        Direction.NONE,
+                    ),
                 )
-            )
         return classified_tiles
 
     async def generate_training_data(self):
@@ -243,7 +262,7 @@ def _save_tile_png(coords, tile, tile_info, base_name, directory):
     )
 
 
-def _new_model():
+def _new_model(outputs):
     model = keras.models.Sequential(
         [
             keras.layers.experimental.preprocessing.Rescaling(scale=1.0 / 255),
@@ -252,7 +271,7 @@ def _new_model():
             keras.layers.Dense(100, activation="relu"),
             keras.layers.Dense(100, activation="relu"),
             keras.layers.Dense(100, activation="relu"),
-            keras.layers.Dense(2, activation="softmax"),
+            keras.layers.Dense(outputs, activation="softmax"),
         ]
     )
     model.compile(
