@@ -208,6 +208,10 @@ class TileClassifier:
 
     async def _generate_room(self):
         room = Room()
+        # Mask out the reserved tile in the bottom right, so we can place
+        # Beethro and a conquer token there
+        mask = numpy.ones((ROOM_WIDTH_IN_TILES, ROOM_HEIGHT_IN_TILES), dtype=bool)
+        mask[-1, -1] = False
         # Place the monster layer first, so we can use copy_characters
         # in EditorInterface.place_element
         await self._randomly_place_element(
@@ -224,15 +228,20 @@ class TileClassifier:
                 Direction.E,
             ],
             0.5,
+            mask=mask,
         )
-        await self._randomly_place_element(room, Element.WALL, Direction.NONE, 0.5)
         await self._randomly_place_element(
-            room, Element.CONQUER_TOKEN, Direction.NONE, 0.5
+            room, Element.WALL, Direction.NONE, 0.5, mask=mask
+        )
+        await self._randomly_place_element(
+            room, Element.CONQUER_TOKEN, Direction.NONE, 0.5, mask=mask
         )
 
         return room
 
-    async def _randomly_place_element(self, room, element, direction, probability):
+    async def _randomly_place_element(
+        self, room, element, direction, probability, mask=None
+    ):
         """Place the given element randomly in the editor and given room.
 
         Parameters
@@ -247,6 +256,9 @@ class TileClassifier:
             randomly from the given directions for each tile.
         probability
             The probability of a given tile containing the element.
+        mask
+            An optional boolean array that is True where elements can be
+            placed and False elsewhere.
 
         Returns
         -------
@@ -258,6 +270,8 @@ class TileClassifier:
             )
             < probability
         )
+        if mask is not None:
+            has_element = has_element * mask
 
         try:
             len(direction)
