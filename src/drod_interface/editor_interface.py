@@ -52,6 +52,8 @@ class EditorInterface:
         self.hard_walls = None
         self.monster_direction = None
         self.selected_token = None
+        self.copied_element = None
+        self.copied_element_direction = None
 
     async def initialize(self):
         """Find the DROD window and focus it.
@@ -143,7 +145,13 @@ class EditorInterface:
         self.monster_direction = direction
 
     async def place_element(
-        self, element, direction, position, end_position=None, hard_wall=False
+        self,
+        element,
+        direction,
+        position,
+        end_position=None,
+        copy_characters=False,
+        hard_wall=False,
     ):
         """Place an element in the editor.
 
@@ -158,10 +166,25 @@ class EditorInterface:
             If this is set, place the element in a rectangle with this as
             its lower right corner and `position` as its upper right corner.
             Not all elements can be placed like this.
+        copy_characters
+            If this is set, copy characters after placing them and paste instead
+            of creating a new one if placing the same character (in the same direction)
+            again. This has the side effect of copying the entire contents of the tile,
+            so this should only be done if we know the tile is otherwise empty, e.g. by
+            placing all characters before any other layers.
         hard_wall
             Only used when placing walls. If this is true, the wall will be
             of the hard variant.
         """
+        if element in [Element.BEETHRO]:
+            # Some elements cannot be placed freely, so we place characters to fake it
+            if end_position is not None:
+                raise RuntimeError("Cannot place character in a rectangle")
+            await self._place_character(
+                element, direction, position, copy_characters=copy_characters
+            )
+            return
+
         if element == Element.WALL:
             await self._select_element(ROOM_PIECES_TAB, WALL)
             if hard_wall != self.hard_walls:
@@ -174,12 +197,6 @@ class EditorInterface:
                 await self._click(TOKEN)
                 await self._click(CONQUER_TOKEN_IN_MENU)
                 self.selected_token = CONQUER_TOKEN_IN_MENU
-        elif element == Element.BEETHRO:
-            # We cannot place a Beethro, so we'll make a character that looks like him
-            await self._select_element(MONSTERS_TAB, CHARACTER)
-            await self._set_monster_direction(direction)
-            if end_position is not None:
-                raise RuntimeError("Cannot place character in a rectangle")
         else:
             raise RuntimeError(f"Unknown element {element}")
         if end_position is None:
@@ -198,13 +215,42 @@ class EditorInterface:
                 xOffset=(end_position[0] - position[0]) * TILE_SIZE,
                 yOffset=(end_position[1] - position[1]) * TILE_SIZE,
             )
-        # Go into the character menu to make the character look like Beethro.
-        if element == Element.BEETHRO:
-            await self._click(CHARACTER_WINDOW_SCROLL_UP)
-            await self._click(CHARACTER_WINDOW_SCROLL_UP)
-            await self._click(CHARACTER_WINDOW_FIRST_TYPE)
+
+    async def _place_character(
+        self, element, direction, position, copy_characters=False
+    ):
+        real_x = ROOM_ORIGIN_X + (position[0] + 0.5) * TILE_SIZE
+        real_y = ROOM_ORIGIN_Y + (position[1] + 0.5) * TILE_SIZE
+        if (
+            copy_characters
+            and self.copied_element == element
+            and self.copied_element_direction == direction
+        ):
+            # Paste the character
+            pyautogui.keyDown("ctrl")
+            pyautogui.press("v")
+            pyautogui.keyUp("ctrl")
+            await self._click((real_x, real_y))
+        else:
+            await self._select_element(MONSTERS_TAB, CHARACTER)
+            await self._set_monster_direction(direction)
+            await self._click((real_x, real_y))
+            # We're now in the character menu
+            if element == Element.BEETHRO:
+                await self._click(CHARACTER_WINDOW_SCROLL_UP)
+                await self._click(CHARACTER_WINDOW_SCROLL_UP)
+                await self._click(CHARACTER_WINDOW_FIRST_TYPE)
             await self._click(CHARACTER_WINDOW_VISIBLE_CHECKBOX)
             await self._click(CHARACTER_WINDOW_OKAY)
+            if copy_characters:
+                # Copy the character
+                pyautogui.mouseDown(x=self.origin_x + real_x, y=self.origin_y + real_y)
+                pyautogui.keyDown("ctrl")
+                pyautogui.press("c")
+                pyautogui.keyUp("ctrl")
+                pyautogui.press("esc")  # Leave pasting mode
+                self.copied_element = element
+                self.copied_element_direction = direction
 
     async def start_test_room(self, position, direction):
         """Start testing the room.

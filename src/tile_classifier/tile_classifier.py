@@ -208,10 +208,8 @@ class TileClassifier:
 
     async def _generate_room(self):
         room = Room()
-        await self._randomly_place_element(room, Element.WALL, Direction.NONE, 0.5)
-        await self._randomly_place_element(
-            room, Element.CONQUER_TOKEN, Direction.NONE, 0.5
-        )
+        # Place the monster layer first, so we can use copy_characters
+        # in EditorInterface.place_element
         await self._randomly_place_element(
             room,
             Element.BEETHRO,
@@ -226,6 +224,10 @@ class TileClassifier:
                 Direction.E,
             ],
             0.5,
+        )
+        await self._randomly_place_element(room, Element.WALL, Direction.NONE, 0.5)
+        await self._randomly_place_element(
+            room, Element.CONQUER_TOKEN, Direction.NONE, 0.5
         )
 
         return room
@@ -273,7 +275,7 @@ class TileClassifier:
             ):
                 element_direction = directions[direction_index]
                 await self._interface.place_element(
-                    element, element_direction, position
+                    element, element_direction, position, copy_characters=True
                 )
                 room.place_element_like_editor(element, element_direction, position)
 
