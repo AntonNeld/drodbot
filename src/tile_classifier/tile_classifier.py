@@ -210,7 +210,7 @@ class TileClassifier:
         room = Room()
         await self._randomly_place_element(room, Element.WALL, Direction.NONE, 0.5)
         await self._randomly_place_element(
-            room, Element.CONQUER_TOKEN, Direction.NONE, 0.05
+            room, Element.CONQUER_TOKEN, Direction.NONE, 0.5
         )
         await self._randomly_place_element(
             room,
@@ -225,7 +225,7 @@ class TileClassifier:
                 Direction.W,
                 Direction.NW,
             ],
-            0.05,
+            0.5,
         )
 
         return room
