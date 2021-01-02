@@ -21,12 +21,13 @@ from common import (
     ROOM_PIECES,
     ITEMS,
     MONSTERS,
+    ALLOWED_DIRECTIONS,
 )
 
 LAYERS = [
-    ("room_piece", ROOM_PIECES),
-    ("item", ITEMS),
-    ("monster", MONSTERS),
+    ("room_piece", [(e, d) for e in ROOM_PIECES for d in ALLOWED_DIRECTIONS[e]]),
+    ("item", [(e, d) for e in ITEMS for d in ALLOWED_DIRECTIONS[e]]),
+    ("monster", [(e, d) for e in MONSTERS for d in ALLOWED_DIRECTIONS[e]]),
 ]
 
 
@@ -78,9 +79,11 @@ class TileClassifier:
             # Remove excess data so there are equal amounts of each element
             curated_data = copy.copy(self._data)
             random.shuffle(curated_data)
-            counts = {element: 0 for element in elements}
+            counts = {}
             for t in curated_data:
                 element = getattr(t["real_content"], layer)[0]
+                if element not in counts:
+                    counts[element] = 0
                 counts[element] += 1
             target_amount = min(counts.values())
             print(f"Curating dataset to have {target_amount} of each type.")
@@ -97,7 +100,7 @@ class TileClassifier:
             self._models[layer] = _new_model(len(elements))
             element = numpy.array(
                 [
-                    elements.index(getattr(t["real_content"], layer)[0])
+                    elements.index(getattr(t["real_content"], layer))
                     for t in curated_data
                 ],
                 dtype=numpy.uint8,
@@ -144,7 +147,9 @@ class TileClassifier:
         """
         keys, images = zip(*tiles.items())
         images_array = numpy.stack(images, axis=0)
-        classified_tiles = {key: Tile(room_piece=Element.UNKNOWN) for key in keys}
+        classified_tiles = {
+            key: Tile(room_piece=(Element.UNKNOWN, Direction.UNKNOWN)) for key in keys
+        }
         for layer, elements in LAYERS:
             results = self._models[layer].predict(images_array)
             best_guesses = numpy.argmax(results, axis=-1)
@@ -152,10 +157,7 @@ class TileClassifier:
                 setattr(
                     classified_tiles[key],
                     layer,
-                    (
-                        elements[best_guesses[index]],
-                        Direction.NONE,
-                    ),
+                    elements[best_guesses[index]],
                 )
         return classified_tiles
 

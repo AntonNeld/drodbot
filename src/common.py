@@ -92,6 +92,25 @@ class Direction(Enum):
     UNKNOWN = "?"
 
 
+ALLOWED_DIRECTIONS = {
+    **{e: [Direction.NONE] for e in (ROOM_PIECES + ITEMS)},
+    **{
+        e: [
+            Direction.N,
+            Direction.NE,
+            Direction.E,
+            Direction.SE,
+            Direction.S,
+            Direction.SW,
+            Direction.W,
+            Direction.NW,
+        ]
+        for e in MONSTERS
+    },
+    Element.NOTHING: [Direction.NONE],  # Overwrites any earlier Nothings
+}
+
+
 @dataclass
 class Tile:
     """A representation of a tile.
