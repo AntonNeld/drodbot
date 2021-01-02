@@ -20,6 +20,9 @@ DROD_WINDOW_HEIGHT = 768
 OVERLAY_COLOR = (0, 255, 0)
 OVERLAY_WIDTH = 5
 
+MINIMAP_ROOM_ORIGIN_X = 61
+MINIMAP_ROOM_ORIGIN_Y = 631
+
 
 async def get_drod_window(stop_after=None):
     """Take a screenshot and find the DROD window.
@@ -103,19 +106,45 @@ def extract_room(window_image):
     return room_image
 
 
-def extract_tiles(room_image):
+def extract_minimap(window_image):
+    """Extract the room minimap from a window image.
+
+    Parameters
+    ----------
+    window_image
+        The window to extract the room minimap from.
+
+    Returns
+    -------
+    An image of the room minimap.
+    """
+    room_end_x = MINIMAP_ROOM_ORIGIN_X + ROOM_WIDTH_IN_TILES
+    room_end_y = MINIMAP_ROOM_ORIGIN_Y + ROOM_HEIGHT_IN_TILES
+    minimap_room_image = window_image[
+        MINIMAP_ROOM_ORIGIN_Y:room_end_y, MINIMAP_ROOM_ORIGIN_X:room_end_x, :
+    ]
+    return minimap_room_image
+
+
+def extract_tiles(room_image, minimap_image):
     """Extract tiles from a room image.
 
     Parameters
     ----------
     room_image
         The room to extract tiles from.
+    minimap_image
+        The minimap to extract minimap colors from.
 
     Returns
     -------
-    A dict with coordinates as keys and tile images as values.
+    tiles
+        A dict with coordinates as keys and tile images as values.
+    colors
+        A dict with coordinates as keys and (r, g, b) tuples as values.
     """
     tiles = {}
+    colors = {}
     for x in range(ROOM_WIDTH_IN_TILES):
         for y in range(ROOM_HEIGHT_IN_TILES):
             start_x = x * TILE_SIZE
@@ -123,7 +152,9 @@ def extract_tiles(room_image):
             start_y = y * TILE_SIZE
             end_y = (y + 1) * TILE_SIZE
             tiles[(x, y)] = room_image[start_y:end_y, start_x:end_x, :]
-    return tiles
+            color = minimap_image[y, x, :]
+            colors[(x, y)] = (color[0], color[1], color[2])
+    return tiles, colors
 
 
 def _find_color(image, color):

@@ -6,7 +6,7 @@ from common import (
     ImageProcessingStep,
     Room,
 )
-from .util import get_drod_window, extract_room, extract_tiles
+from .util import get_drod_window, extract_room, extract_minimap, extract_tiles
 
 
 class PlayInterface:
@@ -79,9 +79,15 @@ class PlayInterface:
             visual_info["image"] = room_image
             return visual_info
 
+        minimap = extract_minimap(image)
+
+        if step == ImageProcessingStep.EXTRACT_MINIMAP:
+            visual_info["image"] = minimap
+            return visual_info
+
         # == Extract and classify tiles in the room ==
 
-        tiles = extract_tiles(room_image)
+        tiles, minimap_colors = extract_tiles(room_image, minimap)
         visual_info["tiles"] = tiles
 
         if step == ImageProcessingStep.EXTRACT_TILES:
@@ -89,7 +95,7 @@ class PlayInterface:
             visual_info["image"] = room_image
             return visual_info
 
-        tile_contents = self._classifier.classify_tiles(tiles)
+        tile_contents = self._classifier.classify_tiles(tiles, minimap_colors)
         room = Room()
         for coords, tile in tile_contents.items():
             room.set_tile(coords, tile)

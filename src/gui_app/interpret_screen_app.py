@@ -76,7 +76,7 @@ class InterpretScreenApp(tkinter.Frame):
                 image = self.raw_view_image
             pil_image = PIL.Image.fromarray(image)
             resized_image = pil_image.resize(
-                (int(self.canvas["width"]), int(self.canvas["height"])), Image.LANCZOS
+                (int(self.canvas["width"]), int(self.canvas["height"])), Image.NEAREST
             )
             # Assign to self.view to prevent from being garbage collected
             self.view = ImageTk.PhotoImage(image=resized_image)

@@ -134,13 +134,17 @@ class TileClassifier:
         for entry in self._data:
             entry["predicted_content"] = predicted_contents[entry["file_name"]]
 
-    def classify_tiles(self, tiles):
+    def classify_tiles(self, tiles, minimap_colors=None):
         """Classify the given tiles according to the current model.
 
         Parameters
         ----------
         tiles
             A dict with tile images as the values.
+        minimap_colors
+            A dict with the same keys as `tiles` and (r, g, b) color tuples
+            as the values. If given, use this to help classify the trickier
+            elements. Otherwise, only rely on the neural network.
 
         Returns
         -------
@@ -154,12 +158,16 @@ class TileClassifier:
         }
         for layer, elements in LAYERS:
             results = self._models[layer].predict(images_array)
-            best_guesses = numpy.argmax(results, axis=-1)
             for index, key in enumerate(keys):
+                probabilities = results[index, :]
+                if minimap_colors is not None:
+                    probabilities = _exclude_wrong_colors(
+                        probabilities, minimap_colors[key], layer, elements
+                    )
                 setattr(
                     classified_tiles[key],
                     layer,
-                    elements[best_guesses[index]],
+                    elements[numpy.argmax(probabilities)],
                 )
         return classified_tiles
 
@@ -315,6 +323,35 @@ class TileClassifier:
                 room.place_element_like_editor(element, element_direction, position)
 
         return has_element
+
+
+def _exclude_wrong_colors(probabilities, minimap_color, layer, elements):
+    """Change probabilities of a predicted element to match minimap color.
+
+    Set the probability of any element not matching the minimap color to 0,
+    and normalize the rest.
+
+    Parameters
+    ----------
+    probabilities
+        A numpy array of probabilities, in the same order as `elements`.
+    minimap_color
+        The minimap color of the tile as an (r, g, b) tuple.
+    layer
+        The layer of the element.
+    elements
+        A list of elements, defining what the indices in `probabilities`
+        map to.
+    """
+    # Since many minimap colors are unambiguous, init a probability vector with
+    # only zeros, so we can just set an element to 1 and return.
+    zero_probabilities = numpy.zeros(probabilities.shape)
+    if layer == "room_piece":
+        if minimap_color == (0, 0, 0):
+            zero_probabilities[elements.index((Element.WALL, Direction.NONE))] = 1
+            return zero_probabilities
+
+    return probabilities
 
 
 def _save_tile_png(coords, tile, tile_info, base_name, directory):

@@ -42,6 +42,7 @@ class ImageProcessingStep(Enum):
     CROP_WINDOW = "Extract DROD window"
     CROP_ROOM = "Extract room"
     EXTRACT_TILES = "Extract tiles"
+    EXTRACT_MINIMAP = "Extract minimap"
     CLASSIFY_TILES = "Classify tiles"
 
 
