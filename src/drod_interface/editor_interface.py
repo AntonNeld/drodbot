@@ -12,6 +12,9 @@ from common import (
 from .consts import ROOM_ORIGIN_X, ROOM_ORIGIN_Y
 from .util import get_drod_window, extract_room, extract_tiles
 
+STYLE_SELECT_SCROLL_UP = (1000, 110)
+EDIT_ROOM = (670, 740)
+
 ROOM_PIECES_TAB = (24, 20)
 FLOOR_CONTROLS_TAB = (60, 20)
 ITEMS_TAB = (100, 20)
@@ -118,6 +121,24 @@ class EditorInterface:
         pyautogui.dragRel(
             xOffset=(ROOM_WIDTH_IN_TILES - 1) * TILE_SIZE,
             yOffset=(ROOM_HEIGHT_IN_TILES - 1) * TILE_SIZE,
+            button="right",
+        )
+        pyautogui.keyUp("shift")
+
+    async def clear_tile(self, position):
+        """Clear the given tile.
+
+        Parameters
+        ----------
+        position
+            Position of the tile.
+        """
+        # Select the normal floor, to make sure clearing doesn't use mosaic floors
+        await self._select_element(ROOM_PIECES_TAB, FLOOR)
+        pyautogui.keyDown("shift")
+        pyautogui.click(
+            x=self.origin_x + ROOM_ORIGIN_X + TILE_SIZE * (position[0] + 0.5),
+            y=self.origin_y + ROOM_ORIGIN_Y + TILE_SIZE * (position[1] + 0.5),
             button="right",
         )
         pyautogui.keyUp("shift")
@@ -282,6 +303,20 @@ class EditorInterface:
         pyautogui.press("esc")
         # Sleep to let the transition finish
         await asyncio.sleep(1)
+
+    async def select_first_style(self):
+        """Select the first room style for the current room."""
+        pyautogui.press("esc")
+        await self._click(STYLE_SELECT_SCROLL_UP)
+        pyautogui.press("up", presses=13, interval=0.1)
+        await self._click(EDIT_ROOM)
+
+    async def select_next_style(self):
+        """Select the next room style for the current room."""
+        pyautogui.press("esc")
+        await self._click(STYLE_SELECT_SCROLL_UP)
+        pyautogui.press("down")
+        await self._click(EDIT_ROOM)
 
     async def get_tiles(self):
         _, _, window_image = await get_drod_window()

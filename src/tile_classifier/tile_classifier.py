@@ -48,6 +48,7 @@ class TileClassifier:
 
     async def load_training_data(self):
         """Load the training data and send it to the GUI."""
+        print("Loading training data...")
         self._data = []
         try:
             file_names = os.listdir(self._training_data_dir)
@@ -110,7 +111,7 @@ class TileClassifier:
             self._models[layer].fit(
                 images_array[:validation_start],
                 element[:validation_start],
-                epochs=15,
+                epochs=5,
                 validation_data=(
                     images_array[validation_start:],
                     element[validation_start:],
@@ -168,7 +169,7 @@ class TileClassifier:
         and save the tiles as images. The images are annotated with the
         tile contents as metadata.
         """
-        print("Generating training data")
+        print("Generating training data...")
         await self._interface.initialize()
         await self._interface.clear_room()
         room = await self._generate_room()
@@ -176,36 +177,49 @@ class TileClassifier:
         # Starting position when testing
         room.place_element_like_editor(Element.BEETHRO, Direction.SE, (37, 31))
 
-        await self._interface.start_test_room((37, 31), Direction.SE)
-        tiles = await self._interface.get_tiles()
-        await self._interface.stop_test_room()
+        await self._interface.select_first_style()
 
-        if not os.path.exists(self._training_data_dir):
-            os.makedirs(self._training_data_dir)
-        random_string = "".join(
-            random.choices(string.ascii_uppercase + string.digits, k=5)
-        )
-        for coords, tile in tiles.items():
-            # Annotate the image with the tile contents
-            tile_info = room.get_tile(coords)
-            _save_tile_png(
-                coords, tile, tile_info, random_string, self._training_data_dir
+        for _ in range(13):  # There are 13 room styles
+            await self._interface.start_test_room((37, 31), Direction.SE)
+            tiles = await self._interface.get_tiles()
+            await self._interface.stop_test_room()
+
+            if not os.path.exists(self._training_data_dir):
+                os.makedirs(self._training_data_dir)
+            random_string = "".join(
+                random.choices(string.ascii_uppercase + string.digits, k=5)
             )
-        # Place a conquer token under the starting position and go again,
-        # to capture triggered conquer tokens in the screenshot
-        await self._interface.place_element(
-            Element.CONQUER_TOKEN, Direction.NONE, (37, 31)
-        )
-        room.place_element_like_editor(Element.CONQUER_TOKEN, Direction.NONE, (37, 31))
-        await self._interface.start_test_room((37, 31), Direction.SE)
-        tiles = await self._interface.get_tiles()
-        await self._interface.stop_test_room()
-        for coords in room.find_coordinates(Element.CONQUER_TOKEN):
-            tile = tiles[coords]
-            tile_info = room.get_tile(coords)
-            _save_tile_png(
-                coords, tile, tile_info, f"{random_string}v", self._training_data_dir
+            for coords, tile in tiles.items():
+                # Annotate the image with the tile contents
+                tile_info = room.get_tile(coords)
+                _save_tile_png(
+                    coords, tile, tile_info, random_string, self._training_data_dir
+                )
+            # Place a conquer token under the starting position and go again,
+            # to capture triggered conquer tokens in the screenshot
+            await self._interface.place_element(
+                Element.CONQUER_TOKEN, Direction.NONE, (37, 31)
             )
+            room.place_element_like_editor(
+                Element.CONQUER_TOKEN, Direction.NONE, (37, 31)
+            )
+            await self._interface.start_test_room((37, 31), Direction.SE)
+            tiles = await self._interface.get_tiles()
+            await self._interface.stop_test_room()
+            for coords in room.find_coordinates(Element.CONQUER_TOKEN):
+                tile = tiles[coords]
+                tile_info = room.get_tile(coords)
+                _save_tile_png(
+                    coords,
+                    tile,
+                    tile_info,
+                    f"{random_string}v",
+                    self._training_data_dir,
+                )
+            # Remove the conquer token for the next iteration
+            await self._interface.clear_tile((37, 31))
+            room.set_tile((37, 31), Tile(room_piece=(Element.FLOOR, Direction.NONE)))
+            await self._interface.select_next_style()
         print("Finished generating training data")
 
     async def _generate_room(self):
