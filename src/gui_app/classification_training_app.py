@@ -16,8 +16,11 @@ class ClassificationTrainingApp(tkinter.Frame):
         self.root = root
         self.event_loop = event_loop
         self.classifier = classifier
+        self.raw_data = []
         self.data = []
         self.data_index = None
+        self.only_wrong = tkinter.BooleanVar(self)
+        self.only_wrong.set(False)
         self.create_widgets()
 
     def create_widgets(self):
@@ -37,6 +40,13 @@ class ClassificationTrainingApp(tkinter.Frame):
             self.browse_buttons, text="<", state="disable", command=self.previous_tile
         )
         self.previous_tile_button.pack(side=tkinter.RIGHT)
+        self.only_wrong_checkbox = tkinter.Checkbutton(
+            self.tile_area,
+            text="Only wrongly predicted",
+            variable=self.only_wrong,
+            command=self.filter_data,
+        )
+        self.only_wrong_checkbox.pack(side=tkinter.TOP)
 
         self.details_area = tkinter.Frame(self)
         self.details_area.pack(side=tkinter.LEFT)
@@ -75,8 +85,17 @@ class ClassificationTrainingApp(tkinter.Frame):
         self.save_weights_button.pack(side=tkinter.TOP)
 
     def set_data(self, data):
+        self.raw_data = data
+        self.filter_data()
+
+    def filter_data(self):
         old_filenames = [tile["file_name"] for tile in self.data]
-        self.data = data
+        if self.only_wrong.get():
+            self.data = [
+                t for t in self.raw_data if t["real_content"] != t["predicted_content"]
+            ]
+        else:
+            self.data = self.raw_data
         if len(self.data) > 0:
             # Keep the index if it's the same files, since this means we're just
             # updating the data
