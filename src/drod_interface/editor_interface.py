@@ -99,8 +99,10 @@ class EditorInterface:
             _, _, image = await get_drod_window()
         self.monster_direction = Direction.SE
 
-    async def _click(self, position):
-        pyautogui.click(x=self.origin_x + position[0], y=self.origin_y + position[1])
+    async def _click(self, position, button="left"):
+        pyautogui.click(
+            x=self.origin_x + position[0], y=self.origin_y + position[1], button=button
+        )
 
     async def _select_element(self, tab_position, element_position):
         if self.selected_tab != tab_position:
@@ -197,6 +199,7 @@ class EditorInterface:
             Only used when placing walls. If this is true, the wall will be
             of the hard variant.
         """
+        button = "left"
         if element in [Element.BEETHRO]:
             # Some elements cannot be placed freely, so we place characters to fake it
             if end_position is not None:
@@ -211,6 +214,9 @@ class EditorInterface:
             if hard_wall != self.hard_walls:
                 await self._click(WALL)
                 self.hard_walls = hard_wall
+        elif element == Element.FLOOR:
+            await self._select_element(ROOM_PIECES_TAB, FLOOR)
+            button = "right"
         elif element == Element.CONQUER_TOKEN:
             await self._select_element(ITEMS_TAB, TOKEN)
             if self.selected_token != CONQUER_TOKEN_IN_MENU:
@@ -225,7 +231,8 @@ class EditorInterface:
                 (
                     ROOM_ORIGIN_X + (position[0] + 0.5) * TILE_SIZE,
                     ROOM_ORIGIN_Y + (position[1] + 0.5) * TILE_SIZE,
-                )
+                ),
+                button=button,
             )
         else:
             pyautogui.moveTo(
@@ -235,6 +242,7 @@ class EditorInterface:
             pyautogui.dragRel(
                 xOffset=(end_position[0] - position[0]) * TILE_SIZE,
                 yOffset=(end_position[1] - position[1]) * TILE_SIZE,
+                button=button,
             )
 
     async def _place_character(
