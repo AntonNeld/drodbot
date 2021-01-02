@@ -1,3 +1,4 @@
+import asyncio
 import copy
 import os
 import os.path
@@ -178,6 +179,8 @@ class TileClassifier:
         room.place_element_like_editor(Element.BEETHRO, Direction.SE, (37, 31))
 
         await self._interface.select_first_style()
+        # Wait a bit, since loading the room may take some time if the computer is busy
+        await asyncio.sleep(10)
 
         for _ in range(13):  # There are 13 room styles
             await self._interface.start_test_room((37, 31), Direction.SE)
