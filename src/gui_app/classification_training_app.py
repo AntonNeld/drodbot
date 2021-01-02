@@ -130,7 +130,9 @@ class ClassificationTrainingApp(tkinter.Frame):
         self.tile_image = ImageTk.PhotoImage(image=resized_image)
         self.canvas.create_image(0, 0, image=self.tile_image, anchor=tkinter.NW)
 
-        self.tile_file_name.config(text=f"File: {self.data[index]['file_name']}")
+        self.tile_file_name.config(
+            text=f"File: {self.data[index]['file_name']} ({index+1}/{len(self.data)})"
+        )
         self.real_tile_content.config(
             text="==Real content==\n" + tile_to_text(self.data[index]["real_content"])
         )
