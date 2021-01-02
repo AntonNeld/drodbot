@@ -8,7 +8,6 @@ def tile_to_text(tile):
         f"Checkpoint: {_format_element(tile.checkpoint)}",
         f"Item: {_format_element(tile.item)}",
         f"Monster: {_format_element(tile.monster)}",
-        f"Swords: {','.join([_format_element(sword) for sword in tile.swords])}",
     ]
     return "\n".join(lines)
 

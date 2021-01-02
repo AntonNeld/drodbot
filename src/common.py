@@ -1,8 +1,8 @@
 import copy
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 import json
-from typing import Tuple, Optional, List
+from typing import Tuple
 
 
 ROOM_WIDTH_IN_TILES = 38
@@ -56,7 +56,6 @@ class Element(Enum):
     NOTHING = "Nothing"
     WALL = "Wall"
     BEETHRO = "Beethro"
-    BEETHRO_SWORD = "Really Big Sword (TM)"
     CONQUER_TOKEN = "Conquer token"
     FLOOR = "Floor"
 
@@ -64,16 +63,12 @@ class Element(Enum):
 ROOM_PIECES = [Element.WALL, Element.FLOOR]
 ITEMS = [Element.CONQUER_TOKEN, Element.NOTHING]
 MONSTERS = [Element.BEETHRO, Element.NOTHING]
-SWORDS = [Element.BEETHRO_SWORD]
-
-SWORDED_MONSTERS = {Element.BEETHRO: Element.BEETHRO_SWORD}
 
 # These are overlaid over the room to show tile classifications
 ELEMENT_CHARACTERS = {
     Element.UNKNOWN: "?",
     Element.WALL: "#",
     Element.BEETHRO: "B",
-    Element.BEETHRO_SWORD: "S",
     Element.CONQUER_TOKEN: "C",
     Element.FLOOR: ".",
 }
@@ -130,16 +125,13 @@ class Tile:
         The element in the "items" layer.
     monster
         The element in the "monsters" layer.
-    swords
-        A list of elements in the swords layer.
     """
 
     room_piece: Tuple[Element, Direction]
     floor_control: Tuple[Element, Direction] = (Element.NOTHING, Direction.NONE)
-    checkpoint: Optional[Tuple[Element, Direction]] = (Element.NOTHING, Direction.NONE)
-    item: Optional[Tuple[Element, Direction]] = (Element.NOTHING, Direction.NONE)
-    monster: Optional[Tuple[Element, Direction]] = (Element.NOTHING, Direction.NONE)
-    swords: List[Tuple[Element, Direction]] = field(default_factory=list)
+    checkpoint: Tuple[Element, Direction] = (Element.NOTHING, Direction.NONE)
+    item: Tuple[Element, Direction] = (Element.NOTHING, Direction.NONE)
+    monster: Tuple[Element, Direction] = (Element.NOTHING, Direction.NONE)
 
     def get_elements(self):
         """Get all elements in the tile.
@@ -150,17 +142,17 @@ class Tile:
         -------
         A list of all elements (without directions) in the tile.
         """
-        elements = []
-        for element in [
-            self.room_piece,
-            self.floor_control,
-            self.checkpoint,
-            self.item,
-            self.monster,
-        ] + self.swords:
-            if element[0] != Element.NOTHING:
-                elements.append(element[0])
-        return elements
+        return [
+            e[0]
+            for e in [
+                self.room_piece,
+                self.floor_control,
+                self.checkpoint,
+                self.item,
+                self.monster,
+            ]
+            if e[0] != Element.NOTHING
+        ]
 
     def to_json(self):
         """Encodes the tile as JSON.
@@ -177,7 +169,6 @@ class Tile:
                 "checkpoint": [e.value for e in self.checkpoint],
                 "item": [e.value for e in self.item],
                 "monster": [e.value for e in self.monster],
-                "swords": [[e.value for e in element] for element in self.swords],
             }
         )
 
@@ -185,13 +176,8 @@ class Tile:
     def from_json(json_string):
         json_dict = json.loads(json_string)
         constructor_args = {
-            key: _element_tuple_from_json(value)
-            for key, value in json_dict.items()
-            if key != "swords"
+            key: _element_tuple_from_json(value) for key, value in json_dict.items()
         }
-        constructor_args["swords"] = [
-            _element_tuple_from_json(p) for p in json_dict["swords"]
-        ]
         return Tile(**constructor_args)
 
 
@@ -278,8 +264,7 @@ class Room:
             ):
                 tile = copy.deepcopy(self._tiles[(x, y)])
                 # Cannot place things on same layer as something else, unless it's
-                # a floor. We don't need to worry about swords, since they can't be
-                # placed individually.
+                # a floor.
                 if getattr(tile, layer)[0] not in [Element.FLOOR, Element.NOTHING]:
                     continue
                 # TODO: There are some elements that block each other, even if they are
@@ -287,32 +272,6 @@ class Room:
                 #       relevant, take care of this here.
                 setattr(tile, layer, (element, direction))
                 self._tiles[(x, y)] = tile
-                if element in SWORDED_MONSTERS:
-                    sword = SWORDED_MONSTERS[element]
-                    if direction == Direction.N:
-                        sword_pos = (x, y - 1)
-                    elif direction == Direction.NE:
-                        sword_pos = (x + 1, y - 1)
-                    elif direction == Direction.E:
-                        sword_pos = (x + 1, y)
-                    elif direction == Direction.SE:
-                        sword_pos = (x + 1, y + 1)
-                    elif direction == Direction.S:
-                        sword_pos = (x, y + 1)
-                    elif direction == Direction.SW:
-                        sword_pos = (x - 1, y + 1)
-                    elif direction == Direction.W:
-                        sword_pos = (x - 1, y)
-                    elif direction == Direction.NW:
-                        sword_pos = (x - 1, y - 1)
-                    else:
-                        raise RuntimeError(f"Sword cannot have direction {direction}")
-                    try:
-                        sword_tile = copy.deepcopy(self._tiles[sword_pos])
-                        sword_tile.swords.append((sword, direction))
-                        self._tiles[sword_pos] = sword_tile
-                    except KeyError:
-                        pass  # Don't place a sword outside the room
 
     def find_coordinates(self, element):
         """Find the coordinates of all elements of a type.
