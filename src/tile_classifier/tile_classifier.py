@@ -183,6 +183,8 @@ class TileClassifier:
                 room_pieces[key] = (Element.YELLOW_DOOR, Direction.NONE)
             elif color == (255, 255, 164):
                 room_pieces[key] = (Element.YELLOW_DOOR_OPEN, Direction.NONE)
+            elif color == (210, 210, 100):
+                room_pieces[key] = (Element.STAIRS, Direction.NONE)
             elif color == (255, 200, 200):
                 # This only appears in the editor, but we may as well have it
                 room_pieces[key] = (Element.FLOOR, Direction.NONE)
