@@ -19,7 +19,6 @@ from common import (
     Tile,
     ROOM_WIDTH_IN_TILES,
     ROOM_HEIGHT_IN_TILES,
-    ROOM_PIECES,
     ITEMS,
     MONSTERS,
     ALLOWED_DIRECTIONS,
@@ -34,12 +33,6 @@ class TileClassifier:
         self._data = []
         self._queue = window_queue
         self._models = {
-            "room_piece": {
-                "layer": "room_piece",
-                "elements": [
-                    (e, d) for e in ROOM_PIECES for d in ALLOWED_DIRECTIONS[e]
-                ],
-            },
             "item": {
                 "layer": "item",
                 "elements": [(e, d) for e in ITEMS for d in ALLOWED_DIRECTIONS[e]],
@@ -135,6 +128,7 @@ class TileClassifier:
                     element[validation_start:],
                 ),
             )
+        print("Classifying training data...")
         self._classify_training_data()
         self._queue.put((GUIEvent.SET_TRAINING_DATA, self._data))
         print("Training complete")
@@ -169,26 +163,21 @@ class TileClassifier:
         A dict with the same keys as `tiles`, but Tile objects
         representing the tile contents as the values.
         """
-        keys, images = zip(*tiles.items())
-        images_array = numpy.stack(images, axis=0)
-        classified_tiles = {
-            key: Tile(room_piece=(Element.UNKNOWN, Direction.UNKNOWN)) for key in keys
+        room_pieces = {}
+        for key in tiles:
+            color = minimap_colors[key]
+            if color == (0, 0, 0):
+                room_pieces[key] = (Element.WALL, Direction.NONE)
+            else:
+                room_pieces[key] = (Element.FLOOR, Direction.NONE)
+        items = _predict(tiles, self._models["item"])
+        monsters = _predict(tiles, self._models["monster"])
+        return {
+            key: Tile(
+                room_piece=room_pieces[key], item=items[key], monster=monsters[key]
+            )
+            for key in tiles
         }
-        for model in self._models.values():
-            results = model["model"].predict(images_array)
-            for index, key in enumerate(keys):
-                probabilities = _exclude_wrong_colors(
-                    results[index, :],
-                    minimap_colors[key],
-                    model["layer"],
-                    model["elements"],
-                )
-                setattr(
-                    classified_tiles[key],
-                    model["layer"],
-                    model["elements"][numpy.argmax(probabilities)],
-                )
-        return classified_tiles
 
     async def generate_training_data(self):
         """Generate data for training the classification model.
@@ -352,35 +341,6 @@ class TileClassifier:
         return has_element
 
 
-def _exclude_wrong_colors(probabilities, minimap_color, layer, elements):
-    """Change probabilities of a predicted element to match minimap color.
-
-    Set the probability of any element not matching the minimap color to 0,
-    and normalize the rest.
-
-    Parameters
-    ----------
-    probabilities
-        A numpy array of probabilities, in the same order as `elements`.
-    minimap_color
-        The minimap color of the tile as an (r, g, b) tuple.
-    layer
-        The layer of the element.
-    elements
-        A list of elements, defining what the indices in `probabilities`
-        map to.
-    """
-    # Since many minimap colors are unambiguous, init a probability vector with
-    # only zeros, so we can just set an element to 1 and return.
-    zero_probabilities = numpy.zeros(probabilities.shape)
-    if layer == "room_piece":
-        if minimap_color == (0, 0, 0):
-            zero_probabilities[elements.index((Element.WALL, Direction.NONE))] = 1
-            return zero_probabilities
-
-    return probabilities
-
-
 def _save_tile_png(coords, tile, tile_info, minimap_color, base_name, directory):
     png_info = PngInfo()
     png_info.add_text("tile_json", tile_info.to_json())
@@ -415,3 +375,32 @@ def _new_model(outputs):
         metrics=["accuracy"],
     )
     return model
+
+
+def _predict(tiles, model):
+    """Predict the element and direction in the given tiles.
+
+    The layer depends on the model.
+
+    Parameters
+    ----------
+    tiles
+        Dict with tile images as the values.
+    model
+        Dict with the keys "model" (the actual model) and "elements"
+        (list of element-direction pairs, mapping the indices in the
+        model output).
+
+    Returns
+    -------
+    Dict with the same keys as `tiles`, but the values are element-direction
+    pairs from `model["elements"]`.
+    """
+    keys, images = zip(*tiles.items())
+    images_array = numpy.stack(images, axis=0)
+    classified_tiles = {}
+    results = model["model"].predict(images_array)
+    for index, key in enumerate(keys):
+        probabilities = results[index, :]
+        classified_tiles[key] = model["elements"][numpy.argmax(probabilities)]
+    return classified_tiles
