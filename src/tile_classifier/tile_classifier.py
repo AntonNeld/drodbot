@@ -1,5 +1,6 @@
 import asyncio
 import copy
+import json
 import os
 import os.path
 import random
@@ -60,11 +61,13 @@ class TileClassifier:
         for file_name in file_names:
             image = PIL.Image.open(os.path.join(self._training_data_dir, file_name))
             content = Tile.from_json(image.info["tile_json"])
+            minimap_color = tuple(json.loads(image.info["minimap_color"]))
             self._data.append(
                 {
                     "image": numpy.array(image),
                     "real_content": content,
                     "file_name": file_name,
+                    "minimap_color": minimap_color,
                 }
             )
         self._classify_training_data()
@@ -129,12 +132,13 @@ class TileClassifier:
 
     def _classify_training_data(self):
         predicted_contents = self.classify_tiles(
-            {t["file_name"]: t["image"] for t in self._data}
+            {t["file_name"]: t["image"] for t in self._data},
+            {t["file_name"]: t["minimap_color"] for t in self._data},
         )
         for entry in self._data:
             entry["predicted_content"] = predicted_contents[entry["file_name"]]
 
-    def classify_tiles(self, tiles, minimap_colors=None):
+    def classify_tiles(self, tiles, minimap_colors):
         """Classify the given tiles according to the current model.
 
         Parameters
@@ -159,11 +163,9 @@ class TileClassifier:
         for layer, elements in LAYERS:
             results = self._models[layer].predict(images_array)
             for index, key in enumerate(keys):
-                probabilities = results[index, :]
-                if minimap_colors is not None:
-                    probabilities = _exclude_wrong_colors(
-                        probabilities, minimap_colors[key], layer, elements
-                    )
+                probabilities = _exclude_wrong_colors(
+                    results[index, :], minimap_colors[key], layer, elements
+                )
                 setattr(
                     classified_tiles[key],
                     layer,
@@ -192,7 +194,7 @@ class TileClassifier:
 
         for _ in range(13):  # There are 13 room styles
             await self._interface.start_test_room((37, 31), Direction.SE)
-            tiles = await self._interface.get_tiles()
+            tiles, colors = await self._interface.get_tiles_and_colors()
             await self._interface.stop_test_room()
 
             if not os.path.exists(self._training_data_dir):
@@ -203,8 +205,14 @@ class TileClassifier:
             for coords, tile in tiles.items():
                 # Annotate the image with the tile contents
                 tile_info = room.get_tile(coords)
+                minimap_color = colors[coords]
                 _save_tile_png(
-                    coords, tile, tile_info, random_string, self._training_data_dir
+                    coords,
+                    tile,
+                    tile_info,
+                    minimap_color,
+                    random_string,
+                    self._training_data_dir,
                 )
             # Place a conquer token under the starting position and go again,
             # to capture triggered conquer tokens in the screenshot
@@ -215,15 +223,17 @@ class TileClassifier:
                 Element.CONQUER_TOKEN, Direction.NONE, (37, 31)
             )
             await self._interface.start_test_room((37, 31), Direction.SE)
-            tiles = await self._interface.get_tiles()
+            tiles, colors = await self._interface.get_tiles_and_colors()
             await self._interface.stop_test_room()
             for coords in room.find_coordinates(Element.CONQUER_TOKEN):
                 tile = tiles[coords]
                 tile_info = room.get_tile(coords)
+                minimap_color = colors[coords]
                 _save_tile_png(
                     coords,
                     tile,
                     tile_info,
+                    minimap_color,
                     f"{random_string}v",
                     self._training_data_dir,
                 )
@@ -354,9 +364,10 @@ def _exclude_wrong_colors(probabilities, minimap_color, layer, elements):
     return probabilities
 
 
-def _save_tile_png(coords, tile, tile_info, base_name, directory):
+def _save_tile_png(coords, tile, tile_info, minimap_color, base_name, directory):
     png_info = PngInfo()
     png_info.add_text("tile_json", tile_info.to_json())
+    png_info.add_text("minimap_color", json.dumps(minimap_color))
     # Save the image with a random name
     image = PIL.Image.fromarray(tile)
     image.save(

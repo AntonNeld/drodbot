@@ -153,7 +153,7 @@ def extract_tiles(room_image, minimap_image):
             end_y = (y + 1) * TILE_SIZE
             tiles[(x, y)] = room_image[start_y:end_y, start_x:end_x, :]
             color = minimap_image[y, x, :]
-            colors[(x, y)] = (color[0], color[1], color[2])
+            colors[(x, y)] = (int(color[0]), int(color[1]), int(color[2]))
     return tiles, colors
 
 

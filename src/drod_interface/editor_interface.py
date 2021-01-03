@@ -10,7 +10,7 @@ from common import (
     Direction,
 )
 from .consts import ROOM_ORIGIN_X, ROOM_ORIGIN_Y
-from .util import get_drod_window, extract_room, extract_tiles
+from .util import get_drod_window, extract_room, extract_minimap, extract_tiles
 
 STYLE_SELECT_SCROLL_UP = (1000, 110)
 EDIT_ROOM = (670, 740)
@@ -326,7 +326,17 @@ class EditorInterface:
         pyautogui.press("down")
         await self._click(EDIT_ROOM)
 
-    async def get_tiles(self):
+    async def get_tiles_and_colors(self):
+        """Get the tiles and minimap colors for each coordinate.
+
+        Returns
+        -------
+        tiles
+            A dict with coordinates as keys and tile images as values.
+        colors
+            A dict with coordinates as keys and (r, g, b) tuples as values.
+        """
         _, _, window_image = await get_drod_window()
         room_image = extract_room(window_image)
-        return extract_tiles(room_image)
+        minimap_image = extract_minimap(window_image)
+        return extract_tiles(room_image, minimap_image)
