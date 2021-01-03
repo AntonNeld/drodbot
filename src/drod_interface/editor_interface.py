@@ -21,6 +21,7 @@ ITEMS_TAB = (100, 20)
 MONSTERS_TAB = (135, 20)
 
 WALL = (30, 60)
+GREEN_DOOR_OPEN = (60, 140)
 FLOOR = (25, 300)
 MOSAIC_FLOOR = (60, 300)
 ROAD_FLOOR = (90, 300)
@@ -234,6 +235,8 @@ class EditorInterface:
             else:
                 await self._select_element(ROOM_PIECES_TAB, FLOOR)
             button = "right"
+        elif element == Element.GREEN_DOOR_OPEN:
+            await self._select_element(ROOM_PIECES_TAB, GREEN_DOOR_OPEN)
         elif element == Element.CONQUER_TOKEN:
             await self._select_element(ITEMS_TAB, TOKEN)
             if self.selected_token != CONQUER_TOKEN_IN_MENU:
