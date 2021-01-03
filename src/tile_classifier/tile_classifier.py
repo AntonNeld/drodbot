@@ -185,6 +185,17 @@ class TileClassifier:
                 room_pieces[key] = (Element.YELLOW_DOOR, Direction.NONE)
             elif color == (255, 255, 164):
                 room_pieces[key] = (Element.YELLOW_DOOR_OPEN, Direction.NONE)
+            elif color == (0, 255, 0):
+                room_pieces[key] = (Element.GREEN_DOOR, Direction.NONE)
+            elif color == (128, 255, 128):  # Cleared room
+                # TODO: This can be oremites too. They are not the same color, but
+                # they disappear from the minimap when the room is just cleared.
+                # TODO: This can be open green doors too
+                room_pieces[key] = (Element.FLOOR, Direction.NONE)
+            elif color == (0, 255, 255):
+                room_pieces[key] = (Element.BLUE_DOOR, Direction.NONE)
+            elif color == (164, 255, 255):
+                room_pieces[key] = (Element.BLUE_DOOR_OPEN, Direction.NONE)
             elif color == (210, 210, 100):
                 room_pieces[key] = (Element.STAIRS, Direction.NONE)
             elif color == (255, 200, 200):
@@ -192,11 +203,6 @@ class TileClassifier:
                 room_pieces[key] = (Element.FLOOR, Direction.NONE)
             elif color == (255, 0, 0):  # Not cleared, required room
                 # TODO: This can be red doors too
-                room_pieces[key] = (Element.FLOOR, Direction.NONE)
-            elif color == (128, 255, 128):  # Cleared room
-                # TODO: This can be oremites too. They are not the same color, but
-                # they disappear from the minimap when the room is cleared.
-                # TODO: This can be open green doors too
                 room_pieces[key] = (Element.FLOOR, Direction.NONE)
             elif color == (255, 0, 255):  # Not cleared, not required room
                 room_pieces[key] = (Element.FLOOR, Direction.NONE)

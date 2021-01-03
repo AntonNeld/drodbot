@@ -60,6 +60,10 @@ class Element(Enum):
     MASTER_WALL = "Master wall"
     YELLOW_DOOR = "Yellow door"
     YELLOW_DOOR_OPEN = "Yellow door (open)"
+    GREEN_DOOR = "Green door"
+    GREEN_DOOR_OPEN = "Green door (open)"
+    BLUE_DOOR = "Blue door"
+    BLUE_DOOR_OPEN = "Blue door (open)"
     STAIRS = "Stairs"
     OBSTACLE = "Obstacle"
     BEETHRO = "Beethro"
@@ -74,6 +78,10 @@ ROOM_PIECES = [
     Element.MASTER_WALL,
     Element.YELLOW_DOOR,
     Element.YELLOW_DOOR_OPEN,
+    Element.GREEN_DOOR,
+    Element.GREEN_DOOR_OPEN,
+    Element.BLUE_DOOR,
+    Element.BLUE_DOOR_OPEN,
     Element.STAIRS,
 ]
 ITEMS = [Element.CONQUER_TOKEN, Element.OBSTACLE, Element.NOTHING]
@@ -87,6 +95,10 @@ ELEMENT_CHARACTERS = {
     Element.MASTER_WALL: "M",
     Element.YELLOW_DOOR: "Y",
     Element.YELLOW_DOOR_OPEN: "y",
+    Element.GREEN_DOOR: "G",
+    Element.GREEN_DOOR_OPEN: "g",
+    Element.BLUE_DOOR: "B",
+    Element.BLUE_DOOR_OPEN: "b",
     Element.STAIRS: ">",
     Element.OBSTACLE: "+",
     Element.BEETHRO: "B",
