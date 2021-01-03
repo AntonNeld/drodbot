@@ -57,13 +57,21 @@ class Element(Enum):
     NOTHING = "Nothing"
     WALL = "Wall"
     MASTER_WALL = "Master wall"
+    YELLOW_DOOR = "Yellow door"
+    YELLOW_DOOR_OPEN = "Yellow door (open)"
     OBSTACLE = "Obstacle"
     BEETHRO = "Beethro"
     CONQUER_TOKEN = "Conquer token"
     FLOOR = "Floor"
 
 
-ROOM_PIECES = [Element.WALL, Element.FLOOR, Element.MASTER_WALL]
+ROOM_PIECES = [
+    Element.WALL,
+    Element.FLOOR,
+    Element.MASTER_WALL,
+    Element.YELLOW_DOOR,
+    Element.YELLOW_DOOR_OPEN,
+]
 ITEMS = [Element.CONQUER_TOKEN, Element.OBSTACLE, Element.NOTHING]
 MONSTERS = [Element.BEETHRO, Element.NOTHING]
 
@@ -72,6 +80,8 @@ ELEMENT_CHARACTERS = {
     Element.UNKNOWN: "?",
     Element.WALL: "#",
     Element.MASTER_WALL: "M",
+    Element.YELLOW_DOOR: "Y",
+    Element.YELLOW_DOOR_OPEN: "y",
     Element.OBSTACLE: "+",
     Element.BEETHRO: "B",
     Element.CONQUER_TOKEN: "C",

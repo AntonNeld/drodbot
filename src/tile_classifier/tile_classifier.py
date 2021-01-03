@@ -179,6 +179,10 @@ class TileClassifier:
             elif color == (255, 128, 0):
                 # TODO: This can be hold complete walls or hot tiles too
                 room_pieces[key] = (Element.MASTER_WALL, Direction.NONE)
+            elif color == (255, 255, 0):
+                room_pieces[key] = (Element.YELLOW_DOOR, Direction.NONE)
+            elif color == (255, 255, 164):
+                room_pieces[key] = (Element.YELLOW_DOOR_OPEN, Direction.NONE)
             elif color == (255, 200, 200):
                 # This only appears in the editor, but we may as well have it
                 room_pieces[key] = (Element.FLOOR, Direction.NONE)
@@ -192,12 +196,12 @@ class TileClassifier:
                 room_pieces[key] = (Element.FLOOR, Direction.NONE)
             elif color == (255, 0, 255):  # Not cleared, not required room
                 room_pieces[key] = (Element.FLOOR, Direction.NONE)
+            elif color == (229, 229, 229):  # Cleared room, revisited
+                room_pieces[key] = (Element.FLOOR, Direction.NONE)
             elif color == (128, 128, 128):
                 # There is an obstacle on this tile, so we don't know what the
                 # room piece is. It usually doesn't matter, so let's say it's floor.
                 # TODO: Handle tunnels under obstacles, where it does matter.
-                room_pieces[key] = (Element.FLOOR, Direction.NONE)
-            elif color == (229, 229, 229):  # Cleared room, revisited
                 room_pieces[key] = (Element.FLOOR, Direction.NONE)
             else:
                 print(f"Unknown color {color}")
