@@ -179,14 +179,32 @@ class TileClassifier:
             elif color == (255, 128, 0):
                 # TODO: This can be hold complete walls or hot tiles too
                 room_pieces[key] = (Element.MASTER_WALL, Direction.NONE)
-            else:
+            elif color == (255, 200, 200):
+                # This only appears in the editor, but we may as well have it
                 room_pieces[key] = (Element.FLOOR, Direction.NONE)
+            elif color == (255, 0, 0):  # Not cleared, required room
+                # TODO: This can be red doors too
+                room_pieces[key] = (Element.FLOOR, Direction.NONE)
+            elif color == (128, 255, 128):  # Cleared room
+                # TODO: This can be oremites too. They are not the same color, but
+                # they disappear from the minimap when the room is cleared.
+                # TODO: This can be open green doors too
+                room_pieces[key] = (Element.FLOOR, Direction.NONE)
+            elif color == (255, 0, 255):  # Not cleared, not required room
+                room_pieces[key] = (Element.FLOOR, Direction.NONE)
+            elif color == (128, 128, 128):
+                # There is an obstacle on this tile, so we don't know what the
+                # room piece is. It usually doesn't matter, so let's say it's floor.
+                # TODO: Handle tunnels under obstacles, where it does matter.
+                room_pieces[key] = (Element.FLOOR, Direction.NONE)
+            elif color == (229, 229, 229):  # Cleared room, revisited
+                room_pieces[key] = (Element.FLOOR, Direction.NONE)
+            else:
+                print(f"Unknown color {color}")
+                room_pieces[key] = (Element.UNKNOWN, Direction.UNKNOWN)
 
             if color == (128, 128, 128):
                 items[key] = (Element.OBSTACLE, Direction.NONE)
-                # We don't know what the room piece under this is, but it doesn't
-                # really matter. Let's say it's just floor.
-                # TODO: Handle tunnels under obstacles, where it does matter.
             else:
                 ambiguous_item_tiles[key] = tiles[key]
 
