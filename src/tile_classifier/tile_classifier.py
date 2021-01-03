@@ -329,20 +329,26 @@ class TileClassifier:
             0.5,
             mask=mask,
         )
-        await self._randomly_place_element(
+        # Place some different floors. Have a mask rather than replacing the floors,
+        # to speed things up a bit.
+        floor_mask = await self._randomly_place_element(
             room, Element.FLOOR, Direction.NONE, 0.3, mask=mask, style="mosaic"
         )
-        await self._randomly_place_element(
-            room, Element.FLOOR, Direction.NONE, 0.3, mask=mask, style="road"
+        floor_mask = numpy.logical_and(floor_mask, mask)
+        new_mask = await self._randomly_place_element(
+            room, Element.FLOOR, Direction.NONE, 0.3, mask=floor_mask, style="road"
         )
-        await self._randomly_place_element(
-            room, Element.FLOOR, Direction.NONE, 0.3, mask=mask, style="grass"
+        floor_mask = numpy.logical_and(floor_mask, new_mask)
+        new_mask = await self._randomly_place_element(
+            room, Element.FLOOR, Direction.NONE, 0.3, mask=floor_mask, style="grass"
         )
-        await self._randomly_place_element(
-            room, Element.FLOOR, Direction.NONE, 0.3, mask=mask, style="dirt"
+        floor_mask = numpy.logical_and(floor_mask, new_mask)
+        new_mask = await self._randomly_place_element(
+            room, Element.FLOOR, Direction.NONE, 0.3, mask=floor_mask, style="dirt"
         )
-        await self._randomly_place_element(
-            room, Element.FLOOR, Direction.NONE, 0.3, mask=mask, style="alternate"
+        floor_mask = numpy.logical_and(floor_mask, new_mask)
+        new_mask = await self._randomly_place_element(
+            room, Element.FLOOR, Direction.NONE, 0.3, mask=floor_mask, style="alternate"
         )
 
         await self._randomly_place_element(
