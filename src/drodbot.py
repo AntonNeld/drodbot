@@ -25,6 +25,7 @@ if __name__ == "__main__":
     bot = DrodBot(play_interface, window_queue)
 
     window = tkinter.Tk()
+    window.title("DRODbot")
     app = GuiApp(
         root=window,
         event_loop=loop,
