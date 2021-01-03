@@ -56,6 +56,7 @@ class Element(Enum):
     UNKNOWN = "Unknown"
     NOTHING = "Nothing"
     WALL = "Wall"
+    PIT = "Pit"
     MASTER_WALL = "Master wall"
     YELLOW_DOOR = "Yellow door"
     YELLOW_DOOR_OPEN = "Yellow door (open)"
@@ -69,6 +70,7 @@ class Element(Enum):
 ROOM_PIECES = [
     Element.WALL,
     Element.FLOOR,
+    Element.PIT,
     Element.MASTER_WALL,
     Element.YELLOW_DOOR,
     Element.YELLOW_DOOR_OPEN,
@@ -81,6 +83,7 @@ MONSTERS = [Element.BEETHRO, Element.NOTHING]
 ELEMENT_CHARACTERS = {
     Element.UNKNOWN: "?",
     Element.WALL: "#",
+    Element.PIT: ",",
     Element.MASTER_WALL: "M",
     Element.YELLOW_DOOR: "Y",
     Element.YELLOW_DOOR_OPEN: "y",

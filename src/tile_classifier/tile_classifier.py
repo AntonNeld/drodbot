@@ -176,6 +176,8 @@ class TileClassifier:
             if color == (0, 0, 0):
                 # TODO: This can be broken or secret walls too
                 room_pieces[key] = (Element.WALL, Direction.NONE)
+            elif color == (0, 0, 128):
+                room_pieces[key] = (Element.PIT, Direction.NONE)
             elif color == (255, 128, 0):
                 # TODO: This can be hold complete walls or hot tiles too
                 room_pieces[key] = (Element.MASTER_WALL, Direction.NONE)
