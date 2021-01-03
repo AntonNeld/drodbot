@@ -174,7 +174,11 @@ class TileClassifier:
         for key in tiles:
             color = minimap_colors[key]
             if color == (0, 0, 0):
+                # TODO: This can be broken or secret walls too
                 room_pieces[key] = (Element.WALL, Direction.NONE)
+            elif color == (255, 128, 0):
+                # TODO: This can be hold complete walls or hot tiles too
+                room_pieces[key] = (Element.MASTER_WALL, Direction.NONE)
             else:
                 room_pieces[key] = (Element.FLOOR, Direction.NONE)
 
