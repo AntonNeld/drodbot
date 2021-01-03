@@ -296,9 +296,11 @@ class Room:
                 end_position[1] + 1 if end_position is not None else position[1] + 1,
             ):
                 tile = copy.deepcopy(self._tiles[(x, y)])
-                # Cannot place things on same layer as something else, unless it's
+                # Cannot place things on same layer as something else, unless either is
                 # a floor.
-                if getattr(tile, layer)[0] not in [Element.FLOOR, Element.NOTHING]:
+                if (
+                    getattr(tile, layer)[0] not in [Element.FLOOR, Element.NOTHING]
+                ) and element != Element.FLOOR:
                     continue
                 # TODO: There are some elements that block each other, even if they are
                 #       on different layers. Once we use enough elements that it is
