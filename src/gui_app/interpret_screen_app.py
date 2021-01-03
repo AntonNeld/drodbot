@@ -109,17 +109,19 @@ class InterpretScreenApp(tkinter.Frame):
             self.draw_view()
 
     def clicked_canvas(self, event):
-        if self.room is None:
-            return
-
         if self.enlarged_view:
             x = event.x // TILE_SIZE
             y = event.y // TILE_SIZE
         else:
             x = event.x // (TILE_SIZE // 2)
             y = event.y // (TILE_SIZE // 2)
-        tile = self.room.get_tile((x, y))
-        self.tile_content.config(text=tile_to_text(tile))
+        if self.room is not None:
+            tile = self.room.get_tile((x, y))
+            self.tile_content.config(text=tile_to_text(tile))
+        elif self.raw_view_image.shape == (32, 38, 3):
+            # This is probably the minimap, so showing the color is nice
+            color = self.raw_view_image[y, x, :]
+            self.tile_content.config(text=str(color))
 
 
 def annotate_image(image, room):
