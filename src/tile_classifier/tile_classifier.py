@@ -33,9 +33,13 @@ class TileClassifier:
         self._data = []
         self._queue = window_queue
         self._models = {
-            "item": {
+            "ambiguous_items": {
                 "layer": "item",
-                "elements": [(e, d) for e in ITEMS for d in ALLOWED_DIRECTIONS[e]],
+                "elements": [
+                    (e, d)
+                    for e in [e for e in ITEMS if e != Element.OBSTACLE]
+                    for d in ALLOWED_DIRECTIONS[e]
+                ],
             },
             "monster": {
                 "layer": "monster",
@@ -163,14 +167,29 @@ class TileClassifier:
         A dict with the same keys as `tiles`, but Tile objects
         representing the tile contents as the values.
         """
+        ambiguous_item_tiles = {}
+
         room_pieces = {}
+        items = {}
         for key in tiles:
             color = minimap_colors[key]
             if color == (0, 0, 0):
                 room_pieces[key] = (Element.WALL, Direction.NONE)
             else:
                 room_pieces[key] = (Element.FLOOR, Direction.NONE)
-        items = _predict(tiles, self._models["item"])
+
+            if color == (128, 128, 128):
+                items[key] = (Element.OBSTACLE, Direction.NONE)
+                # We don't know what the room piece under this is, but it doesn't
+                # really matter. Let's say it's just floor.
+                # TODO: Handle tunnels under obstacles, where it does matter.
+            else:
+                ambiguous_item_tiles[key] = tiles[key]
+
+        items = {
+            **items,
+            **_predict(ambiguous_item_tiles, self._models["ambiguous_items"]),
+        }
         monsters = _predict(tiles, self._models["monster"])
         return {
             key: Tile(

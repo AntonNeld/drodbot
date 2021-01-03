@@ -56,19 +56,21 @@ class Element(Enum):
     UNKNOWN = "Unknown"
     NOTHING = "Nothing"
     WALL = "Wall"
+    OBSTACLE = "Obstacle"
     BEETHRO = "Beethro"
     CONQUER_TOKEN = "Conquer token"
     FLOOR = "Floor"
 
 
 ROOM_PIECES = [Element.WALL, Element.FLOOR]
-ITEMS = [Element.CONQUER_TOKEN, Element.NOTHING]
+ITEMS = [Element.CONQUER_TOKEN, Element.OBSTACLE, Element.NOTHING]
 MONSTERS = [Element.BEETHRO, Element.NOTHING]
 
 # These are overlaid over the room to show tile classifications
 ELEMENT_CHARACTERS = {
     Element.UNKNOWN: "?",
     Element.WALL: "#",
+    Element.OBSTACLE: "+",
     Element.BEETHRO: "B",
     Element.CONQUER_TOKEN: "C",
     Element.FLOOR: ".",
