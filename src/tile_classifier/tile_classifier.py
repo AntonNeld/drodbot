@@ -330,7 +330,23 @@ class TileClassifier:
             mask=mask,
         )
         await self._randomly_place_element(
-            room, Element.WALL, Direction.NONE, 0.5, mask=mask
+            room, Element.FLOOR, Direction.NONE, 0.3, mask=mask, style="mosaic"
+        )
+        await self._randomly_place_element(
+            room, Element.FLOOR, Direction.NONE, 0.3, mask=mask, style="road"
+        )
+        await self._randomly_place_element(
+            room, Element.FLOOR, Direction.NONE, 0.3, mask=mask, style="grass"
+        )
+        await self._randomly_place_element(
+            room, Element.FLOOR, Direction.NONE, 0.3, mask=mask, style="dirt"
+        )
+        await self._randomly_place_element(
+            room, Element.FLOOR, Direction.NONE, 0.3, mask=mask, style="alternate"
+        )
+
+        await self._randomly_place_element(
+            room, Element.WALL, Direction.NONE, 0.2, mask=mask
         )
         # Since we will duplicate the tiles with conquer tokens, decrease the
         # probability so the number of tiles with and without will match
@@ -341,7 +357,7 @@ class TileClassifier:
         return room
 
     async def _randomly_place_element(
-        self, room, element, direction, probability, mask=None
+        self, room, element, direction, probability, mask=None, style=None
     ):
         """Place the given element randomly in the editor and given room.
 
@@ -360,6 +376,8 @@ class TileClassifier:
         mask
             An optional boolean array that is True where elements can be
             placed and False elsewhere.
+        style
+            The style to pass on to EditorInterface.place_element().
 
         Returns
         -------
@@ -390,7 +408,11 @@ class TileClassifier:
             ):
                 element_direction = directions[direction_index]
                 await self._interface.place_element(
-                    element, element_direction, position, copy_characters=True
+                    element,
+                    element_direction,
+                    position,
+                    copy_characters=True,
+                    style=style,
                 )
                 room.place_element_like_editor(element, element_direction, position)
 

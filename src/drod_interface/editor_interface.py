@@ -22,6 +22,11 @@ MONSTERS_TAB = (135, 20)
 
 WALL = (30, 60)
 FLOOR = (25, 300)
+MOSAIC_FLOOR = (60, 300)
+ROAD_FLOOR = (90, 300)
+GRASS_FLOOR = (25, 330)
+DIRT_FLOOR = (60, 330)
+ALTERNATE_FLOOR = (90, 330)
 
 FORCE_ARROW = (30, 50)
 CHECKPOINT = (120, 50)
@@ -174,7 +179,7 @@ class EditorInterface:
         position,
         end_position=None,
         copy_characters=False,
-        hard_wall=False,
+        style=None,
     ):
         """Place an element in the editor.
 
@@ -195,9 +200,10 @@ class EditorInterface:
             again. This has the side effect of copying the entire contents of the tile,
             so this should only be done if we know the tile is otherwise empty, e.g. by
             placing all characters before any other layers.
-        hard_wall
-            Only used when placing walls. If this is true, the wall will be
-            of the hard variant.
+        style
+            The cosmetic style of the element. It does not count as a separate element
+            in the model (the Element enum), but may be of interest to place anyway.
+            The possible values depend on the element to place.
         """
         button = "left"
         if element in [Element.BEETHRO]:
@@ -211,11 +217,22 @@ class EditorInterface:
 
         if element == Element.WALL:
             await self._select_element(ROOM_PIECES_TAB, WALL)
-            if hard_wall != self.hard_walls:
+            if (style == "hard") != self.hard_walls:
                 await self._click(WALL)
-                self.hard_walls = hard_wall
+                self.hard_walls = style == "hard"
         elif element == Element.FLOOR:
-            await self._select_element(ROOM_PIECES_TAB, FLOOR)
+            if style == "mosaic":
+                await self._select_element(ROOM_PIECES_TAB, MOSAIC_FLOOR)
+            elif style == "road":
+                await self._select_element(ROOM_PIECES_TAB, ROAD_FLOOR)
+            elif style == "grass":
+                await self._select_element(ROOM_PIECES_TAB, GRASS_FLOOR)
+            elif style == "dirt":
+                await self._select_element(ROOM_PIECES_TAB, DIRT_FLOOR)
+            elif style == "alternate":
+                await self._select_element(ROOM_PIECES_TAB, ALTERNATE_FLOOR)
+            else:
+                await self._select_element(ROOM_PIECES_TAB, FLOOR)
             button = "right"
         elif element == Element.CONQUER_TOKEN:
             await self._select_element(ITEMS_TAB, TOKEN)
