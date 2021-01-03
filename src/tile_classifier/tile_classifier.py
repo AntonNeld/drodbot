@@ -212,6 +212,7 @@ class TileClassifier:
                 # There is an obstacle on this tile, so we don't know what the
                 # room piece is. It usually doesn't matter, so let's say it's floor.
                 # TODO: Handle tunnels under obstacles, where it does matter.
+                # TODO: Can be tunnels too
                 room_pieces[key] = (Element.FLOOR, Direction.NONE)
             else:
                 print(f"Unknown color {color}")
