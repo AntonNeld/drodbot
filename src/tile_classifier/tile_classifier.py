@@ -1,5 +1,4 @@
 import asyncio
-import copy
 import json
 import os
 import os.path
@@ -26,12 +25,6 @@ from common import (
     ALLOWED_DIRECTIONS,
 )
 
-LAYERS = [
-    ("room_piece", [(e, d) for e in ROOM_PIECES for d in ALLOWED_DIRECTIONS[e]]),
-    ("item", [(e, d) for e in ITEMS for d in ALLOWED_DIRECTIONS[e]]),
-    ("monster", [(e, d) for e in MONSTERS for d in ALLOWED_DIRECTIONS[e]]),
-]
-
 
 class TileClassifier:
     def __init__(self, training_data_dir, weights_dir, editor_interface, window_queue):
@@ -40,13 +33,28 @@ class TileClassifier:
         self._interface = editor_interface
         self._data = []
         self._queue = window_queue
-        self._models = {}
-        for layer, elements in LAYERS:
-            self._models[layer] = _new_model(len(elements))
+        self._models = {
+            "room_piece": {
+                "layer": "room_piece",
+                "elements": [
+                    (e, d) for e in ROOM_PIECES for d in ALLOWED_DIRECTIONS[e]
+                ],
+            },
+            "item": {
+                "layer": "item",
+                "elements": [(e, d) for e in ITEMS for d in ALLOWED_DIRECTIONS[e]],
+            },
+            "monster": {
+                "layer": "monster",
+                "elements": [(e, d) for e in MONSTERS for d in ALLOWED_DIRECTIONS[e]],
+            },
+        }
+        for name, model in self._models.items():
+            model["model"] = _new_model(len(model["elements"]))
             try:
-                self._models[layer].load_weights(os.path.join(self._weights_dir, layer))
+                model["model"].load_weights(os.path.join(self._weights_dir, name))
             except ValueError:
-                print(f"No model weights found for {layer}, not loading any")
+                print(f"No model weights found for {name}, not loading any")
 
     async def load_training_data(self):
         """Load the training data and send it to the GUI."""
@@ -75,18 +83,24 @@ class TileClassifier:
         print("Loaded training data")
 
     async def train_model(self):
-        """Train a model from the current training data.
+        """Train models from the current training data.
 
-        Set the resulting model as the current model.
+        Set the resulting models as the current models.
         """
-        for layer, elements in LAYERS:
-            print(f"Training model for {layer}")
-            # Remove excess data so there are equal amounts of each element
-            curated_data = copy.copy(self._data)
+        for name, model in self._models.items():
+            print(f"Training model: {name}")
+            # Remove tiles that are not in the model's scope, i.e. the element in the
+            # model's layer is not a possible output of the model.
+            curated_data = [
+                t
+                for t in self._data
+                if getattr(t["real_content"], model["layer"]) in model["elements"]
+            ]
+            # Ensure there is an equal amount of each element in the training data.
             random.shuffle(curated_data)
             counts = {}
             for t in curated_data:
-                element = getattr(t["real_content"], layer)[0]
+                element = getattr(t["real_content"], model["layer"])[0]
                 if element not in counts:
                     counts[element] = 0
                 counts[element] += 1
@@ -97,22 +111,22 @@ class TileClassifier:
                     index = next(
                         i
                         for i, t in enumerate(curated_data)
-                        if getattr(t["real_content"], layer)[0] == element
+                        if getattr(t["real_content"], model["layer"])[0] == element
                     )
                     curated_data.pop(index)
 
             images_array = numpy.stack([t["image"] for t in curated_data], axis=0)
-            self._models[layer] = _new_model(len(elements))
+            model["model"] = _new_model(len(model["elements"]))
             element = numpy.array(
                 [
-                    elements.index(getattr(t["real_content"], layer))
+                    model["elements"].index(getattr(t["real_content"], model["layer"]))
                     for t in curated_data
                 ],
                 dtype=numpy.uint8,
             )
             # Let 10% of our data be for validation
             validation_start = images_array.shape[0] // 10
-            self._models[layer].fit(
+            model["model"].fit(
                 images_array[:validation_start],
                 element[:validation_start],
                 epochs=5,
@@ -126,8 +140,8 @@ class TileClassifier:
         print("Training complete")
 
     async def save_model_weights(self):
-        for layer, _ in LAYERS:
-            self._models[layer].save_weights(os.path.join(self._weights_dir, layer))
+        for name, model in self._models.items():
+            model["model"].save_weights(os.path.join(self._weights_dir, name))
         print("Saved model weights")
 
     def _classify_training_data(self):
@@ -160,16 +174,19 @@ class TileClassifier:
         classified_tiles = {
             key: Tile(room_piece=(Element.UNKNOWN, Direction.UNKNOWN)) for key in keys
         }
-        for layer, elements in LAYERS:
-            results = self._models[layer].predict(images_array)
+        for model in self._models.values():
+            results = model["model"].predict(images_array)
             for index, key in enumerate(keys):
                 probabilities = _exclude_wrong_colors(
-                    results[index, :], minimap_colors[key], layer, elements
+                    results[index, :],
+                    minimap_colors[key],
+                    model["layer"],
+                    model["elements"],
                 )
                 setattr(
                     classified_tiles[key],
-                    layer,
-                    elements[numpy.argmax(probabilities)],
+                    model["layer"],
+                    model["elements"][numpy.argmax(probabilities)],
                 )
         return classified_tiles
 
