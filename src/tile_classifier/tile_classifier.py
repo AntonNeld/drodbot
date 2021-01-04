@@ -248,7 +248,13 @@ class TileClassifier:
         room = await self._generate_room()
 
         # Starting position when testing
-        room.place_element_like_editor(Element.BEETHRO, Direction.SE, (37, 31))
+        room.set_tile(
+            (37, 31),
+            Tile(
+                room_piece=(Element.FLOOR, Direction.NONE),
+                monster=(Element.BEETHRO, Direction.SE),
+            ),
+        )
 
         await self._interface.select_first_style()
         # Wait a bit, since loading the room may take some time if the computer is busy
@@ -301,7 +307,13 @@ class TileClassifier:
                 )
             # Remove the conquer token for the next iteration
             await self._interface.clear_tile((37, 31))
-            room.set_tile((37, 31), Tile(room_piece=(Element.FLOOR, Direction.NONE)))
+            room.set_tile(
+                (37, 31),
+                Tile(
+                    room_piece=(Element.FLOOR, Direction.NONE),
+                    monster=(Element.BEETHRO, Direction.SE),
+                ),
+            )
             await self._interface.select_next_style()
         print("Finished generating training data")
 
