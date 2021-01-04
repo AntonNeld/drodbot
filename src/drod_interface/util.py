@@ -157,6 +157,44 @@ def extract_tiles(room_image, minimap_image):
     return tiles, colors
 
 
+def reconstruct_from_tiles(tiles):
+    """Reconstruct a room image given the tiles.
+
+    Parameters
+    ----------
+    tiles
+        A dict mapping (x, y) coordinates to tile images. The images
+        can be in color or grayscale.
+
+    Returns
+    -------
+    A room image.
+    """
+    tile = list(tiles.values())[0]
+    if len(tile.shape) == 3:
+        room_image = numpy.zeros(
+            (
+                ROOM_HEIGHT_IN_TILES * TILE_SIZE,
+                ROOM_WIDTH_IN_TILES * TILE_SIZE,
+                tile.shape[2],
+            ),
+            dtype=numpy.uint8,
+        )
+    else:
+        room_image = numpy.zeros(
+            (ROOM_HEIGHT_IN_TILES * TILE_SIZE, ROOM_WIDTH_IN_TILES * TILE_SIZE),
+            dtype=numpy.uint8,
+        )
+    for x in range(ROOM_WIDTH_IN_TILES):
+        for y in range(ROOM_HEIGHT_IN_TILES):
+            start_x = x * TILE_SIZE
+            end_x = (x + 1) * TILE_SIZE
+            start_y = y * TILE_SIZE
+            end_y = (y + 1) * TILE_SIZE
+            room_image[start_y:end_y, start_x:end_x] = tiles[(x, y)]
+    return room_image
+
+
 def _find_color(image, color):
     r = image[:, :, 0]
     g = image[:, :, 1]
