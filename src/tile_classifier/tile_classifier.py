@@ -167,10 +167,12 @@ class TileClassifier:
         A dict with the same keys as `tiles`, but Tile objects
         representing the tile contents as the values.
         """
-        ambiguous_item_tiles = {}
+        ambiguous_item_tiles = {**tiles}
+        ambiguous_monster_tiles = {**tiles}
 
         room_pieces = {}
         items = {}
+        monsters = {}
         for key in tiles:
             color = minimap_colors[key]
             if color == (0, 0, 0):
@@ -209,25 +211,28 @@ class TileClassifier:
             elif color == (229, 229, 229):  # Cleared room, revisited
                 room_pieces[key] = (Element.FLOOR, Direction.NONE)
             elif color == (128, 128, 128):
+                # TODO: Can be tunnels too
+                items[key] = (Element.OBSTACLE, Direction.NONE)
+                del ambiguous_item_tiles[key]
                 # There is an obstacle on this tile, so we don't know what the
                 # room piece is. It usually doesn't matter, so let's say it's floor.
                 # TODO: Handle tunnels under obstacles, where it does matter.
-                # TODO: Can be tunnels too
                 room_pieces[key] = (Element.FLOOR, Direction.NONE)
+                # If it's an obstacle, we know there are no monsters there
+                monsters[key] = (Element.NOTHING, Direction.NONE)
+                del ambiguous_monster_tiles[key]
             else:
                 print(f"Unknown color {color}")
                 room_pieces[key] = (Element.UNKNOWN, Direction.UNKNOWN)
-
-            if color == (128, 128, 128):
-                items[key] = (Element.OBSTACLE, Direction.NONE)
-            else:
-                ambiguous_item_tiles[key] = tiles[key]
 
         items = {
             **items,
             **_predict(ambiguous_item_tiles, self._models["ambiguous_items"]),
         }
-        monsters = _predict(tiles, self._models["monster"])
+        monsters = {
+            **monsters,
+            **_predict(ambiguous_monster_tiles, self._models["monster"]),
+        }
         return {
             key: Tile(
                 room_piece=room_pieces[key], item=items[key], monster=monsters[key]
