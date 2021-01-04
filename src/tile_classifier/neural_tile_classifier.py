@@ -25,7 +25,7 @@ from common import (
 )
 
 
-class TileClassifier:
+class NeuralTileClassifier:
     def __init__(self, training_data_dir, weights_dir, editor_interface, window_queue):
         self._training_data_dir = training_data_dir
         self._weights_dir = weights_dir
