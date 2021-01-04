@@ -244,6 +244,9 @@ class EditorInterface:
                 await self._click(TOKEN)
                 await self._click(CONQUER_TOKEN_IN_MENU)
                 self.selected_token = CONQUER_TOKEN_IN_MENU
+        elif element == Element.ROACH:
+            await self._select_element(MONSTERS_TAB, ROACH)
+            await self._set_monster_direction(direction)
         else:
             raise RuntimeError(f"Unknown element {element}")
         if end_position is None:

@@ -67,6 +67,7 @@ class Element(Enum):
     STAIRS = "Stairs"
     OBSTACLE = "Obstacle"
     BEETHRO = "Beethro"
+    ROACH = "Roach"
     CONQUER_TOKEN = "Conquer token"
     FLOOR = "Floor"
 
@@ -85,7 +86,7 @@ ROOM_PIECES = [
     Element.STAIRS,
 ]
 ITEMS = [Element.CONQUER_TOKEN, Element.OBSTACLE, Element.NOTHING]
-MONSTERS = [Element.BEETHRO, Element.NOTHING]
+MONSTERS = [Element.BEETHRO, Element.ROACH, Element.NOTHING]
 
 # These are overlaid over the room to show tile classifications
 ELEMENT_CHARACTERS = {
@@ -102,6 +103,7 @@ ELEMENT_CHARACTERS = {
     Element.STAIRS: ">",
     Element.OBSTACLE: "+",
     Element.BEETHRO: "B",
+    Element.ROACH: "R",
     Element.CONQUER_TOKEN: "C",
     Element.FLOOR: ".",
 }
@@ -302,9 +304,15 @@ class Room:
                     getattr(tile, layer)[0] not in [Element.FLOOR, Element.NOTHING]
                 ) and element != Element.FLOOR:
                     continue
-                # TODO: There are some elements that block each other, even if they are
-                #       on different layers. Once we use enough elements that it is
-                #       relevant, take care of this here.
+                blocked_by_wall = [e for e in MONSTERS if e not in [Element.BEETHRO]]
+                if tile.room_piece[0] == Element.WALL and element in blocked_by_wall:
+                    continue
+                if (
+                    bool(set(tile.get_elements()) & set(blocked_by_wall))
+                    and element == Element.WALL
+                ):
+                    continue
+                # TODO: Implement more conditions where elements block each other
                 setattr(tile, layer, (element, direction))
                 self._tiles[(x, y)] = tile
 

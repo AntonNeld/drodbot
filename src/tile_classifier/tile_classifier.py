@@ -126,7 +126,7 @@ class TileClassifier:
             model["model"].fit(
                 images_array[:validation_start],
                 element[:validation_start],
-                epochs=5,
+                epochs=10,
                 validation_data=(
                     images_array[validation_start:],
                     element[validation_start:],
@@ -313,7 +313,7 @@ class TileClassifier:
         mask[-1, -1] = False
         # Place the monster layer first, so we can use copy_characters
         # in EditorInterface.place_element
-        await self._randomly_place_element(
+        beethros = await self._randomly_place_element(
             room,
             Element.BEETHRO,
             [
@@ -326,28 +326,44 @@ class TileClassifier:
                 Direction.NE,
                 Direction.E,
             ],
-            0.5,
+            0.33,
             mask=mask,
+        )
+        await self._randomly_place_element(
+            room,
+            Element.ROACH,
+            [
+                Direction.SE,
+                Direction.S,
+                Direction.SW,
+                Direction.W,
+                Direction.NW,
+                Direction.N,
+                Direction.NE,
+                Direction.E,
+            ],
+            0.5,
+            mask=numpy.logical_and(mask, numpy.logical_not(beethros)),
         )
         # Place some different floors. Have a mask rather than replacing the floors,
         # to speed things up a bit.
-        floor_mask = await self._randomly_place_element(
+        floors = await self._randomly_place_element(
             room, Element.FLOOR, Direction.NONE, 0.3, mask=mask, style="mosaic"
         )
-        floor_mask = numpy.logical_and(floor_mask, mask)
-        new_mask = await self._randomly_place_element(
+        floor_mask = numpy.logical_and(mask, numpy.logical_not(floors))
+        floors = await self._randomly_place_element(
             room, Element.FLOOR, Direction.NONE, 0.3, mask=floor_mask, style="road"
         )
-        floor_mask = numpy.logical_and(floor_mask, new_mask)
-        new_mask = await self._randomly_place_element(
+        floor_mask = numpy.logical_and(floor_mask, numpy.logical_not(floors))
+        floors = await self._randomly_place_element(
             room, Element.FLOOR, Direction.NONE, 0.3, mask=floor_mask, style="grass"
         )
-        floor_mask = numpy.logical_and(floor_mask, new_mask)
-        new_mask = await self._randomly_place_element(
+        floor_mask = numpy.logical_and(floor_mask, numpy.logical_not(floors))
+        floors = await self._randomly_place_element(
             room, Element.FLOOR, Direction.NONE, 0.3, mask=floor_mask, style="dirt"
         )
-        floor_mask = numpy.logical_and(floor_mask, new_mask)
-        new_mask = await self._randomly_place_element(
+        floor_mask = numpy.logical_and(floor_mask, numpy.logical_not(floors))
+        await self._randomly_place_element(
             room, Element.FLOOR, Direction.NONE, 0.3, mask=floor_mask, style="alternate"
         )
 
