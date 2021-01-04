@@ -1,4 +1,5 @@
 import asyncio
+from enum import Enum
 
 import pyautogui
 
@@ -33,7 +34,8 @@ FORCE_ARROW = (30, 50)
 CHECKPOINT = (120, 50)
 WALL_LIGHT = (25, 85)
 
-MIMIC = (60, 50)
+ORB = (25, 50)
+MIMIC_POTION = (60, 50)
 TOKEN = (30, 180)
 CONQUER_TOKEN_IN_MENU = (265, 150)
 
@@ -44,6 +46,12 @@ CHARACTER_WINDOW_SCROLL_UP = (960, 180)
 CHARACTER_WINDOW_FIRST_TYPE = (820, 180)
 CHARACTER_WINDOW_VISIBLE_CHECKBOX = (820, 700)
 CHARACTER_WINDOW_OKAY = (570, 710)
+
+
+class OrbType(Enum):
+    NORMAL = 0
+    CRACKED = 1
+    BROKEN = 2
 
 
 class EditorInterface:
@@ -59,6 +67,7 @@ class EditorInterface:
             MONSTERS_TAB: None,
         }
         self.hard_walls = None
+        self.orb_type = None
         self.monster_direction = None
         self.selected_token = None
         self.copied_element = None
@@ -91,8 +100,13 @@ class EditorInterface:
         self.selected_element[FLOOR_CONTROLS_TAB] = FORCE_ARROW
 
         await self._click(ITEMS_TAB)
-        await self._click(MIMIC)
-        self.selected_element[ITEMS_TAB] = MIMIC
+        await self._click(ORB)
+        self.selected_element[ITEMS_TAB] = ORB
+        _, _, image = await get_drod_window()
+        while image[455, 45, 0] != 255:  # Background instead of open parenthesis
+            pyautogui.press("q")
+            _, _, image = await get_drod_window()
+        self.orb_type = OrbType.NORMAL
 
         await self._click(MONSTERS_TAB)
         self.selected_tab = MONSTERS_TAB
@@ -237,6 +251,14 @@ class EditorInterface:
             button = "right"
         elif element == Element.GREEN_DOOR_OPEN:
             await self._select_element(ROOM_PIECES_TAB, GREEN_DOOR_OPEN)
+        elif element == Element.ORB:
+            await self._select_element(ITEMS_TAB, ORB)
+            if self.orb_type == OrbType.CRACKED:
+                await self._click(ORB)
+                await self._click(ORB)
+            elif self.orb_type == OrbType.BROKEN:
+                await self._click(ORB)
+            self.orb_type = OrbType.NORMAL
         elif element == Element.CONQUER_TOKEN:
             await self._select_element(ITEMS_TAB, TOKEN)
             if self.selected_token != CONQUER_TOKEN_IN_MENU:

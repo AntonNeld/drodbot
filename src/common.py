@@ -65,6 +65,7 @@ class Element(Enum):
     BLUE_DOOR = "Blue door"
     BLUE_DOOR_OPEN = "Blue door (open)"
     STAIRS = "Stairs"
+    ORB = "Orb"
     OBSTACLE = "Obstacle"
     BEETHRO = "Beethro"
     ROACH = "Roach"
@@ -85,7 +86,7 @@ ROOM_PIECES = [
     Element.BLUE_DOOR_OPEN,
     Element.STAIRS,
 ]
-ITEMS = [Element.CONQUER_TOKEN, Element.OBSTACLE, Element.NOTHING]
+ITEMS = [Element.CONQUER_TOKEN, Element.ORB, Element.OBSTACLE, Element.NOTHING]
 MONSTERS = [Element.BEETHRO, Element.ROACH, Element.NOTHING]
 
 # These are overlaid over the room to show tile classifications
@@ -101,6 +102,7 @@ ELEMENT_CHARACTERS = {
     Element.BLUE_DOOR: "B",
     Element.BLUE_DOOR_OPEN: "b",
     Element.STAIRS: ">",
+    Element.ORB: "O",
     Element.OBSTACLE: "+",
     Element.BEETHRO: "B",
     Element.ROACH: "R",
@@ -304,12 +306,18 @@ class Room:
                     getattr(tile, layer)[0] not in [Element.FLOOR, Element.NOTHING]
                 ) and element != Element.FLOOR:
                     continue
-                blocked_by_wall = [e for e in MONSTERS if e not in [Element.BEETHRO]]
-                if tile.room_piece[0] == Element.WALL and element in blocked_by_wall:
+                non_beethro_monsters = [
+                    e for e in MONSTERS if e not in [Element.BEETHRO]
+                ]
+                conflicts_with_monsters = [Element.WALL, Element.ORB]
+                if (
+                    set(tile.get_elements()) & set(conflicts_with_monsters)
+                    and element in non_beethro_monsters
+                ):
                     continue
                 if (
-                    bool(set(tile.get_elements()) & set(blocked_by_wall))
-                    and element == Element.WALL
+                    set(tile.get_elements()) & set(non_beethro_monsters)
+                    and element in conflicts_with_monsters
                 ):
                     continue
                 # TODO: Implement more conditions where elements block each other
