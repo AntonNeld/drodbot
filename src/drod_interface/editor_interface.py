@@ -300,6 +300,7 @@ class EditorInterface:
                 pyautogui.keyDown("ctrl")
                 pyautogui.press("c")
                 pyautogui.keyUp("ctrl")
+                pyautogui.mouseUp()
                 pyautogui.press("esc")  # Leave pasting mode
                 self.copied_element = element
                 self.copied_element_direction = direction
