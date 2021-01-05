@@ -29,6 +29,7 @@ ROAD_FLOOR = (90, 300)
 GRASS_FLOOR = (25, 330)
 DIRT_FLOOR = (60, 330)
 ALTERNATE_FLOOR = (90, 330)
+IMAGE_FLOOR = (120, 360)
 
 FORCE_ARROW = (30, 50)
 CHECKPOINT = (120, 50)
@@ -46,6 +47,12 @@ CHARACTER_WINDOW_SCROLL_UP = (960, 180)
 CHARACTER_WINDOW_FIRST_TYPE = (820, 180)
 CHARACTER_WINDOW_VISIBLE_CHECKBOX = (820, 700)
 CHARACTER_WINDOW_OKAY = (570, 710)
+
+IMAGE_SELECT_WINDOW_OKAY = (550, 670)
+
+IMAGE_IMPORT_WINDOW_FILE_NAME_INPUT = (400, 610)
+IMAGE_IMPORT_WINDOW_PNG = (300, 690)
+IMAGE_IMPORT_WINDOW_OKAY = (700, 680)
 
 
 class OrbType(Enum):
@@ -187,6 +194,47 @@ class EditorInterface:
                 pyautogui.press("q")
         self.monster_direction = direction
 
+    async def set_floor_image(self, directory, base_name):
+        """Set the image to use for image floors.
+
+        Only supports PNG images, and assumes that there are no other
+        images imported.
+
+        Parameters
+        ----------
+        directory
+            Path to the directory containing the image.
+        base_name
+            The file name of the image, without the extension.
+        """
+        await self._select_element(ROOM_PIECES_TAB, IMAGE_FLOOR)
+        pyautogui.press("f9")
+        _, _, image = await get_drod_window()
+        imported_image = image[198, 199, 0] == 190
+        await self._click(IMAGE_SELECT_WINDOW_OKAY)
+        if not imported_image:
+            # Replace the directory input
+            pyautogui.keyDown("ctrl")
+            pyautogui.press("a")
+            pyautogui.keyUp("ctrl")
+            pyautogui.press("backspace")
+            pyautogui.write(directory)
+            pyautogui.press("enter")
+            # Replace the file name input
+            await self._click(IMAGE_IMPORT_WINDOW_FILE_NAME_INPUT)
+            pyautogui.keyDown("ctrl")
+            pyautogui.press("a")
+            pyautogui.keyUp("ctrl")
+            pyautogui.press("backspace")
+            pyautogui.write(base_name)
+            # Select PNG and confirm
+            await self._click(IMAGE_IMPORT_WINDOW_PNG)
+            await asyncio.sleep(0.1)
+            await self._click(IMAGE_IMPORT_WINDOW_OKAY)
+            await self._click(IMAGE_SELECT_WINDOW_OKAY)
+        # Need to click somewhere to get back to normal mode
+        await self._click((ROOM_ORIGIN_X + 10, ROOM_ORIGIN_Y + 10))
+
     async def place_element(
         self,
         element,
@@ -236,6 +284,7 @@ class EditorInterface:
                 await self._click(WALL)
                 self.hard_walls = style == "hard"
         elif element == Element.FLOOR:
+            button = "right"
             if style == "mosaic":
                 await self._select_element(ROOM_PIECES_TAB, MOSAIC_FLOOR)
             elif style == "road":
@@ -246,9 +295,13 @@ class EditorInterface:
                 await self._select_element(ROOM_PIECES_TAB, DIRT_FLOOR)
             elif style == "alternate":
                 await self._select_element(ROOM_PIECES_TAB, ALTERNATE_FLOOR)
+            elif style == "image":
+                await self._select_element(ROOM_PIECES_TAB, IMAGE_FLOOR)
+                # This floor doesn't behave like the others, and should be
+                # created with the left button
+                button = "left"
             else:
                 await self._select_element(ROOM_PIECES_TAB, FLOOR)
-            button = "right"
         elif element == Element.GREEN_DOOR_OPEN:
             await self._select_element(ROOM_PIECES_TAB, GREEN_DOOR_OPEN)
         elif element == Element.ORB:

@@ -54,7 +54,21 @@ class ComparisonTileClassifier:
         print("Loaded and classified sample data")
 
     async def train_model(self):
-        print("Training models is not applicable with the current classifier")
+        """Get tile data using the editor.
+
+        The name is to match the API of NeuralTileClassifier.
+        Will be renamed once this classifier can be the standard one.
+        """
+        print("Getting tile data...")
+        await self._interface.initialize()
+        await self._interface.clear_room()
+        await self._interface.set_floor_image(
+            os.path.dirname(os.path.realpath(__file__)), "background"
+        )
+        await self._interface.place_element(
+            Element.FLOOR, Direction.NONE, (0, 0), (37, 31), style="image"
+        )
+        print("Finished getting tile data")
 
     async def save_model_weights(self):
         print("Saving model weights is not applicable with the current classifier")
