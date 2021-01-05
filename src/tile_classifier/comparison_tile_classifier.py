@@ -152,12 +152,17 @@ class ComparisonTileClassifier:
         print("Saving model weights is not applicable with the current classifier")
 
     def _classify_sample_data(self):
-        predicted_contents = self.classify_tiles(
+        predicted_contents, debug_images = self.classify_tiles(
             {t["file_name"]: t["image"] for t in self._sample_data},
             {t["file_name"]: t["minimap_color"] for t in self._sample_data},
+            return_debug_images=True,
         )
         for entry in self._sample_data:
             entry["predicted_content"] = predicted_contents[entry["file_name"]]
+            entry["debug_images"] = {
+                step: debug_images[step][entry["file_name"]]
+                for step in TILE_PROCESSING_STEPS
+            }
 
     def classify_tiles(self, tiles, minimap_colors, return_debug_images=False):
         """Classify the given tiles.

@@ -1,9 +1,11 @@
 import asyncio
+import numpy
 import PIL
 from PIL import ImageTk, Image
 import tkinter
 import traceback
 
+from common import TILE_PROCESSING_STEPS
 from .util import tile_to_text
 
 CANVAS_WIDTH = 88
@@ -21,6 +23,8 @@ class ClassificationTrainingApp(tkinter.Frame):
         self.data_index = None
         self.only_wrong = tkinter.BooleanVar(self)
         self.only_wrong.set(False)
+        self.image_processing_step = tkinter.StringVar(self)
+        self.image_processing_step.set("Raw tile")
         self.create_widgets()
 
     def create_widgets(self):
@@ -47,6 +51,14 @@ class ClassificationTrainingApp(tkinter.Frame):
             command=self.filter_data,
         )
         self.only_wrong_checkbox.pack(side=tkinter.TOP)
+        self.image_processing_step_dropdown = tkinter.OptionMenu(
+            self.tile_area,
+            self.image_processing_step,
+            "Raw tile",
+            *[step.value for step in TILE_PROCESSING_STEPS],
+            command=self.show_tile,
+        )
+        self.image_processing_step_dropdown.pack(side=tkinter.TOP)
 
         self.details_area = tkinter.Frame(self)
         self.details_area.pack(side=tkinter.LEFT)
@@ -101,7 +113,7 @@ class ClassificationTrainingApp(tkinter.Frame):
             # updating the data
             if [tile["file_name"] for tile in self.data] != old_filenames:
                 self.data_index = 0
-            self.show_tile(self.data_index)
+            self.show_tile()
         else:
             self.data_index = None
             self.canvas.delete("all")
@@ -121,8 +133,20 @@ class ClassificationTrainingApp(tkinter.Frame):
                 state="disable" if self.data_index == 0 else "normal"
             )
 
-    def show_tile(self, index):
-        image = PIL.Image.fromarray(self.data[index]["image"])
+    def show_tile(self, *args):
+        # Add *args because the dropdown gives an unused argument to this function
+        index = self.data_index
+        if self.image_processing_step.get() == "Raw tile":
+            image = PIL.Image.fromarray(self.data[index]["image"])
+        else:
+            step = next(
+                s
+                for s in TILE_PROCESSING_STEPS
+                if s.value == self.image_processing_step.get()
+            )
+            image = PIL.Image.fromarray(
+                self.data[index]["debug_images"][step].astype(numpy.uint8)
+            )
         resized_image = image.resize(
             (int(self.canvas["width"]), int(self.canvas["height"])), Image.NEAREST
         )
@@ -164,10 +188,10 @@ class ClassificationTrainingApp(tkinter.Frame):
 
     def next_tile(self):
         self.data_index += 1
-        self.show_tile(self.data_index)
+        self.show_tile()
         self.set_browse_button_state()
 
     def previous_tile(self):
         self.data_index -= 1
-        self.show_tile(self.data_index)
+        self.show_tile()
         self.set_browse_button_state()
