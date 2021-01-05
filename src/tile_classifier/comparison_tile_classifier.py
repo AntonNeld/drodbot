@@ -13,6 +13,7 @@ from common import (
     Direction,
     Tile,
 )
+from util import find_color
 
 
 class ComparisonTileClassifier:
@@ -30,9 +31,13 @@ class ComparisonTileClassifier:
             tile_data = []
             for file_name in file_names:
                 image = PIL.Image.open(os.path.join(self._tile_data_dir, file_name))
+                image_array = numpy.array(image)
                 tile_data.append(
                     {
-                        "image": numpy.array(image),
+                        "image": image_array,
+                        "mask": numpy.logical_not(
+                            find_color(image_array, (255, 255, 255))
+                        ),
                         "element": image.info["element"],
                         "direction": image.info["direction"],
                     }

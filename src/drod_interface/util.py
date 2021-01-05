@@ -9,6 +9,7 @@ from common import (
     TILE_SIZE,
 )
 from .consts import ROOM_ORIGIN_X, ROOM_ORIGIN_Y
+from util import find_color
 
 ROOM_UPPER_EDGE_COLOR = (32, 60, 74)  # Also known as #203c4a
 ROOM_UPPER_EDGE_LENGTH = 838
@@ -51,7 +52,7 @@ async def get_drod_window(stop_after=None):
         return 0, 0, raw_image
 
     # Try finding the upper edge of the room, which is a long line of constant color
-    correct_color = _find_color(raw_image, ROOM_UPPER_EDGE_COLOR)
+    correct_color = find_color(raw_image, ROOM_UPPER_EDGE_COLOR)
     if stop_after == ImageProcessingStep.FIND_UPPER_EDGE_COLOR:
         return 0, 0, correct_color
 
@@ -193,19 +194,6 @@ def reconstruct_from_tiles(tiles):
             end_y = (y + 1) * TILE_SIZE
             room_image[start_y:end_y, start_x:end_x] = tiles[(x, y)]
     return room_image
-
-
-def _find_color(image, color):
-    r = image[:, :, 0]
-    g = image[:, :, 1]
-    b = image[:, :, 2]
-    return numpy.logical_and.reduce(
-        [
-            r == color[0],
-            g == color[1],
-            b == color[2],
-        ]
-    )
 
 
 def _find_horizontal_lines(boolean_array, length):
