@@ -68,6 +68,7 @@ class Element(Enum):
     ORB = "Orb"
     OBSTACLE = "Obstacle"
     BEETHRO = "Beethro"
+    BEETHRO_SWORD = "Really Big Sword (TM)"
     ROACH = "Roach"
     CONQUER_TOKEN = "Conquer token"
     FLOOR = "Floor"

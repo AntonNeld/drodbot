@@ -68,6 +68,29 @@ class ComparisonTileClassifier:
         await self._interface.place_element(
             Element.FLOOR, Direction.NONE, (0, 0), (37, 31), style="image"
         )
+
+        # Swords are ignored when placing, but will be used when annotating
+        elements = [
+            (Element.BEETHRO, Direction.N, 0, 1),
+            (Element.BEETHRO_SWORD, Direction.N, 0, 0),
+            (Element.BEETHRO, Direction.NE, 0, 2),
+            (Element.BEETHRO_SWORD, Direction.NE, 1, 1),
+            (Element.BEETHRO, Direction.E, 1, 0),
+            (Element.BEETHRO_SWORD, Direction.E, 2, 0),
+            (Element.BEETHRO, Direction.SE, 3, 0),
+            (Element.BEETHRO_SWORD, Direction.SE, 4, 1),
+            (Element.BEETHRO, Direction.S, 5, 1),
+            (Element.BEETHRO_SWORD, Direction.S, 5, 2),
+            (Element.BEETHRO, Direction.SW, 2, 1),
+            (Element.BEETHRO_SWORD, Direction.SW, 1, 2),
+            (Element.BEETHRO, Direction.W, 5, 0),
+            (Element.BEETHRO_SWORD, Direction.W, 4, 0),
+            (Element.BEETHRO, Direction.NW, 4, 2),
+            (Element.BEETHRO_SWORD, Direction.NW, 3, 1),
+        ]
+        for (element, direction, x, y) in elements:
+            if element not in [Element.BEETHRO_SWORD]:
+                await self._interface.place_element(element, direction, (x, y))
         print("Finished getting tile data")
 
     async def save_model_weights(self):
