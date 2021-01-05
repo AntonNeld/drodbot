@@ -1,6 +1,7 @@
 import json
 import os
 import os.path
+import shutil
 
 import numpy
 import PIL
@@ -91,6 +92,26 @@ class ComparisonTileClassifier:
         for (element, direction, x, y) in elements:
             if element not in [Element.BEETHRO_SWORD]:
                 await self._interface.place_element(element, direction, (x, y))
+
+        await self._interface.start_test_room((37, 31), Direction.SE)
+        tiles, _ = await self._interface.get_tiles_and_colors()
+        await self._interface.stop_test_room()
+        if os.path.exists(self._tile_data_dir):
+            shutil.rmtree(self._tile_data_dir)
+        os.makedirs(self._tile_data_dir)
+        for (element, direction, x, y) in elements:
+            png_info = PngInfo()
+            png_info.add_text("element", element.value)
+            png_info.add_text("direction", direction.value)
+            image = PIL.Image.fromarray(tiles[(x, y)])
+            image.save(
+                os.path.join(
+                    self._tile_data_dir,
+                    f"{element.value}_{direction.value}.png",
+                ),
+                "PNG",
+                pnginfo=png_info,
+            )
         print("Finished getting tile data")
 
     async def save_model_weights(self):
@@ -127,19 +148,3 @@ class ComparisonTileClassifier:
 
     async def generate_training_data(self):
         print("For now, generate sample data with the other classifier")
-
-
-def _save_tile_png(coords, tile, tile_info, minimap_color, base_name, directory):
-    png_info = PngInfo()
-    png_info.add_text("tile_json", tile_info.to_json())
-    png_info.add_text("minimap_color", json.dumps(minimap_color))
-    # Save the image with a random name
-    image = PIL.Image.fromarray(tile)
-    image.save(
-        os.path.join(
-            directory,
-            f"{base_name}_{coords[0]}_{coords[1]}.png",
-        ),
-        "PNG",
-        pnginfo=png_info,
-    )
