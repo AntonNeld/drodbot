@@ -186,16 +186,33 @@ class ComparisonTileClassifier:
         """
         if self._tile_data is None:
             raise RuntimeError("No tile data loaded, cannot classify tiles")
-        classified_tiles = {}
-        debug_images = {step: {} for step in TILE_PROCESSING_STEPS}
-        for key, tile in tiles.items():
-            image = tile * self._tile_data[0]["mask"]
-            debug_images[ImageProcessingStep.FIRST_MASK][key] = image
+        keys, images = zip(*tiles.items())
+        tile_images = numpy.stack(images, axis=0)
+        alternative_images = numpy.stack([t["image"] for t in self._tile_data], axis=-1)
+        masks = numpy.stack([t["mask"] for t in self._tile_data], axis=-1)
+        squared_diffs = (
+            tile_images[:, :, :, :, numpy.newaxis] - alternative_images
+        ) ** 2
+        masked_diffs = squared_diffs * masks
+        average_diffs = numpy.sum(masked_diffs, axis=(1, 2, 3)) / numpy.sum(
+            masks, axis=(0, 1, 2)
+        )
+        best_matches = numpy.argmin(average_diffs, axis=-1)
 
+        classified_tiles = {}
+        for index, key in enumerate(keys):
             classified_tiles[key] = Tile(
                 room_piece=(Element.UNKNOWN, Direction.UNKNOWN)
             )
         if return_debug_images:
+            debug_images = {step: {} for step in TILE_PROCESSING_STEPS}
+            for index, key in enumerate(keys):
+                debug_images[ImageProcessingStep.DIFF_TILES][key] = squared_diffs[
+                    index, :, :, :, best_matches[index]
+                ]
+                debug_images[ImageProcessingStep.MASK_DIFFS][key] = masked_diffs[
+                    index, :, :, :, best_matches[index]
+                ]
             return classified_tiles, debug_images
         return classified_tiles
 
