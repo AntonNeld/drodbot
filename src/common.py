@@ -43,7 +43,11 @@ class ImageProcessingStep(Enum):
     CROP_ROOM = "Extract room"
     EXTRACT_TILES = "Extract tiles"
     EXTRACT_MINIMAP = "Extract minimap"
+    FIRST_MASK = "Mask tile (tmp)"
     CLASSIFY_TILES = "Classify tiles"
+
+
+TILE_PROCESSING_STEPS = [ImageProcessingStep.FIRST_MASK]
 
 
 # The values are also what will be displayed in the GUI

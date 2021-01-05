@@ -8,6 +8,8 @@ import PIL
 from PIL.PngImagePlugin import PngInfo
 
 from common import (
+    ImageProcessingStep,
+    TILE_PROCESSING_STEPS,
     GUIEvent,
     Element,
     Direction,
@@ -35,9 +37,11 @@ class ComparisonTileClassifier:
                 tile_data.append(
                     {
                         "image": image_array,
-                        "mask": numpy.logical_not(
-                            find_color(image_array, (255, 255, 255))
-                        ),
+                        "mask": numpy.expand_dims(
+                            numpy.logical_not(find_color(image_array, (255, 255, 255))),
+                            2,
+                        )
+                        * numpy.ones(3),
                         "element": image.info["element"],
                         "direction": image.info["direction"],
                     }
@@ -155,7 +159,7 @@ class ComparisonTileClassifier:
         for entry in self._sample_data:
             entry["predicted_content"] = predicted_contents[entry["file_name"]]
 
-    def classify_tiles(self, tiles, minimap_colors):
+    def classify_tiles(self, tiles, minimap_colors, return_debug_images=False):
         """Classify the given tiles.
 
         Parameters
@@ -165,17 +169,30 @@ class ComparisonTileClassifier:
         minimap_colors
             A dict with the same keys as `tiles` and (r, g, b) color tuples
             as the values.
+        return_debug_images
+            If True, return a second dict where the keys are ImageProcessingSteps,
+            and the values are dicts like `tiles` but with intermediate images.
 
         Returns
         -------
         A dict with the same keys as `tiles`, but Tile objects
-        representing the tile contents as the values.
+        representing the tile contents as the values. If `return_debug_images`
+        is True, return a second dict of images.
         """
         if self._tile_data is None:
             raise RuntimeError("No tile data loaded, cannot classify tiles")
-        return {
-            key: Tile(room_piece=(Element.UNKNOWN, Direction.UNKNOWN)) for key in tiles
-        }
+        classified_tiles = {}
+        debug_images = {step: {} for step in TILE_PROCESSING_STEPS}
+        for key, tile in tiles.items():
+            image = tile * self._tile_data[0]["mask"]
+            debug_images[ImageProcessingStep.FIRST_MASK][key] = image
+
+            classified_tiles[key] = Tile(
+                room_piece=(Element.UNKNOWN, Direction.UNKNOWN)
+            )
+        if return_debug_images:
+            return classified_tiles, debug_images
+        return classified_tiles
 
     async def generate_training_data(self):
         print("For now, generate sample data with the other classifier")
