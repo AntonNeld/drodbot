@@ -22,6 +22,28 @@ class ComparisonTileClassifier:
         self._interface = editor_interface
         self._sample_data = []
         self._queue = window_queue
+        self._tile_data = self._load_tile_data()
+
+    def _load_tile_data(self):
+        try:
+            file_names = os.listdir(self._tile_data_dir)
+            tile_data = []
+            for file_name in file_names:
+                image = PIL.Image.open(os.path.join(self._tile_data_dir, file_name))
+                tile_data.append(
+                    {
+                        "image": numpy.array(image),
+                        "element": image.info["element"],
+                        "direction": image.info["direction"],
+                    }
+                )
+            return tile_data
+        except FileNotFoundError:
+            print(
+                f"No directory '{self._tile_data_dir}' found. "
+                "You need to generate tile data before you can classify tiles."
+            )
+            return None
 
     async def load_training_data(self):
         """Load the sample data and send it to the GUI.
@@ -112,6 +134,9 @@ class ComparisonTileClassifier:
                 "PNG",
                 pnginfo=png_info,
             )
+        self._tile_data = self._load_tile_data()
+        self._classify_sample_data()
+        self._queue.put((GUIEvent.SET_TRAINING_DATA, self._sample_data))
         print("Finished getting tile data")
 
     async def save_model_weights(self):
@@ -141,7 +166,8 @@ class ComparisonTileClassifier:
         A dict with the same keys as `tiles`, but Tile objects
         representing the tile contents as the values.
         """
-
+        if self._tile_data is None:
+            raise RuntimeError("No tile data loaded, cannot classify tiles")
         return {
             key: Tile(room_piece=(Element.UNKNOWN, Direction.UNKNOWN)) for key in tiles
         }
