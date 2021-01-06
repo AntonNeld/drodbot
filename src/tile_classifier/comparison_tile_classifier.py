@@ -64,7 +64,7 @@ class ComparisonTileClassifier:
                         if element in FLOOR_CONTROLS
                         else "room_piece"
                         if element in ROOM_PIECES
-                        else "discard",
+                        else "swords",
                     }
                 )
             return tile_data
@@ -223,6 +223,7 @@ class ComparisonTileClassifier:
         }
         debug_images = {step: {} for step in TILE_PROCESSING_STEPS}
         for key, image in tiles.items():
+            found_elements_mask = numpy.ones(image.shape, dtype=bool)
             while classified_tiles[key].room_piece == (
                 Element.UNKNOWN,
                 Direction.UNKNOWN,
@@ -231,16 +232,25 @@ class ComparisonTileClassifier:
                 alternatives = [
                     d
                     for d in self._tile_data
-                    if d["layer"] != "discard"
-                    and getattr(classified_tiles[key], d["layer"])
-                    == (Element.UNKNOWN, Direction.UNKNOWN)
+                    if (
+                        d["layer"] == "swords"
+                        and classified_tiles[key].monster
+                        == (Element.UNKNOWN, Direction.UNKNOWN)
+                    )
+                    or (
+                        d["layer"] != "swords"
+                        and getattr(classified_tiles[key], d["layer"])
+                        == (Element.UNKNOWN, Direction.UNKNOWN)
+                    )
                 ]
                 for alternative in alternatives:
                     squared_diff = (image - alternative["image"]) ** 2
-                    masked_diff = squared_diff * alternative["mask"]
-                    average_diff = numpy.sum(masked_diff) / numpy.sum(
-                        alternative["mask"]
-                    )
+                    mask = numpy.logical_and(alternative["mask"], found_elements_mask)
+                    if numpy.sum(mask) != 0:
+                        masked_diff = squared_diff * mask
+                        average_diff = numpy.sum(masked_diff) / numpy.sum(mask)
+                    else:
+                        average_diff = 1000  # Set it to something unreasonably large
                     average_diffs.append(average_diff)
                 best_match_index, _ = min(
                     ((i, v) for (i, v) in enumerate(average_diffs)), key=lambda x: x[1]
@@ -254,15 +264,19 @@ class ComparisonTileClassifier:
                 )
                 element = alternatives[best_match_index]["element"]
                 direction = alternatives[best_match_index]["direction"]
+                element_mask = alternatives[best_match_index]["mask"]
+                found_elements_mask = numpy.logical_and(
+                    found_elements_mask, numpy.logical_not(element_mask)
+                )
                 layer = alternatives[best_match_index]["layer"]
-                layers = [
-                    "monster",
-                    "item",
-                    "checkpoint",
-                    "floor_control",
-                    "room_piece",
-                ]
-                if layer in layers:  # Otherwise we'll just discard it
+                if layer != "swords":  # Discard swords
+                    layers = [
+                        "monster",
+                        "item",
+                        "checkpoint",
+                        "floor_control",
+                        "room_piece",
+                    ]
                     if getattr(classified_tiles[key], layer) != (
                         Element.UNKNOWN,
                         Direction.UNKNOWN,
