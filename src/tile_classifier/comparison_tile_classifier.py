@@ -48,7 +48,7 @@ class ComparisonTileClassifier:
                     {
                         "image": image_array,
                         "mask": numpy.expand_dims(
-                            numpy.logical_not(find_color(image_array, (255, 255, 255))),
+                            numpy.logical_not(find_color(image_array, (255, 0, 255))),
                             2,
                         )
                         * numpy.ones(3),
