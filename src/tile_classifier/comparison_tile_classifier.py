@@ -237,15 +237,16 @@ class ComparisonTileClassifier:
                             ** 2,
                             axis=-1,
                         )
-                    )  # Add all colors to visualize pixel diffs
-                    debug_images[key].append(
-                        (
-                            f"Pass {passes}, diff with {alternative['file_name']}",
-                            diff,
-                        )
                     )
                     mask = numpy.logical_and(alternative["mask"], found_elements_mask)
                     masked_diff = diff * mask
+                    debug_images[key].append(
+                        (
+                            f"Pass {passes}, masked diff "
+                            f"with {alternative['file_name']}",
+                            masked_diff,
+                        )
+                    )
                     average_diff = numpy.sum(masked_diff) / numpy.sum(mask)
                     average_diffs.append(average_diff)
                 best_match_index, _ = min(
@@ -253,6 +254,13 @@ class ComparisonTileClassifier:
                 )
                 element = alternatives[best_match_index]["element"]
                 direction = alternatives[best_match_index]["direction"]
+                debug_images[key].append(
+                    (
+                        f"=Pass {passes}, selected "
+                        f"{alternatives[best_match_index]['file_name']}=",
+                        alternatives[best_match_index]["image"],
+                    )
+                )
                 element_mask = alternatives[best_match_index]["mask"]
                 found_elements_mask = numpy.logical_and(
                     found_elements_mask, numpy.logical_not(element_mask)
