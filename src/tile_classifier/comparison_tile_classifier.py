@@ -128,10 +128,28 @@ class ComparisonTileClassifier:
                 (Element.FLOOR, Direction.NONE, 2, 2),
                 (Element.FLOOR, Direction.NONE, 3, 2),
             ]
+            + _get_nondirectional_edges_element_placement(Element.WALL, 1, 4)
+            + _get_nondirectional_edges_element_placement(Element.YELLOW_DOOR, 1, 9)
+            + _get_nondirectional_edges_element_placement(Element.BLUE_DOOR, 1, 14)
+            + _get_nondirectional_edges_element_placement(Element.GREEN_DOOR, 1, 19)
+            + _get_nondirectional_edges_element_placement(
+                Element.YELLOW_DOOR_OPEN, 11, 9
+            )
+            + _get_nondirectional_edges_element_placement(
+                Element.BLUE_DOOR_OPEN, 11, 14
+            )
+            + _get_nondirectional_edges_element_placement(
+                Element.GREEN_DOOR_OPEN, 11, 19
+            )
         )
         for (element, direction, x, y) in elements:
             if element not in [Element.BEETHRO_SWORD]:
                 await self._interface.place_element(element, direction, (x, y))
+
+        # Replace the normal central wall with a hard wall
+        await self._interface.place_element(
+            Element.WALL, Direction.NONE, (2, 6), style="hard"
+        )
 
         await self._interface.start_test_room((37, 31), Direction.SE)
         tiles, _ = await self._interface.get_tiles_and_colors()
@@ -139,15 +157,22 @@ class ComparisonTileClassifier:
         if os.path.exists(self._tile_data_dir):
             shutil.rmtree(self._tile_data_dir)
         os.makedirs(self._tile_data_dir)
+        used_names = []
         for (element, direction, x, y) in elements:
             png_info = PngInfo()
             png_info.add_text("element", element.value)
             png_info.add_text("direction", direction.value)
             image = PIL.Image.fromarray(tiles[(x, y)])
+            base_name = f"{element.value}_{direction.value}"
+            name_increment = 0
+            while base_name in used_names:
+                base_name = f"{element.value}_{direction.value}_{name_increment}"
+                name_increment += 1
+            used_names.append(base_name)
             image.save(
                 os.path.join(
                     self._tile_data_dir,
-                    f"{element.value}_{direction.value}.png",
+                    f"{base_name}.png",
                 ),
                 "PNG",
                 pnginfo=png_info,
@@ -317,6 +342,21 @@ class ComparisonTileClassifier:
             (Element.ROACH, Direction.N, 2, 0),
             (Element.ROACH, Direction.NE, 3, 3),
             (Element.ROACH, Direction.SW, 3, 4),
+            (Element.GREEN_DOOR_OPEN, Direction.NONE, 5, 5),
+            (Element.ROACH, Direction.SE, 5, 5),
+            (Element.WALL, Direction.NONE, 12, 25),
+            (Element.WALL, Direction.NONE, 13, 25),
+            (Element.WALL, Direction.NONE, 12, 26),
+            (Element.FLOOR, Direction.NONE, 13, 26),
+            (Element.BLUE_DOOR, Direction.NONE, 6, 5),
+            (Element.BLUE_DOOR, Direction.NONE, 7, 5),
+            (Element.BLUE_DOOR, Direction.NONE, 8, 5),
+            (Element.BLUE_DOOR, Direction.NONE, 6, 6),
+            (Element.BLUE_DOOR, Direction.NONE, 7, 6),
+            (Element.BLUE_DOOR, Direction.NONE, 8, 6),
+            (Element.BLUE_DOOR, Direction.NONE, 6, 7),
+            (Element.BLUE_DOOR, Direction.NONE, 7, 7),
+            (Element.FLOOR, Direction.NONE, 8, 7),
         ]
         for (element, direction, x, y) in elements:
             await self._interface.place_element(element, direction, (x, y))
@@ -394,8 +434,6 @@ def _get_fully_directional_element_placement(element, x, y):
     ----------
     element
         The element to place.
-    sword
-        The sword belonging to the element.
     x
         X coordinate of the upper left corner of the pattern.
     y
@@ -410,4 +448,55 @@ def _get_fully_directional_element_placement(element, x, y):
         (element, Direction.SW, x + 1, y + 1),
         (element, Direction.W, x + 2, y + 1),
         (element, Direction.NW, x + 3, y + 1),
+    ]
+
+
+def _get_nondirectional_edges_element_placement(element, x, y):
+    """Get a list of nondirectional elements (and NONE directions).
+
+    This can be used to place elements in the editor,
+    to get several types of edges
+
+    Parameters
+    ----------
+    element
+        The element to place.
+    x
+        X coordinate of the upper left corner of the pattern.
+    y
+        Y coordinate of the upper left corner of the pattern.
+    """
+    return [
+        # Little compact square
+        (element, Direction.NONE, x + 0, y + 1),
+        (element, Direction.NONE, x + 1, y + 1),
+        (element, Direction.NONE, x + 2, y + 1),
+        (element, Direction.NONE, x + 0, y + 2),
+        (element, Direction.NONE, x + 1, y + 2),
+        (element, Direction.NONE, x + 2, y + 2),
+        (element, Direction.NONE, x + 0, y + 3),
+        (element, Direction.NONE, x + 1, y + 3),
+        (element, Direction.NONE, x + 2, y + 3),
+        # Big holey square
+        (element, Direction.NONE, x + 4, y + 0),
+        (element, Direction.NONE, x + 4, y + 1),
+        (element, Direction.NONE, x + 4, y + 2),
+        (element, Direction.NONE, x + 4, y + 3),
+        (element, Direction.NONE, x + 4, y + 4),
+        (element, Direction.NONE, x + 5, y + 0),
+        (element, Direction.NONE, x + 5, y + 2),
+        (element, Direction.NONE, x + 5, y + 4),
+        (element, Direction.NONE, x + 6, y + 0),
+        (element, Direction.NONE, x + 6, y + 1),
+        (element, Direction.NONE, x + 6, y + 2),
+        (element, Direction.NONE, x + 6, y + 3),
+        (element, Direction.NONE, x + 6, y + 4),
+        (element, Direction.NONE, x + 7, y + 0),
+        (element, Direction.NONE, x + 7, y + 2),
+        (element, Direction.NONE, x + 7, y + 4),
+        (element, Direction.NONE, x + 8, y + 0),
+        (element, Direction.NONE, x + 8, y + 1),
+        (element, Direction.NONE, x + 8, y + 2),
+        (element, Direction.NONE, x + 8, y + 3),
+        (element, Direction.NONE, x + 8, y + 4),
     ]

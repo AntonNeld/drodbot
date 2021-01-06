@@ -22,7 +22,12 @@ ITEMS_TAB = (100, 20)
 MONSTERS_TAB = (135, 20)
 
 WALL = (30, 60)
+YELLOW_DOOR = (25, 170)
+YELLOW_DOOR_OPEN = (60, 170)
+GREEN_DOOR = (60, 105)
 GREEN_DOOR_OPEN = (60, 140)
+BLUE_DOOR = (25, 105)
+BLUE_DOOR_OPEN = (25, 140)
 FLOOR = (25, 300)
 MOSAIC_FLOOR = (60, 300)
 ROAD_FLOOR = (90, 300)
@@ -302,8 +307,18 @@ class EditorInterface:
                 button = "left"
             else:
                 await self._select_element(ROOM_PIECES_TAB, FLOOR)
+        elif element == Element.YELLOW_DOOR:
+            await self._select_element(ROOM_PIECES_TAB, YELLOW_DOOR)
+        elif element == Element.YELLOW_DOOR_OPEN:
+            await self._select_element(ROOM_PIECES_TAB, YELLOW_DOOR_OPEN)
+        elif element == Element.GREEN_DOOR:
+            await self._select_element(ROOM_PIECES_TAB, GREEN_DOOR)
         elif element == Element.GREEN_DOOR_OPEN:
             await self._select_element(ROOM_PIECES_TAB, GREEN_DOOR_OPEN)
+        elif element == Element.BLUE_DOOR:
+            await self._select_element(ROOM_PIECES_TAB, BLUE_DOOR)
+        elif element == Element.BLUE_DOOR_OPEN:
+            await self._select_element(ROOM_PIECES_TAB, BLUE_DOOR_OPEN)
         elif element == Element.ORB:
             await self._select_element(ITEMS_TAB, ORB)
             if self.orb_type == OrbType.CRACKED:
