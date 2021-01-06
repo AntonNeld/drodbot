@@ -40,6 +40,10 @@ class ComparisonTileClassifier:
             for file_name in file_names:
                 image = PIL.Image.open(os.path.join(self._tile_data_dir, file_name))
                 image_array = numpy.array(image)
+                element = next(e for e in Element if e.value == image.info["element"])
+                direction = next(
+                    d for d in Direction if d.value == image.info["direction"]
+                )
                 tile_data.append(
                     {
                         "image": image_array,
@@ -48,12 +52,19 @@ class ComparisonTileClassifier:
                             2,
                         )
                         * numpy.ones(3),
-                        "element": next(
-                            e for e in Element if e.value == image.info["element"]
-                        ),
-                        "direction": next(
-                            d for d in Direction if d.value == image.info["direction"]
-                        ),
+                        "element": element,
+                        "direction": direction,
+                        "layer": "monster"
+                        if element in MONSTERS
+                        else "item"
+                        if element in ITEMS
+                        else "checkpoint"
+                        if element in CHECKPOINTS
+                        else "floor_control"
+                        if element in FLOOR_CONTROLS
+                        else "room_piece"
+                        if element in ROOM_PIECES
+                        else "discard",
                     }
                 )
             return tile_data
@@ -230,36 +241,35 @@ class ComparisonTileClassifier:
             )
             element = self._tile_data[best_match_index]["element"]
             direction = self._tile_data[best_match_index]["direction"]
+            layer = self._tile_data[best_match_index]["layer"]
             layers = [
-                # If it's a sword, we just ignore it
-                ("monster", MONSTERS),
-                ("item", ITEMS),
-                ("checkpoint", CHECKPOINTS),
-                ("floor_control", FLOOR_CONTROLS),
-                ("room_piece", ROOM_PIECES),
+                "monster",
+                "item",
+                "checkpoint",
+                "floor_control",
+                "room_piece",
             ]
-            for index, (layer, layer_elements) in enumerate(layers):
-                if element in layer_elements:
-                    if getattr(classified_tiles[key], layer) != (
+            if layer in layers:  # Otherwise we'll just discard it
+                if getattr(classified_tiles[key], layer) != (
+                    Element.UNKNOWN,
+                    Direction.UNKNOWN,
+                ):
+                    raise RuntimeError(
+                        f"Saw {(element,direction)} in tile {key}, but it already "
+                        f"has {getattr(classified_tiles[key],layer)} in "
+                        f"the {layer} layer"
+                    )
+                setattr(classified_tiles[key], layer, (element, direction))
+                for layer_above in layers[: layers.index(layer)]:
+                    if getattr(classified_tiles[key], layer_above) == (
                         Element.UNKNOWN,
                         Direction.UNKNOWN,
                     ):
-                        raise RuntimeError(
-                            f"Saw {(element,direction)} in tile {key}, but it already "
-                            f"has {getattr(classified_tiles[key],layer)} in "
-                            f"the {layer} layer"
+                        setattr(
+                            classified_tiles[key],
+                            layer_above,
+                            (Element.NOTHING, Direction.NONE),
                         )
-                    setattr(classified_tiles[key], layer, (element, direction))
-                    for layer_above, _ in layers[:index]:
-                        if getattr(classified_tiles[key], layer_above) == (
-                            Element.UNKNOWN,
-                            Direction.UNKNOWN,
-                        ):
-                            setattr(
-                                classified_tiles[key],
-                                layer_above,
-                                (Element.NOTHING, Direction.NONE),
-                            )
 
         if return_debug_images:
             return classified_tiles, debug_images
