@@ -229,17 +229,37 @@ class ComparisonTileClassifier:
             for key in tiles
         }
         debug_images = {key: [] for key in tiles}
+        all_alternative_images = numpy.stack(
+            [a["image"] for a in self._tile_data], axis=-1
+        )
+        all_alternative_masks = numpy.stack(
+            [a["mask"] for a in self._tile_data], axis=-1
+        )
         for key, image in tiles.items():
+            all_image_diffs = numpy.sqrt(
+                numpy.sum(
+                    (
+                        image[:, :, :, numpy.newaxis].astype(float)
+                        - all_alternative_images.astype(float)
+                    )
+                    ** 2,
+                    axis=2,
+                )
+            )
             found_elements_mask = numpy.ones((TILE_SIZE, TILE_SIZE), dtype=bool)
-            alternatives = self._tile_data
             passes = 1
             while classified_tiles[key].room_piece == (
                 Element.UNKNOWN,
                 Direction.UNKNOWN,
             ):
-                alternatives = [
-                    a
-                    for a in alternatives
+                all_masks = numpy.logical_and(
+                    all_alternative_masks, found_elements_mask[:, :, numpy.newaxis]
+                )
+                all_mask_sizes = numpy.sum(all_masks, axis=(0, 1))
+
+                alternative_indices = [
+                    i
+                    for i, a in enumerate(self._tile_data)
                     if (
                         a["layer"] == "swords"
                         and classified_tiles[key].monster
@@ -250,60 +270,47 @@ class ComparisonTileClassifier:
                         and getattr(classified_tiles[key], a["layer"])
                         == (Element.UNKNOWN, Direction.UNKNOWN)
                     )
-                    and numpy.sum(
-                        numpy.logical_and(a["mask"], found_elements_mask) != 0
-                    )
+                    and all_mask_sizes[i] != 0
                 ]
-                alternative_images = numpy.stack(
-                    [a["image"] for a in alternatives], axis=-1
-                )
-                alternative_masks = numpy.stack(
-                    [a["mask"] for a in alternatives], axis=-1
-                )
-                diffs = numpy.sqrt(
-                    numpy.sum(
-                        (
-                            image[:, :, :, numpy.newaxis].astype(float)
-                            - alternative_images.astype(float)
-                        )
-                        ** 2,
-                        axis=2,
-                    )
-                )
-                masks = numpy.logical_and(
-                    alternative_masks, found_elements_mask[:, :, numpy.newaxis]
-                )
+                diffs = all_image_diffs[:, :, alternative_indices]
+                masks = all_masks[:, :, alternative_indices]
                 masked_diffs = diffs * masks
                 if return_debug_images:
-                    for index, alternative in enumerate(alternatives):
-                        debug_images[key].append(
-                            (
-                                f"Pass {passes}, masked diff "
-                                f"with {alternative['file_name']}",
-                                masked_diffs[:, :, index],
+                    for index, alternative in enumerate(self._tile_data):
+                        if index in alternative_indices:
+                            debug_images[key].append(
+                                (
+                                    f"Pass {passes}, masked diff "
+                                    f"with {alternative['file_name']}",
+                                    masked_diffs[
+                                        :, :, alternative_indices.index(index)
+                                    ],
+                                )
                             )
-                        )
-                average_diffs = numpy.sum(masked_diffs, axis=(0, 1)) / numpy.sum(
-                    masks, axis=(0, 1)
+                average_diffs = (
+                    numpy.sum(masked_diffs, axis=(0, 1))
+                    / all_mask_sizes[alternative_indices]
                 )
                 best_match_index, _ = min(
                     ((i, v) for (i, v) in enumerate(average_diffs)), key=lambda x: x[1]
                 )
-                element = alternatives[best_match_index]["element"]
-                direction = alternatives[best_match_index]["direction"]
+
+                actual_index = alternative_indices[best_match_index]
+                element = self._tile_data[actual_index]["element"]
+                direction = self._tile_data[actual_index]["direction"]
                 debug_images[key].append(
                     (
                         f"=Pass {passes}, selected "
-                        f"{alternatives[best_match_index]['file_name']}=",
-                        alternatives[best_match_index]["image"],
+                        f"{self._tile_data[actual_index]['file_name']}=",
+                        self._tile_data[actual_index]["image"],
                     )
                 )
-                element_mask = alternatives[best_match_index]["mask"]
+                element_mask = self._tile_data[actual_index]["mask"]
                 found_elements_mask = numpy.logical_and(
                     found_elements_mask, numpy.logical_not(element_mask)
                 )
                 passes += 1
-                layer = alternatives[best_match_index]["layer"]
+                layer = self._tile_data[actual_index]["layer"]
                 if layer != "swords":  # Discard swords
                     layers = [
                         "monster",
