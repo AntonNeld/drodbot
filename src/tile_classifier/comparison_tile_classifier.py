@@ -223,53 +223,66 @@ class ComparisonTileClassifier:
         }
         debug_images = {step: {} for step in TILE_PROCESSING_STEPS}
         for key, image in tiles.items():
-            average_diffs = []
-            for alternative in self._tile_data:
-                squared_diff = (image - alternative["image"]) ** 2
-                masked_diff = squared_diff * alternative["mask"]
-                average_diff = numpy.sum(masked_diff) / numpy.sum(alternative["mask"])
-                average_diffs.append(average_diff)
-            best_match_index, _ = min(
-                ((i, v) for (i, v) in enumerate(average_diffs)), key=lambda x: x[1]
-            )
-            debug_images[ImageProcessingStep.DIFF_TILES][key] = (
-                image - self._tile_data[best_match_index]["image"]
-            ) ** 2
-            debug_images[ImageProcessingStep.MASK_DIFFS][key] = (
-                debug_images[ImageProcessingStep.DIFF_TILES][key]
-                * self._tile_data[best_match_index]["mask"]
-            )
-            element = self._tile_data[best_match_index]["element"]
-            direction = self._tile_data[best_match_index]["direction"]
-            layer = self._tile_data[best_match_index]["layer"]
-            layers = [
-                "monster",
-                "item",
-                "checkpoint",
-                "floor_control",
-                "room_piece",
-            ]
-            if layer in layers:  # Otherwise we'll just discard it
-                if getattr(classified_tiles[key], layer) != (
-                    Element.UNKNOWN,
-                    Direction.UNKNOWN,
-                ):
-                    raise RuntimeError(
-                        f"Saw {(element,direction)} in tile {key}, but it already "
-                        f"has {getattr(classified_tiles[key],layer)} in "
-                        f"the {layer} layer"
+            while classified_tiles[key].room_piece == (
+                Element.UNKNOWN,
+                Direction.UNKNOWN,
+            ):
+                average_diffs = []
+                alternatives = [
+                    d
+                    for d in self._tile_data
+                    if d["layer"] != "discard"
+                    and getattr(classified_tiles[key], d["layer"])
+                    == (Element.UNKNOWN, Direction.UNKNOWN)
+                ]
+                for alternative in alternatives:
+                    squared_diff = (image - alternative["image"]) ** 2
+                    masked_diff = squared_diff * alternative["mask"]
+                    average_diff = numpy.sum(masked_diff) / numpy.sum(
+                        alternative["mask"]
                     )
-                setattr(classified_tiles[key], layer, (element, direction))
-                for layer_above in layers[: layers.index(layer)]:
-                    if getattr(classified_tiles[key], layer_above) == (
+                    average_diffs.append(average_diff)
+                best_match_index, _ = min(
+                    ((i, v) for (i, v) in enumerate(average_diffs)), key=lambda x: x[1]
+                )
+                debug_images[ImageProcessingStep.DIFF_TILES][key] = (
+                    image - alternatives[best_match_index]["image"]
+                ) ** 2
+                debug_images[ImageProcessingStep.MASK_DIFFS][key] = (
+                    debug_images[ImageProcessingStep.DIFF_TILES][key]
+                    * alternatives[best_match_index]["mask"]
+                )
+                element = alternatives[best_match_index]["element"]
+                direction = alternatives[best_match_index]["direction"]
+                layer = alternatives[best_match_index]["layer"]
+                layers = [
+                    "monster",
+                    "item",
+                    "checkpoint",
+                    "floor_control",
+                    "room_piece",
+                ]
+                if layer in layers:  # Otherwise we'll just discard it
+                    if getattr(classified_tiles[key], layer) != (
                         Element.UNKNOWN,
                         Direction.UNKNOWN,
                     ):
-                        setattr(
-                            classified_tiles[key],
-                            layer_above,
-                            (Element.NOTHING, Direction.NONE),
+                        raise RuntimeError(
+                            f"Saw {(element,direction)} in tile {key}, but it already "
+                            f"has {getattr(classified_tiles[key],layer)} in "
+                            f"the {layer} layer"
                         )
+                    setattr(classified_tiles[key], layer, (element, direction))
+                    for layer_above in layers[: layers.index(layer)]:
+                        if getattr(classified_tiles[key], layer_above) == (
+                            Element.UNKNOWN,
+                            Direction.UNKNOWN,
+                        ):
+                            setattr(
+                                classified_tiles[key],
+                                layer_above,
+                                (Element.NOTHING, Direction.NONE),
+                            )
 
         if return_debug_images:
             return classified_tiles, debug_images
