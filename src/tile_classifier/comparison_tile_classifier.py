@@ -237,7 +237,6 @@ class ComparisonTileClassifier:
                 Element.UNKNOWN,
                 Direction.UNKNOWN,
             ):
-                average_diffs = []
                 alternatives = [
                     d
                     for d in self._tile_data
@@ -255,25 +254,38 @@ class ComparisonTileClassifier:
                         numpy.logical_and(d["mask"], found_elements_mask) != 0
                     )
                 ]
-                for alternative in alternatives:
-                    diff = numpy.sqrt(
-                        numpy.sum(
-                            (image.astype(float) - alternative["image"].astype(float))
-                            ** 2,
-                            axis=-1,
-                        )
-                    )
-                    mask = numpy.logical_and(alternative["mask"], found_elements_mask)
-                    masked_diff = diff * mask
-                    debug_images[key].append(
+                alternative_images = numpy.stack(
+                    [a["image"] for a in alternatives], axis=-1
+                )
+                alternative_masks = numpy.stack(
+                    [a["mask"] for a in alternatives], axis=-1
+                )
+                diffs = numpy.sqrt(
+                    numpy.sum(
                         (
-                            f"Pass {passes}, masked diff "
-                            f"with {alternative['file_name']}",
-                            masked_diff,
+                            image[:, :, :, numpy.newaxis].astype(float)
+                            - alternative_images.astype(float)
                         )
+                        ** 2,
+                        axis=2,
                     )
-                    average_diff = numpy.sum(masked_diff) / numpy.sum(mask)
-                    average_diffs.append(average_diff)
+                )
+                masks = numpy.logical_and(
+                    alternative_masks, found_elements_mask[:, :, numpy.newaxis]
+                )
+                masked_diffs = diffs * masks
+                if return_debug_images:
+                    for index, alternative in enumerate(alternatives):
+                        debug_images[key].append(
+                            (
+                                f"Pass {passes}, masked diff "
+                                f"with {alternative['file_name']}",
+                                masked_diffs[:, :, index],
+                            )
+                        )
+                average_diffs = numpy.sum(masked_diffs, axis=(0, 1)) / numpy.sum(
+                    masks, axis=(0, 1)
+                )
                 best_match_index, _ = min(
                     ((i, v) for (i, v) in enumerate(average_diffs)), key=lambda x: x[1]
                 )
