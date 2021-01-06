@@ -13,6 +13,7 @@ from common import (
     GUIEvent,
     Element,
     Direction,
+    Room,
     Tile,
 )
 from util import find_color
@@ -119,6 +120,8 @@ class ComparisonTileClassifier:
             (Element.BEETHRO_SWORD, Direction.W, 4, 0),
             (Element.BEETHRO, Direction.NW, 4, 2),
             (Element.BEETHRO_SWORD, Direction.NW, 3, 1),
+            (Element.FLOOR, Direction.NONE, 2, 2),
+            (Element.FLOOR, Direction.NONE, 3, 2),
         ]
         for (element, direction, x, y) in elements:
             if element not in [Element.BEETHRO_SWORD]:
@@ -144,8 +147,9 @@ class ComparisonTileClassifier:
                 pnginfo=png_info,
             )
         self._tile_data = self._load_tile_data()
-        self._classify_sample_data()
-        self._queue.put((GUIEvent.SET_TRAINING_DATA, self._sample_data))
+        if self._sample_data:
+            self._classify_sample_data()
+            self._queue.put((GUIEvent.SET_TRAINING_DATA, self._sample_data))
         print("Finished getting tile data")
 
     async def save_model_weights(self):
@@ -217,4 +221,44 @@ class ComparisonTileClassifier:
         return classified_tiles
 
     async def generate_training_data(self):
-        print("For now, generate sample data with the other classifier")
+        """Generate some sample data to test the classifier."""
+        print("Generating sample data...")
+        await self._interface.initialize()
+        await self._interface.clear_room()
+        room = Room()
+
+        # Swords are ignored when placing, but will be used when annotating
+        elements = [
+            (Element.FLOOR, Direction.NONE, 0, 0),
+            (Element.BEETHRO, Direction.N, 0, 1),
+            (Element.BEETHRO, Direction.N, 0, 2),
+            (Element.BEETHRO, Direction.NE, 1, 1),
+            (Element.BEETHRO, Direction.NW, 3, 1),
+            (Element.FLOOR, Direction.NONE, 2, 0),
+        ]
+        for (element, direction, x, y) in elements:
+            await self._interface.place_element(element, direction, (x, y))
+            room.place_element_like_editor(element, direction, (x, y))
+
+        await self._interface.start_test_room((37, 31), Direction.SE)
+        tiles, colors = await self._interface.get_tiles_and_colors()
+        await self._interface.stop_test_room()
+        if os.path.exists(self._sample_data_dir):
+            shutil.rmtree(self._sample_data_dir)
+        os.makedirs(self._sample_data_dir)
+        for (element, direction, x, y) in elements:
+            tile_info = room.get_tile((x, y))
+            minimap_color = colors[(x, y)]
+            png_info = PngInfo()
+            png_info.add_text("tile_json", tile_info.to_json())
+            png_info.add_text("minimap_color", json.dumps(minimap_color))
+            image = PIL.Image.fromarray(tiles[(x, y)])
+            image.save(
+                os.path.join(
+                    self._sample_data_dir,
+                    f"{x}_{y}.png",
+                ),
+                "PNG",
+                pnginfo=png_info,
+            )
+        print("Finished generating sample data")

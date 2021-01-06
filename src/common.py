@@ -126,7 +126,7 @@ class Direction(Enum):
     SW = "SW"
     W = "W"
     NW = "NW"
-    NONE = "N/A"
+    NONE = " "
     UNKNOWN = "?"
 
 
