@@ -12,6 +12,11 @@ from common import (
     TILE_PROCESSING_STEPS,
     GUIEvent,
     Element,
+    ROOM_PIECES,
+    FLOOR_CONTROLS,
+    CHECKPOINTS,
+    ITEMS,
+    MONSTERS,
     Direction,
     Room,
     Tile,
@@ -43,8 +48,12 @@ class ComparisonTileClassifier:
                             2,
                         )
                         * numpy.ones(3),
-                        "element": image.info["element"],
-                        "direction": image.info["direction"],
+                        "element": next(
+                            e for e in Element if e.value == image.info["element"]
+                        ),
+                        "direction": next(
+                            d for d in Direction if d.value == image.info["direction"]
+                        ),
                     }
                 )
             return tile_data
@@ -191,7 +200,16 @@ class ComparisonTileClassifier:
         if self._tile_data is None:
             raise RuntimeError("No tile data loaded, cannot classify tiles")
         # TODO: Use numpy arrays for performance, once the logic is done
-        classified_tiles = {}
+        classified_tiles = {
+            key: Tile(
+                room_piece=(Element.UNKNOWN, Direction.UNKNOWN),
+                floor_control=(Element.UNKNOWN, Direction.UNKNOWN),
+                checkpoint=(Element.UNKNOWN, Direction.UNKNOWN),
+                item=(Element.UNKNOWN, Direction.UNKNOWN),
+                monster=(Element.UNKNOWN, Direction.UNKNOWN),
+            )
+            for key in tiles
+        }
         debug_images = {step: {} for step in TILE_PROCESSING_STEPS}
         for key, image in tiles.items():
             average_diffs = []
@@ -210,9 +228,38 @@ class ComparisonTileClassifier:
                 debug_images[ImageProcessingStep.DIFF_TILES][key]
                 * self._tile_data[best_match_index]["mask"]
             )
-            classified_tiles[key] = Tile(
-                room_piece=(Element.UNKNOWN, Direction.UNKNOWN)
-            )
+            element = self._tile_data[best_match_index]["element"]
+            direction = self._tile_data[best_match_index]["direction"]
+            layers = [
+                # If it's a sword, we just ignore it
+                ("monster", MONSTERS),
+                ("item", ITEMS),
+                ("checkpoint", CHECKPOINTS),
+                ("floor_control", FLOOR_CONTROLS),
+                ("room_piece", ROOM_PIECES),
+            ]
+            for index, (layer, layer_elements) in enumerate(layers):
+                if element in layer_elements:
+                    if getattr(classified_tiles[key], layer) != (
+                        Element.UNKNOWN,
+                        Direction.UNKNOWN,
+                    ):
+                        raise RuntimeError(
+                            f"Saw {(element,direction)} in tile {key}, but it already "
+                            f"has {getattr(classified_tiles[key],layer)} in "
+                            f"the {layer} layer"
+                        )
+                    setattr(classified_tiles[key], layer, (element, direction))
+                    for layer_above, _ in layers[:index]:
+                        if getattr(classified_tiles[key], layer_above) == (
+                            Element.UNKNOWN,
+                            Direction.UNKNOWN,
+                        ):
+                            setattr(
+                                classified_tiles[key],
+                                layer_above,
+                                (Element.NOTHING, Direction.NONE),
+                            )
 
         if return_debug_images:
             return classified_tiles, debug_images
@@ -231,6 +278,7 @@ class ComparisonTileClassifier:
             (Element.BEETHRO, Direction.N, 0, 1),
             (Element.BEETHRO, Direction.N, 0, 2),
             (Element.BEETHRO, Direction.NE, 1, 1),
+            (Element.FLOOR, Direction.NONE, 2, 1),
             (Element.BEETHRO, Direction.NW, 3, 1),
             (Element.FLOOR, Direction.NONE, 2, 0),
         ]

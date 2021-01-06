@@ -92,6 +92,8 @@ ROOM_PIECES = [
     Element.BLUE_DOOR_OPEN,
     Element.STAIRS,
 ]
+FLOOR_CONTROLS = [Element.NOTHING]
+CHECKPOINTS = [Element.NOTHING]
 ITEMS = [Element.CONQUER_TOKEN, Element.ORB, Element.OBSTACLE, Element.NOTHING]
 MONSTERS = [Element.BEETHRO, Element.ROACH, Element.NOTHING]
 
@@ -291,6 +293,10 @@ class Room:
         """
         if element in ROOM_PIECES:
             layer = "room_piece"
+        elif element in FLOOR_CONTROLS:
+            layer = "floor_control"
+        elif element in CHECKPOINTS:
+            layer = "checkpoints"
         elif element in ITEMS:
             layer = "item"
         elif element in MONSTERS:
