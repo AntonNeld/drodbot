@@ -8,8 +8,6 @@ import PIL
 from PIL.PngImagePlugin import PngInfo
 
 from common import (
-    ImageProcessingStep,
-    TILE_PROCESSING_STEPS,
     GUIEvent,
     Element,
     ROOM_PIECES,
@@ -46,6 +44,7 @@ class ComparisonTileClassifier:
                 )
                 tile_data.append(
                     {
+                        "file_name": file_name,
                         "image": image_array,
                         "mask": numpy.expand_dims(
                             numpy.logical_not(find_color(image_array, (255, 0, 255))),
@@ -171,10 +170,7 @@ class ComparisonTileClassifier:
         )
         for entry in self._sample_data:
             entry["predicted_content"] = predicted_contents[entry["file_name"]]
-            entry["debug_images"] = {
-                step: debug_images[step][entry["file_name"]]
-                for step in TILE_PROCESSING_STEPS
-            }
+            entry["debug_images"] = debug_images[entry["file_name"]]
 
     def classify_tiles(self, tiles, minimap_colors, return_debug_images=False):
         """Classify the given tiles.
@@ -187,8 +183,8 @@ class ComparisonTileClassifier:
             A dict with the same keys as `tiles` and (r, g, b) color tuples
             as the values.
         return_debug_images
-            If True, return a second dict where the keys are ImageProcessingSteps,
-            and the values are dicts like `tiles` but with intermediate images.
+            If True, return a second dict with the same keys, and the values lists of
+            (name, image) tuples with intermediate images.
 
         Returns
         -------
@@ -209,9 +205,10 @@ class ComparisonTileClassifier:
             )
             for key in tiles
         }
-        debug_images = {step: {} for step in TILE_PROCESSING_STEPS}
+        debug_images = {key: [] for key in tiles}
         for key, image in tiles.items():
             found_elements_mask = numpy.ones(image.shape, dtype=bool)
+            passes = 1
             while classified_tiles[key].room_piece == (
                 Element.UNKNOWN,
                 Direction.UNKNOWN,
@@ -238,6 +235,13 @@ class ComparisonTileClassifier:
                     squared_diff = (
                         image.astype(float) - alternative["image"].astype(float)
                     ) ** 2
+                    print(passes)
+                    debug_images[key].append(
+                        (
+                            f"Pass {passes}, diff with {alternative['file_name']}",
+                            squared_diff,
+                        )
+                    )
                     mask = numpy.logical_and(alternative["mask"], found_elements_mask)
                     masked_diff = squared_diff * mask
                     average_diff = numpy.sum(masked_diff) / numpy.sum(mask)
@@ -245,19 +249,13 @@ class ComparisonTileClassifier:
                 best_match_index, _ = min(
                     ((i, v) for (i, v) in enumerate(average_diffs)), key=lambda x: x[1]
                 )
-                debug_images[ImageProcessingStep.DIFF_TILES][key] = (
-                    image - alternatives[best_match_index]["image"]
-                ) ** 2
-                debug_images[ImageProcessingStep.MASK_DIFFS][key] = (
-                    debug_images[ImageProcessingStep.DIFF_TILES][key]
-                    * alternatives[best_match_index]["mask"]
-                )
                 element = alternatives[best_match_index]["element"]
                 direction = alternatives[best_match_index]["direction"]
                 element_mask = alternatives[best_match_index]["mask"]
                 found_elements_mask = numpy.logical_and(
                     found_elements_mask, numpy.logical_not(element_mask)
                 )
+                passes += 1
                 layer = alternatives[best_match_index]["layer"]
                 if layer != "swords":  # Discard swords
                     layers = [

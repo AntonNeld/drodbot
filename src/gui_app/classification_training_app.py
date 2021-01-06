@@ -5,7 +5,6 @@ from PIL import ImageTk, Image
 import tkinter
 import traceback
 
-from common import TILE_PROCESSING_STEPS
 from .util import tile_to_text
 
 CANVAS_WIDTH = 88
@@ -23,8 +22,8 @@ class ClassificationTrainingApp(tkinter.Frame):
         self.data_index = None
         self.only_wrong = tkinter.BooleanVar(self)
         self.only_wrong.set(False)
-        self.image_processing_step = tkinter.StringVar(self)
-        self.image_processing_step.set("Raw tile")
+        self.selected_debug_step = tkinter.StringVar(self)
+        self.selected_debug_step.set("Raw tile")
         self.create_widgets()
 
     def create_widgets(self):
@@ -51,14 +50,13 @@ class ClassificationTrainingApp(tkinter.Frame):
             command=self.filter_data,
         )
         self.only_wrong_checkbox.pack(side=tkinter.TOP)
-        self.image_processing_step_dropdown = tkinter.OptionMenu(
+        self.debug_step_dropdown = tkinter.OptionMenu(
             self.tile_area,
-            self.image_processing_step,
+            self.selected_debug_step,
             "Raw tile",
-            *[step.value for step in TILE_PROCESSING_STEPS],
             command=self.show_tile,
         )
-        self.image_processing_step_dropdown.pack(side=tkinter.TOP)
+        self.debug_step_dropdown.pack(side=tkinter.TOP)
 
         self.details_area = tkinter.Frame(self)
         self.details_area.pack(side=tkinter.LEFT)
@@ -136,17 +134,32 @@ class ClassificationTrainingApp(tkinter.Frame):
     def show_tile(self, *args):
         # Add *args because the dropdown gives an unused argument to this function
         index = self.data_index
-        if self.image_processing_step.get() == "Raw tile":
-            image = PIL.Image.fromarray(self.data[index]["image"])
+        # Get the possible debug steps
+        debug_steps = [name for name, image in self.data[index]["debug_images"]]
+        if self.selected_debug_step.get() not in debug_steps:
+            self.selected_debug_step.set("Raw tile")
+        menu = self.debug_step_dropdown["menu"]
+        menu.delete(0, "end")
+
+        def selected_option(value):
+            self.selected_debug_step.set(value)
+            self.show_tile()
+
+        for step in ["Raw tile", *debug_steps]:
+            menu.add_command(
+                label=step,
+                command=lambda value=step: selected_option(value),
+            )
+
+        if self.selected_debug_step.get() == "Raw tile":
+            raw_image = self.data[index]["image"]
         else:
-            step = next(
-                s
-                for s in TILE_PROCESSING_STEPS
-                if s.value == self.image_processing_step.get()
+            debug_index = debug_steps.index(self.selected_debug_step.get())
+            raw_image = self.data[index]["debug_images"][debug_index][1].astype(
+                numpy.uint8
             )
-            image = PIL.Image.fromarray(
-                self.data[index]["debug_images"][step].astype(numpy.uint8)
-            )
+
+        image = PIL.Image.fromarray(raw_image)
         resized_image = image.resize(
             (int(self.canvas["width"]), int(self.canvas["height"])), Image.NEAREST
         )

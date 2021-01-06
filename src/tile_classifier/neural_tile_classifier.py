@@ -13,7 +13,6 @@ from tensorflow import keras
 
 from common import (
     GUIEvent,
-    TILE_PROCESSING_STEPS,
     Element,
     Direction,
     Room,
@@ -151,10 +150,7 @@ class NeuralTileClassifier:
         )
         for entry in self._data:
             entry["predicted_content"] = predicted_contents[entry["file_name"]]
-            entry["debug_images"] = {
-                step: debug_images[step][entry["file_name"]]
-                for step in TILE_PROCESSING_STEPS
-            }
+            entry["debug_images"] = debug_images[entry["file_name"]]
 
     def classify_tiles(self, tiles, minimap_colors, return_debug_images=False):
         """Classify the given tiles according to the current model.
@@ -168,10 +164,10 @@ class NeuralTileClassifier:
             as the values. If given, use this to help classify the trickier
             elements. Otherwise, only rely on the neural network.
         return_debug_images
-            If True, return a second dict where the keys are ImageProcessingSteps,
-            and the values are dicts like `tiles` but with intermediate images.
-            The actual images are just the tiles, this parameter is only to match
-            the API of ComparisonTileClassifier.
+            If True, return a second dict with the same keys, and the values lists of
+            (name, image) tuples with intermediate images. The actual images are just
+            the tiles, this parameter is only to match the API of
+            ComparisonTileClassifier.
 
         Returns
         -------
@@ -251,7 +247,10 @@ class NeuralTileClassifier:
             for key in tiles
         }
         if return_debug_images:
-            return classified_tiles, {step: tiles for step in TILE_PROCESSING_STEPS}
+            return classified_tiles, {
+                key: [("N/A", tile)] for key, tile in tiles.items()
+            }
+
         return classified_tiles
 
     async def generate_training_data(self):

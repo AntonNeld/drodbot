@@ -4,7 +4,6 @@ from common import (
     Action,
     GUIEvent,
     ImageProcessingStep,
-    TILE_PROCESSING_STEPS,
     Room,
 )
 from .util import (
@@ -12,7 +11,6 @@ from .util import (
     extract_room,
     extract_minimap,
     extract_tiles,
-    reconstruct_from_tiles,
 )
 
 
@@ -100,13 +98,6 @@ class PlayInterface:
         if step == ImageProcessingStep.EXTRACT_TILES:
             # We can't show anything more interesting here
             visual_info["image"] = room_image
-            return visual_info
-
-        if step in TILE_PROCESSING_STEPS:
-            tile_contents, debug_images = self._classifier.classify_tiles(
-                tiles, minimap_colors, return_debug_images=True
-            )
-            visual_info["image"] = reconstruct_from_tiles(debug_images[step])
             return visual_info
 
         tile_contents = self._classifier.classify_tiles(tiles, minimap_colors)
