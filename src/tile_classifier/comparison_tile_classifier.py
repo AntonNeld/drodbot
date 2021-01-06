@@ -218,7 +218,6 @@ class ComparisonTileClassifier:
         """
         if self._tile_data is None:
             raise RuntimeError("No tile data loaded, cannot classify tiles")
-        # TODO: Use numpy arrays for performance, once the logic is done
         classified_tiles = {
             key: Tile(
                 room_piece=(Element.UNKNOWN, Direction.UNKNOWN),
@@ -232,26 +231,27 @@ class ComparisonTileClassifier:
         debug_images = {key: [] for key in tiles}
         for key, image in tiles.items():
             found_elements_mask = numpy.ones((TILE_SIZE, TILE_SIZE), dtype=bool)
+            alternatives = self._tile_data
             passes = 1
             while classified_tiles[key].room_piece == (
                 Element.UNKNOWN,
                 Direction.UNKNOWN,
             ):
                 alternatives = [
-                    d
-                    for d in self._tile_data
+                    a
+                    for a in alternatives
                     if (
-                        d["layer"] == "swords"
+                        a["layer"] == "swords"
                         and classified_tiles[key].monster
                         == (Element.UNKNOWN, Direction.UNKNOWN)
                     )
                     or (
-                        d["layer"] != "swords"
-                        and getattr(classified_tiles[key], d["layer"])
+                        a["layer"] != "swords"
+                        and getattr(classified_tiles[key], a["layer"])
                         == (Element.UNKNOWN, Direction.UNKNOWN)
                     )
                     and numpy.sum(
-                        numpy.logical_and(d["mask"], found_elements_mask) != 0
+                        numpy.logical_and(a["mask"], found_elements_mask) != 0
                     )
                 ]
                 alternative_images = numpy.stack(
