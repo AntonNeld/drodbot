@@ -190,33 +190,31 @@ class ComparisonTileClassifier:
         """
         if self._tile_data is None:
             raise RuntimeError("No tile data loaded, cannot classify tiles")
-        keys, images = zip(*tiles.items())
-        tile_images = numpy.stack(images, axis=0)
-        alternative_images = numpy.stack([t["image"] for t in self._tile_data], axis=-1)
-        masks = numpy.stack([t["mask"] for t in self._tile_data], axis=-1)
-        squared_diffs = (
-            tile_images[:, :, :, :, numpy.newaxis] - alternative_images
-        ) ** 2
-        masked_diffs = squared_diffs * masks
-        average_diffs = numpy.sum(masked_diffs, axis=(1, 2, 3)) / numpy.sum(
-            masks, axis=(0, 1, 2)
-        )
-        best_matches = numpy.argmin(average_diffs, axis=-1)
-
+        # TODO: Use numpy arrays for performance, once the logic is done
         classified_tiles = {}
-        for index, key in enumerate(keys):
+        debug_images = {step: {} for step in TILE_PROCESSING_STEPS}
+        for key, image in tiles.items():
+            average_diffs = []
+            for alternative in self._tile_data:
+                squared_diff = (image - alternative["image"]) ** 2
+                masked_diff = squared_diff * alternative["mask"]
+                average_diff = numpy.sum(masked_diff) / numpy.sum(alternative["mask"])
+                average_diffs.append(average_diff)
+            best_match_index, _ = min(
+                ((i, v) for (i, v) in enumerate(average_diffs)), key=lambda x: x[1]
+            )
+            debug_images[ImageProcessingStep.DIFF_TILES][key] = (
+                image - self._tile_data[best_match_index]["image"]
+            ) ** 2
+            debug_images[ImageProcessingStep.MASK_DIFFS][key] = (
+                debug_images[ImageProcessingStep.DIFF_TILES][key]
+                * self._tile_data[best_match_index]["mask"]
+            )
             classified_tiles[key] = Tile(
                 room_piece=(Element.UNKNOWN, Direction.UNKNOWN)
             )
+
         if return_debug_images:
-            debug_images = {step: {} for step in TILE_PROCESSING_STEPS}
-            for index, key in enumerate(keys):
-                debug_images[ImageProcessingStep.DIFF_TILES][key] = squared_diffs[
-                    index, :, :, :, best_matches[index]
-                ]
-                debug_images[ImageProcessingStep.MASK_DIFFS][key] = masked_diffs[
-                    index, :, :, :, best_matches[index]
-                ]
             return classified_tiles, debug_images
         return classified_tiles
 
