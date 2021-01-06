@@ -230,15 +230,17 @@ class ComparisonTileClassifier:
                         and getattr(classified_tiles[key], d["layer"])
                         == (Element.UNKNOWN, Direction.UNKNOWN)
                     )
+                    and numpy.sum(
+                        numpy.logical_and(d["mask"], found_elements_mask) != 0
+                    )
                 ]
                 for alternative in alternatives:
-                    squared_diff = (image - alternative["image"]) ** 2
+                    squared_diff = (
+                        image.astype(float) - alternative["image"].astype(float)
+                    ) ** 2
                     mask = numpy.logical_and(alternative["mask"], found_elements_mask)
-                    if numpy.sum(mask) != 0:
-                        masked_diff = squared_diff * mask
-                        average_diff = numpy.sum(masked_diff) / numpy.sum(mask)
-                    else:
-                        average_diff = 1000  # Set it to something unreasonably large
+                    masked_diff = squared_diff * mask
+                    average_diff = numpy.sum(masked_diff) / numpy.sum(mask)
                     average_diffs.append(average_diff)
                 best_match_index, _ = min(
                     ((i, v) for (i, v) in enumerate(average_diffs)), key=lambda x: x[1]
