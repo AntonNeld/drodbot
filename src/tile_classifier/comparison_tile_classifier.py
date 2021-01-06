@@ -8,6 +8,7 @@ import PIL
 from PIL.PngImagePlugin import PngInfo
 
 from common import (
+    TILE_SIZE,
     GUIEvent,
     Element,
     ROOM_PIECES,
@@ -46,11 +47,9 @@ class ComparisonTileClassifier:
                     {
                         "file_name": file_name,
                         "image": image_array,
-                        "mask": numpy.expand_dims(
-                            numpy.logical_not(find_color(image_array, (255, 0, 255))),
-                            2,
-                        )
-                        * numpy.ones(3),
+                        "mask": numpy.logical_not(
+                            find_color(image_array, (255, 0, 255))
+                        ),
                         "element": element,
                         "direction": direction,
                         "layer": "monster"
@@ -207,7 +206,7 @@ class ComparisonTileClassifier:
         }
         debug_images = {key: [] for key in tiles}
         for key, image in tiles.items():
-            found_elements_mask = numpy.ones(image.shape, dtype=bool)
+            found_elements_mask = numpy.ones((TILE_SIZE, TILE_SIZE), dtype=bool)
             passes = 1
             while classified_tiles[key].room_piece == (
                 Element.UNKNOWN,
@@ -232,18 +231,21 @@ class ComparisonTileClassifier:
                     )
                 ]
                 for alternative in alternatives:
-                    squared_diff = (
-                        image.astype(float) - alternative["image"].astype(float)
-                    ) ** 2
-                    print(passes)
+                    diff = numpy.sqrt(
+                        numpy.sum(
+                            (image.astype(float) - alternative["image"].astype(float))
+                            ** 2,
+                            axis=-1,
+                        )
+                    )  # Add all colors to visualize pixel diffs
                     debug_images[key].append(
                         (
                             f"Pass {passes}, diff with {alternative['file_name']}",
-                            squared_diff,
+                            diff,
                         )
                     )
                     mask = numpy.logical_and(alternative["mask"], found_elements_mask)
-                    masked_diff = squared_diff * mask
+                    masked_diff = diff * mask
                     average_diff = numpy.sum(masked_diff) / numpy.sum(mask)
                     average_diffs.append(average_diff)
                 best_match_index, _ = min(
