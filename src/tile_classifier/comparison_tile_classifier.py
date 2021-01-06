@@ -123,26 +123,14 @@ class ComparisonTileClassifier:
         )
 
         # Swords are ignored when placing, but will be used when annotating
-        elements = [
-            (Element.BEETHRO, Direction.N, 0, 1),
-            (Element.BEETHRO_SWORD, Direction.N, 0, 0),
-            (Element.BEETHRO, Direction.NE, 0, 2),
-            (Element.BEETHRO_SWORD, Direction.NE, 1, 1),
-            (Element.BEETHRO, Direction.E, 1, 0),
-            (Element.BEETHRO_SWORD, Direction.E, 2, 0),
-            (Element.BEETHRO, Direction.SE, 3, 0),
-            (Element.BEETHRO_SWORD, Direction.SE, 4, 1),
-            (Element.BEETHRO, Direction.S, 5, 1),
-            (Element.BEETHRO_SWORD, Direction.S, 5, 2),
-            (Element.BEETHRO, Direction.SW, 2, 1),
-            (Element.BEETHRO_SWORD, Direction.SW, 1, 2),
-            (Element.BEETHRO, Direction.W, 5, 0),
-            (Element.BEETHRO_SWORD, Direction.W, 4, 0),
-            (Element.BEETHRO, Direction.NW, 4, 2),
-            (Element.BEETHRO_SWORD, Direction.NW, 3, 1),
-            (Element.FLOOR, Direction.NONE, 2, 2),
-            (Element.FLOOR, Direction.NONE, 3, 2),
-        ]
+        elements = (
+            _get_sworded_element_placement(Element.BEETHRO, Element.BEETHRO_SWORD, 0, 0)
+            + _get_fully_directional_element_placement(Element.ROACH, 0, 3)
+            + [
+                (Element.FLOOR, Direction.NONE, 2, 2),
+                (Element.FLOOR, Direction.NONE, 3, 2),
+            ]
+        )
         for (element, direction, x, y) in elements:
             if element not in [Element.BEETHRO_SWORD]:
                 await self._interface.place_element(element, direction, (x, y))
@@ -309,7 +297,6 @@ class ComparisonTileClassifier:
         await self._interface.clear_room()
         room = Room()
 
-        # Swords are ignored when placing, but will be used when annotating
         elements = [
             (Element.FLOOR, Direction.NONE, 0, 0),
             (Element.BEETHRO, Direction.N, 0, 1),
@@ -317,7 +304,9 @@ class ComparisonTileClassifier:
             (Element.BEETHRO, Direction.NE, 1, 1),
             (Element.FLOOR, Direction.NONE, 2, 1),
             (Element.BEETHRO, Direction.NW, 3, 1),
-            (Element.FLOOR, Direction.NONE, 2, 0),
+            (Element.ROACH, Direction.N, 2, 0),
+            (Element.ROACH, Direction.NE, 3, 3),
+            (Element.ROACH, Direction.SW, 3, 4),
         ]
         for (element, direction, x, y) in elements:
             await self._interface.place_element(element, direction, (x, y))
@@ -345,3 +334,70 @@ class ComparisonTileClassifier:
                 pnginfo=png_info,
             )
         print("Finished generating sample data")
+
+
+def _get_sworded_element_placement(element, sword, x, y):
+    """Get a list of sworded elements and directions.
+
+    This can be used to place sworded elements in the editor,
+    in a compact way that includes all directions.
+
+    Parameters
+    ----------
+    element
+        The element to place.
+    sword
+        The sword belonging to the element.
+    x
+        X coordinate of the upper left corner of the pattern.
+    y
+        Y coordinate of the upper left corner of the pattern.
+    """
+    return [
+        (element, Direction.N, x + 0, y + 1),
+        (sword, Direction.N, x + 0, y + 0),
+        (element, Direction.NE, x + 0, y + 2),
+        (sword, Direction.NE, x + 1, y + 1),
+        (element, Direction.E, x + 1, y + 0),
+        (sword, Direction.E, x + 2, y + 0),
+        (element, Direction.SE, x + 3, y + 0),
+        (sword, Direction.SE, x + 4, y + 1),
+        (element, Direction.S, x + 5, y + 1),
+        (sword, Direction.S, x + 5, y + 2),
+        (element, Direction.SW, x + 2, y + 1),
+        (sword, Direction.SW, x + 1, y + 2),
+        (element, Direction.W, x + 5, y + 0),
+        (sword, Direction.W, x + 4, y + 0),
+        (element, Direction.NW, x + 4, y + 2),
+        (sword, Direction.NW, x + 3, y + 1),
+    ]
+
+
+def _get_fully_directional_element_placement(element, x, y):
+    """Get a list of directional elements and directions.
+
+    This can be used to place elements in the editor,
+    in a compact way that includes all directions. This function is
+    for fully directional elements, i.e. those that can face in 8 directions.
+
+    Parameters
+    ----------
+    element
+        The element to place.
+    sword
+        The sword belonging to the element.
+    x
+        X coordinate of the upper left corner of the pattern.
+    y
+        Y coordinate of the upper left corner of the pattern.
+    """
+    return [
+        (element, Direction.N, x + 0, y + 0),
+        (element, Direction.NE, x + 1, y + 0),
+        (element, Direction.E, x + 2, y + 0),
+        (element, Direction.SE, x + 3, y + 0),
+        (element, Direction.S, x + 0, y + 1),
+        (element, Direction.SW, x + 1, y + 1),
+        (element, Direction.W, x + 2, y + 1),
+        (element, Direction.NW, x + 3, y + 1),
+    ]
