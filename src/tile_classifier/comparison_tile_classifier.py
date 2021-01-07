@@ -151,7 +151,10 @@ class ComparisonTileClassifier:
             + await _place_sized_obstacles(
                 self._interface, "square_statue", 16, 1, [1, 2, 4]
             )
-            + await _place_wall_insides(self._interface, 20, 5, 8)
+            + await _place_square(
+                self._interface, Element.WALL, 20, 5, 9, include_all_sides=False
+            )
+            + await _place_square(self._interface, Element.PIT, 20, 14, 9)
         )
         extra_elements = [
             (Element.FLOOR, Direction.NONE, 2, 2, "normal"),
@@ -755,8 +758,8 @@ async def _place_sized_obstacles(interface, style, x, y, sizes):
     return return_elements
 
 
-async def _place_wall_insides(interface, x, y, size):
-    """Place a chunk of wall to include wall insides.
+async def _place_square(interface, element, x, y, size, include_all_sides=True):
+    """Place a square of an element.
 
     Parameters
     ----------
@@ -768,6 +771,9 @@ async def _place_wall_insides(interface, x, y, size):
         Y coordinate of the upper left corner.
     size
         The size of the square to place.
+    include_all_sides
+        If False, skip the left, right and lower sides. Use this when placing
+        walls and you are only interested in the insides.
 
     Returns
     -------
@@ -775,12 +781,16 @@ async def _place_wall_insides(interface, x, y, size):
     Only wall insides are returned.
     """
     await interface.place_element(
-        Element.WALL, Direction.NONE, (x, y), (x + size, y + size)
+        element, Direction.NONE, (x, y), (x + size - 1, y + size - 1)
     )
     return_elements = []
-    for placed_x in range(x + 1, x + size - 1):
-        for placed_y in range(y, y + size - 1):
-            return_elements.append(
-                (Element.WALL, Direction.NONE, placed_x, placed_y, None)
-            )
+    if include_all_sides:
+        x_range = range(x, x + size)
+        y_range = range(y, y + size)
+    else:
+        x_range = range(x + 1, x + size - 1)
+        y_range = range(y, y + size - 1)
+    for placed_x in x_range:
+        for placed_y in y_range:
+            return_elements.append((element, Direction.NONE, placed_x, placed_y, None))
     return return_elements

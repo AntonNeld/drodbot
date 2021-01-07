@@ -22,6 +22,7 @@ ITEMS_TAB = (100, 20)
 MONSTERS_TAB = (135, 20)
 
 WALL = (30, 60)
+PIT = (60, 200)
 YELLOW_DOOR = (25, 170)
 YELLOW_DOOR_OPEN = (60, 170)
 GREEN_DOOR = (60, 105)
@@ -302,6 +303,8 @@ class EditorInterface:
             if (style == "hard") != self.hard_walls:
                 await self._click(WALL)
                 self.hard_walls = style == "hard"
+        elif element == Element.PIT:
+            await self._select_element(ROOM_PIECES_TAB, PIT)
         elif element == Element.FLOOR:
             button = "right"
             if style == "mosaic":
