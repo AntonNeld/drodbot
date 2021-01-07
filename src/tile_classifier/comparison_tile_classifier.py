@@ -278,8 +278,7 @@ class ComparisonTileClassifier:
                         if index in alternative_indices:
                             debug_images[key].append(
                                 (
-                                    f"Pass {passes}, masked diff "
-                                    f"with {alternative['file_name']}",
+                                    f"Pass {passes}: {alternative['file_name']}",
                                     masked_diffs[
                                         :, :, alternative_indices.index(index)
                                     ],
@@ -299,8 +298,7 @@ class ComparisonTileClassifier:
                 debug_images[key].append(
                     (
                         f"=Pass {passes}, selected "
-                        f"{self._tile_data[actual_index]['file_name']} "
-                        f"with diff {best_match_diff}=",
+                        f"{self._tile_data[actual_index]['file_name']}=",
                         self._tile_data[actual_index]["image"],
                     )
                 )

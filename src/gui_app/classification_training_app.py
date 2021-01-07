@@ -7,7 +7,7 @@ from PIL import ImageTk, Image
 import tkinter
 import traceback
 
-from .util import tile_to_text
+from .util import tile_to_text, ScrollableFrame
 
 CANVAS_WIDTH = 88
 CANVAS_HEIGHT = 88
@@ -24,6 +24,7 @@ class ClassificationTrainingApp(tkinter.Frame):
         self.data_index = None
         self.only_wrong = tkinter.BooleanVar(self)
         self.only_wrong.set(False)
+        self.radio_buttons = []
         self.selected_debug_step = tkinter.StringVar(self)
         self.selected_debug_step.set("Raw tile")
         self.create_widgets()
@@ -52,13 +53,9 @@ class ClassificationTrainingApp(tkinter.Frame):
             command=self.filter_data,
         )
         self.only_wrong_checkbox.pack(side=tkinter.TOP)
-        self.debug_step_dropdown = tkinter.OptionMenu(
-            self.tile_area,
-            self.selected_debug_step,
-            "Raw tile",
-            command=self.show_tile,
-        )
-        self.debug_step_dropdown.pack(side=tkinter.TOP)
+        self.debug_step_frame = ScrollableFrame(self.tile_area)
+        self.debug_step_frame.pack(side=tkinter.TOP)
+        self.set_debug_steps()
 
         self.details_area = tkinter.Frame(self)
         self.details_area.pack(side=tkinter.LEFT)
@@ -99,6 +96,7 @@ class ClassificationTrainingApp(tkinter.Frame):
     def set_data(self, data):
         self.raw_data = data
         self.filter_data()
+        self.set_debug_steps()
 
     def filter_data(self):
         old_filenames = [tile["file_name"] for tile in self.data]
@@ -134,29 +132,15 @@ class ClassificationTrainingApp(tkinter.Frame):
             )
 
     def show_tile(self, *args):
-        # Add *args because the dropdown gives an unused argument to this function
+        # Add *args because the radio button gives an unused argument to this function
         index = self.data_index
-        # Get the possible debug steps
-        debug_steps = [name for name, image in self.data[index]["debug_images"]]
-        if self.selected_debug_step.get() not in debug_steps:
-            self.selected_debug_step.set("Raw tile")
-        menu = self.debug_step_dropdown["menu"]
-        menu.delete(0, "end")
-
-        def selected_option(value):
-            self.selected_debug_step.set(value)
-            self.show_tile()
-
-        for step in ["Raw tile", *debug_steps]:
-            menu.add_command(
-                label=step,
-                command=lambda value=step: selected_option(value),
-            )
 
         if self.selected_debug_step.get() == "Raw tile":
             raw_image = self.data[index]["image"]
         else:
-            debug_index = debug_steps.index(self.selected_debug_step.get())
+            debug_index = [
+                name for name, image in self.data[index]["debug_images"]
+            ].index(self.selected_debug_step.get())
             raw_image = self.data[index]["debug_images"][debug_index][1]
             raw_image = (raw_image / math.sqrt(3)).astype(numpy.uint8)
 
@@ -178,6 +162,32 @@ class ClassificationTrainingApp(tkinter.Frame):
             text="==Predicted content==\n"
             + tile_to_text(self.data[index]["predicted_content"])
         )
+
+    def set_debug_steps(self):
+        # Add *args because the dropdown gives an unused argument to this function
+        index = self.data_index
+        # Get the possible debug steps
+        if index is not None:
+            debug_steps = [name for name, image in self.data[index]["debug_images"]]
+        else:
+            debug_steps = []
+        if self.selected_debug_step.get() not in debug_steps:
+            self.selected_debug_step.set("Raw tile")
+
+        for radio_button in self.radio_buttons:
+            radio_button.pack_forget()
+        self.radio_buttons = [
+            tkinter.Radiobutton(
+                self.debug_step_frame.scrollable_frame,
+                text=step,
+                value=step,
+                variable=self.selected_debug_step,
+                command=self.show_tile,
+            )
+            for step in ["Raw tile", *debug_steps]
+        ]
+        for radio_button in self.radio_buttons:
+            radio_button.pack(side=tkinter.TOP)
 
     def run_coroutine(self, coroutine):
         async def wrapped_coroutine():
@@ -202,10 +212,12 @@ class ClassificationTrainingApp(tkinter.Frame):
 
     def next_tile(self):
         self.data_index += 1
+        self.set_debug_steps()
         self.show_tile()
         self.set_browse_button_state()
 
     def previous_tile(self):
         self.data_index -= 1
+        self.set_debug_steps()
         self.show_tile()
         self.set_browse_button_state()
