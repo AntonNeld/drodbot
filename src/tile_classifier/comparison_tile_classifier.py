@@ -473,7 +473,11 @@ def _compatible_with_minimap_color(element, layer, color):
     -------
     Whether the element can be in that place.
     """
-    # TODO: (128, 128, 128) is an obstacle, and there could be anything below it.
+    if layer == "item":
+        if color != (128, 128, 128):
+            # If there were an obstacle here, the color would be gray
+            return element != Element.OBSTACLE
+        # TODO: Same reasoning (but different color) holds for bombs
     if layer == "room_piece":
         if color == (0, 0, 0):
             # TODO: This can be broken or secret walls too
@@ -509,6 +513,9 @@ def _compatible_with_minimap_color(element, layer, color):
             return element == Element.FLOOR
         if color == (229, 229, 229):  # Cleared room, revisited
             return element == Element.FLOOR
+        if color == (128, 128, 128):
+            # This could be an obstacle, so there may be anything below it
+            return True
         print(f"Unknown minimap color {color}")
     return True
 
