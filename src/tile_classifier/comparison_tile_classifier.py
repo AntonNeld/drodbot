@@ -157,10 +157,13 @@ class ComparisonTileClassifier:
             png_info.add_text("direction", direction.value)
             image = PIL.Image.fromarray(tiles[(x, y)])
             direction_str = f"_{direction.value}" if direction != Direction.NONE else ""
-            base_name = f"{element.value}{direction_str}_{style}"
+            style_str = f"_{style}" if style is not None else ""
+            base_name = f"{element.value}{direction_str}{style_str}"
             name_increment = 0
             while base_name in used_names:
-                base_name = f"{element.value}{direction_str}_{style}_{name_increment}"
+                base_name = (
+                    f"{element.value}{direction_str}{style_str}_{name_increment}"
+                )
                 name_increment += 1
             used_names.append(base_name)
             image.save(
@@ -294,10 +297,10 @@ class ComparisonTileClassifier:
                                 average_diff = int(average_diffs[true_index])
                             except ValueError:
                                 average_diff = average_diffs[true_index]
+                            identifier = alternative["file_name"].replace(".png", "")
                             debug_images[key].append(
                                 (
-                                    f"({average_diff}) "
-                                    f"Pass {passes}: {alternative['file_name']}",
+                                    f"Pass {passes}: {identifier} ({average_diff})",
                                     masked_diffs[:, :, true_index],
                                 )
                             )
@@ -308,10 +311,10 @@ class ComparisonTileClassifier:
                 actual_index = alternative_indices[best_match_index]
                 element = alternatives[actual_index]["element"]
                 direction = alternatives[actual_index]["direction"]
+                identifier = alternatives[actual_index]["file_name"].replace(".png", "")
                 debug_images[key].append(
                     (
-                        f"=Pass {passes}, selected "
-                        f"{alternatives[actual_index]['file_name']}=",
+                        f"=Pass {passes}, selected " f"{identifier}=",
                         alternatives[actual_index]["image"],
                     )
                 )
