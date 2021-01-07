@@ -120,11 +120,11 @@ class ComparisonTileClassifier:
             _get_sworded_element_placement(Element.BEETHRO, Element.BEETHRO_SWORD, 0, 0)
             + _get_fully_directional_element_placement(Element.ROACH, 0, 3)
             + [
-                (Element.FLOOR, Direction.NONE, 2, 2),
-                (Element.FLOOR, Direction.NONE, 3, 2),
-                (Element.CONQUER_TOKEN, Direction.NONE, 0, 5),
+                (Element.FLOOR, Direction.NONE, 2, 2, "normal"),
+                (Element.FLOOR, Direction.NONE, 3, 2, "normal"),
+                (Element.CONQUER_TOKEN, Direction.NONE, 0, 5, None),
             ]
-            + _get_nondirectional_edges_element_placement(Element.WALL, 1, 4)
+            + _get_nondirectional_edges_element_placement(Element.WALL, 1, 4, "hard")
             + _get_nondirectional_edges_element_placement(Element.YELLOW_DOOR, 1, 9)
             + _get_nondirectional_edges_element_placement(Element.BLUE_DOOR, 1, 14)
             + _get_nondirectional_edges_element_placement(Element.GREEN_DOOR, 1, 19)
@@ -138,14 +138,11 @@ class ComparisonTileClassifier:
                 Element.GREEN_DOOR_OPEN, 11, 19
             )
         )
-        for (element, direction, x, y) in elements:
+        for (element, direction, x, y, style) in elements:
             if element not in [Element.BEETHRO_SWORD]:
-                await self._interface.place_element(element, direction, (x, y))
-
-        # Replace the normal central wall with a hard wall
-        await self._interface.place_element(
-            Element.WALL, Direction.NONE, (2, 6), style="hard"
-        )
+                await self._interface.place_element(
+                    element, direction, (x, y), style=style
+                )
 
         await self._interface.start_test_room((37, 31), Direction.SE)
         tiles, _ = await self._interface.get_tiles_and_colors()
@@ -154,15 +151,16 @@ class ComparisonTileClassifier:
             shutil.rmtree(self._tile_data_dir)
         os.makedirs(self._tile_data_dir)
         used_names = []
-        for (element, direction, x, y) in elements:
+        for (element, direction, x, y, style) in elements:
             png_info = PngInfo()
             png_info.add_text("element", element.value)
             png_info.add_text("direction", direction.value)
             image = PIL.Image.fromarray(tiles[(x, y)])
-            base_name = f"{element.value}_{direction.value}"
+            direction_str = f"_{direction.value}" if direction != Direction.NONE else ""
+            base_name = f"{element.value}{direction_str}_{style}"
             name_increment = 0
             while base_name in used_names:
-                base_name = f"{element.value}_{direction.value}_{name_increment}"
+                base_name = f"{element.value}{direction_str}_{style}_{name_increment}"
                 name_increment += 1
             used_names.append(base_name)
             image.save(
@@ -529,24 +527,28 @@ def _get_sworded_element_placement(element, sword, x, y):
         X coordinate of the upper left corner of the pattern.
     y
         Y coordinate of the upper left corner of the pattern.
+
+    Returns
+    -------
+    A list of tuples (element, direction, x, y, style).
     """
     return [
-        (element, Direction.N, x + 0, y + 1),
-        (sword, Direction.N, x + 0, y + 0),
-        (element, Direction.NE, x + 0, y + 2),
-        (sword, Direction.NE, x + 1, y + 1),
-        (element, Direction.E, x + 1, y + 0),
-        (sword, Direction.E, x + 2, y + 0),
-        (element, Direction.SE, x + 3, y + 0),
-        (sword, Direction.SE, x + 4, y + 1),
-        (element, Direction.S, x + 5, y + 1),
-        (sword, Direction.S, x + 5, y + 2),
-        (element, Direction.SW, x + 2, y + 1),
-        (sword, Direction.SW, x + 1, y + 2),
-        (element, Direction.W, x + 5, y + 0),
-        (sword, Direction.W, x + 4, y + 0),
-        (element, Direction.NW, x + 4, y + 2),
-        (sword, Direction.NW, x + 3, y + 1),
+        (element, Direction.N, x + 0, y + 1, None),
+        (sword, Direction.N, x + 0, y + 0, None),
+        (element, Direction.NE, x + 0, y + 2, None),
+        (sword, Direction.NE, x + 1, y + 1, None),
+        (element, Direction.E, x + 1, y + 0, None),
+        (sword, Direction.E, x + 2, y + 0, None),
+        (element, Direction.SE, x + 3, y + 0, None),
+        (sword, Direction.SE, x + 4, y + 1, None),
+        (element, Direction.S, x + 5, y + 1, None),
+        (sword, Direction.S, x + 5, y + 2, None),
+        (element, Direction.SW, x + 2, y + 1, None),
+        (sword, Direction.SW, x + 1, y + 2, None),
+        (element, Direction.W, x + 5, y + 0, None),
+        (sword, Direction.W, x + 4, y + 0, None),
+        (element, Direction.NW, x + 4, y + 2, None),
+        (sword, Direction.NW, x + 3, y + 1, None),
     ]
 
 
@@ -565,20 +567,24 @@ def _get_fully_directional_element_placement(element, x, y):
         X coordinate of the upper left corner of the pattern.
     y
         Y coordinate of the upper left corner of the pattern.
+
+    Returns
+    -------
+    A list of tuples (element, direction, x, y, style).
     """
     return [
-        (element, Direction.N, x + 0, y + 0),
-        (element, Direction.NE, x + 1, y + 0),
-        (element, Direction.E, x + 2, y + 0),
-        (element, Direction.SE, x + 3, y + 0),
-        (element, Direction.S, x + 0, y + 1),
-        (element, Direction.SW, x + 1, y + 1),
-        (element, Direction.W, x + 2, y + 1),
-        (element, Direction.NW, x + 3, y + 1),
+        (element, Direction.N, x + 0, y + 0, None),
+        (element, Direction.NE, x + 1, y + 0, None),
+        (element, Direction.E, x + 2, y + 0, None),
+        (element, Direction.SE, x + 3, y + 0, None),
+        (element, Direction.S, x + 0, y + 1, None),
+        (element, Direction.SW, x + 1, y + 1, None),
+        (element, Direction.W, x + 2, y + 1, None),
+        (element, Direction.NW, x + 3, y + 1, None),
     ]
 
 
-def _get_nondirectional_edges_element_placement(element, x, y):
+def _get_nondirectional_edges_element_placement(element, x, y, style=None):
     """Get a list of nondirectional elements (and NONE directions).
 
     This can be used to place elements in the editor,
@@ -592,38 +598,44 @@ def _get_nondirectional_edges_element_placement(element, x, y):
         X coordinate of the upper left corner of the pattern.
     y
         Y coordinate of the upper left corner of the pattern.
+    style
+        The style of the element.
+
+    Returns
+    -------
+    A list of tuples (element, direction, x, y, style).
     """
     return [
         # Little compact square
-        (element, Direction.NONE, x + 0, y + 1),
-        (element, Direction.NONE, x + 1, y + 1),
-        (element, Direction.NONE, x + 2, y + 1),
-        (element, Direction.NONE, x + 0, y + 2),
-        (element, Direction.NONE, x + 1, y + 2),
-        (element, Direction.NONE, x + 2, y + 2),
-        (element, Direction.NONE, x + 0, y + 3),
-        (element, Direction.NONE, x + 1, y + 3),
-        (element, Direction.NONE, x + 2, y + 3),
+        (element, Direction.NONE, x + 0, y + 1, style),
+        (element, Direction.NONE, x + 1, y + 1, style),
+        (element, Direction.NONE, x + 2, y + 1, style),
+        (element, Direction.NONE, x + 0, y + 2, style),
+        (element, Direction.NONE, x + 1, y + 2, style),
+        (element, Direction.NONE, x + 2, y + 2, style),
+        (element, Direction.NONE, x + 0, y + 3, style),
+        (element, Direction.NONE, x + 1, y + 3, style),
+        (element, Direction.NONE, x + 2, y + 3, style),
         # Big holey square
-        (element, Direction.NONE, x + 4, y + 0),
-        (element, Direction.NONE, x + 4, y + 1),
-        (element, Direction.NONE, x + 4, y + 2),
-        (element, Direction.NONE, x + 4, y + 3),
-        (element, Direction.NONE, x + 4, y + 4),
-        (element, Direction.NONE, x + 5, y + 0),
-        (element, Direction.NONE, x + 5, y + 2),
-        (element, Direction.NONE, x + 5, y + 4),
-        (element, Direction.NONE, x + 6, y + 0),
-        (element, Direction.NONE, x + 6, y + 1),
-        (element, Direction.NONE, x + 6, y + 2),
-        (element, Direction.NONE, x + 6, y + 3),
-        (element, Direction.NONE, x + 6, y + 4),
-        (element, Direction.NONE, x + 7, y + 0),
-        (element, Direction.NONE, x + 7, y + 2),
-        (element, Direction.NONE, x + 7, y + 4),
-        (element, Direction.NONE, x + 8, y + 0),
-        (element, Direction.NONE, x + 8, y + 1),
-        (element, Direction.NONE, x + 8, y + 2),
-        (element, Direction.NONE, x + 8, y + 3),
-        (element, Direction.NONE, x + 8, y + 4),
+        (element, Direction.NONE, x + 4, y + 0, style),
+        (element, Direction.NONE, x + 4, y + 1, style),
+        (element, Direction.NONE, x + 4, y + 2, style),
+        (element, Direction.NONE, x + 4, y + 3, style),
+        (element, Direction.NONE, x + 4, y + 4, style),
+        (element, Direction.NONE, x + 5, y + 0, style),
+        (element, Direction.NONE, x + 5, y + 2, style),
+        (element, Direction.NONE, x + 5, y + 4, style),
+        (element, Direction.NONE, x + 6, y + 0, style),
+        (element, Direction.NONE, x + 6, y + 1, style),
+        (element, Direction.NONE, x + 6, y + 2, style),
+        (element, Direction.NONE, x + 6, y + 3, style),
+        (element, Direction.NONE, x + 6, y + 4, style),
+        (element, Direction.NONE, x + 7, y + 0, style),
+        (element, Direction.NONE, x + 7, y + 2, style),
+        (element, Direction.NONE, x + 7, y + 4, style),
+        (element, Direction.NONE, x + 8, y + 0, style),
+        (element, Direction.NONE, x + 8, y + 1, style),
+        (element, Direction.NONE, x + 8, y + 2, style),
+        (element, Direction.NONE, x + 8, y + 3, style),
+        (element, Direction.NONE, x + 8, y + 4, style),
     ]
