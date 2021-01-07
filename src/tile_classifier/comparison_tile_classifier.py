@@ -236,7 +236,13 @@ class ComparisonTileClassifier:
             [a["mask"] for a in self._tile_data], axis=-1
         )
         for key, image in tiles.items():
-            processed_image = _preprocess_image(image.astype(float))
+            if return_debug_images:
+                processed_image, preprocess_debug_images = _preprocess_image(
+                    image.astype(float), return_debug_images=True
+                )
+                debug_images[key].extend(preprocess_debug_images)
+            else:
+                processed_image = _preprocess_image(image.astype(float))
             all_image_diffs = numpy.sqrt(
                 numpy.sum(
                     (processed_image[:, :, :, numpy.newaxis] - all_alternative_images)
@@ -402,7 +408,7 @@ class ComparisonTileClassifier:
         print("Finished generating sample data")
 
 
-def _preprocess_image(image):
+def _preprocess_image(image, return_debug_images=False):
     """Pre-process an image before comparing it to others.
 
     This should be done both to input images when classifying,
@@ -412,11 +418,16 @@ def _preprocess_image(image):
     ----------
     image
         Image to process, with floats.
+    return_debug_images
+        If true, also return a list of (name, image) tuples with
+        intermediate images.
 
     Returns
     -------
     The processed image.
     """
+    if return_debug_images:
+        return image, [("TMP step", image)]
     return image
 
 
