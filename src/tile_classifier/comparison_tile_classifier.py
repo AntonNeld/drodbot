@@ -48,7 +48,10 @@ class ComparisonTileClassifier:
                         "file_name": file_name,
                         "image": _preprocess_image(image_array.astype(float)),
                         "mask": numpy.logical_not(
-                            find_color(image_array, (255, 0, 255))
+                            numpy.logical_or(
+                                find_color(image_array, (255, 0, 255)),  # Background
+                                find_color(image_array, (192, 0, 192)),  # Shadow
+                            )
                         ),
                         "element": element,
                         "direction": direction,
@@ -142,6 +145,11 @@ class ComparisonTileClassifier:
             )
             + await _place_nondirectional_edges_elements(
                 self._interface, Element.GREEN_DOOR_OPEN, 11, 19
+            )
+            + await _place_sized_obstacles(self._interface, "rock_1", 7, 0, [1, 2, 3])
+            + await _place_sized_obstacles(self._interface, "rock_2", 11, 4, [1, 2, 3])
+            + await _place_sized_obstacles(
+                self._interface, "square_statue", 16, 1, [1, 2, 4]
             )
         )
         extra_elements = [
@@ -408,6 +416,7 @@ class ComparisonTileClassifier:
             (Element.BLUE_DOOR, Direction.NONE, 6, 7),
             (Element.BLUE_DOOR, Direction.NONE, 7, 7),
             (Element.BLUE_DOOR, Direction.NONE, 8, 7),
+            (Element.OBSTACLE, Direction.NONE, 28, 5),
         ]
         for (element, direction, x, y) in elements:
             await self._interface.place_element(element, direction, (x, y))
@@ -517,8 +526,11 @@ def _compatible_with_minimap_color(element, layer, color):
         if color == (229, 229, 229):  # Cleared room, revisited
             return element == Element.FLOOR
         if color == (128, 128, 128):
-            # This could be an obstacle, so there may be anything below it
-            return True
+            # This could be an obstacle, so there may be anything below it.
+            # But it doesn't actually matter unless it's a tunnel, so let's
+            # say it's either a tunnel or a floor.
+            # TODO: It could also be a tunnel
+            return element == Element.FLOOR
         print(f"Unknown minimap color {color}")
     return True
 
@@ -669,3 +681,42 @@ async def _place_nondirectional_edges_elements(interface, element, x, y, style=N
         (element, Direction.NONE, element_x, element_y, style)
         for element_x, element_y in returned_coords
     ]
+
+
+async def _place_sized_obstacles(interface, style, x, y, sizes):
+    """Place obstacles of various sizes.
+
+    Parameters
+    ----------
+    interface
+        The editor interface.
+    style
+        The style of the obstacle to place.
+    x
+        X coordinate of the leftmost obstacle.
+    y
+        Y coordinate of the leftmost obstacle.
+    sizes
+        List of sizes of obstacles.
+
+    Returns
+    -------
+    A list of tuples (element, direction, x, y, style) of placed elements.
+    """
+    return_elements = []
+    current_x = x
+    for size in sizes:
+        await interface.place_element(
+            Element.OBSTACLE,
+            Direction.NONE,
+            (current_x, y),
+            (current_x + size - 1, y + size - 1) if size != 1 else None,
+            style=style,
+        )
+        for placed_x in range(current_x, current_x + size):
+            for placed_y in range(y, y + size):
+                return_elements.append(
+                    (Element.OBSTACLE, Direction.NONE, placed_x, placed_y, style)
+                )
+        current_x = current_x + size + 1
+    return return_elements

@@ -42,6 +42,12 @@ WALL_LIGHT = (25, 85)
 
 ORB = (25, 50)
 MIMIC_POTION = (60, 50)
+OBSTACLE = (125, 115)
+OBSTACLE_STYLES = {
+    "rock_1": (170, 80),
+    "rock_2": (200, 80),
+    "square_statue": (170, 115),
+}
 TOKEN = (30, 180)
 CONQUER_TOKEN_IN_MENU = (265, 150)
 
@@ -82,6 +88,7 @@ class EditorInterface:
         self.orb_type = None
         self.monster_direction = None
         self.selected_token = None
+        self.selected_obstacle = None
         self.copied_element = None
         self.copied_element_direction = None
 
@@ -327,6 +334,14 @@ class EditorInterface:
             elif self.orb_type == OrbType.BROKEN:
                 await self._click(ORB)
             self.orb_type = OrbType.NORMAL
+        elif element == Element.OBSTACLE:
+            used_style = style if style is not None else "rock_1"
+            await self._select_element(ITEMS_TAB, OBSTACLE)
+            if self.selected_obstacle != OBSTACLE_STYLES[used_style]:
+                # Click it again to bring up the menu, and select the right style
+                await self._click(OBSTACLE)
+                await self._click(OBSTACLE_STYLES[used_style])
+                self.selected_obstacle = OBSTACLE_STYLES[used_style]
         elif element == Element.CONQUER_TOKEN:
             await self._select_element(ITEMS_TAB, TOKEN)
             if self.selected_token != CONQUER_TOKEN_IN_MENU:
