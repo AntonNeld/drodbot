@@ -115,34 +115,43 @@ class ComparisonTileClassifier:
             Element.FLOOR, Direction.NONE, (0, 0), (37, 31), style="image"
         )
 
-        # Swords are ignored when placing, but will be used when annotating
         elements = (
-            _get_sworded_element_placement(Element.BEETHRO, Element.BEETHRO_SWORD, 0, 0)
-            + _get_fully_directional_element_placement(Element.ROACH, 0, 3)
-            + [
-                (Element.FLOOR, Direction.NONE, 2, 2, "normal"),
-                (Element.FLOOR, Direction.NONE, 3, 2, "normal"),
-                (Element.CONQUER_TOKEN, Direction.NONE, 0, 5, None),
-            ]
-            + _get_nondirectional_edges_element_placement(Element.WALL, 1, 4, "hard")
-            + _get_nondirectional_edges_element_placement(Element.YELLOW_DOOR, 1, 9)
-            + _get_nondirectional_edges_element_placement(Element.BLUE_DOOR, 1, 14)
-            + _get_nondirectional_edges_element_placement(Element.GREEN_DOOR, 1, 19)
-            + _get_nondirectional_edges_element_placement(
-                Element.YELLOW_DOOR_OPEN, 11, 9
+            await _place_sworded_element(
+                self._interface, Element.BEETHRO, Element.BEETHRO_SWORD, 0, 0
             )
-            + _get_nondirectional_edges_element_placement(
-                Element.BLUE_DOOR_OPEN, 11, 14
+            + await _place_fully_directional_elements(
+                self._interface, Element.ROACH, 0, 3
             )
-            + _get_nondirectional_edges_element_placement(
-                Element.GREEN_DOOR_OPEN, 11, 19
+            + await _place_nondirectional_edges_elements(
+                self._interface, Element.WALL, 1, 4, "hard"
+            )
+            + await _place_nondirectional_edges_elements(
+                self._interface, Element.YELLOW_DOOR, 1, 9
+            )
+            + await _place_nondirectional_edges_elements(
+                self._interface, Element.BLUE_DOOR, 1, 14
+            )
+            + await _place_nondirectional_edges_elements(
+                self._interface, Element.GREEN_DOOR, 1, 19
+            )
+            + await _place_nondirectional_edges_elements(
+                self._interface, Element.YELLOW_DOOR_OPEN, 11, 9
+            )
+            + await _place_nondirectional_edges_elements(
+                self._interface, Element.BLUE_DOOR_OPEN, 11, 14
+            )
+            + await _place_nondirectional_edges_elements(
+                self._interface, Element.GREEN_DOOR_OPEN, 11, 19
             )
         )
-        for (element, direction, x, y, style) in elements:
-            if element not in [Element.BEETHRO_SWORD]:
-                await self._interface.place_element(
-                    element, direction, (x, y), style=style
-                )
+        extra_elements = [
+            (Element.FLOOR, Direction.NONE, 2, 2, "normal"),
+            (Element.FLOOR, Direction.NONE, 3, 2, "normal"),
+            (Element.CONQUER_TOKEN, Direction.NONE, 0, 5, None),
+        ]
+        for (element, direction, x, y, style) in extra_elements:
+            await self._interface.place_element(element, direction, (x, y), style=style)
+        elements.extend(extra_elements)
 
         await self._interface.start_test_room((37, 31), Direction.SE)
         tiles, _ = await self._interface.get_tiles_and_colors()
@@ -514,14 +523,13 @@ def _compatible_with_minimap_color(element, layer, color):
     return True
 
 
-def _get_sworded_element_placement(element, sword, x, y):
-    """Get a list of sworded elements and directions.
-
-    This can be used to place sworded elements in the editor,
-    in a compact way that includes all directions.
+async def _place_sworded_element(interface, element, sword, x, y):
+    """Place sworded elements to include all directions.
 
     Parameters
     ----------
+    interface
+        The editor interface.
     element
         The element to place.
     sword
@@ -533,37 +541,43 @@ def _get_sworded_element_placement(element, sword, x, y):
 
     Returns
     -------
-    A list of tuples (element, direction, x, y, style).
+    A list of tuples (element, direction, x, y, style) of placed elements.
+    This includes the swords.
     """
-    return [
-        (element, Direction.N, x + 0, y + 1, None),
-        (sword, Direction.N, x + 0, y + 0, None),
-        (element, Direction.NE, x + 0, y + 2, None),
-        (sword, Direction.NE, x + 1, y + 1, None),
-        (element, Direction.E, x + 1, y + 0, None),
-        (sword, Direction.E, x + 2, y + 0, None),
-        (element, Direction.SE, x + 3, y + 0, None),
-        (sword, Direction.SE, x + 4, y + 1, None),
-        (element, Direction.S, x + 5, y + 1, None),
-        (sword, Direction.S, x + 5, y + 2, None),
-        (element, Direction.SW, x + 2, y + 1, None),
-        (sword, Direction.SW, x + 1, y + 2, None),
-        (element, Direction.W, x + 5, y + 0, None),
-        (sword, Direction.W, x + 4, y + 0, None),
-        (element, Direction.NW, x + 4, y + 2, None),
-        (sword, Direction.NW, x + 3, y + 1, None),
+    elements = [
+        (element, Direction.N, x + 0, y + 1),
+        (sword, Direction.N, x + 0, y + 0),
+        (element, Direction.NE, x + 0, y + 2),
+        (sword, Direction.NE, x + 1, y + 1),
+        (element, Direction.E, x + 1, y + 0),
+        (sword, Direction.E, x + 2, y + 0),
+        (element, Direction.SE, x + 3, y + 0),
+        (sword, Direction.SE, x + 4, y + 1),
+        (element, Direction.S, x + 5, y + 1),
+        (sword, Direction.S, x + 5, y + 2),
+        (element, Direction.SW, x + 2, y + 1),
+        (sword, Direction.SW, x + 1, y + 2),
+        (element, Direction.W, x + 5, y + 0),
+        (sword, Direction.W, x + 4, y + 0),
+        (element, Direction.NW, x + 4, y + 2),
+        (sword, Direction.NW, x + 3, y + 1),
     ]
+    for (element, direction, element_x, element_y) in elements:
+        if element != sword:
+            await interface.place_element(element, direction, (element_x, element_y))
+    return [(*e, None) for e in elements]
 
 
-def _get_fully_directional_element_placement(element, x, y):
-    """Get a list of directional elements and directions.
+async def _place_fully_directional_elements(interface, element, x, y):
+    """Place directional elements to include all directions.
 
-    This can be used to place elements in the editor,
-    in a compact way that includes all directions. This function is
-    for fully directional elements, i.e. those that can face in 8 directions.
+    This function is for fully directional elements, i.e. those
+    that can face in 8 directions.
 
     Parameters
     ----------
+    interface
+        The editor interface.
     element
         The element to place.
     x
@@ -573,28 +587,30 @@ def _get_fully_directional_element_placement(element, x, y):
 
     Returns
     -------
-    A list of tuples (element, direction, x, y, style).
+    A list of tuples (element, direction, x, y, style) of placed elements.
     """
-    return [
-        (element, Direction.N, x + 0, y + 0, None),
-        (element, Direction.NE, x + 1, y + 0, None),
-        (element, Direction.E, x + 2, y + 0, None),
-        (element, Direction.SE, x + 3, y + 0, None),
-        (element, Direction.S, x + 0, y + 1, None),
-        (element, Direction.SW, x + 1, y + 1, None),
-        (element, Direction.W, x + 2, y + 1, None),
-        (element, Direction.NW, x + 3, y + 1, None),
+    elements = [
+        (element, Direction.N, x + 0, y + 0),
+        (element, Direction.NE, x + 1, y + 0),
+        (element, Direction.E, x + 2, y + 0),
+        (element, Direction.SE, x + 3, y + 0),
+        (element, Direction.S, x + 0, y + 1),
+        (element, Direction.SW, x + 1, y + 1),
+        (element, Direction.W, x + 2, y + 1),
+        (element, Direction.NW, x + 3, y + 1),
     ]
+    for (element, direction, element_x, element_y) in elements:
+        await interface.place_element(element, direction, (element_x, element_y))
+    return [(*e, None) for e in elements]
 
 
-def _get_nondirectional_edges_element_placement(element, x, y, style=None):
-    """Get a list of nondirectional elements (and NONE directions).
-
-    This can be used to place elements in the editor,
-    to get several types of edges
+async def _place_nondirectional_edges_elements(interface, element, x, y, style=None):
+    """Place nondirectional elements with edges to include many cases.
 
     Parameters
     ----------
+    interface
+        The editor interface.
     element
         The element to place.
     x
@@ -606,39 +622,50 @@ def _get_nondirectional_edges_element_placement(element, x, y, style=None):
 
     Returns
     -------
-    A list of tuples (element, direction, x, y, style).
+    A list of tuples (element, direction, x, y, style) of placed elements.
+    Not all placed elements are included, to avoid duplicate images.
     """
-    return [
+    returned_coords = [
         # Little compact square
-        (element, Direction.NONE, x + 0, y + 1, style),
-        (element, Direction.NONE, x + 1, y + 1, style),
-        (element, Direction.NONE, x + 2, y + 1, style),
-        (element, Direction.NONE, x + 0, y + 2, style),
-        (element, Direction.NONE, x + 1, y + 2, style),
-        (element, Direction.NONE, x + 2, y + 2, style),
-        (element, Direction.NONE, x + 0, y + 3, style),
-        (element, Direction.NONE, x + 1, y + 3, style),
-        (element, Direction.NONE, x + 2, y + 3, style),
+        (x + 0, y + 1),
+        (x + 1, y + 1),
+        (x + 2, y + 1),
+        (x + 0, y + 2),
+        (x + 1, y + 2),
+        (x + 2, y + 2),
+        (x + 0, y + 3),
+        (x + 1, y + 3),
+        (x + 2, y + 3),
         # Big holey square
-        (element, Direction.NONE, x + 4, y + 0, style),
-        (element, Direction.NONE, x + 4, y + 1, style),
-        (element, Direction.NONE, x + 4, y + 2, style),
-        (element, Direction.NONE, x + 4, y + 3, style),
-        (element, Direction.NONE, x + 4, y + 4, style),
-        (element, Direction.NONE, x + 5, y + 0, style),
-        (element, Direction.NONE, x + 5, y + 2, style),
-        (element, Direction.NONE, x + 5, y + 4, style),
-        (element, Direction.NONE, x + 6, y + 0, style),
-        (element, Direction.NONE, x + 6, y + 1, style),
-        (element, Direction.NONE, x + 6, y + 2, style),
-        (element, Direction.NONE, x + 6, y + 3, style),
-        (element, Direction.NONE, x + 6, y + 4, style),
-        (element, Direction.NONE, x + 7, y + 0, style),
-        (element, Direction.NONE, x + 7, y + 2, style),
-        (element, Direction.NONE, x + 7, y + 4, style),
-        (element, Direction.NONE, x + 8, y + 0, style),
-        (element, Direction.NONE, x + 8, y + 1, style),
-        (element, Direction.NONE, x + 8, y + 2, style),
-        (element, Direction.NONE, x + 8, y + 3, style),
-        (element, Direction.NONE, x + 8, y + 4, style),
+        (x + 4, y + 0),
+        (x + 4, y + 1),
+        (x + 4, y + 2),
+        (x + 5, y + 0),
+        (x + 6, y + 0),
+        (x + 6, y + 2),
+        (x + 6, y + 4),
+        (x + 8, y + 0),
+        (x + 8, y + 2),
+    ]
+    not_returned_coords = [
+        (x + 4, y + 3),
+        (x + 4, y + 4),
+        (x + 5, y + 2),
+        (x + 5, y + 4),
+        (x + 6, y + 1),
+        (x + 6, y + 3),
+        (x + 7, y + 0),
+        (x + 7, y + 2),
+        (x + 7, y + 4),
+        (x + 8, y + 1),
+        (x + 8, y + 3),
+        (x + 8, y + 4),
+    ]
+    for (element_x, element_y) in returned_coords + not_returned_coords:
+        await interface.place_element(
+            element, Direction.NONE, (element_x, element_y), style=style
+        )
+    return [
+        (element, Direction.NONE, element_x, element_y, style)
+        for element_x, element_y in returned_coords
     ]
