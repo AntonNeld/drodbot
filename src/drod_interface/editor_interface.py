@@ -28,6 +28,7 @@ GREEN_DOOR = (60, 105)
 GREEN_DOOR_OPEN = (60, 140)
 BLUE_DOOR = (25, 105)
 BLUE_DOOR_OPEN = (25, 140)
+MASTER_WALL = (90, 170)
 FLOOR = (25, 300)
 MOSAIC_FLOOR = (60, 300)
 ROAD_FLOOR = (90, 300)
@@ -85,6 +86,7 @@ class EditorInterface:
             MONSTERS_TAB: None,
         }
         self.hard_walls = None
+        self.hold_complete_wall = None
         self.orb_type = None
         self.monster_direction = None
         self.selected_token = None
@@ -105,12 +107,17 @@ class EditorInterface:
         # Let's use raw clicks here instead of select_element().
         # The latter depend on the state being set up.
         await self._click(ROOM_PIECES_TAB)
+        # Check whether we have selected master wall or hold complete wall
+        await self._click(MASTER_WALL)
+        _, _, image = await get_drod_window()
+        # Check for part of the "Hold complete wall" text
+        self.hold_complete_wall = image[455, 145, 0] == 0
         # Check whether the wall is normal or hard
         await self._click(WALL)
-        self.selected_element[ROOM_PIECES_TAB] = WALL
         _, _, image = await get_drod_window()
         # Check for part of the "(hard)" text
         self.hard_walls = image[457, 62, 0] == 22
+        self.selected_element[ROOM_PIECES_TAB] = WALL
 
         # For now, only select the force arrow. Once we start using it, we need to
         # check its direction as well.
@@ -326,6 +333,11 @@ class EditorInterface:
             await self._select_element(ROOM_PIECES_TAB, BLUE_DOOR)
         elif element == Element.BLUE_DOOR_OPEN:
             await self._select_element(ROOM_PIECES_TAB, BLUE_DOOR_OPEN)
+        elif element == Element.MASTER_WALL:
+            await self._select_element(ROOM_PIECES_TAB, MASTER_WALL)
+            if self.hold_complete_wall:
+                await self._click(MASTER_WALL)
+                self.hold_complete_wall = False
         elif element == Element.ORB:
             await self._select_element(ITEMS_TAB, ORB)
             if self.orb_type == OrbType.CRACKED:
