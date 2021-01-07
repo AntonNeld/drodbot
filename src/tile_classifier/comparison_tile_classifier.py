@@ -243,10 +243,23 @@ class ComparisonTileClassifier:
                 debug_images[key].extend(preprocess_debug_images)
             else:
                 processed_image = _preprocess_image(image.astype(float))
-            all_image_diffs = numpy.sqrt(
+
+            minimap_filtered_indices, alternatives = zip(
+                *[
+                    (i, a)
+                    for i, a in enumerate(self._tile_data)
+                    if _compatible_with_minimap_color(
+                        a["element"], a["layer"], minimap_colors[key]
+                    )
+                ]
+            )
+            alternative_images = all_alternative_images[
+                :, :, :, minimap_filtered_indices
+            ]
+            alternative_masks = all_alternative_masks[:, :, minimap_filtered_indices]
+            unmasked_image_diffs = numpy.sqrt(
                 numpy.sum(
-                    (processed_image[:, :, :, numpy.newaxis] - all_alternative_images)
-                    ** 2,
+                    (processed_image[:, :, :, numpy.newaxis] - alternative_images) ** 2,
                     axis=2,
                 )
             )
@@ -256,14 +269,14 @@ class ComparisonTileClassifier:
                 Element.UNKNOWN,
                 Direction.UNKNOWN,
             ):
-                all_masks = numpy.logical_and(
-                    all_alternative_masks, found_elements_mask[:, :, numpy.newaxis]
+                masks = numpy.logical_and(
+                    alternative_masks, found_elements_mask[:, :, numpy.newaxis]
                 )
-                all_mask_sizes = numpy.sum(all_masks, axis=(0, 1))
+                mask_sizes = numpy.sum(masks, axis=(0, 1))
 
                 alternative_indices = [
                     i
-                    for i, a in enumerate(self._tile_data)
+                    for i, a in enumerate(alternatives)
                     if (
                         a["layer"] == "swords"
                         and classified_tiles[key].monster
@@ -274,20 +287,16 @@ class ComparisonTileClassifier:
                         and getattr(classified_tiles[key], a["layer"])
                         == (Element.UNKNOWN, Direction.UNKNOWN)
                     )
-                    and all_mask_sizes[i] != 0
-                    and _compatible_with_minimap_color(
-                        a["element"], a["layer"], minimap_colors[key]
-                    )
+                    and mask_sizes[i] != 0
                 ]
-                diffs = all_image_diffs[:, :, alternative_indices]
-                masks = all_masks[:, :, alternative_indices]
-                masked_diffs = diffs * masks
+                diffs = unmasked_image_diffs[:, :, alternative_indices]
+                masked_diffs = diffs * masks[:, :, alternative_indices]
                 average_diffs = (
                     numpy.sum(masked_diffs, axis=(0, 1))
-                    / all_mask_sizes[alternative_indices]
+                    / mask_sizes[alternative_indices]
                 )
                 if return_debug_images:
-                    for index, alternative in enumerate(self._tile_data):
+                    for index, alternative in enumerate(alternatives):
                         if index in alternative_indices:
                             true_index = alternative_indices.index(index)
                             try:
@@ -306,21 +315,21 @@ class ComparisonTileClassifier:
                 )
 
                 actual_index = alternative_indices[best_match_index]
-                element = self._tile_data[actual_index]["element"]
-                direction = self._tile_data[actual_index]["direction"]
+                element = alternatives[actual_index]["element"]
+                direction = alternatives[actual_index]["direction"]
                 debug_images[key].append(
                     (
                         f"=Pass {passes}, selected "
-                        f"{self._tile_data[actual_index]['file_name']}=",
-                        self._tile_data[actual_index]["image"],
+                        f"{alternatives[actual_index]['file_name']}=",
+                        alternatives[actual_index]["image"],
                     )
                 )
-                element_mask = self._tile_data[actual_index]["mask"]
+                element_mask = alternatives[actual_index]["mask"]
                 found_elements_mask = numpy.logical_and(
                     found_elements_mask, numpy.logical_not(element_mask)
                 )
                 passes += 1
-                layer = self._tile_data[actual_index]["layer"]
+                layer = alternatives[actual_index]["layer"]
                 if layer != "swords":  # Discard swords
                     layers = [
                         "monster",
