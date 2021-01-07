@@ -25,17 +25,14 @@ pipenv run python src/drodbot.py
 
 Open DROD in a separate window.
 
-### Training the tile classification
+### Get data for the tile classification
 
-Before DRODbot can play any rooms (competently), it needs to learn how to interpret what it is seeing.
+Before DRODbot can play any rooms, it needs to learn how to interpret what it is seeing.
 Enter "Train classifier" mode in the DRODbot window, and:
 
 - Open the editor in DROD, and begin editing a new room.
-- In the DRODbot window, click "Generate training data" and wait for it to finish. This will take 5-10 minutes,
-  during which you can't do anything else involving the mouse, keyboard, or having another window focused. Go
-  do something else.
-- Click "Load training data", "Traing model" and "Save model weights" in that order. Wait for the previous
-  command to finish before starting the next.
+- In the DRODbot window, click "Train model" and wait for it to finish. While it's working,
+  you can't do anything else involving the mouse, keyboard, or having another window focused.
 
 ## What it can do
 
