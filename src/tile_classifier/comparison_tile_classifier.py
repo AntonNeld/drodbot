@@ -368,8 +368,18 @@ class ComparisonTileClassifier:
             (Element.ROACH, Direction.SE, 5, 5),
             (Element.WALL, Direction.NONE, 12, 25),
             (Element.WALL, Direction.NONE, 13, 25),
+            (Element.WALL, Direction.NONE, 13, 24),
+            (Element.WALL, Direction.NONE, 11, 26),
             (Element.WALL, Direction.NONE, 12, 26),
+            (Element.FLOOR, Direction.NONE, 11, 27),
+            (Element.FLOOR, Direction.NONE, 12, 27),
+            (Element.FLOOR, Direction.NONE, 13, 27),
             (Element.FLOOR, Direction.NONE, 13, 26),
+            (Element.FLOOR, Direction.NONE, 14, 25),
+            (Element.FLOOR, Direction.NONE, 14, 24),
+            (Element.WALL, Direction.NONE, 15, 23),
+            (Element.WALL, Direction.NONE, 16, 22),
+            (Element.FLOOR, Direction.NONE, 16, 23),
             (Element.BLUE_DOOR, Direction.NONE, 6, 5),
             (Element.BLUE_DOOR, Direction.NONE, 7, 5),
             (Element.BLUE_DOOR, Direction.NONE, 8, 5),
@@ -378,7 +388,7 @@ class ComparisonTileClassifier:
             (Element.BLUE_DOOR, Direction.NONE, 8, 6),
             (Element.BLUE_DOOR, Direction.NONE, 6, 7),
             (Element.BLUE_DOOR, Direction.NONE, 7, 7),
-            (Element.FLOOR, Direction.NONE, 8, 7),
+            (Element.BLUE_DOOR, Direction.NONE, 8, 7),
         ]
         for (element, direction, x, y) in elements:
             await self._interface.place_element(element, direction, (x, y))
