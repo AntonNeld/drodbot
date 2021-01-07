@@ -279,21 +279,25 @@ class ComparisonTileClassifier:
                 diffs = all_image_diffs[:, :, alternative_indices]
                 masks = all_masks[:, :, alternative_indices]
                 masked_diffs = diffs * masks
-                if return_debug_images:
-                    for index, alternative in enumerate(self._tile_data):
-                        if index in alternative_indices:
-                            debug_images[key].append(
-                                (
-                                    f"Pass {passes}: {alternative['file_name']}",
-                                    masked_diffs[
-                                        :, :, alternative_indices.index(index)
-                                    ],
-                                )
-                            )
                 average_diffs = (
                     numpy.sum(masked_diffs, axis=(0, 1))
                     / all_mask_sizes[alternative_indices]
                 )
+                if return_debug_images:
+                    for index, alternative in enumerate(self._tile_data):
+                        if index in alternative_indices:
+                            true_index = alternative_indices.index(index)
+                            try:
+                                average_diff = int(average_diffs[true_index])
+                            except ValueError:
+                                average_diff = average_diffs[true_index]
+                            debug_images[key].append(
+                                (
+                                    f"({average_diff}) "
+                                    f"Pass {passes}: {alternative['file_name']}",
+                                    masked_diffs[:, :, true_index],
+                                )
+                            )
                 best_match_index, best_match_diff = min(
                     ((i, v) for (i, v) in enumerate(average_diffs)), key=lambda x: x[1]
                 )

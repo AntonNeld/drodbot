@@ -96,7 +96,6 @@ class ClassificationTrainingApp(tkinter.Frame):
     def set_data(self, data):
         self.raw_data = data
         self.filter_data()
-        self.set_debug_steps()
 
     def filter_data(self):
         old_filenames = [tile["file_name"] for tile in self.data]
@@ -111,12 +110,14 @@ class ClassificationTrainingApp(tkinter.Frame):
             # updating the data
             if [tile["file_name"] for tile in self.data] != old_filenames:
                 self.data_index = 0
+            self.set_debug_steps()
             self.show_tile()
         else:
             self.data_index = None
             self.canvas.delete("all")
             self.tile_file_name.config(text="")
             self.tile_content.config(text="")
+            self.set_debug_steps()
         self.set_browse_button_state()
 
     def set_browse_button_state(self):
