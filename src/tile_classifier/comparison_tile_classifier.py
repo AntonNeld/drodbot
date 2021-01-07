@@ -151,6 +151,7 @@ class ComparisonTileClassifier:
             + await _place_sized_obstacles(
                 self._interface, "square_statue", 16, 1, [1, 2, 4]
             )
+            + await _place_wall_insides(self._interface, 20, 5, 8)
         )
         extra_elements = [
             (Element.FLOOR, Direction.NONE, 2, 2, "normal"),
@@ -445,6 +446,14 @@ class ComparisonTileClassifier:
         for (element, direction, x, y) in elements:
             await self._interface.place_element(element, direction, (x, y))
             room.place_element_like_editor(element, direction, (x, y))
+
+        await self._interface.place_element(
+            Element.WALL, Direction.NONE, (5, 10), (10, 15)
+        )
+        room.place_element_like_editor(Element.WALL, Direction.NONE, (5, 10), (10, 15))
+        for x in range(5, 11):
+            for y in range(10, 16):
+                elements.append((Element.WALL, Direction.NONE, x, y))
 
         await self._interface.start_test_room((37, 31), Direction.SE)
         tiles, colors = await self._interface.get_tiles_and_colors()
@@ -743,4 +752,35 @@ async def _place_sized_obstacles(interface, style, x, y, sizes):
                     (Element.OBSTACLE, Direction.NONE, placed_x, placed_y, style)
                 )
         current_x = current_x + size + 1
+    return return_elements
+
+
+async def _place_wall_insides(interface, x, y, size):
+    """Place a chunk of wall to include wall insides.
+
+    Parameters
+    ----------
+    interface
+        The editor interface.
+    x
+        X coordinate of the upper left corner.
+    y
+        Y coordinate of the upper left corner.
+    size
+        The size of the square to place.
+
+    Returns
+    -------
+    A list of tuples (element, direction, x, y, style) of placed elements.
+    Only wall insides are returned.
+    """
+    await interface.place_element(
+        Element.WALL, Direction.NONE, (x, y), (x + size, y + size)
+    )
+    return_elements = []
+    for placed_x in range(x + 1, x + size - 1):
+        for placed_y in range(y, y + size - 1):
+            return_elements.append(
+                (Element.WALL, Direction.NONE, placed_x, placed_y, None)
+            )
     return return_elements
