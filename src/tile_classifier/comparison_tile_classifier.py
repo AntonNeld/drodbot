@@ -34,7 +34,7 @@ class ComparisonTileClassifier:
 
     def _load_tile_data(self):
         try:
-            file_names = os.listdir(self._tile_data_dir)
+            file_names = sorted(os.listdir(self._tile_data_dir))
             tile_data = []
             for file_name in file_names:
                 image = PIL.Image.open(os.path.join(self._tile_data_dir, file_name))
