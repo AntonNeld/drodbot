@@ -73,12 +73,8 @@ class ComparisonTileClassifier:
             )
             return None
 
-    async def load_training_data(self):
-        """Load the sample data and send it to the GUI.
-
-        Has 'training' in the name to match the API of NeuralTileClassifier.
-        Will be renamed once this classifier can be the standard one.
-        """
+    async def load_sample_data(self):
+        """Load the sample data and send it to the GUI."""
         print("Loading sample data...")
         self._sample_data = []
         try:
@@ -104,11 +100,10 @@ class ComparisonTileClassifier:
         self._queue.put((GUIEvent.SET_TRAINING_DATA, self._sample_data))
         print("Loaded and classified sample data")
 
-    async def train_model(self):
+    async def generate_tile_data(self):
         """Get tile data using the editor.
 
-        The name is to match the API of NeuralTileClassifier.
-        Will be renamed once this classifier can be the standard one.
+        This must be done before the classifier will work.
         """
         print("Getting tile data...")
         await self._interface.initialize()
@@ -183,9 +178,6 @@ class ComparisonTileClassifier:
             self._classify_sample_data()
             self._queue.put((GUIEvent.SET_TRAINING_DATA, self._sample_data))
         print("Finished getting tile data")
-
-    async def save_model_weights(self):
-        print("Saving model weights is not applicable with the current classifier")
 
     def _classify_sample_data(self):
         predicted_contents, debug_images = self.classify_tiles(
@@ -364,7 +356,7 @@ class ComparisonTileClassifier:
             return classified_tiles, debug_images
         return classified_tiles
 
-    async def generate_training_data(self):
+    async def generate_sample_data(self):
         """Generate some sample data to test the classifier."""
         print("Generating sample data...")
         await self._interface.initialize()

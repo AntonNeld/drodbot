@@ -70,28 +70,24 @@ class ClassificationTrainingApp(tkinter.Frame):
 
         self.control_panel = tkinter.Frame(self)
         self.control_panel.pack(side=tkinter.LEFT)
-        self.generate_training_data_button = tkinter.Button(
+        self.tile_data_button = tkinter.Button(
             self.control_panel,
-            text="Generate training data",
-            command=self.generate_training_data,
+            text="Generate tile data",
+            command=self.generate_tile_data,
         )
-        self.generate_training_data_button.pack(side=tkinter.TOP)
-        self.load_training_data_button = tkinter.Button(
+        self.tile_data_button.pack(side=tkinter.TOP)
+        self.generate_sample_data_button = tkinter.Button(
             self.control_panel,
-            text="Load training data",
-            command=self.load_training_data,
+            text="Generate sample data",
+            command=self.generate_sample_data,
         )
-        self.load_training_data_button.pack(side=tkinter.TOP)
-        self.train_model_button = tkinter.Button(
+        self.generate_sample_data_button.pack(side=tkinter.TOP)
+        self.load_sample_data_button = tkinter.Button(
             self.control_panel,
-            text="Train model",
-            command=self.train_model,
+            text="Load sample data",
+            command=self.load_sample_data,
         )
-        self.train_model_button.pack(side=tkinter.TOP)
-        self.save_weights_button = tkinter.Button(
-            self.control_panel, text="Save model weights", command=self.save_weights
-        )
-        self.save_weights_button.pack(side=tkinter.TOP)
+        self.load_sample_data_button.pack(side=tkinter.TOP)
 
     def set_data(self, data):
         self.raw_data = data
@@ -199,17 +195,14 @@ class ClassificationTrainingApp(tkinter.Frame):
 
         asyncio.run_coroutine_threadsafe(wrapped_coroutine(), self.event_loop)
 
-    def generate_training_data(self):
-        self.run_coroutine(self.classifier.generate_training_data())
+    def generate_sample_data(self):
+        self.run_coroutine(self.classifier.generate_sample_data())
 
-    def load_training_data(self):
-        self.run_coroutine(self.classifier.load_training_data())
+    def load_sample_data(self):
+        self.run_coroutine(self.classifier.load_sample_data())
 
-    def train_model(self):
-        self.run_coroutine(self.classifier.train_model())
-
-    def save_weights(self):
-        self.run_coroutine(self.classifier.save_model_weights())
+    def generate_tile_data(self):
+        self.run_coroutine(self.classifier.generate_tile_data())
 
     def next_tile(self):
         self.data_index += 1
