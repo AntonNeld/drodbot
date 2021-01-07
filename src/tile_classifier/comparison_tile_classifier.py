@@ -277,10 +277,7 @@ class ComparisonTileClassifier:
             )
             found_elements_mask = numpy.ones((TILE_SIZE, TILE_SIZE), dtype=bool)
             passes = 1
-            while classified_tiles[key].room_piece == (
-                Element.UNKNOWN,
-                Direction.UNKNOWN,
-            ):
+            while numpy.sum(found_elements_mask) != 0:
                 masks = numpy.logical_and(
                     alternative_masks, found_elements_mask[:, :, numpy.newaxis]
                 )
@@ -371,6 +368,31 @@ class ComparisonTileClassifier:
                                 layer_above,
                                 (Element.NOTHING, Direction.NONE),
                             )
+            # If the lower layers are completely blocked by an obstacle,
+            # assume nothing is there. It doesn't matter unless there's a tunnel,
+            # and we have no way of knowing at this point.
+            if classified_tiles[key].item == (Element.OBSTACLE, Direction.NONE):
+                if classified_tiles[key].checkpoint == (
+                    Element.UNKNOWN,
+                    Direction.UNKNOWN,
+                ):
+                    classified_tiles[key].checkpoint = (
+                        Element.NOTHING,
+                        Direction.NONE,
+                    )
+                if classified_tiles[key].floor_control == (
+                    Element.UNKNOWN,
+                    Direction.UNKNOWN,
+                ):
+                    classified_tiles[key].floor_control = (
+                        Element.NOTHING,
+                        Direction.NONE,
+                    )
+                if classified_tiles[key].room_piece == (
+                    Element.UNKNOWN,
+                    Direction.UNKNOWN,
+                ):
+                    classified_tiles[key].room_piece = (Element.FLOOR, Direction.NONE)
 
         if return_debug_images:
             return classified_tiles, debug_images
