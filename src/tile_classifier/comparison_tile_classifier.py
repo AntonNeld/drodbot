@@ -275,6 +275,9 @@ class ComparisonTileClassifier:
                         == (Element.UNKNOWN, Direction.UNKNOWN)
                     )
                     and all_mask_sizes[i] != 0
+                    and _compatible_with_minimap_color(
+                        a["element"], a["layer"], minimap_colors[key]
+                    )
                 ]
                 diffs = all_image_diffs[:, :, alternative_indices]
                 masks = all_masks[:, :, alternative_indices]
@@ -441,8 +444,64 @@ def _preprocess_image(image, return_debug_images=False):
     The processed image.
     """
     if return_debug_images:
-        return image, [("TMP step", image)]
+        return image, []
     return image
+
+
+def _compatible_with_minimap_color(element, layer, color):
+    """Check whether an element can be in a tile with the given color.
+
+    Parameters
+    ----------
+    element
+        The element to check.
+    layer
+        Which layer the element is in.
+    color
+        The color of the minimap in that location.
+
+    Returns
+    -------
+    Whether the element can be in that place.
+    """
+    # TODO: (128, 128, 128) is an obstacle, and there could be anything below it.
+    if layer == "room_piece":
+        if color == (0, 0, 0):
+            # TODO: This can be broken or secret walls too
+            return element == Element.WALL
+        if color == (0, 0, 128):
+            return element == Element.PIT
+        if color == (255, 128, 0):
+            # TODO: This can be hold complete walls or hot tiles too
+            return element == Element.MASTER_WALL
+        if color == (255, 255, 0):
+            return element == Element.YELLOW_DOOR
+        if color == (255, 255, 164):
+            return element == Element.YELLOW_DOOR_OPEN
+        if color == (0, 255, 0):
+            return element == Element.GREEN_DOOR
+        if color == (128, 255, 128):  # Open green door, or recently cleared room
+            # TODO: This can be oremites too. They are not the same color, but
+            # they disappear from the minimap when the room is just cleared.
+            return element in [Element.FLOOR, Element.GREEN_DOOR_OPEN]
+        if color == (0, 255, 255):
+            return element == Element.BLUE_DOOR
+        if color == (164, 255, 255):
+            return element == Element.BLUE_DOOR_OPEN
+        if color == (210, 210, 100):
+            return element == Element.STAIRS
+        if color == (255, 200, 200):
+            # This only appears in the editor, but we may as well have it
+            return element == Element.FLOOR
+        if color == (255, 0, 0):  # Not cleared, required room
+            # TODO: This can be red doors too
+            return element == Element.FLOOR
+        if color == (255, 0, 255):  # Not cleared, not required room
+            return element == Element.FLOOR
+        if color == (229, 229, 229):  # Cleared room, revisited
+            return element == Element.FLOOR
+        print(f"Unknown minimap color {color}")
+    return True
 
 
 def _get_sworded_element_placement(element, sword, x, y):
