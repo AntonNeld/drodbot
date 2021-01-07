@@ -46,7 +46,7 @@ class ComparisonTileClassifier:
                 tile_data.append(
                     {
                         "file_name": file_name,
-                        "image": image_array,
+                        "image": _preprocess_image(image_array.astype(float)),
                         "mask": numpy.logical_not(
                             find_color(image_array, (255, 0, 255))
                         ),
@@ -236,12 +236,10 @@ class ComparisonTileClassifier:
             [a["mask"] for a in self._tile_data], axis=-1
         )
         for key, image in tiles.items():
+            processed_image = _preprocess_image(image.astype(float))
             all_image_diffs = numpy.sqrt(
                 numpy.sum(
-                    (
-                        image[:, :, :, numpy.newaxis].astype(float)
-                        - all_alternative_images.astype(float)
-                    )
+                    (processed_image[:, :, :, numpy.newaxis] - all_alternative_images)
                     ** 2,
                     axis=2,
                 )
@@ -291,7 +289,7 @@ class ComparisonTileClassifier:
                     numpy.sum(masked_diffs, axis=(0, 1))
                     / all_mask_sizes[alternative_indices]
                 )
-                best_match_index, _ = min(
+                best_match_index, best_match_diff = min(
                     ((i, v) for (i, v) in enumerate(average_diffs)), key=lambda x: x[1]
                 )
 
@@ -301,7 +299,8 @@ class ComparisonTileClassifier:
                 debug_images[key].append(
                     (
                         f"=Pass {passes}, selected "
-                        f"{self._tile_data[actual_index]['file_name']}=",
+                        f"{self._tile_data[actual_index]['file_name']} "
+                        f"with diff {best_match_diff}=",
                         self._tile_data[actual_index]["image"],
                     )
                 )
@@ -403,6 +402,24 @@ class ComparisonTileClassifier:
                 pnginfo=png_info,
             )
         print("Finished generating sample data")
+
+
+def _preprocess_image(image):
+    """Pre-process an image before comparing it to others.
+
+    This should be done both to input images when classifying,
+    and tile data images when importing.
+
+    Parameters
+    ----------
+    image
+        Image to process, with floats.
+
+    Returns
+    -------
+    The processed image.
+    """
+    return image
 
 
 def _get_sworded_element_placement(element, sword, x, y):
