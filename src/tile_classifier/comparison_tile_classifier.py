@@ -127,6 +127,7 @@ class ComparisonTileClassifier:
             + [
                 (Element.FLOOR, Direction.NONE, 2, 2),
                 (Element.FLOOR, Direction.NONE, 3, 2),
+                (Element.CONQUER_TOKEN, Direction.NONE, 0, 5),
             ]
             + _get_nondirectional_edges_element_placement(Element.WALL, 1, 4)
             + _get_nondirectional_edges_element_placement(Element.YELLOW_DOOR, 1, 9)
