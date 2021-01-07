@@ -112,7 +112,8 @@ class ClassificationTrainingApp(tkinter.Frame):
             self.data_index = None
             self.canvas.delete("all")
             self.tile_file_name.config(text="")
-            self.tile_content.config(text="")
+            self.real_tile_content.config(text="")
+            self.predicted_tile_content.config(text="")
             self.set_debug_steps()
         self.set_browse_button_state()
 
