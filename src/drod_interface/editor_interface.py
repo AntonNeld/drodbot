@@ -92,6 +92,7 @@ class EditorInterface:
         self.hard_walls = None
         self.stairs_up = None
         self.hold_complete_wall = None
+        self.force_arrow_direction = None
         self.orb_type = None
         self.monster_direction = None
         self.selected_token = None
@@ -129,11 +130,15 @@ class EditorInterface:
         self.hard_walls = image[457, 62, 0] == 22
         self.selected_element[ROOM_PIECES_TAB] = WALL
 
-        # For now, only select the force arrow. Once we start using it, we need to
-        # check its direction as well.
         await self._click(FLOOR_CONTROLS_TAB)
         await self._click(FORCE_ARROW)
         self.selected_element[FLOOR_CONTROLS_TAB] = FORCE_ARROW
+        # Make sure the force arrows are facing SE
+        _, _, image = await get_drod_window()
+        while image[60, 35, 0] != 165:  # The tip of the arrow when facing SE
+            pyautogui.press("q")
+            _, _, image = await get_drod_window()
+        self.force_arrow_direction = Direction.SE
 
         await self._click(ITEMS_TAB)
         await self._click(ORB)
@@ -201,7 +206,12 @@ class EditorInterface:
         )
         pyautogui.keyUp("shift")
 
-    async def _set_monster_direction(self, direction):
+    async def _set_direction(self, direction, kind="monster"):
+        # Warning: Does not make sure that the correct element is selected
+        if kind == "monster":
+            attribute = "monster_direction"
+        elif kind == "force_arrow":
+            attribute = "force_arrow_direction"
         direction_to_number = {
             Direction.N: 0,
             Direction.NE: 1,
@@ -213,7 +223,8 @@ class EditorInterface:
             Direction.NW: 7,
         }
         clockwise_rotations = (
-            direction_to_number[direction] - direction_to_number[self.monster_direction]
+            direction_to_number[direction]
+            - direction_to_number[getattr(self, attribute)]
         ) % 8
         if clockwise_rotations <= 4:
             for _ in range(clockwise_rotations):
@@ -221,7 +232,7 @@ class EditorInterface:
         else:  # Quicker to go counterclockwise
             for _ in range(8 - clockwise_rotations):
                 pyautogui.press("q")
-        self.monster_direction = direction
+        setattr(self, attribute, direction)
 
     async def set_floor_image(self, directory, base_name):
         """Set the image to use for image floors.
@@ -355,6 +366,9 @@ class EditorInterface:
             if self.hold_complete_wall:
                 await self._click(MASTER_WALL)
                 self.hold_complete_wall = False
+        elif element == Element.FORCE_ARROW:
+            await self._select_element(FLOOR_CONTROLS_TAB, FORCE_ARROW)
+            await self._set_direction(direction, kind="force_arrow")
         elif element == Element.CHECKPOINT:
             await self._select_element(FLOOR_CONTROLS_TAB, CHECKPOINT)
         elif element == Element.ORB:
@@ -382,7 +396,7 @@ class EditorInterface:
                 self.selected_token = CONQUER_TOKEN_IN_MENU
         elif element == Element.ROACH:
             await self._select_element(MONSTERS_TAB, ROACH)
-            await self._set_monster_direction(direction)
+            await self._set_direction(direction)
         else:
             raise RuntimeError(f"Unknown element {element}")
         if end_position is None:
@@ -424,7 +438,7 @@ class EditorInterface:
             await self._click((real_x, real_y))
         else:
             await self._select_element(MONSTERS_TAB, CHARACTER)
-            await self._set_monster_direction(direction)
+            await self._set_direction(direction)
             await self._click((real_x, real_y))
             # We're now in the character menu
             if element == Element.BEETHRO:
@@ -456,7 +470,7 @@ class EditorInterface:
         """
         # Select the roach to make sure we can rotate monsters
         await self._select_element(MONSTERS_TAB, ROACH)
-        await self._set_monster_direction(direction)
+        await self._set_direction(direction)
         pyautogui.press("f5")
         await self._click(
             (

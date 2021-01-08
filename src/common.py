@@ -65,6 +65,7 @@ class Element(Enum):
     BLUE_DOOR = "Blue door"
     BLUE_DOOR_OPEN = "Blue door (open)"
     STAIRS = "Stairs"
+    FORCE_ARROW = "Force arrow"
     CHECKPOINT = "Checkpoint"
     ORB = "Orb"
     OBSTACLE = "Obstacle"
@@ -88,7 +89,7 @@ ROOM_PIECES = [
     Element.BLUE_DOOR_OPEN,
     Element.STAIRS,
 ]
-FLOOR_CONTROLS = [Element.NOTHING]
+FLOOR_CONTROLS = [Element.NOTHING, Element.FORCE_ARROW]
 CHECKPOINTS = [Element.NOTHING, Element.CHECKPOINT]
 ITEMS = [Element.CONQUER_TOKEN, Element.ORB, Element.OBSTACLE, Element.NOTHING]
 MONSTERS = [Element.BEETHRO, Element.ROACH, Element.NOTHING]
@@ -106,6 +107,7 @@ ELEMENT_CHARACTERS = {
     Element.BLUE_DOOR: "B",
     Element.BLUE_DOOR_OPEN: "b",
     Element.STAIRS: ">",
+    Element.FORCE_ARROW: "^",
     Element.CHECKPOINT: "x",
     Element.ORB: "O",
     Element.OBSTACLE: "+",
@@ -127,25 +129,6 @@ class Direction(Enum):
     NW = "NW"
     NONE = " "
     UNKNOWN = "?"
-
-
-ALLOWED_DIRECTIONS = {
-    **{e: [Direction.NONE] for e in (ROOM_PIECES + ITEMS)},
-    **{
-        e: [
-            Direction.N,
-            Direction.NE,
-            Direction.E,
-            Direction.SE,
-            Direction.S,
-            Direction.SW,
-            Direction.W,
-            Direction.NW,
-        ]
-        for e in MONSTERS
-    },
-    Element.NOTHING: [Direction.NONE],  # Overwrites any earlier Nothings
-}
 
 
 @dataclass

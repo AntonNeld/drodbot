@@ -125,6 +125,9 @@ class ComparisonTileClassifier:
             + await _place_fully_directional_elements(
                 self._interface, Element.ROACH, 0, 3
             )
+            + await _place_fully_directional_elements(
+                self._interface, Element.FORCE_ARROW, 8, 2
+            )
             + await _place_nondirectional_edges_elements(
                 self._interface, Element.WALL, 1, 4, "hard"
             )
@@ -464,6 +467,7 @@ class ComparisonTileClassifier:
             (Element.BLUE_DOOR, Direction.NONE, 7, 7),
             (Element.BLUE_DOOR, Direction.NONE, 8, 7),
             (Element.OBSTACLE, Direction.NONE, 28, 5),
+            (Element.FORCE_ARROW, Direction.NW, 9, 9),
         ]
         for (element, direction, x, y) in elements:
             await self._interface.place_element(element, direction, (x, y))
