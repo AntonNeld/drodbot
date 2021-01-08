@@ -155,6 +155,21 @@ class ComparisonTileClassifier:
                 self._interface, Element.WALL, 20, 5, 9, include_all_sides=False
             )
             + await _place_square(self._interface, Element.PIT, 20, 14, 9)
+            + await _place_square(
+                self._interface, Element.FLOOR, 30, 5, 4, style="mosaic"
+            )
+            + await _place_square(
+                self._interface, Element.FLOOR, 30, 9, 4, style="road"
+            )
+            + await _place_square(
+                self._interface, Element.FLOOR, 30, 13, 4, style="grass"
+            )
+            + await _place_square(
+                self._interface, Element.FLOOR, 30, 17, 4, style="dirt"
+            )
+            + await _place_square(
+                self._interface, Element.FLOOR, 30, 21, 4, style="alternate"
+            )
         )
         extra_elements = [
             (Element.FLOOR, Direction.NONE, 2, 2, "normal"),
@@ -758,7 +773,9 @@ async def _place_sized_obstacles(interface, style, x, y, sizes):
     return return_elements
 
 
-async def _place_square(interface, element, x, y, size, include_all_sides=True):
+async def _place_square(
+    interface, element, x, y, size, include_all_sides=True, style=None
+):
     """Place a square of an element.
 
     Parameters
@@ -774,6 +791,8 @@ async def _place_square(interface, element, x, y, size, include_all_sides=True):
     include_all_sides
         If False, skip the left, right and lower sides. Use this when placing
         walls and you are only interested in the insides.
+    style
+        The style of element to place.
 
     Returns
     -------
@@ -781,7 +800,7 @@ async def _place_square(interface, element, x, y, size, include_all_sides=True):
     Only wall insides are returned.
     """
     await interface.place_element(
-        element, Direction.NONE, (x, y), (x + size - 1, y + size - 1)
+        element, Direction.NONE, (x, y), (x + size - 1, y + size - 1), style=style
     )
     return_elements = []
     if include_all_sides:
@@ -792,5 +811,5 @@ async def _place_square(interface, element, x, y, size, include_all_sides=True):
         y_range = range(y, y + size - 1)
     for placed_x in x_range:
         for placed_y in y_range:
-            return_elements.append((element, Direction.NONE, placed_x, placed_y, None))
+            return_elements.append((element, Direction.NONE, placed_x, placed_y, style))
     return return_elements
