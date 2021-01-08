@@ -177,6 +177,8 @@ class ComparisonTileClassifier:
             (Element.CONQUER_TOKEN, Direction.NONE, 0, 5, None),
             (Element.MASTER_WALL, Direction.NONE, 4, 3, None),
             (Element.ORB, Direction.NONE, 6, 1, None),
+            (Element.STAIRS, Direction.NONE, 6, 2, None),
+            (Element.STAIRS, Direction.NONE, 7, 2, "up"),
         ]
         for (element, direction, x, y, style) in extra_elements:
             await self._interface.place_element(element, direction, (x, y), style=style)

@@ -23,6 +23,7 @@ MONSTERS_TAB = (135, 20)
 
 WALL = (30, 60)
 PIT = (60, 200)
+STAIRS = (135, 60)
 YELLOW_DOOR = (25, 170)
 YELLOW_DOOR_OPEN = (60, 170)
 GREEN_DOOR = (60, 105)
@@ -67,6 +68,8 @@ IMAGE_IMPORT_WINDOW_FILE_NAME_INPUT = (400, 610)
 IMAGE_IMPORT_WINDOW_PNG = (300, 690)
 IMAGE_IMPORT_WINDOW_OKAY = (700, 680)
 
+STAIRS_WINDOW_OK = (545, 670)
+
 
 class OrbType(Enum):
     NORMAL = 0
@@ -87,6 +90,7 @@ class EditorInterface:
             MONSTERS_TAB: None,
         }
         self.hard_walls = None
+        self.stairs_up = None
         self.hold_complete_wall = None
         self.orb_type = None
         self.monster_direction = None
@@ -111,12 +115,17 @@ class EditorInterface:
         # Check whether we have selected master wall or hold complete wall
         await self._click(MASTER_WALL)
         _, _, image = await get_drod_window()
-        # Check for part of the "Hold complete wall" text
+        # Look for part of the "Hold complete wall" text
         self.hold_complete_wall = image[455, 145, 0] == 0
+        # Check stairs direction
+        await self._click(STAIRS)
+        _, _, image = await get_drod_window()
+        # Look for part of the "up" text
+        self.stairs_up = image[455, 57, 0] == 9
         # Check whether the wall is normal or hard
         await self._click(WALL)
         _, _, image = await get_drod_window()
-        # Check for part of the "(hard)" text
+        # Look for part of the "(hard)" text
         self.hard_walls = image[457, 62, 0] == 22
         self.selected_element[ROOM_PIECES_TAB] = WALL
 
@@ -305,6 +314,11 @@ class EditorInterface:
                 self.hard_walls = style == "hard"
         elif element == Element.PIT:
             await self._select_element(ROOM_PIECES_TAB, PIT)
+        elif element == Element.STAIRS:
+            await self._select_element(ROOM_PIECES_TAB, STAIRS)
+            if (style == "up") != self.stairs_up:
+                await self._click(STAIRS)
+                self.stairs_up = style == "up"
         elif element == Element.FLOOR:
             button = "right"
             if style == "mosaic":
@@ -387,6 +401,9 @@ class EditorInterface:
                 yOffset=(end_position[1] - position[1]) * TILE_SIZE,
                 button=button,
             )
+        if element == Element.STAIRS:
+            # Close the stairs window, it doesn't matter where the stairs go
+            await self._click(STAIRS_WINDOW_OK)
 
     async def _place_character(
         self, element, direction, position, copy_characters=False
