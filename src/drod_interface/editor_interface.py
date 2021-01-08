@@ -45,6 +45,7 @@ WALL_LIGHT = (25, 85)
 
 ORB = (25, 50)
 MIMIC_POTION = (60, 50)
+SCROLL = (25, 115)
 OBSTACLE = (125, 115)
 OBSTACLE_STYLES = {
     "rock_1": (170, 80),
@@ -69,6 +70,8 @@ IMAGE_IMPORT_WINDOW_PNG = (300, 690)
 IMAGE_IMPORT_WINDOW_OKAY = (700, 680)
 
 STAIRS_WINDOW_OK = (545, 670)
+
+SCROLL_WINDOW_OK = (460, 580)
 
 
 class OrbType(Enum):
@@ -379,6 +382,8 @@ class EditorInterface:
             elif self.orb_type == OrbType.BROKEN:
                 await self._click(ORB)
             self.orb_type = OrbType.NORMAL
+        elif element == Element.SCROLL:
+            await self._select_element(ITEMS_TAB, SCROLL)
         elif element == Element.OBSTACLE:
             used_style = style if style is not None else "rock_1"
             await self._select_element(ITEMS_TAB, OBSTACLE)
@@ -420,6 +425,10 @@ class EditorInterface:
         if element == Element.STAIRS:
             # Close the stairs window, it doesn't matter where the stairs go
             await self._click(STAIRS_WINDOW_OK)
+        elif element == Element.SCROLL:
+            # Write something and close the scroll window
+            pyautogui.press("space")
+            await self._click(SCROLL_WINDOW_OK)
 
     async def _place_character(
         self, element, direction, position, copy_characters=False

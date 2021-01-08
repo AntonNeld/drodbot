@@ -183,6 +183,7 @@ class ComparisonTileClassifier:
             (Element.STAIRS, Direction.NONE, 6, 2, None),
             (Element.STAIRS, Direction.NONE, 7, 2, "up"),
             (Element.CHECKPOINT, Direction.NONE, 7, 1, None),
+            (Element.SCROLL, Direction.NONE, 12, 3, None),
         ]
         for (element, direction, x, y, style) in extra_elements:
             await self._interface.place_element(element, direction, (x, y), style=style)

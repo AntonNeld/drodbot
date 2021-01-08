@@ -68,6 +68,7 @@ class Element(Enum):
     FORCE_ARROW = "Force arrow"
     CHECKPOINT = "Checkpoint"
     ORB = "Orb"
+    SCROLL = "Scroll"
     OBSTACLE = "Obstacle"
     BEETHRO = "Beethro"
     BEETHRO_SWORD = "Really Big Sword (TM)"
@@ -89,9 +90,15 @@ ROOM_PIECES = [
     Element.BLUE_DOOR_OPEN,
     Element.STAIRS,
 ]
-FLOOR_CONTROLS = [Element.NOTHING, Element.FORCE_ARROW]
-CHECKPOINTS = [Element.NOTHING, Element.CHECKPOINT]
-ITEMS = [Element.CONQUER_TOKEN, Element.ORB, Element.OBSTACLE, Element.NOTHING]
+FLOOR_CONTROLS = [Element.FORCE_ARROW, Element.NOTHING]
+CHECKPOINTS = [Element.CHECKPOINT, Element.NOTHING]
+ITEMS = [
+    Element.CONQUER_TOKEN,
+    Element.ORB,
+    Element.SCROLL,
+    Element.OBSTACLE,
+    Element.NOTHING,
+]
 MONSTERS = [Element.BEETHRO, Element.ROACH, Element.NOTHING]
 
 # These are overlaid over the room to show tile classifications
@@ -110,6 +117,7 @@ ELEMENT_CHARACTERS = {
     Element.FORCE_ARROW: "^",
     Element.CHECKPOINT: "x",
     Element.ORB: "O",
+    Element.SCROLL: "s",
     Element.OBSTACLE: "+",
     Element.BEETHRO: "B",
     Element.ROACH: "R",
