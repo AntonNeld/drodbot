@@ -157,7 +157,12 @@ class ComparisonTileClassifier:
             + await _place_square(
                 self._interface, Element.WALL, 20, 5, 9, include_all_sides=False
             )
-            + await _place_square(self._interface, Element.PIT, 20, 14, 9)
+            # Place some force arrows in the shadow, since we're having trouble seeing
+            # those otherwise
+            + await _place_fully_directional_elements(
+                self._interface, Element.FORCE_ARROW, 21, 14, one_line=True
+            )
+            + await _place_square(self._interface, Element.PIT, 20, 15, 9)
             + await _place_square(
                 self._interface, Element.FLOOR, 30, 5, 4, style="mosaic"
             )
@@ -325,7 +330,8 @@ class ComparisonTileClassifier:
                             == (Element.UNKNOWN, Direction.UNKNOWN)
                         )
                     )
-                    and mask_sizes[i] != 0
+                    and mask_sizes[i]
+                    > 10  # If the difference is too small, it will throw things off
                 ]
                 diffs = unmasked_image_diffs[:, :, alternative_indices]
                 masked_diffs = diffs * masks[:, :, alternative_indices]
@@ -422,6 +428,19 @@ class ComparisonTileClassifier:
                     Direction.UNKNOWN,
                 ):
                     classified_tiles[key].room_piece = (Element.FLOOR, Direction.NONE)
+            # Open master walls are tricky because they can have several different
+            # appearances, and are closed when playtesting. If we know there is a
+            # master wall in a tile (because of the minimap), let's assume there is
+            # nothing else there (except possibly Beethro).
+            if classified_tiles[key].room_piece == (
+                Element.MASTER_WALL,
+                Direction.NONE,
+            ):
+                classified_tiles[key].floor_control = (Element.NOTHING, Direction.NONE)
+                classified_tiles[key].checkpoint = (Element.NOTHING, Direction.NONE)
+                classified_tiles[key].item = (Element.NOTHING, Direction.NONE)
+                if classified_tiles[key].monster[0] != Element.BEETHRO:
+                    classified_tiles[key].monster = (Element.NOTHING, Direction.NONE)
 
         if return_debug_images:
             return classified_tiles, debug_images
@@ -646,7 +665,7 @@ async def _place_sworded_element(interface, element, sword, x, y):
     return [(*e, None) for e in elements]
 
 
-async def _place_fully_directional_elements(interface, element, x, y):
+async def _place_fully_directional_elements(interface, element, x, y, one_line=False):
     """Place directional elements to include all directions.
 
     This function is for fully directional elements, i.e. those
@@ -662,6 +681,9 @@ async def _place_fully_directional_elements(interface, element, x, y):
         X coordinate of the upper left corner of the pattern.
     y
         Y coordinate of the upper left corner of the pattern.
+    one_line
+        Whether to place the elements on one line instead of in a 4x2
+        pattern.
 
     Returns
     -------
@@ -672,11 +694,25 @@ async def _place_fully_directional_elements(interface, element, x, y):
         (element, Direction.NE, x + 1, y + 0),
         (element, Direction.E, x + 2, y + 0),
         (element, Direction.SE, x + 3, y + 0),
-        (element, Direction.S, x + 0, y + 1),
-        (element, Direction.SW, x + 1, y + 1),
-        (element, Direction.W, x + 2, y + 1),
-        (element, Direction.NW, x + 3, y + 1),
     ]
+    if one_line:
+        elements.extend(
+            [
+                (element, Direction.S, x + 4, y + 0),
+                (element, Direction.SW, x + 5, y + 0),
+                (element, Direction.W, x + 6, y + 0),
+                (element, Direction.NW, x + 7, y + 0),
+            ]
+        )
+    else:
+        elements.extend(
+            [
+                (element, Direction.S, x + 0, y + 1),
+                (element, Direction.SW, x + 1, y + 1),
+                (element, Direction.W, x + 2, y + 1),
+                (element, Direction.NW, x + 3, y + 1),
+            ]
+        )
     for (element, direction, element_x, element_y) in elements:
         await interface.place_element(element, direction, (element_x, element_y))
     return [(*e, None) for e in elements]
