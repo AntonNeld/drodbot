@@ -176,6 +176,7 @@ class ComparisonTileClassifier:
             (Element.FLOOR, Direction.NONE, 3, 2, "normal"),
             (Element.CONQUER_TOKEN, Direction.NONE, 0, 5, None),
             (Element.MASTER_WALL, Direction.NONE, 4, 3, None),
+            (Element.ORB, Direction.NONE, 6, 1, None),
         ]
         for (element, direction, x, y, style) in extra_elements:
             await self._interface.place_element(element, direction, (x, y), style=style)
