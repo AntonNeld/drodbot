@@ -154,29 +154,33 @@ class ComparisonTileClassifier:
             + await _place_sized_obstacles(
                 self._interface, "square_statue", 16, 1, [1, 2, 4]
             )
-            + await _place_square(
-                self._interface, Element.WALL, 20, 5, 9, include_all_sides=False
+            + await _place_rectangle(
+                self._interface, Element.WALL, 20, 5, 9, 9, include_all_sides=False
             )
             # Place some force arrows in the shadow, since we're having trouble seeing
             # those otherwise
             + await _place_fully_directional_elements(
                 self._interface, Element.FORCE_ARROW, 21, 14, one_line=True
             )
-            + await _place_square(self._interface, Element.PIT, 20, 15, 9)
-            + await _place_square(
-                self._interface, Element.FLOOR, 30, 5, 4, style="mosaic"
+            + await _place_rectangle(self._interface, Element.PIT, 20, 15, 9, 9)
+            + await _place_rectangle(
+                self._interface, Element.FLOOR, 30, 5, 4, 4, style="mosaic"
             )
-            + await _place_square(
-                self._interface, Element.FLOOR, 30, 9, 4, style="road"
+            + await _place_rectangle(
+                self._interface, Element.FLOOR, 30, 9, 4, 4, style="road"
             )
-            + await _place_square(
-                self._interface, Element.FLOOR, 30, 13, 4, style="grass"
+            + await _place_rectangle(
+                self._interface, Element.FLOOR, 30, 13, 4, 4, style="grass"
             )
-            + await _place_square(
-                self._interface, Element.FLOOR, 30, 17, 4, style="dirt"
+            + await _place_rectangle(
+                self._interface, Element.FLOOR, 30, 17, 4, 4, style="dirt"
             )
-            + await _place_square(
-                self._interface, Element.FLOOR, 30, 21, 4, style="alternate"
+            + await _place_rectangle(
+                self._interface, Element.FLOOR, 30, 21, 4, 4, style="alternate"
+            )
+            + await _place_rectangle(self._interface, Element.STAIRS, 34, 5, 1, 19)
+            + await _place_rectangle(
+                self._interface, Element.STAIRS, 35, 5, 1, 19, style="up"
             )
         )
         extra_elements = [
@@ -185,8 +189,6 @@ class ComparisonTileClassifier:
             (Element.CONQUER_TOKEN, Direction.NONE, 0, 5, None),
             (Element.MASTER_WALL, Direction.NONE, 4, 3, None),
             (Element.ORB, Direction.NONE, 6, 1, None),
-            (Element.STAIRS, Direction.NONE, 6, 2, None),
-            (Element.STAIRS, Direction.NONE, 7, 2, "up"),
             (Element.CHECKPOINT, Direction.NONE, 7, 1, None),
             (Element.SCROLL, Direction.NONE, 12, 3, None),
         ]
@@ -824,10 +826,10 @@ async def _place_sized_obstacles(interface, style, x, y, sizes):
     return return_elements
 
 
-async def _place_square(
-    interface, element, x, y, size, include_all_sides=True, style=None
+async def _place_rectangle(
+    interface, element, x, y, width, height, include_all_sides=True, style=None
 ):
-    """Place a square of an element.
+    """Place a rectangle of an element.
 
     Parameters
     ----------
@@ -837,6 +839,10 @@ async def _place_square(
         X coordinate of the upper left corner.
     y
         Y coordinate of the upper left corner.
+    width
+        Width of the rectangle.
+    height
+        Height of the rectangle.
     size
         The size of the square to place.
     include_all_sides
@@ -851,15 +857,15 @@ async def _place_square(
     Only wall insides are returned.
     """
     await interface.place_element(
-        element, Direction.NONE, (x, y), (x + size - 1, y + size - 1), style=style
+        element, Direction.NONE, (x, y), (x + width - 1, y + height - 1), style=style
     )
     return_elements = []
     if include_all_sides:
-        x_range = range(x, x + size)
-        y_range = range(y, y + size)
+        x_range = range(x, x + width)
+        y_range = range(y, y + height)
     else:
-        x_range = range(x + 1, x + size - 1)
-        y_range = range(y, y + size - 1)
+        x_range = range(x + 1, x + width - 1)
+        y_range = range(y, y + height - 1)
     for placed_x in x_range:
         for placed_y in y_range:
             return_elements.append((element, Direction.NONE, placed_x, placed_y, style))
