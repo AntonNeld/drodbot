@@ -469,10 +469,14 @@ class ComparisonTileClassifier:
             (Element.BLUE_DOOR, Direction.NONE, 8, 7),
             (Element.OBSTACLE, Direction.NONE, 28, 5),
             (Element.FORCE_ARROW, Direction.NW, 9, 9),
+            (Element.FORCE_ARROW, Direction.W, 7, 16),
         ]
         for (element, direction, x, y) in elements:
             await self._interface.place_element(element, direction, (x, y))
             room.place_element_like_editor(element, direction, (x, y))
+        await self._interface.place_element(
+            Element.FLOOR, Direction.NONE, (7, 16), style="road"
+        )
 
         await self._interface.place_element(
             Element.WALL, Direction.NONE, (5, 10), (10, 15)
