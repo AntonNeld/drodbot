@@ -314,14 +314,16 @@ class ComparisonTileClassifier:
                     i
                     for i, a in enumerate(alternatives)
                     if (
-                        a["layer"] == "swords"
-                        and classified_tiles[key].monster
-                        == (Element.UNKNOWN, Direction.UNKNOWN)
-                    )
-                    or (
-                        a["layer"] != "swords"
-                        and getattr(classified_tiles[key], a["layer"])
-                        == (Element.UNKNOWN, Direction.UNKNOWN)
+                        (
+                            a["layer"] == "swords"
+                            and classified_tiles[key].monster
+                            == (Element.UNKNOWN, Direction.UNKNOWN)
+                        )
+                        or (
+                            a["layer"] != "swords"
+                            and getattr(classified_tiles[key], a["layer"])
+                            == (Element.UNKNOWN, Direction.UNKNOWN)
+                        )
                     )
                     and mask_sizes[i] != 0
                 ]
