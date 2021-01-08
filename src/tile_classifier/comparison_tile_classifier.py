@@ -332,8 +332,7 @@ class ComparisonTileClassifier:
                             == (Element.UNKNOWN, Direction.UNKNOWN)
                         )
                     )
-                    and mask_sizes[i]
-                    > 10  # If the difference is too small, it will throw things off
+                    and mask_sizes[i] != 0
                 ]
                 diffs = unmasked_image_diffs[:, :, alternative_indices]
                 masked_diffs = diffs * masks[:, :, alternative_indices]
@@ -405,31 +404,13 @@ class ComparisonTileClassifier:
                                 layer_above,
                                 (Element.NOTHING, Direction.NONE),
                             )
-            # If the lower layers are completely blocked by an obstacle,
-            # assume nothing is there. It doesn't matter unless there's a tunnel,
-            # and we have no way of knowing at this point.
+            # Assume there is nothing below an obstacle. Unless it's a tunnel, it
+            # doesn't matter anyway. The classifier easily gets confused about what
+            # is under obstacles, because of the shadows.
             if classified_tiles[key].item == (Element.OBSTACLE, Direction.NONE):
-                if classified_tiles[key].checkpoint == (
-                    Element.UNKNOWN,
-                    Direction.UNKNOWN,
-                ):
-                    classified_tiles[key].checkpoint = (
-                        Element.NOTHING,
-                        Direction.NONE,
-                    )
-                if classified_tiles[key].floor_control == (
-                    Element.UNKNOWN,
-                    Direction.UNKNOWN,
-                ):
-                    classified_tiles[key].floor_control = (
-                        Element.NOTHING,
-                        Direction.NONE,
-                    )
-                if classified_tiles[key].room_piece == (
-                    Element.UNKNOWN,
-                    Direction.UNKNOWN,
-                ):
-                    classified_tiles[key].room_piece = (Element.FLOOR, Direction.NONE)
+                classified_tiles[key].checkpoint = (Element.NOTHING, Direction.NONE)
+                classified_tiles[key].floor_control = (Element.NOTHING, Direction.NONE)
+                classified_tiles[key].room_piece = (Element.FLOOR, Direction.NONE)
             # Open master walls are tricky because they can have several different
             # appearances, and are closed when playtesting. If we know there is a
             # master wall in a tile (because of the minimap), let's assume there is
