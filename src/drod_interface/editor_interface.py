@@ -355,6 +355,8 @@ class EditorInterface:
             if self.hold_complete_wall:
                 await self._click(MASTER_WALL)
                 self.hold_complete_wall = False
+        elif element == Element.CHECKPOINT:
+            await self._select_element(FLOOR_CONTROLS_TAB, CHECKPOINT)
         elif element == Element.ORB:
             await self._select_element(ITEMS_TAB, ORB)
             if self.orb_type == OrbType.CRACKED:

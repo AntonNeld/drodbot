@@ -65,6 +65,7 @@ class Element(Enum):
     BLUE_DOOR = "Blue door"
     BLUE_DOOR_OPEN = "Blue door (open)"
     STAIRS = "Stairs"
+    CHECKPOINT = "Checkpoint"
     ORB = "Orb"
     OBSTACLE = "Obstacle"
     BEETHRO = "Beethro"
@@ -88,7 +89,7 @@ ROOM_PIECES = [
     Element.STAIRS,
 ]
 FLOOR_CONTROLS = [Element.NOTHING]
-CHECKPOINTS = [Element.NOTHING]
+CHECKPOINTS = [Element.NOTHING, Element.CHECKPOINT]
 ITEMS = [Element.CONQUER_TOKEN, Element.ORB, Element.OBSTACLE, Element.NOTHING]
 MONSTERS = [Element.BEETHRO, Element.ROACH, Element.NOTHING]
 
@@ -105,6 +106,7 @@ ELEMENT_CHARACTERS = {
     Element.BLUE_DOOR: "B",
     Element.BLUE_DOOR_OPEN: "b",
     Element.STAIRS: ">",
+    Element.CHECKPOINT: "x",
     Element.ORB: "O",
     Element.OBSTACLE: "+",
     Element.BEETHRO: "B",
