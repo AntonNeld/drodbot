@@ -13,7 +13,7 @@ CANVAS_WIDTH = 88
 CANVAS_HEIGHT = 88
 
 
-class ClassificationTrainingApp(tkinter.Frame):
+class ClassificationApp(tkinter.Frame):
     def __init__(self, root, event_loop, classifier):
         super().__init__(root)
         self.root = root

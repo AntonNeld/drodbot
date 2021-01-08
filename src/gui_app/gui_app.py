@@ -5,11 +5,11 @@ from tkinter import ttk
 from common import GUIEvent
 from .interpret_screen_app import InterpretScreenApp
 from .playing_app import PlayingApp
-from .classification_training_app import ClassificationTrainingApp
+from .classification_app import ClassificationApp
 
 QUEUE_POLL_INTERVAL = 50
 
-APPS = ["Play game", "Interpret screen", "Train classifier"]
+APPS = ["Play game", "Interpret screen", "Manage classifier"]
 DEFAULT_APP = 0
 
 
@@ -38,9 +38,7 @@ class GuiApp(tkinter.Frame):
         self.separator.pack(side=tkinter.BOTTOM, fill=tkinter.X)
         self.interpret_screen_app = InterpretScreenApp(self, event_loop, play_interface)
         self.playing_app = PlayingApp(self, event_loop, bot)
-        self.classification_training_app = ClassificationTrainingApp(
-            self, event_loop, classifier
-        )
+        self.classification_app = ClassificationApp(self, event_loop, classifier)
         self.switch_app(APPS[DEFAULT_APP])
 
     def check_queue(self):
@@ -51,18 +49,18 @@ class GuiApp(tkinter.Frame):
             elif item == GUIEvent.SET_INTERPRET_SCREEN_DATA:
                 self.interpret_screen_app.set_data(*detail)
             elif item == GUIEvent.SET_TRAINING_DATA:
-                self.classification_training_app.set_data(*detail)
+                self.classification_app.set_data(*detail)
         except Empty:
             pass
         self.root.after(QUEUE_POLL_INTERVAL, self.check_queue)
 
     def switch_app(self, app):
         self.playing_app.pack_forget()
-        self.classification_training_app.pack_forget()
+        self.classification_app.pack_forget()
         self.interpret_screen_app.pack_forget()
         if app == "Play game":
             self.playing_app.pack(side=tkinter.TOP)
         elif app == "Interpret screen":
             self.interpret_screen_app.pack(side=tkinter.TOP)
-        elif app == "Train classifier":
-            self.classification_training_app.pack(side=tkinter.TOP)
+        elif app == "Manage classifier":
+            self.classification_app.pack(side=tkinter.TOP)

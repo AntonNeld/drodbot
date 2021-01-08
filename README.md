@@ -25,13 +25,17 @@ pipenv run python src/drodbot.py
 
 Open DROD in a separate window.
 
+> **Note:** DRODbot cannot handle lighting very well, so go into settings and
+> turn off "Alpha Blending".
+
 ### Get data for the tile classification
 
 Before DRODbot can play any rooms, it needs to learn how to interpret what it is seeing.
-Enter "Train classifier" mode in the DRODbot window, and:
+Enter "Manage classifier" mode in the DRODbot window, and:
 
-- Open the editor in DROD, and begin editing a new room.
-- In the DRODbot window, click "Train model" and wait for it to finish. While it's working,
+- Open the editor in DROD, and begin editing a new room. The room style should be Foundation
+  and the weather should be normal.
+- In the DRODbot window, click "Generate tile data" and wait for it to finish. While it's working,
   you can't do anything else involving the mouse, keyboard, or having another window focused.
 
 ## What it can do
