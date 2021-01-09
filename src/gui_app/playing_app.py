@@ -6,38 +6,49 @@ from common import Strategy
 
 
 class PlayingApp(tkinter.Frame):
+    """This app is used to make DRODbot actually play DROD.
+
+    Parameters
+    ----------
+    root
+        The parent of the tkinter Frame.
+    event_loop
+        The asyncio event loop for the backend thread.
+    bot
+        The DRODbot, which is the part playing DROD.
+    """
+
     def __init__(self, root, event_loop, bot):
         super().__init__(root)
-        self.event_loop = event_loop
-        self.bot = bot
-        self.selected_strategy = tkinter.StringVar(self)
-        self.selected_strategy.set(list(Strategy)[0].value)
-        self.create_widgets()
+        self._event_loop = event_loop
+        self._bot = bot
+        self._selected_strategy = tkinter.StringVar(self)
+        self._selected_strategy.set(list(Strategy)[0].value)
 
-    def create_widgets(self):
-        self.control_panel = tkinter.Frame(self)
-        self.control_panel.pack(side=tkinter.RIGHT)
-        self.run_controls = tkinter.Frame(self.control_panel)
-        self.run_controls.pack(side=tkinter.TOP)
-        self.strategy_dropdown = tkinter.OptionMenu(
-            self.run_controls, self.selected_strategy, *[s.value for s in Strategy]
+        # Create widgets
+        self._control_panel = tkinter.Frame(self)
+        self._control_panel.pack(side=tkinter.RIGHT)
+        self._run_controls = tkinter.Frame(self._control_panel)
+        self._run_controls.pack(side=tkinter.TOP)
+        self._strategy_dropdown = tkinter.OptionMenu(
+            self._run_controls, self._selected_strategy, *[s.value for s in Strategy]
         )
-        self.strategy_dropdown.pack(side=tkinter.LEFT)
-        self.go = tkinter.Button(
-            self.run_controls, text="Go", command=self.run_strategy
+        self._strategy_dropdown.pack(side=tkinter.LEFT)
+        self._go = tkinter.Button(
+            self._run_controls, text="Go", command=self._run_strategy
         )
-        self.go.pack(side=tkinter.RIGHT)
+        self._go.pack(side=tkinter.RIGHT)
 
-    def run_coroutine(self, coroutine):
+    def _run_coroutine(self, coroutine):
         async def wrapped_coroutine():
             try:
                 await coroutine
             except Exception:
                 traceback.print_exc()
 
-        asyncio.run_coroutine_threadsafe(wrapped_coroutine(), self.event_loop)
+        asyncio.run_coroutine_threadsafe(wrapped_coroutine(), self._event_loop)
 
-    def run_strategy(self):
-        strategy_value = self.selected_strategy.get()
+    def _run_strategy(self):
+        strategy_value = self._selected_strategy.get()
         strategy = next(e for e in Strategy if e.value == strategy_value)
-        self.run_coroutine(self.bot.run_strategy(strategy))
+        self._run_coroutine(self._bot.run_strategy(strategy))
