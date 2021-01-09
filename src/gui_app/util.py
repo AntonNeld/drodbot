@@ -1,7 +1,16 @@
 import tkinter
 from tkinter import ttk
 
-from common import Direction
+import cv2
+import numpy
+
+from common import (
+    Direction,
+    ROOM_HEIGHT_IN_TILES,
+    ROOM_WIDTH_IN_TILES,
+    TILE_SIZE,
+    ELEMENT_CHARACTERS,
+)
 
 
 def tile_to_text(tile):
@@ -21,6 +30,35 @@ def _format_element(pair):
         return element.value
     else:
         return f"{element.value} {direction.value}"
+
+
+def annotate_room_image_with_tile_contents(image, room):
+    annotated_image = numpy.zeros(image.shape, dtype=numpy.uint8)
+    for x in range(ROOM_WIDTH_IN_TILES):
+        for y in range(ROOM_HEIGHT_IN_TILES):
+            tile_image = image[
+                y * TILE_SIZE : (y + 1) * TILE_SIZE, x * TILE_SIZE : (x + 1) * TILE_SIZE
+            ]
+            tile = room.get_tile((x, y))
+            # Convert the tile to grayscale to make the text stand out.
+            # We're converting it back to RGB so we can add the text, but
+            # the tile will still look grayscale since we lose color information.
+            modified_tile = cv2.cvtColor(
+                cv2.cvtColor(tile_image, cv2.COLOR_RGB2GRAY), cv2.COLOR_GRAY2RGB
+            )
+            for element in tile.get_elements():
+                cv2.putText(
+                    modified_tile,
+                    ELEMENT_CHARACTERS[element],
+                    (0, tile_image.shape[0]),
+                    cv2.FONT_HERSHEY_PLAIN,
+                    2,
+                    (255, 50, 0),
+                )
+            annotated_image[
+                y * TILE_SIZE : (y + 1) * TILE_SIZE, x * TILE_SIZE : (x + 1) * TILE_SIZE
+            ] = modified_tile
+    return annotated_image
 
 
 # From https://blog.tecladocode.com/tkinter-scrollable-frames/
