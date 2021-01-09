@@ -8,7 +8,6 @@ from common import Strategy
 class PlayingApp(tkinter.Frame):
     def __init__(self, root, event_loop, bot):
         super().__init__(root)
-        self.root = root
         self.event_loop = event_loop
         self.bot = bot
         self.selected_strategy = tkinter.StringVar(self)

@@ -26,7 +26,6 @@ LARGE_CANVAS_HEIGHT = 704
 class InterpretScreenApp(tkinter.Frame):
     def __init__(self, root, event_loop, interface):
         super().__init__(root)
-        self.root = root
         self.event_loop = event_loop
         self.interface = interface
         self.selected_view_step = tkinter.StringVar(self)

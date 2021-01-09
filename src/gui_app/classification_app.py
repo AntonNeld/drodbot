@@ -15,7 +15,6 @@ CANVAS_HEIGHT = 88
 class ClassificationApp(tkinter.Frame):
     def __init__(self, root, event_loop, backend):
         super().__init__(root)
-        self.root = root
         self.event_loop = event_loop
         self.backend = backend
         self.raw_data = []
