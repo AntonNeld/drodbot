@@ -18,7 +18,7 @@ from common import (
 from util import find_color
 
 
-class ComparisonTileClassifier:
+class TileClassifier:
     def __init__(self):
         self._tile_data = None
 

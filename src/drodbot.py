@@ -3,7 +3,7 @@ import queue
 import threading
 import tkinter
 
-from tile_classifier import ComparisonTileClassifier, ClassifierAppBackend
+from tile_classifier import TileClassifier, ClassifierAppBackend
 from drod_bot import DrodBot
 from drod_interface import PlayInterface, EditorInterface
 from gui_app import GuiApp
@@ -18,7 +18,7 @@ if __name__ == "__main__":
     asyncio_thread.start()
 
     editor_interface = EditorInterface()
-    classifier = ComparisonTileClassifier()
+    classifier = TileClassifier()
     classifier.load_tile_data("tile_data")
     classifier_app_backend = ClassifierAppBackend(
         classifier, "tile_data", "training_data", editor_interface, window_queue
