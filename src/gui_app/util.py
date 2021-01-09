@@ -14,6 +14,17 @@ from common import (
 
 
 def tile_to_text(tile):
+    """Given a tile representation, return text describing the contents.
+
+    Parameters
+    ----------
+    tile
+        The tile representation.
+
+    Returns
+    -------
+    Human-readable text describing the tile contents.
+    """
     lines = [
         f"Room piece: {_format_element(tile.room_piece)}",
         f"Floor control: {_format_element(tile.floor_control)}",
@@ -33,6 +44,21 @@ def _format_element(pair):
 
 
 def annotate_room_image_with_tile_contents(image, room):
+    """Get an image of a room, annotated with tile contents.
+
+    Parameters
+    ----------
+    image
+        The original room image.
+    room
+        A representation of the room, describing its content.
+
+    Returns
+    -------
+    A grayscale image of the room, with the elements in each tile
+    overlaid as characters. The character that corresponds to each
+    element is defined in common.ELEMENT_CHARACTERS.
+    """
     annotated_image = numpy.zeros(image.shape, dtype=numpy.uint8)
     for x in range(ROOM_WIDTH_IN_TILES):
         for y in range(ROOM_HEIGHT_IN_TILES):
@@ -61,10 +87,27 @@ def annotate_room_image_with_tile_contents(image, room):
     return annotated_image
 
 
-# From https://blog.tecladocode.com/tkinter-scrollable-frames/
 class ScrollableFrame(ttk.Frame):
-    def __init__(self, container, *args, **kwargs):
-        super().__init__(container, *args, **kwargs)
+    """A frame with a scrollbar.
+
+    Taken from https://blog.tecladocode.com/tkinter-scrollable-frames/.
+    This should not itself be set as the parent for widgets. Instead the
+    attribute `scrollable_frame` should be used.
+
+    Parameters
+    ----------
+    root
+        The parent of the frame.
+
+    Attributes
+    ----------
+    scrollable_frame
+        The internal frame. Set this as the parent for anything inside
+        this frame.
+    """
+
+    def __init__(self, root):
+        super().__init__(root)
         canvas = tkinter.Canvas(self)
         scrollbar = ttk.Scrollbar(self, orient="vertical", command=canvas.yview)
         self.scrollable_frame = ttk.Frame(canvas)
