@@ -24,6 +24,25 @@ from .editor_utils import (
 
 
 class ClassifierAppBackend:
+    """This is the backend for the classification app.
+
+    It generates tile data for the classifier, and sample data to
+    test it.
+
+    Parameters
+    ----------
+    classifier
+        The classifier.
+    tile_data_dir
+        The directory to put tile data in.
+    sample_data_dir
+        The directory to read and write sample data.
+    editor_interface
+        The interface to the DROD editor, to generate data.
+    window_queue
+        A queue for sending updates to the GUI.
+    """
+
     def __init__(
         self, classifier, tile_data_dir, sample_data_dir, editor_interface, window_queue
     ):
@@ -191,6 +210,7 @@ class ClassifierAppBackend:
         print("Finished getting tile data")
 
     def _classify_sample_data(self):
+        """Classify the loaded sample data."""
         predicted_contents, debug_images = self._classifier.classify_tiles(
             {t["file_name"]: t["image"] for t in self._sample_data},
             {t["file_name"]: t["minimap_color"] for t in self._sample_data},

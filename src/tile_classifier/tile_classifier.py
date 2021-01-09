@@ -19,10 +19,25 @@ from util import find_color
 
 
 class TileClassifier:
+    """This is used to determine the content of tiles."""
+
     def __init__(self):
         self._tile_data = None
 
     def load_tile_data(self, tile_data_dir):
+        """Load tile reference images.
+
+        This needs to be done before we can classify anything.
+        This method can be called again to reload the images.
+
+        The image files should each contain one element, and be
+        annotated with which element it is and which direction it has.
+
+        Parameters
+        ----------
+        tile_data_dir
+            The directory to read images from.
+        """
         try:
             file_names = sorted(os.listdir(tile_data_dir))
             tile_data = []
@@ -83,7 +98,7 @@ class TileClassifier:
         -------
         A dict with the same keys as `tiles`, but Tile objects
         representing the tile contents as the values. If `return_debug_images`
-        is True, return a second dict of images.
+        is True, return a second dict with debug images.
         """
         if self._tile_data is None:
             raise RuntimeError("No tile data loaded, cannot classify tiles")
@@ -257,7 +272,8 @@ def _preprocess_image(image, return_debug_images=False):
     """Pre-process an image before comparing it to others.
 
     This should be done both to input images when classifying,
-    and tile data images when importing.
+    and tile data images when importing. This function currently
+    does nothing, but is kept to make it easier to experiment.
 
     Parameters
     ----------
@@ -269,7 +285,7 @@ def _preprocess_image(image, return_debug_images=False):
 
     Returns
     -------
-    The processed image.
+    The processed image, and optionally debug images.
     """
     if return_debug_images:
         return image, []

@@ -222,18 +222,16 @@ async def place_rectangle(
         Width of the rectangle.
     height
         Height of the rectangle.
-    size
-        The size of the square to place.
     include_all_sides
-        If False, skip the left, right and lower sides. Use this when placing
-        walls and you are only interested in the insides.
+        If False, skip returning the left, right and lower sides. Use this
+        when placing walls and you are only interested in the insides.
     style
         The style of element to place.
 
     Returns
     -------
     A list of tuples (element, direction, x, y, style) of placed elements.
-    Only wall insides are returned.
+    Some may be omitted, if `include_all_sides` is false.
     """
     await interface.place_element(
         element, Direction.NONE, (x, y), (x + width - 1, y + height - 1), style=style
