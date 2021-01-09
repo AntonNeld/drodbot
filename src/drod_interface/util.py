@@ -11,18 +11,18 @@ from common import (
 from .consts import ROOM_ORIGIN_X, ROOM_ORIGIN_Y
 from util import find_color
 
-ROOM_UPPER_EDGE_COLOR = (32, 60, 74)  # Also known as #203c4a
-ROOM_UPPER_EDGE_LENGTH = 838
-ROOM_UPPER_EDGE_START_X = 162
-ROOM_UPPER_EDGE_START_Y = 39
-DROD_WINDOW_WIDTH = 1024
-DROD_WINDOW_HEIGHT = 768
+_ROOM_UPPER_EDGE_COLOR = (32, 60, 74)
+_ROOM_UPPER_EDGE_LENGTH = 838
+_ROOM_UPPER_EDGE_START_X = 162
+_ROOM_UPPER_EDGE_START_Y = 39
+_DROD_WINDOW_WIDTH = 1024
+_DROD_WINDOW_HEIGHT = 768
 
-OVERLAY_COLOR = (0, 255, 0)
-OVERLAY_WIDTH = 5
+_OVERLAY_COLOR = (0, 255, 0)
+_OVERLAY_WIDTH = 5
 
-MINIMAP_ROOM_ORIGIN_X = 61
-MINIMAP_ROOM_ORIGIN_Y = 631
+_MINIMAP_ROOM_ORIGIN_X = 61
+_MINIMAP_ROOM_ORIGIN_Y = 631
 
 
 async def get_drod_window(stop_after=None):
@@ -52,11 +52,11 @@ async def get_drod_window(stop_after=None):
         return 0, 0, raw_image
 
     # Try finding the upper edge of the room, which is a long line of constant color
-    correct_color = find_color(raw_image, ROOM_UPPER_EDGE_COLOR)
+    correct_color = find_color(raw_image, _ROOM_UPPER_EDGE_COLOR)
     if stop_after == ImageProcessingStep.FIND_UPPER_EDGE_COLOR:
         return 0, 0, correct_color
 
-    lines = _find_horizontal_lines(correct_color, ROOM_UPPER_EDGE_LENGTH)
+    lines = _find_horizontal_lines(correct_color, _ROOM_UPPER_EDGE_LENGTH)
     if stop_after == ImageProcessingStep.FIND_UPPER_EDGE_LINE:
         # We can't show the line coordinates directly, so we'll overlay the line on
         # the screenshot
@@ -65,8 +65,8 @@ async def get_drod_window(stop_after=None):
             # Since we're only dealing with horizontal lines, we can do the overlay
             # by indexing the array directly
             with_line[
-                start_y : start_y + OVERLAY_WIDTH, start_x:end_x, :
-            ] = OVERLAY_COLOR
+                start_y : start_y + _OVERLAY_WIDTH, start_x:end_x, :
+            ] = _OVERLAY_COLOR
         return 0, 0, with_line
 
     if len(lines) > 1:
@@ -77,10 +77,10 @@ async def get_drod_window(stop_after=None):
     # Extract the window
     line_start_x = lines[0][0]
     line_start_y = lines[0][1]
-    window_start_x = line_start_x - ROOM_UPPER_EDGE_START_X
-    window_start_y = line_start_y - ROOM_UPPER_EDGE_START_Y
-    window_end_x = window_start_x + DROD_WINDOW_WIDTH
-    window_end_y = window_start_y + DROD_WINDOW_HEIGHT
+    window_start_x = line_start_x - _ROOM_UPPER_EDGE_START_X
+    window_start_y = line_start_y - _ROOM_UPPER_EDGE_START_Y
+    window_end_x = window_start_x + _DROD_WINDOW_WIDTH
+    window_end_y = window_start_y + _DROD_WINDOW_HEIGHT
     drod_window = raw_image[
         window_start_y:window_end_y,
         window_start_x:window_end_x,
@@ -119,10 +119,10 @@ def extract_minimap(window_image):
     -------
     An image of the room minimap.
     """
-    room_end_x = MINIMAP_ROOM_ORIGIN_X + ROOM_WIDTH_IN_TILES
-    room_end_y = MINIMAP_ROOM_ORIGIN_Y + ROOM_HEIGHT_IN_TILES
+    room_end_x = _MINIMAP_ROOM_ORIGIN_X + ROOM_WIDTH_IN_TILES
+    room_end_y = _MINIMAP_ROOM_ORIGIN_Y + ROOM_HEIGHT_IN_TILES
     minimap_room_image = window_image[
-        MINIMAP_ROOM_ORIGIN_Y:room_end_y, MINIMAP_ROOM_ORIGIN_X:room_end_x, :
+        _MINIMAP_ROOM_ORIGIN_Y:room_end_y, _MINIMAP_ROOM_ORIGIN_X:room_end_x, :
     ]
     return minimap_room_image
 
