@@ -13,11 +13,11 @@ CANVAS_HEIGHT = 88
 
 
 class ClassificationApp(tkinter.Frame):
-    def __init__(self, root, event_loop, classifier):
+    def __init__(self, root, event_loop, backend):
         super().__init__(root)
         self.root = root
         self.event_loop = event_loop
-        self.classifier = classifier
+        self.backend = backend
         self.raw_data = []
         self.data = []
         self.data_index = None
@@ -196,13 +196,13 @@ class ClassificationApp(tkinter.Frame):
         asyncio.run_coroutine_threadsafe(wrapped_coroutine(), self.event_loop)
 
     def generate_sample_data(self):
-        self.run_coroutine(self.classifier.generate_sample_data())
+        self.run_coroutine(self.backend.generate_sample_data())
 
     def load_sample_data(self):
-        self.run_coroutine(self.classifier.load_sample_data())
+        self.run_coroutine(self.backend.load_sample_data())
 
     def generate_tile_data(self):
-        self.run_coroutine(self.classifier.generate_tile_data())
+        self.run_coroutine(self.backend.generate_tile_data())
 
     def next_tile(self):
         self.data_index += 1

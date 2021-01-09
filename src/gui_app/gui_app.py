@@ -14,16 +14,18 @@ DEFAULT_APP = 0
 
 
 class GuiApp(tkinter.Frame):
-    def __init__(self, root, event_loop, queue, bot, play_interface, classifier):
+    def __init__(
+        self, root, event_loop, queue, bot, play_interface, classifier_app_backend
+    ):
         super().__init__(root)
         self.root = root
         self.queue = queue
         self.selected_app_var = tkinter.StringVar(self)
         self.selected_app_var.set(APPS[DEFAULT_APP])
-        self.create_widgets(event_loop, bot, play_interface, classifier)
+        self.create_widgets(event_loop, bot, play_interface, classifier_app_backend)
         self.root.after(QUEUE_POLL_INTERVAL, self.check_queue)
 
-    def create_widgets(self, event_loop, bot, play_interface, classifier):
+    def create_widgets(self, event_loop, bot, play_interface, classifier_app_backend):
         self.controls = tkinter.Frame(self)
         self.controls.pack(side=tkinter.BOTTOM)
         self.quit = tkinter.Button(
@@ -38,7 +40,9 @@ class GuiApp(tkinter.Frame):
         self.separator.pack(side=tkinter.BOTTOM, fill=tkinter.X)
         self.interpret_screen_app = InterpretScreenApp(self, event_loop, play_interface)
         self.playing_app = PlayingApp(self, event_loop, bot)
-        self.classification_app = ClassificationApp(self, event_loop, classifier)
+        self.classification_app = ClassificationApp(
+            self, event_loop, classifier_app_backend
+        )
         self.switch_app(APPS[DEFAULT_APP])
 
     def check_queue(self):
