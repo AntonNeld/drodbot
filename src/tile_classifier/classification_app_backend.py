@@ -23,7 +23,7 @@ from .editor_utils import (
 )
 
 
-class ClassifierAppBackend:
+class ClassificationAppBackend:
     """This is the backend for the classification app.
 
     It generates tile data for the classifier, and sample data to

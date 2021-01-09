@@ -3,7 +3,7 @@ import queue
 import threading
 import tkinter
 
-from tile_classifier import TileClassifier, ClassifierAppBackend
+from tile_classifier import TileClassifier, ClassificationAppBackend
 from drod_bot import DrodBot
 from drod_interface import PlayInterface, EditorInterface
 from gui_app import GuiApp
@@ -20,7 +20,7 @@ if __name__ == "__main__":
     editor_interface = EditorInterface()
     classifier = TileClassifier()
     classifier.load_tile_data("tile_data")
-    classifier_app_backend = ClassifierAppBackend(
+    classification_app_backend = ClassificationAppBackend(
         classifier, "tile_data", "training_data", editor_interface, window_queue
     )
     play_interface = PlayInterface(window_queue, classifier)
@@ -34,7 +34,7 @@ if __name__ == "__main__":
         queue=window_queue,
         bot=bot,
         play_interface=play_interface,
-        classifier_app_backend=classifier_app_backend,
+        classification_app_backend=classification_app_backend,
     )
     app.pack()
     try:

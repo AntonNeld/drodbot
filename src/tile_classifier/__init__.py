@@ -1,4 +1,4 @@
-from .classifier_app_backend import ClassifierAppBackend
+from .classification_app_backend import ClassificationAppBackend
 from .tile_classifier import TileClassifier
 
-__all__ = ("TileClassifier", "ClassifierAppBackend")
+__all__ = ("TileClassifier", "ClassificationAppBackend")
