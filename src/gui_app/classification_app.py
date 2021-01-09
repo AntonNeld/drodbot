@@ -8,8 +8,8 @@ import traceback
 
 from .util import tile_to_text, ScrollableFrame
 
-CANVAS_WIDTH = 88
-CANVAS_HEIGHT = 88
+_CANVAS_WIDTH = 88
+_CANVAS_HEIGHT = 88
 
 
 class ClassificationApp(tkinter.Frame):
@@ -46,7 +46,7 @@ class ClassificationApp(tkinter.Frame):
         self._tile_area = tkinter.Frame(self)
         self._tile_area.pack(side=tkinter.LEFT)
         self._canvas = tkinter.Canvas(
-            self._tile_area, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg="white"
+            self._tile_area, width=_CANVAS_WIDTH, height=_CANVAS_HEIGHT, bg="white"
         )
         self._canvas.pack(side=tkinter.TOP)
         self._browse_buttons = tkinter.Frame(self._tile_area)

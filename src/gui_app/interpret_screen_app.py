@@ -12,10 +12,10 @@ from common import (
 from .util import tile_to_text, annotate_room_image_with_tile_contents
 
 # The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
-CANVAS_WIDTH = 418
-CANVAS_HEIGHT = 352
-LARGE_CANVAS_WIDTH = 836
-LARGE_CANVAS_HEIGHT = 704
+_CANVAS_WIDTH = 418
+_CANVAS_HEIGHT = 352
+_LARGE_CANVAS_WIDTH = 836
+_LARGE_CANVAS_HEIGHT = 704
 
 
 class InterpretScreenApp(tkinter.Frame):
@@ -46,7 +46,7 @@ class InterpretScreenApp(tkinter.Frame):
 
         # Create widgets
         self._canvas = tkinter.Canvas(
-            self, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg="white"
+            self, width=_CANVAS_WIDTH, height=_CANVAS_HEIGHT, bg="white"
         )
         self._canvas.bind("<Button-1>", self._clicked_canvas)
         self._canvas.pack(side=tkinter.LEFT)
@@ -119,12 +119,14 @@ class InterpretScreenApp(tkinter.Frame):
     def _toggle_view_size(self):
         if self._enlarged_view:
             self._enlarged_view = False
-            self._canvas.configure(height=CANVAS_HEIGHT, width=CANVAS_WIDTH)
+            self._canvas.configure(height=_CANVAS_HEIGHT, width=_CANVAS_WIDTH)
             self._toggle_view_size_button.configure(text="Enlarge view")
             self._draw_view()
         else:
             self._enlarged_view = True
-            self._canvas.configure(height=LARGE_CANVAS_HEIGHT, width=LARGE_CANVAS_WIDTH)
+            self._canvas.configure(
+                height=_LARGE_CANVAS_HEIGHT, width=_LARGE_CANVAS_WIDTH
+            )
             self._toggle_view_size_button.configure(text="Ensmall view")
             self._draw_view()
 
