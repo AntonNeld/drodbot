@@ -1,5 +1,4 @@
 import asyncio
-import math
 
 import numpy
 import PIL
@@ -140,7 +139,7 @@ class ClassificationApp(tkinter.Frame):
                 name for name, image in self.data[index]["debug_images"]
             ].index(self.selected_debug_step.get())
             raw_image = self.data[index]["debug_images"][debug_index][1]
-            raw_image = (raw_image / math.sqrt(3)).astype(numpy.uint8)
+            raw_image = raw_image.astype(numpy.uint8)
 
         image = PIL.Image.fromarray(raw_image)
         resized_image = image.resize(
