@@ -1,3 +1,3 @@
-from .gui_app import GuiApp
+from .main_app import MainApp
 
-__all__ = ("GuiApp",)
+__all__ = ("MainApp",)

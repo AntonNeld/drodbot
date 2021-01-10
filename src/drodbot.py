@@ -6,7 +6,7 @@ import tkinter
 from tile_classifier import TileClassifier, ClassificationAppBackend
 from drod_bot import DrodBot
 from drod_interface import PlayInterface, EditorInterface
-from apps import GuiApp
+from apps import MainApp
 
 
 def main():
@@ -28,7 +28,7 @@ def main():
 
     window = tkinter.Tk()
     window.title("DRODbot")
-    app = GuiApp(
+    app = MainApp(
         root=window,
         event_loop=loop,
         queue=window_queue,

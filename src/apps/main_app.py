@@ -13,7 +13,7 @@ _APPS = ["Play game", "Interpret screen", "Manage classifier"]
 _DEFAULT_APP = 0
 
 
-class GuiApp(tkinter.Frame):
+class MainApp(tkinter.Frame):
     """The content of the main window.
 
     This class contains the sub-apps, and the menu used to switch
