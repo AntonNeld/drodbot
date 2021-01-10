@@ -9,7 +9,7 @@ from drod_interface import PlayInterface, EditorInterface
 from gui_app import GuiApp
 
 
-if __name__ == "__main__":
+def main():
     window_queue = queue.Queue()
 
     loop = asyncio.new_event_loop()
@@ -42,3 +42,7 @@ if __name__ == "__main__":
     finally:
         loop.call_soon_threadsafe(loop.stop)
         asyncio_thread.join()
+
+
+if __name__ == "__main__":
+    main()
