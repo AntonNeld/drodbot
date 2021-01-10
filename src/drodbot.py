@@ -6,7 +6,7 @@ import tkinter
 from tile_classifier import TileClassifier, ClassificationAppBackend
 from drod_bot import DrodBot
 from drod_interface import PlayInterface, EditorInterface
-from gui_app import GuiApp
+from apps import GuiApp
 
 
 def main():
