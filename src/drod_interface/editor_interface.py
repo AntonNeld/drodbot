@@ -13,68 +13,68 @@ from common import (
 from .consts import ROOM_ORIGIN_X, ROOM_ORIGIN_Y
 from .util import get_drod_window, extract_room, extract_minimap, extract_tiles
 
-STYLE_SELECT_SCROLL_UP = (1000, 110)
-EDIT_ROOM = (670, 740)
+_STYLE_SELECT_SCROLL_UP = (1000, 110)
+_EDIT_ROOM = (670, 740)
 
-ROOM_PIECES_TAB = (24, 20)
-FLOOR_CONTROLS_TAB = (60, 20)
-ITEMS_TAB = (100, 20)
-MONSTERS_TAB = (135, 20)
+_ROOM_PIECES_TAB = (24, 20)
+_FLOOR_CONTROLS_TAB = (60, 20)
+_ITEMS_TAB = (100, 20)
+_MONSTERS_TAB = (135, 20)
 
-WALL = (30, 60)
-PIT = (60, 200)
-STAIRS = (135, 60)
-YELLOW_DOOR = (25, 170)
-YELLOW_DOOR_OPEN = (60, 170)
-GREEN_DOOR = (60, 105)
-GREEN_DOOR_OPEN = (60, 140)
-BLUE_DOOR = (25, 105)
-BLUE_DOOR_OPEN = (25, 140)
-MASTER_WALL = (90, 170)
-FLOOR = (25, 300)
-MOSAIC_FLOOR = (60, 300)
-ROAD_FLOOR = (90, 300)
-GRASS_FLOOR = (25, 330)
-DIRT_FLOOR = (60, 330)
-ALTERNATE_FLOOR = (90, 330)
-IMAGE_FLOOR = (120, 360)
+_WALL = (30, 60)
+_PIT = (60, 200)
+_STAIRS = (135, 60)
+_YELLOW_DOOR = (25, 170)
+_YELLOW_DOOR_OPEN = (60, 170)
+_GREEN_DOOR = (60, 105)
+_GREEN_DOOR_OPEN = (60, 140)
+_BLUE_DOOR = (25, 105)
+_BLUE_DOOR_OPEN = (25, 140)
+_MASTER_WALL = (90, 170)
+_FLOOR = (25, 300)
+_MOSAIC_FLOOR = (60, 300)
+_ROAD_FLOOR = (90, 300)
+_GRASS_FLOOR = (25, 330)
+_DIRT_FLOOR = (60, 330)
+_ALTERNATE_FLOOR = (90, 330)
+_IMAGE_FLOOR = (120, 360)
 
-FORCE_ARROW = (30, 50)
-CHECKPOINT = (120, 50)
-WALL_LIGHT = (25, 85)
+_FORCE_ARROW = (30, 50)
+_CHECKPOINT = (120, 50)
+_WALL_LIGHT = (25, 85)
 
-ORB = (25, 50)
-MIMIC_POTION = (60, 50)
-SCROLL = (25, 115)
-OBSTACLE = (125, 115)
-OBSTACLE_STYLES = {
+_ORB = (25, 50)
+_MIMIC_POTION = (60, 50)
+_SCROLL = (25, 115)
+_OBSTACLE = (125, 115)
+_OBSTACLE_STYLES = {
     "rock_1": (170, 80),
     "rock_2": (200, 80),
     "square_statue": (170, 115),
 }
-TOKEN = (30, 180)
-CONQUER_TOKEN_IN_MENU = (265, 150)
+_TOKEN = (30, 180)
+_CONQUER_TOKEN_IN_MENU = (265, 150)
 
-ROACH = (30, 50)
-CHARACTER = (110, 365)
+_ROACH = (30, 50)
+_CHARACTER = (110, 365)
 
-CHARACTER_WINDOW_SCROLL_UP = (960, 180)
-CHARACTER_WINDOW_FIRST_TYPE = (820, 180)
-CHARACTER_WINDOW_VISIBLE_CHECKBOX = (820, 700)
-CHARACTER_WINDOW_OKAY = (570, 710)
+_CHARACTER_WINDOW_SCROLL_UP = (960, 180)
+_CHARACTER_WINDOW_FIRST_TYPE = (820, 180)
+_CHARACTER_WINDOW_VISIBLE_CHECKBOX = (820, 700)
+_CHARACTER_WINDOW_OKAY = (570, 710)
 
-IMAGE_SELECT_WINDOW_OKAY = (550, 670)
+_IMAGE_SELECT_WINDOW_OKAY = (550, 670)
 
-IMAGE_IMPORT_WINDOW_FILE_NAME_INPUT = (400, 610)
-IMAGE_IMPORT_WINDOW_PNG = (300, 690)
-IMAGE_IMPORT_WINDOW_OKAY = (700, 680)
+_IMAGE_IMPORT_WINDOW_FILE_NAME_INPUT = (400, 610)
+_IMAGE_IMPORT_WINDOW_PNG = (300, 690)
+_IMAGE_IMPORT_WINDOW_OKAY = (700, 680)
 
-STAIRS_WINDOW_OK = (545, 670)
+_STAIRS_WINDOW_OK = (545, 670)
 
-SCROLL_WINDOW_OK = (460, 580)
+_SCROLL_WINDOW_OK = (460, 580)
 
 
-class OrbType(Enum):
+class _OrbType(Enum):
     NORMAL = 0
     CRACKED = 1
     BROKEN = 2
@@ -83,25 +83,25 @@ class OrbType(Enum):
 class EditorInterface:
     def __init__(self):
         # Will be set by initialize()
-        self.origin_x = None
-        self.origin_y = None
-        self.selected_tab = None
-        self.selected_element = {
-            ROOM_PIECES_TAB: None,
-            FLOOR_CONTROLS_TAB: None,
-            ITEMS_TAB: None,
-            MONSTERS_TAB: None,
+        self._origin_x = None
+        self._origin_y = None
+        self._selected_tab = None
+        self._selected_element = {
+            _ROOM_PIECES_TAB: None,
+            _FLOOR_CONTROLS_TAB: None,
+            _ITEMS_TAB: None,
+            _MONSTERS_TAB: None,
         }
-        self.hard_walls = None
-        self.stairs_up = None
-        self.hold_complete_wall = None
-        self.force_arrow_direction = None
-        self.orb_type = None
-        self.monster_direction = None
-        self.selected_token = None
-        self.selected_obstacle = None
-        self.copied_element = None
-        self.copied_element_direction = None
+        self._hard_walls = None
+        self._stairs_up = None
+        self._hold_complete_wall = None
+        self._force_arrow_direction = None
+        self._orb_type = None
+        self._monster_direction = None
+        self._selected_token = None
+        self._selected_obstacle = None
+        self._copied_element = None
+        self._copied_element_direction = None
 
     async def initialize(self):
         """Find the DROD window and focus it.
@@ -110,79 +110,81 @@ class EditorInterface:
         window will have lost focus.
         """
         origin_x, origin_y, _ = await get_drod_window()
-        self.origin_x = origin_x
-        self.origin_y = origin_y
+        self._origin_x = origin_x
+        self._origin_y = origin_y
         await self._click((3, 3))
         # Let's use raw clicks here instead of select_element().
         # The latter depend on the state being set up.
-        await self._click(ROOM_PIECES_TAB)
+        await self._click(_ROOM_PIECES_TAB)
         # Check whether we have selected master wall or hold complete wall
-        await self._click(MASTER_WALL)
+        await self._click(_MASTER_WALL)
         _, _, image = await get_drod_window()
         # Look for part of the "Hold complete wall" text
-        self.hold_complete_wall = image[455, 145, 0] == 0
+        self._hold_complete_wall = image[455, 145, 0] == 0
         # Check stairs direction
-        await self._click(STAIRS)
+        await self._click(_STAIRS)
         _, _, image = await get_drod_window()
         # Look for part of the "up" text
-        self.stairs_up = image[455, 57, 0] == 9
+        self._stairs_up = image[455, 57, 0] == 9
         # Check whether the wall is normal or hard
-        await self._click(WALL)
+        await self._click(_WALL)
         _, _, image = await get_drod_window()
         # Look for part of the "(hard)" text
-        self.hard_walls = image[457, 62, 0] == 22
-        self.selected_element[ROOM_PIECES_TAB] = WALL
+        self._hard_walls = image[457, 62, 0] == 22
+        self._selected_element[_ROOM_PIECES_TAB] = _WALL
 
-        await self._click(FLOOR_CONTROLS_TAB)
-        await self._click(FORCE_ARROW)
-        self.selected_element[FLOOR_CONTROLS_TAB] = FORCE_ARROW
+        await self._click(_FLOOR_CONTROLS_TAB)
+        await self._click(_FORCE_ARROW)
+        self._selected_element[_FLOOR_CONTROLS_TAB] = _FORCE_ARROW
         # Make sure the force arrows are facing SE
         _, _, image = await get_drod_window()
         while image[60, 35, 0] != 165:  # The tip of the arrow when facing SE
             pyautogui.press("q")
             _, _, image = await get_drod_window()
-        self.force_arrow_direction = Direction.SE
+        self._force_arrow_direction = Direction.SE
 
-        await self._click(ITEMS_TAB)
-        await self._click(ORB)
-        self.selected_element[ITEMS_TAB] = ORB
+        await self._click(_ITEMS_TAB)
+        await self._click(_ORB)
+        self._selected_element[_ITEMS_TAB] = _ORB
         _, _, image = await get_drod_window()
         while image[455, 45, 0] != 255:  # Background instead of open parenthesis
             pyautogui.press("q")
             _, _, image = await get_drod_window()
-        self.orb_type = OrbType.NORMAL
+        self._orb_type = _OrbType.NORMAL
 
-        await self._click(MONSTERS_TAB)
-        self.selected_tab = MONSTERS_TAB
-        await self._click(ROACH)
-        self.selected_element[MONSTERS_TAB] = ROACH
+        await self._click(_MONSTERS_TAB)
+        self._selected_tab = _MONSTERS_TAB
+        await self._click(_ROACH)
+        self._selected_element[_MONSTERS_TAB] = _ROACH
         # Make sure the monsters are facing SE
         _, _, image = await get_drod_window()
         while image[26, 140, 0] != 240:  # The roach's eye when facing SE
             pyautogui.press("q")
             _, _, image = await get_drod_window()
-        self.monster_direction = Direction.SE
+        self._monster_direction = Direction.SE
 
     async def _click(self, position, button="left"):
         pyautogui.click(
-            x=self.origin_x + position[0], y=self.origin_y + position[1], button=button
+            x=self._origin_x + position[0],
+            y=self._origin_y + position[1],
+            button=button,
         )
 
     async def _select_element(self, tab_position, element_position):
-        if self.selected_tab != tab_position:
+        if self._selected_tab != tab_position:
             await self._click(tab_position)
-            self.selected_tab = tab_position
-        if self.selected_element[tab_position] != element_position:
+            self._selected_tab = tab_position
+        if self._selected_element[tab_position] != element_position:
             await self._click(element_position)
-            self.selected_element[tab_position] = element_position
+            self._selected_element[tab_position] = element_position
 
     async def clear_room(self):
         # Select the normal floor, to make sure clearing doesn't use mosaic floors
-        await self._select_element(ROOM_PIECES_TAB, FLOOR)
+        await self._select_element(_ROOM_PIECES_TAB, _FLOOR)
         pyautogui.keyDown("shift")
         pyautogui.moveTo(
-            x=self.origin_x + ROOM_ORIGIN_X + TILE_SIZE * 0.5,
-            y=self.origin_y + ROOM_ORIGIN_Y + TILE_SIZE * 0.5,
+            x=self._origin_x + ROOM_ORIGIN_X + TILE_SIZE * 0.5,
+            y=self._origin_y + ROOM_ORIGIN_Y + TILE_SIZE * 0.5,
         )
         pyautogui.dragRel(
             xOffset=(ROOM_WIDTH_IN_TILES - 1) * TILE_SIZE,
@@ -200,11 +202,11 @@ class EditorInterface:
             Position of the tile.
         """
         # Select the normal floor, to make sure clearing doesn't use mosaic floors
-        await self._select_element(ROOM_PIECES_TAB, FLOOR)
+        await self._select_element(_ROOM_PIECES_TAB, _FLOOR)
         pyautogui.keyDown("shift")
         pyautogui.click(
-            x=self.origin_x + ROOM_ORIGIN_X + TILE_SIZE * (position[0] + 0.5),
-            y=self.origin_y + ROOM_ORIGIN_Y + TILE_SIZE * (position[1] + 0.5),
+            x=self._origin_x + ROOM_ORIGIN_X + TILE_SIZE * (position[0] + 0.5),
+            y=self._origin_y + ROOM_ORIGIN_Y + TILE_SIZE * (position[1] + 0.5),
             button="right",
         )
         pyautogui.keyUp("shift")
@@ -212,9 +214,9 @@ class EditorInterface:
     async def _set_direction(self, direction, kind="monster"):
         # Warning: Does not make sure that the correct element is selected
         if kind == "monster":
-            attribute = "monster_direction"
+            attribute = "_monster_direction"
         elif kind == "force_arrow":
-            attribute = "force_arrow_direction"
+            attribute = "_force_arrow_direction"
         direction_to_number = {
             Direction.N: 0,
             Direction.NE: 1,
@@ -250,11 +252,11 @@ class EditorInterface:
         base_name
             The file name of the image, without the extension.
         """
-        await self._select_element(ROOM_PIECES_TAB, IMAGE_FLOOR)
+        await self._select_element(_ROOM_PIECES_TAB, _IMAGE_FLOOR)
         pyautogui.press("f9")
         _, _, image = await get_drod_window()
         imported_image = image[198, 199, 0] == 190
-        await self._click(IMAGE_SELECT_WINDOW_OKAY)
+        await self._click(_IMAGE_SELECT_WINDOW_OKAY)
         if not imported_image:
             # Replace the directory input
             pyautogui.keyDown("ctrl")
@@ -264,17 +266,17 @@ class EditorInterface:
             pyautogui.write(directory)
             pyautogui.press("enter")
             # Replace the file name input
-            await self._click(IMAGE_IMPORT_WINDOW_FILE_NAME_INPUT)
+            await self._click(_IMAGE_IMPORT_WINDOW_FILE_NAME_INPUT)
             pyautogui.keyDown("ctrl")
             pyautogui.press("a")
             pyautogui.keyUp("ctrl")
             pyautogui.press("backspace")
             pyautogui.write(base_name)
             # Select PNG and confirm
-            await self._click(IMAGE_IMPORT_WINDOW_PNG)
+            await self._click(_IMAGE_IMPORT_WINDOW_PNG)
             await asyncio.sleep(0.1)
-            await self._click(IMAGE_IMPORT_WINDOW_OKAY)
-            await self._click(IMAGE_SELECT_WINDOW_OKAY)
+            await self._click(_IMAGE_IMPORT_WINDOW_OKAY)
+            await self._click(_IMAGE_SELECT_WINDOW_OKAY)
         # Need to click somewhere to get back to normal mode
         await self._click((ROOM_ORIGIN_X + 10, ROOM_ORIGIN_Y + 10))
 
@@ -322,85 +324,85 @@ class EditorInterface:
             return
 
         if element == Element.WALL:
-            await self._select_element(ROOM_PIECES_TAB, WALL)
-            if (style == "hard") != self.hard_walls:
-                await self._click(WALL)
-                self.hard_walls = style == "hard"
+            await self._select_element(_ROOM_PIECES_TAB, _WALL)
+            if (style == "hard") != self._hard_walls:
+                await self._click(_WALL)
+                self._hard_walls = style == "hard"
         elif element == Element.PIT:
-            await self._select_element(ROOM_PIECES_TAB, PIT)
+            await self._select_element(_ROOM_PIECES_TAB, _PIT)
         elif element == Element.STAIRS:
-            await self._select_element(ROOM_PIECES_TAB, STAIRS)
-            if (style == "up") != self.stairs_up:
-                await self._click(STAIRS)
-                self.stairs_up = style == "up"
+            await self._select_element(_ROOM_PIECES_TAB, _STAIRS)
+            if (style == "up") != self._stairs_up:
+                await self._click(_STAIRS)
+                self._stairs_up = style == "up"
         elif element == Element.FLOOR:
             button = "right"
             if style == "mosaic":
-                await self._select_element(ROOM_PIECES_TAB, MOSAIC_FLOOR)
+                await self._select_element(_ROOM_PIECES_TAB, _MOSAIC_FLOOR)
             elif style == "road":
-                await self._select_element(ROOM_PIECES_TAB, ROAD_FLOOR)
+                await self._select_element(_ROOM_PIECES_TAB, _ROAD_FLOOR)
             elif style == "grass":
-                await self._select_element(ROOM_PIECES_TAB, GRASS_FLOOR)
+                await self._select_element(_ROOM_PIECES_TAB, _GRASS_FLOOR)
             elif style == "dirt":
-                await self._select_element(ROOM_PIECES_TAB, DIRT_FLOOR)
+                await self._select_element(_ROOM_PIECES_TAB, _DIRT_FLOOR)
             elif style == "alternate":
-                await self._select_element(ROOM_PIECES_TAB, ALTERNATE_FLOOR)
+                await self._select_element(_ROOM_PIECES_TAB, _ALTERNATE_FLOOR)
             elif style == "image":
-                await self._select_element(ROOM_PIECES_TAB, IMAGE_FLOOR)
+                await self._select_element(_ROOM_PIECES_TAB, _IMAGE_FLOOR)
                 # This floor doesn't behave like the others, and should be
                 # created with the left button
                 button = "left"
             else:
-                await self._select_element(ROOM_PIECES_TAB, FLOOR)
+                await self._select_element(_ROOM_PIECES_TAB, _FLOOR)
         elif element == Element.YELLOW_DOOR:
-            await self._select_element(ROOM_PIECES_TAB, YELLOW_DOOR)
+            await self._select_element(_ROOM_PIECES_TAB, _YELLOW_DOOR)
         elif element == Element.YELLOW_DOOR_OPEN:
-            await self._select_element(ROOM_PIECES_TAB, YELLOW_DOOR_OPEN)
+            await self._select_element(_ROOM_PIECES_TAB, _YELLOW_DOOR_OPEN)
         elif element == Element.GREEN_DOOR:
-            await self._select_element(ROOM_PIECES_TAB, GREEN_DOOR)
+            await self._select_element(_ROOM_PIECES_TAB, _GREEN_DOOR)
         elif element == Element.GREEN_DOOR_OPEN:
-            await self._select_element(ROOM_PIECES_TAB, GREEN_DOOR_OPEN)
+            await self._select_element(_ROOM_PIECES_TAB, _GREEN_DOOR_OPEN)
         elif element == Element.BLUE_DOOR:
-            await self._select_element(ROOM_PIECES_TAB, BLUE_DOOR)
+            await self._select_element(_ROOM_PIECES_TAB, _BLUE_DOOR)
         elif element == Element.BLUE_DOOR_OPEN:
-            await self._select_element(ROOM_PIECES_TAB, BLUE_DOOR_OPEN)
+            await self._select_element(_ROOM_PIECES_TAB, _BLUE_DOOR_OPEN)
         elif element == Element.MASTER_WALL:
-            await self._select_element(ROOM_PIECES_TAB, MASTER_WALL)
-            if self.hold_complete_wall:
-                await self._click(MASTER_WALL)
-                self.hold_complete_wall = False
+            await self._select_element(_ROOM_PIECES_TAB, _MASTER_WALL)
+            if self._hold_complete_wall:
+                await self._click(_MASTER_WALL)
+                self._hold_complete_wall = False
         elif element == Element.FORCE_ARROW:
-            await self._select_element(FLOOR_CONTROLS_TAB, FORCE_ARROW)
+            await self._select_element(_FLOOR_CONTROLS_TAB, _FORCE_ARROW)
             await self._set_direction(direction, kind="force_arrow")
         elif element == Element.CHECKPOINT:
-            await self._select_element(FLOOR_CONTROLS_TAB, CHECKPOINT)
+            await self._select_element(_FLOOR_CONTROLS_TAB, _CHECKPOINT)
         elif element == Element.ORB:
-            await self._select_element(ITEMS_TAB, ORB)
-            if self.orb_type == OrbType.CRACKED:
-                await self._click(ORB)
-                await self._click(ORB)
-            elif self.orb_type == OrbType.BROKEN:
-                await self._click(ORB)
-            self.orb_type = OrbType.NORMAL
+            await self._select_element(_ITEMS_TAB, _ORB)
+            if self._orb_type == _OrbType.CRACKED:
+                await self._click(_ORB)
+                await self._click(_ORB)
+            elif self._orb_type == _OrbType.BROKEN:
+                await self._click(_ORB)
+            self._orb_type = _OrbType.NORMAL
         elif element == Element.SCROLL:
-            await self._select_element(ITEMS_TAB, SCROLL)
+            await self._select_element(_ITEMS_TAB, _SCROLL)
         elif element == Element.OBSTACLE:
             used_style = style if style is not None else "rock_1"
-            await self._select_element(ITEMS_TAB, OBSTACLE)
-            if self.selected_obstacle != OBSTACLE_STYLES[used_style]:
+            await self._select_element(_ITEMS_TAB, _OBSTACLE)
+            if self._selected_obstacle != _OBSTACLE_STYLES[used_style]:
                 # Click it again to bring up the menu, and select the right style
-                await self._click(OBSTACLE)
-                await self._click(OBSTACLE_STYLES[used_style])
-                self.selected_obstacle = OBSTACLE_STYLES[used_style]
+                await self._click(_OBSTACLE)
+                await self._click(_OBSTACLE_STYLES[used_style])
+                self._selected_obstacle = _OBSTACLE_STYLES[used_style]
         elif element == Element.CONQUER_TOKEN:
-            await self._select_element(ITEMS_TAB, TOKEN)
-            if self.selected_token != CONQUER_TOKEN_IN_MENU:
+            await self._select_element(_ITEMS_TAB, _TOKEN)
+            if self._selected_token != _CONQUER_TOKEN_IN_MENU:
                 # Click it again to bring up the menu, and select it
-                await self._click(TOKEN)
-                await self._click(CONQUER_TOKEN_IN_MENU)
-                self.selected_token = CONQUER_TOKEN_IN_MENU
+                await self._click(_TOKEN)
+                await self._click(_CONQUER_TOKEN_IN_MENU)
+                self._selected_token = _CONQUER_TOKEN_IN_MENU
         elif element == Element.ROACH:
-            await self._select_element(MONSTERS_TAB, ROACH)
+            await self._select_element(_MONSTERS_TAB, _ROACH)
             await self._set_direction(direction)
         else:
             raise RuntimeError(f"Unknown element {element}")
@@ -414,8 +416,8 @@ class EditorInterface:
             )
         else:
             pyautogui.moveTo(
-                x=self.origin_x + ROOM_ORIGIN_X + TILE_SIZE * (position[0] + 0.5),
-                y=self.origin_y + ROOM_ORIGIN_Y + TILE_SIZE * (position[1] + 0.5),
+                x=self._origin_x + ROOM_ORIGIN_X + TILE_SIZE * (position[0] + 0.5),
+                y=self._origin_y + ROOM_ORIGIN_Y + TILE_SIZE * (position[1] + 0.5),
             )
             pyautogui.dragRel(
                 xOffset=(end_position[0] - position[0]) * TILE_SIZE,
@@ -424,11 +426,11 @@ class EditorInterface:
             )
         if element == Element.STAIRS:
             # Close the stairs window, it doesn't matter where the stairs go
-            await self._click(STAIRS_WINDOW_OK)
+            await self._click(_STAIRS_WINDOW_OK)
         elif element == Element.SCROLL:
             # Write something and close the scroll window
             pyautogui.press("space")
-            await self._click(SCROLL_WINDOW_OK)
+            await self._click(_SCROLL_WINDOW_OK)
 
     async def _place_character(
         self, element, direction, position, copy_characters=False
@@ -437,8 +439,8 @@ class EditorInterface:
         real_y = ROOM_ORIGIN_Y + (position[1] + 0.5) * TILE_SIZE
         if (
             copy_characters
-            and self.copied_element == element
-            and self.copied_element_direction == direction
+            and self._copied_element == element
+            and self._copied_element_direction == direction
         ):
             # Paste the character
             pyautogui.keyDown("ctrl")
@@ -446,26 +448,28 @@ class EditorInterface:
             pyautogui.keyUp("ctrl")
             await self._click((real_x, real_y))
         else:
-            await self._select_element(MONSTERS_TAB, CHARACTER)
+            await self._select_element(_MONSTERS_TAB, _CHARACTER)
             await self._set_direction(direction)
             await self._click((real_x, real_y))
             # We're now in the character menu
             if element == Element.BEETHRO:
-                await self._click(CHARACTER_WINDOW_SCROLL_UP)
-                await self._click(CHARACTER_WINDOW_SCROLL_UP)
-                await self._click(CHARACTER_WINDOW_FIRST_TYPE)
-            await self._click(CHARACTER_WINDOW_VISIBLE_CHECKBOX)
-            await self._click(CHARACTER_WINDOW_OKAY)
+                await self._click(_CHARACTER_WINDOW_SCROLL_UP)
+                await self._click(_CHARACTER_WINDOW_SCROLL_UP)
+                await self._click(_CHARACTER_WINDOW_FIRST_TYPE)
+            await self._click(_CHARACTER_WINDOW_VISIBLE_CHECKBOX)
+            await self._click(_CHARACTER_WINDOW_OKAY)
             if copy_characters:
                 # Copy the character
-                pyautogui.mouseDown(x=self.origin_x + real_x, y=self.origin_y + real_y)
+                pyautogui.mouseDown(
+                    x=self._origin_x + real_x, y=self._origin_y + real_y
+                )
                 pyautogui.keyDown("ctrl")
                 pyautogui.press("c")
                 pyautogui.keyUp("ctrl")
                 pyautogui.mouseUp()
                 pyautogui.press("esc")  # Leave pasting mode
-                self.copied_element = element
-                self.copied_element_direction = direction
+                self._copied_element = element
+                self._copied_element_direction = direction
 
     async def start_test_room(self, position, direction):
         """Start testing the room.
@@ -478,7 +482,7 @@ class EditorInterface:
             The direction to face when starting.
         """
         # Select the roach to make sure we can rotate monsters
-        await self._select_element(MONSTERS_TAB, ROACH)
+        await self._select_element(_MONSTERS_TAB, _ROACH)
         await self._set_direction(direction)
         pyautogui.press("f5")
         await self._click(
@@ -488,7 +492,7 @@ class EditorInterface:
             )
         )
         # Move the mouse out of the way
-        pyautogui.moveTo(self.origin_x + 3, self.origin_y + 3)
+        pyautogui.moveTo(self._origin_x + 3, self._origin_y + 3)
         # Sleep to let the transition finish
         await asyncio.sleep(3)
 
@@ -501,16 +505,16 @@ class EditorInterface:
     async def select_first_style(self):
         """Select the first room style for the current room."""
         pyautogui.press("esc")
-        await self._click(STYLE_SELECT_SCROLL_UP)
+        await self._click(_STYLE_SELECT_SCROLL_UP)
         pyautogui.press("up", presses=13, interval=0.1)
-        await self._click(EDIT_ROOM)
+        await self._click(_EDIT_ROOM)
 
     async def select_next_style(self):
         """Select the next room style for the current room."""
         pyautogui.press("esc")
-        await self._click(STYLE_SELECT_SCROLL_UP)
+        await self._click(_STYLE_SELECT_SCROLL_UP)
         pyautogui.press("down")
-        await self._click(EDIT_ROOM)
+        await self._click(_EDIT_ROOM)
 
     async def get_tiles_and_colors(self):
         """Get the tiles and minimap colors for each coordinate.
