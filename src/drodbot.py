@@ -3,10 +3,11 @@ import queue
 import threading
 import tkinter
 
-from tile_classifier import TileClassifier, ClassificationAppBackend
+from tile_classifier import TileClassifier
 from drod_bot import DrodBot
 from drod_interface import PlayInterface, EditorInterface
 from apps import MainApp
+from apps.backends import ClassificationAppBackend
 
 
 def main():
