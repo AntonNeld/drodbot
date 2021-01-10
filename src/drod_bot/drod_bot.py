@@ -14,13 +14,10 @@ class DrodBot:
     ----------
     drod_interface
         The interface for playing rooms.
-    window_queue
-        A queue for sending updates to the GUI.
     """
 
-    def __init__(self, drod_interface, window_queue):
+    def __init__(self, drod_interface):
         self._interface = drod_interface
-        self._queue = window_queue
 
     async def run_strategy(self, strategy):
         """Have Beethro do something, usually trying to solve the room.

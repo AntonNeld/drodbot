@@ -27,8 +27,8 @@ class MainApp(tkinter.Frame):
         The asyncio event loop for the backend thread.
     queue
         The queue used for getting updates from the backend.
-    bot
-        The DRODbot that makes plans and performs actions.
+    playing_app_backend
+        The backend for the playing app.
     interpret_screen_app_backend
         The backend for the interpret screen app.
     classifcation_app_backend
@@ -40,7 +40,7 @@ class MainApp(tkinter.Frame):
         root,
         event_loop,
         queue,
-        bot,
+        playing_app_backend,
         interpret_screen_app_backend,
         classification_app_backend,
     ):
@@ -67,7 +67,7 @@ class MainApp(tkinter.Frame):
         self._interpret_screen_app = InterpretScreenApp(
             self, event_loop, interpret_screen_app_backend
         )
-        self._playing_app = PlayingApp(self, event_loop, bot)
+        self._playing_app = PlayingApp(self, event_loop, playing_app_backend)
         self._classification_app = ClassificationApp(
             self, event_loop, classification_app_backend
         )

@@ -14,14 +14,14 @@ class PlayingApp(tkinter.Frame):
         The parent of the tkinter Frame.
     event_loop
         The asyncio event loop for the backend thread.
-    bot
-        The DRODbot, which is the part playing DROD.
+    backend
+        The backend containing the DRODbot.
     """
 
-    def __init__(self, root, event_loop, bot):
+    def __init__(self, root, event_loop, backend):
         super().__init__(root)
         self._event_loop = event_loop
-        self._bot = bot
+        self._backend = backend
         self._selected_strategy = tkinter.StringVar(self)
         self._selected_strategy.set(list(Strategy)[0].value)
 
@@ -51,4 +51,4 @@ class PlayingApp(tkinter.Frame):
     def _run_strategy(self):
         strategy_value = self._selected_strategy.get()
         strategy = next(e for e in Strategy if e.value == strategy_value)
-        self._run_coroutine(self._bot.run_strategy(strategy))
+        self._run_coroutine(self._backend.run_strategy(strategy))
