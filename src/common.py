@@ -11,10 +11,14 @@ TILE_SIZE = 22
 
 
 class UserError(Exception):
+    """This kind of error is due to something the user has done."""
+
     pass
 
 
 class Action(Enum):
+    """An action the player can take."""
+
     N = 8
     NE = 9
     E = 6
@@ -29,13 +33,17 @@ class Action(Enum):
 
 
 class GUIEvent(Enum):
+    """A message from the backend thread to the GUI."""
+
     QUIT = "quit"
     SET_INTERPRET_SCREEN_DATA = "set_interpret_screen_data"
-    SET_TRAINING_DATA = "set_training_data"
+    SET_CLASSIFICATION_DATA = "set_classification_data"
 
 
 # The values are also what will be displayed in the GUI
 class ImageProcessingStep(Enum):
+    """An image processing step, used to show intermediate images."""
+
     SCREENSHOT = "Screenshot"
     FIND_UPPER_EDGE_COLOR = "Find upper edge color"
     FIND_UPPER_EDGE_LINE = "Find upper edge line"
@@ -48,11 +56,15 @@ class ImageProcessingStep(Enum):
 
 # The values are also what will be displayed in the GUI
 class Strategy(Enum):
+    """A strategy for what Beethro should do."""
+
     MOVE_TO_CONQUER_TOKEN = "Move to a conquer token"
     MOVE_RANDOMLY = "30 random moves"
 
 
 class Element(Enum):
+    """A game element that can be in a tile."""
+
     UNKNOWN = "Unknown"
     NOTHING = "Nothing"
     WALL = "Wall"
@@ -77,6 +89,7 @@ class Element(Enum):
     FLOOR = "Floor"
 
 
+# Which elements can be in which layers
 ROOM_PIECES = [
     Element.WALL,
     Element.FLOOR,
@@ -127,6 +140,11 @@ ELEMENT_CHARACTERS = {
 
 
 class Direction(Enum):
+    """A direction of an element.
+
+    Not all elements can have all directions, but this is not enforced.
+    """
+
     N = "N"
     NE = "NE"
     E = "E"
@@ -144,12 +162,12 @@ class Tile:
     """A representation of a tile.
 
     This contains information about what element is in each layer, as a tuple of
-    (Element, Direction). If a layer has nothing in it, the value is None.
+    (Element, Direction).
 
     Parameters
     ----------
     room_piece
-        The element in the "room pieces" layer. This cannot be None.
+        The element in the "room pieces" layer.
     floor_control
         The element in the "floor controls" layer (excluding checkpoints and lighting).
     checkpoint
@@ -207,6 +225,17 @@ class Tile:
 
     @staticmethod
     def from_json(json_string):
+        """Creates a Tile object from a JSON representation.
+
+        Parameters
+        ----------
+        json_string
+            A JSON-encoded Tile object.
+
+        Returns
+        -------
+        A Tile object.
+        """
         json_dict = json.loads(json_string)
         constructor_args = {
             key: _element_tuple_from_json(value) for key, value in json_dict.items()
@@ -225,9 +254,8 @@ class Room:
 
     def __init__(self):
         self._tiles = {}
-        # Since this class is used when generating training data, and
-        # we don't want to use classification then, initialize the room
-        # as empty.
+        # Sinceo one use is keeping track of what is in the editor,
+        # we initialize the room as empty.
         for x in range(ROOM_WIDTH_IN_TILES):
             for y in range(ROOM_HEIGHT_IN_TILES):
                 self._tiles[(x, y)] = Tile(room_piece=(Element.FLOOR, Direction.NONE))

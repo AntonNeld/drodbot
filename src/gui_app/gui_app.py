@@ -74,7 +74,7 @@ class GuiApp(tkinter.Frame):
                 self._main_window.destroy()
             elif item == GUIEvent.SET_INTERPRET_SCREEN_DATA:
                 self._interpret_screen_app.set_data(*detail)
-            elif item == GUIEvent.SET_TRAINING_DATA:
+            elif item == GUIEvent.SET_CLASSIFICATION_DATA:
                 self._classification_app.set_data(*detail)
         except Empty:
             pass

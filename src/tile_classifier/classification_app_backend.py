@@ -61,7 +61,7 @@ class ClassificationAppBackend:
             file_names = os.listdir(self._sample_data_dir)
         except FileNotFoundError:
             print("No sample data directory found")
-            self._queue.put((GUIEvent.SET_TRAINING_DATA, self._sample_data))
+            self._queue.put((GUIEvent.SET_CLASSIFICATION_DATA, self._sample_data))
             return
         for file_name in file_names:
             image = PIL.Image.open(os.path.join(self._sample_data_dir, file_name))
@@ -77,7 +77,7 @@ class ClassificationAppBackend:
             )
         print("Classifying sample data...")
         self._classify_sample_data()
-        self._queue.put((GUIEvent.SET_TRAINING_DATA, self._sample_data))
+        self._queue.put((GUIEvent.SET_CLASSIFICATION_DATA, self._sample_data))
         print("Loaded and classified sample data")
 
     async def generate_tile_data(self):
@@ -206,7 +206,7 @@ class ClassificationAppBackend:
         self._classifier.load_tile_data(self._tile_data_dir)
         if self._sample_data:
             self._classify_sample_data()
-            self._queue.put((GUIEvent.SET_TRAINING_DATA, self._sample_data))
+            self._queue.put((GUIEvent.SET_CLASSIFICATION_DATA, self._sample_data))
         print("Finished getting tile data")
 
     def _classify_sample_data(self):
