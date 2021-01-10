@@ -29,14 +29,20 @@ class MainApp(tkinter.Frame):
         The queue used for getting updates from the backend.
     bot
         The DRODbot that makes plans and performs actions.
-    play_interface
-        The interface toward DROD when playing.
+    interpret_screen_app_backend
+        The backend for the interpret screen app.
     classifcation_app_backend
         The backend for the classification app.
     """
 
     def __init__(
-        self, root, event_loop, queue, bot, play_interface, classification_app_backend
+        self,
+        root,
+        event_loop,
+        queue,
+        bot,
+        interpret_screen_app_backend,
+        classification_app_backend,
     ):
         super().__init__(root)
         self._main_window = root
@@ -59,7 +65,7 @@ class MainApp(tkinter.Frame):
         self._separator = ttk.Separator(self, orient="horizontal")
         self._separator.pack(side=tkinter.BOTTOM, fill=tkinter.X)
         self._interpret_screen_app = InterpretScreenApp(
-            self, event_loop, play_interface
+            self, event_loop, interpret_screen_app_backend
         )
         self._playing_app = PlayingApp(self, event_loop, bot)
         self._classification_app = ClassificationApp(

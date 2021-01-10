@@ -30,14 +30,14 @@ class InterpretScreenApp(tkinter.Frame):
         The parent of the tkinter Frame.
     event_loop
         The asyncio event loop for the backend thread.
-    interface
-        The play interface, used to get and process screenshots.
+    backend
+        The backend that contains the play interface.
     """
 
-    def __init__(self, root, event_loop, interface):
+    def __init__(self, root, event_loop, backend):
         super().__init__(root)
         self._event_loop = event_loop
-        self._interface = interface
+        self._backend = backend
         self._selected_view_step = tkinter.StringVar(self)
         self._selected_view_step.set(list(ImageProcessingStep)[-1].value)
         self._enlarged_view = False
@@ -114,7 +114,7 @@ class InterpretScreenApp(tkinter.Frame):
     def _show_view(self):
         step_value = self._selected_view_step.get()
         step = next(e for e in ImageProcessingStep if e.value == step_value)
-        self._run_coroutine(self._interface.show_view_step(step))
+        self._run_coroutine(self._backend.show_view_step(step))
 
     def _toggle_view_size(self):
         if self._enlarged_view:

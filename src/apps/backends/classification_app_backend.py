@@ -24,7 +24,7 @@ from .editor_utils import (
 
 
 class ClassificationAppBackend:
-    """This is the backend for the classification app.
+    """The backend for the classification app.
 
     It generates tile data for the classifier, and sample data to
     test it.

@@ -7,7 +7,7 @@ from tile_classifier import TileClassifier
 from drod_bot import DrodBot
 from drod_interface import PlayInterface, EditorInterface
 from apps import MainApp
-from apps.backends import ClassificationAppBackend
+from apps.backends import ClassificationAppBackend, InterpretScreenAppBackend
 
 
 def main():
@@ -21,11 +21,15 @@ def main():
     editor_interface = EditorInterface()
     classifier = TileClassifier()
     classifier.load_tile_data("tile_data")
+    play_interface = PlayInterface(window_queue, classifier)
+    bot = DrodBot(play_interface, window_queue)
+
     classification_app_backend = ClassificationAppBackend(
         classifier, "tile_data", "training_data", editor_interface, window_queue
     )
-    play_interface = PlayInterface(window_queue, classifier)
-    bot = DrodBot(play_interface, window_queue)
+    interpret_screen_app_backend = InterpretScreenAppBackend(
+        window_queue, play_interface
+    )
 
     window = tkinter.Tk()
     window.title("DRODbot")
@@ -34,7 +38,7 @@ def main():
         event_loop=loop,
         queue=window_queue,
         bot=bot,
-        play_interface=play_interface,
+        interpret_screen_app_backend=interpret_screen_app_backend,
         classification_app_backend=classification_app_backend,
     )
     app.pack()
