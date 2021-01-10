@@ -81,6 +81,8 @@ class _OrbType(Enum):
 
 
 class EditorInterface:
+    """The interface toward DROD when editing levels."""
+
     def __init__(self):
         # Will be set by initialize()
         self._origin_x = None
@@ -104,10 +106,10 @@ class EditorInterface:
         self._copied_element_direction = None
 
     async def initialize(self):
-        """Find the DROD window and focus it.
+        """Find the DROD window, focus it, and set the editor to a known state.
 
         This should be done before each user-triggered action, as the
-        window will have lost focus.
+        window will have lost focus and the user may have changed something.
         """
         origin_x, origin_y, _ = await get_drod_window()
         self._origin_x = origin_x
@@ -179,7 +181,11 @@ class EditorInterface:
             self._selected_element[tab_position] = element_position
 
     async def clear_room(self):
-        # Select the normal floor, to make sure clearing doesn't use mosaic floors
+        """Clear the entire room, leaving only normal floors.
+
+        This includes removing the side walls.
+        """
+        # Select the normal floor, to make sure clearing doesn't use special floors
         await self._select_element(_ROOM_PIECES_TAB, _FLOOR)
         pyautogui.keyDown("shift")
         pyautogui.moveTo(
@@ -201,7 +207,7 @@ class EditorInterface:
         position
             Position of the tile.
         """
-        # Select the normal floor, to make sure clearing doesn't use mosaic floors
+        # Select the normal floor, to make sure clearing doesn't use special floors
         await self._select_element(_ROOM_PIECES_TAB, _FLOOR)
         pyautogui.keyDown("shift")
         pyautogui.click(
@@ -316,8 +322,6 @@ class EditorInterface:
         button = "left"
         if element in [Element.BEETHRO]:
             # Some elements cannot be placed freely, so we place characters to fake it
-            if end_position is not None:
-                raise RuntimeError("Cannot place character in a rectangle")
             await self._place_character(
                 element, direction, position, copy_characters=copy_characters
             )
