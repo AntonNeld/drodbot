@@ -1,4 +1,4 @@
-from common import Strategy
+from common import Strategy, Element
 
 
 class PlayingAppBackend:
@@ -24,9 +24,8 @@ class PlayingAppBackend:
         strategy
             The strategy to execute.
         """
-        if strategy == Strategy.MOVE_RANDOMLY:
-            await self._bot.run_strategy(strategy)
-        elif strategy == Strategy.MOVE_TO_CONQUER_TOKEN:
-            await self._bot.run_strategy(strategy)
+        await self._bot.initialize()
+        if strategy == Strategy.MOVE_TO_CONQUER_TOKEN:
+            await self._bot.go_to(Element.CONQUER_TOKEN)
         else:
             raise RuntimeError(f"Unknown strategy {strategy}")

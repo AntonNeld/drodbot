@@ -1,7 +1,5 @@
 import asyncio
-import random
 
-from common import Action, Strategy, Element
 from .pathfinding import find_path
 
 _ACTION_DELAY = 0.1
@@ -18,28 +16,26 @@ class DrodBot:
 
     def __init__(self, drod_interface):
         self._interface = drod_interface
+        self._room = None
 
-    async def run_strategy(self, strategy):
-        """Have Beethro do something, usually trying to solve the room.
+    async def initialize(self):
+        """Focus the window and get the room content."""
+        await self._interface.initialize()
+        visual_info = await self._interface.get_view()
+        self._room = visual_info["room"]
+
+    async def go_to(self, element):
+        """Go to the nearest tile with the given element.
 
         Parameters
         ----------
-        strategy
-            The strategy to execute.
+        element
+            The element to go to.
         """
-        await self._interface.initialize()
-        visual_info = await self._interface.get_view()
-        room = visual_info["room"]
-        if strategy == Strategy.MOVE_RANDOMLY:
-            actions = random.choices(list(Action), k=30)
-            await self._do_actions(actions)
-        elif strategy == Strategy.MOVE_TO_CONQUER_TOKEN:
-            player_position = room.find_player()
-            conquer_positions = room.find_coordinates(Element.CONQUER_TOKEN)
-            actions = find_path(player_position, conquer_positions, room)
-            await self._do_actions(actions)
-        else:
-            raise RuntimeError(f"Unknown strategy {strategy}")
+        player_position = self._room.find_player()
+        goal_positions = self._room.find_coordinates(element)
+        actions = find_path(player_position, goal_positions, self._room)
+        await self._do_actions(actions)
 
     async def _do_actions(self, actions):
         for action in actions:
