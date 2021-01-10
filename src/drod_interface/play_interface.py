@@ -15,12 +15,22 @@ from .util import (
 
 
 class PlayInterface:
+    """The interface toward DROD when playing the game.
+
+    Parameters
+    ----------
+    window_queue
+        A queue for sending updates to the GUI.
+    classifier
+        The tile classifier, to interpret the tiles.
+    """
+
     def __init__(self, window_queue, classifier):
         self._queue = window_queue
         self._classifier = classifier
         # Will be set by initialize()
-        self.origin_x = None
-        self.origin_y = None
+        self._origin_x = None
+        self._origin_y = None
 
     async def initialize(self):
         """Find the DROD window and focus it.
@@ -29,14 +39,21 @@ class PlayInterface:
         window will have lost focus.
         """
         origin_x, origin_y, _ = await get_drod_window()
-        self.origin_x = origin_x
-        self.origin_y = origin_y
+        self._origin_x = origin_x
+        self._origin_y = origin_y
         await self._click((3, 3))
 
     async def _click(self, position):
-        pyautogui.click(x=self.origin_x + position[0], y=self.origin_y + position[1])
+        pyautogui.click(x=self._origin_x + position[0], y=self._origin_y + position[1])
 
     async def do_action(self, action):
+        """Perform an action, like moving or swinging your sword.
+
+        Parameters
+        ----------
+        action
+            The action to perform.
+        """
         if action == Action.SW:
             key = "num1"
         elif action == Action.S:
@@ -62,6 +79,23 @@ class PlayInterface:
         pyautogui.press(key)
 
     async def get_view(self, step=None):
+        """Get the room contents and other information from the DROD window.
+
+        Parameters
+        ----------
+        step
+            If given, stop at this step and return an intermediate image.
+
+        Returns
+        -------
+        A dict containing the following keys:
+        - "image": The room image or intermediate image
+        - "origin_x": The X coordinate of the upper left corner of the window
+        - "origin_y": The Y coordinate of the upper left corner of the window
+        - "tiles": A dict mapping (x, y) coordinates to tile images
+        - "room": A representation of the room, interpreted from the screenshot
+        Not all keys may be present if `step` is given.
+        """
         visual_info = {}
         if step in [
             ImageProcessingStep.SCREENSHOT,
