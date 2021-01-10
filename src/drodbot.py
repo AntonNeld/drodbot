@@ -15,8 +15,6 @@ from apps.backends import (
 
 
 def main():
-    window_queue = queue.Queue()
-
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     asyncio_thread = threading.Thread(target=loop.run_forever)
@@ -25,14 +23,15 @@ def main():
     editor_interface = EditorInterface()
     classifier = TileClassifier()
     classifier.load_tile_data("tile_data")
-    play_interface = PlayInterface(window_queue, classifier)
+    play_interface = PlayInterface(classifier)
     bot = DrodBot(play_interface)
 
+    window_queue = queue.Queue()
     classification_app_backend = ClassificationAppBackend(
         classifier, "tile_data", "training_data", editor_interface, window_queue
     )
     interpret_screen_app_backend = InterpretScreenAppBackend(
-        window_queue, play_interface
+        play_interface, window_queue
     )
     playing_app_backend = PlayingAppBackend(bot, window_queue)
 

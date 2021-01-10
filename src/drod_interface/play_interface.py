@@ -18,14 +18,11 @@ class PlayInterface:
 
     Parameters
     ----------
-    window_queue
-        A queue for sending updates to the GUI.
     classifier
         The tile classifier, to interpret the tiles.
     """
 
-    def __init__(self, window_queue, classifier):
-        self._queue = window_queue
+    def __init__(self, classifier):
         self._classifier = classifier
         # Will be set by initialize()
         self._origin_x = None

@@ -6,13 +6,13 @@ class InterpretScreenAppBackend:
 
     Parameters
     ----------
-    window_queue
-        A queue for sending updates to the GUI.
     play_interface
         The interface for playing rooms, used to interpret screenshots.
+    window_queue
+        A queue for sending updates to the GUI.
     """
 
-    def __init__(self, window_queue, play_interface):
+    def __init__(self, play_interface, window_queue):
         self._queue = window_queue
         self._interface = play_interface
 
