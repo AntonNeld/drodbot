@@ -27,5 +27,7 @@ class PlayingAppBackend:
         await self._bot.initialize()
         if strategy == Strategy.MOVE_TO_CONQUER_TOKEN:
             await self._bot.go_to(Element.CONQUER_TOKEN)
+        elif strategy == Strategy.GO_TO_EDGE:
+            await self._bot.go_to_edge()
         else:
             raise RuntimeError(f"Unknown strategy {strategy}")

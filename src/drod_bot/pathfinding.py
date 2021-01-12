@@ -90,7 +90,18 @@ def find_path(start, goals, room):
     list of Action
         The shortest sequence of actions to reach a goal position.
     """
-    walls = room.find_coordinates(Element.WALL)
-    problem = _PathfindingProblem(start, goals, walls)
+    obstacles = set()
+    for element in [
+        Element.WALL,
+        Element.MASTER_WALL,
+        Element.OBSTACLE,
+        Element.YELLOW_DOOR,
+        Element.BLUE_DOOR,
+        Element.GREEN_DOOR,
+        Element.ORB,
+        Element.PIT,
+    ]:
+        obstacles.update(room.find_coordinates(element))
+    problem = _PathfindingProblem(start, goals, obstacles)
     solution = a_star_graph(problem, _get_heuristic(goals))
     return solution

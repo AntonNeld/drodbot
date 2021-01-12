@@ -59,7 +59,7 @@ class Strategy(Enum):
     """A strategy for what Beethro should do."""
 
     MOVE_TO_CONQUER_TOKEN = "Move to a conquer token"
-    MOVE_RANDOMLY = "30 random moves"
+    GO_TO_EDGE = "Move to the nearest edge"
 
 
 class Element(Enum):
