@@ -34,13 +34,12 @@ class Room(BaseModel):
 
     tiles: Dict[Tuple[int, int], Tile] = Field(default_factory=_create_empty_room)
 
-    def place_element_like_editor(
-        self, element, direction, position, end_position=None
-    ):
+    def place_element(self, element, direction, position, end_position=None):
         """Place an element, like in the editor.
 
-        If an element already exists in the square, and it would block
-        the new element from being placed, the element is not placed.
+        No effort is made to mimic the behavior of the editor in terms of
+        whether an element can be placed. If an element already exists in
+        the same layer, it will be overwritten.
 
         Parameters
         ----------
@@ -76,27 +75,6 @@ class Room(BaseModel):
                 end_position[1] + 1 if end_position is not None else position[1] + 1,
             ):
                 tile = copy.deepcopy(self.tiles[(x, y)])
-                # Cannot place things on same layer as something else, unless either is
-                # a floor.
-                if (
-                    getattr(tile, layer)[0] not in [Element.FLOOR, Element.NOTHING]
-                ) and element != Element.FLOOR:
-                    continue
-                non_beethro_monsters = [
-                    e for e in MONSTERS if e not in [Element.BEETHRO]
-                ]
-                conflicts_with_monsters = [Element.WALL, Element.ORB]
-                if (
-                    set(tile.get_elements()) & set(conflicts_with_monsters)
-                    and element in non_beethro_monsters
-                ):
-                    continue
-                if (
-                    set(tile.get_elements()) & set(non_beethro_monsters)
-                    and element in conflicts_with_monsters
-                ):
-                    continue
-                # TODO: Implement more conditions where elements block each other
                 setattr(tile, layer, (element, direction))
                 self.tiles[(x, y)] = tile
 

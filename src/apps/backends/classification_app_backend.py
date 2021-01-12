@@ -268,7 +268,7 @@ class ClassificationAppBackend:
         ]
         for (element, direction, x, y) in elements:
             await self._interface.place_element(element, direction, (x, y))
-            room.place_element_like_editor(element, direction, (x, y))
+            room.place_element(element, direction, (x, y))
         await self._interface.place_element(
             Element.FLOOR, Direction.NONE, (7, 16), style="road"
         )
@@ -276,7 +276,7 @@ class ClassificationAppBackend:
         await self._interface.place_element(
             Element.WALL, Direction.NONE, (5, 10), (10, 15)
         )
-        room.place_element_like_editor(Element.WALL, Direction.NONE, (5, 10), (10, 15))
+        room.place_element(Element.WALL, Direction.NONE, (5, 10), (10, 15))
         for x in range(5, 11):
             for y in range(10, 16):
                 elements.append((Element.WALL, Direction.NONE, x, y))
