@@ -20,6 +20,3 @@ pillow = "*"
 numpy = "*"
 opencv-python-headless = "*"
 sortedcontainers = "*"
-# My CPU supports AVX but not AVX2, so we'll use an older version.
-# See https://github.com/tensorflow/tensorflow/issues/45744
-tensorflow = "==2.3"
