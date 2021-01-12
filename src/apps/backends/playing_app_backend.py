@@ -1,4 +1,5 @@
-from common import Strategy, Element
+from common import Strategy
+from room import Element
 
 
 class PlayingAppBackend:

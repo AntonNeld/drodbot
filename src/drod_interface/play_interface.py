@@ -3,8 +3,8 @@ import pyautogui
 from common import (
     Action,
     ImageProcessingStep,
-    Room,
 )
+from room import Room
 from .util import (
     get_drod_window,
     extract_room,

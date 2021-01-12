@@ -6,14 +6,16 @@ import PIL
 
 from common import (
     TILE_SIZE,
+)
+from room import (
     Element,
+    Direction,
+    Tile,
     ROOM_PIECES,
     FLOOR_CONTROLS,
     CHECKPOINTS,
     ITEMS,
     MONSTERS,
-    Direction,
-    Tile,
 )
 from util import find_color
 

@@ -7,8 +7,8 @@ import numpy
 import PIL
 from PIL.PngImagePlugin import PngInfo
 
-from common import (
-    GUIEvent,
+from common import GUIEvent
+from room import (
     Element,
     Direction,
     Room,

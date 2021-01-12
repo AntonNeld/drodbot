@@ -7,9 +7,8 @@ from common import (
     ROOM_WIDTH_IN_TILES,
     ROOM_HEIGHT_IN_TILES,
     TILE_SIZE,
-    Element,
-    Direction,
 )
+from room import Element, Direction
 from .consts import ROOM_ORIGIN_X, ROOM_ORIGIN_Y
 from .util import get_drod_window, extract_room, extract_minimap, extract_tiles
 

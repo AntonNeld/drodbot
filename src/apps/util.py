@@ -5,12 +5,35 @@ import cv2
 import numpy
 
 from common import (
-    Direction,
     ROOM_HEIGHT_IN_TILES,
     ROOM_WIDTH_IN_TILES,
     TILE_SIZE,
-    ELEMENT_CHARACTERS,
 )
+from room import Element, Direction
+
+# These are overlaid over the room to show tile classifications
+ELEMENT_CHARACTERS = {
+    Element.UNKNOWN: "?",
+    Element.WALL: "#",
+    Element.PIT: ",",
+    Element.MASTER_WALL: "M",
+    Element.YELLOW_DOOR: "Y",
+    Element.YELLOW_DOOR_OPEN: "y",
+    Element.GREEN_DOOR: "G",
+    Element.GREEN_DOOR_OPEN: "g",
+    Element.BLUE_DOOR: "B",
+    Element.BLUE_DOOR_OPEN: "b",
+    Element.STAIRS: ">",
+    Element.FORCE_ARROW: "^",
+    Element.CHECKPOINT: "x",
+    Element.ORB: "O",
+    Element.SCROLL: "s",
+    Element.OBSTACLE: "+",
+    Element.BEETHRO: "B",
+    Element.ROACH: "R",
+    Element.CONQUER_TOKEN: "C",
+    Element.FLOOR: ".",
+}
 
 
 def tile_to_text(tile):

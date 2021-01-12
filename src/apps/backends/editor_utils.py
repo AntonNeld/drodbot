@@ -1,4 +1,4 @@
-from common import Element, Direction
+from room import Element, Direction
 
 
 async def place_sworded_element(interface, element, sword, x, y):

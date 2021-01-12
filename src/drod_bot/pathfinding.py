@@ -1,4 +1,5 @@
-from common import Element, Action
+from common import Action
+from room import Element
 from .search import a_star_graph
 
 
