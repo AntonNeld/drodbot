@@ -28,7 +28,7 @@ def main():
 
     window_queue = queue.Queue()
     classification_app_backend = ClassificationAppBackend(
-        classifier, "tile_data", "training_data", editor_interface, window_queue
+        classifier, "tile_data", "sample_tiles", editor_interface, window_queue
     )
     interpret_screen_app_backend = InterpretScreenAppBackend(
         play_interface, window_queue
