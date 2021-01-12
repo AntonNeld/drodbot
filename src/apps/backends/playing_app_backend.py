@@ -32,3 +32,7 @@ class PlayingAppBackend:
             await self._bot.go_to_edge()
         else:
             raise RuntimeError(f"Unknown strategy {strategy}")
+
+    async def save_state(self):
+        """Save the DRODbot state to disk."""
+        await self._bot.save_state()

@@ -24,7 +24,7 @@ def main():
     classifier = TileClassifier()
     classifier.load_tile_data("tile_data")
     play_interface = PlayInterface(classifier)
-    bot = DrodBot(play_interface)
+    bot = DrodBot("bot_state.json", play_interface)
 
     window_queue = queue.Queue()
     classification_app_backend = ClassificationAppBackend(

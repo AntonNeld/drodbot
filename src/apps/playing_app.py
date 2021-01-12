@@ -38,6 +38,10 @@ class PlayingApp(tkinter.Frame):
             self._run_controls, text="Go", command=self._run_strategy
         )
         self._go.pack(side=tkinter.RIGHT)
+        self._save_state_button = tkinter.Button(
+            self._control_panel, text="Save state", command=self._save_state
+        )
+        self._save_state_button.pack(side=tkinter.TOP)
 
     def _run_coroutine(self, coroutine):
         async def wrapped_coroutine():
@@ -52,3 +56,6 @@ class PlayingApp(tkinter.Frame):
         strategy_value = self._selected_strategy.get()
         strategy = next(e for e in Strategy if e.value == strategy_value)
         self._run_coroutine(self._backend.run_strategy(strategy))
+
+    def _save_state(self):
+        self._run_coroutine(self._backend.save_state())
