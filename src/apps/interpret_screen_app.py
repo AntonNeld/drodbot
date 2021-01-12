@@ -138,7 +138,7 @@ class InterpretScreenApp(tkinter.Frame):
             x = event.x // (TILE_SIZE // 2)
             y = event.y // (TILE_SIZE // 2)
         if self._room is not None:
-            tile = self._room.get_tile((x, y))
+            tile = self._room.tiles[(x, y)]
             self._tile_content.config(text=tile_to_text(tile))
         elif self._raw_view_image.shape == (32, 38, 3):
             # This is probably the minimap, so showing the color is nice

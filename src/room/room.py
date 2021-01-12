@@ -1,4 +1,6 @@
 import copy
+from pydantic import BaseModel, Field
+from typing import Dict, Tuple
 
 from common import ROOM_WIDTH_IN_TILES, ROOM_HEIGHT_IN_TILES
 from .element import (
@@ -13,42 +15,24 @@ from .element import (
 from .tile import Tile
 
 
-class Room:
-    """A representation of a room."""
+def _create_empty_room():
+    tiles = {}
+    for x in range(ROOM_WIDTH_IN_TILES):
+        for y in range(ROOM_HEIGHT_IN_TILES):
+            tiles[(x, y)] = Tile(room_piece=(Element.FLOOR, Direction.NONE))
+    return tiles
 
-    def __init__(self):
-        self._tiles = {}
-        # Sinceo one use is keeping track of what is in the editor,
-        # we initialize the room as empty.
-        for x in range(ROOM_WIDTH_IN_TILES):
-            for y in range(ROOM_HEIGHT_IN_TILES):
-                self._tiles[(x, y)] = Tile(room_piece=(Element.FLOOR, Direction.NONE))
 
-    def set_tile(self, position, tile):
-        """Set the contents of a tile.
+class Room(BaseModel):
+    """A representation of a room.
 
-        Parameters
-        ----------
-        position
-            The coordinates of the tile, given as a tuple (x, y).
-        elements
-            A Tile instance containing the elements of the tile.
-        """
-        self._tiles[position] = tile
+    Parameters
+    ----------
+    tiles
+        The room tiles as a mapping from coordinates to Tile objects.
+    """
 
-    def get_tile(self, position):
-        """Get the contents of a tile.
-
-        Parameters
-        ----------
-        position
-            The coordinates of the tile, given as a tuple (x, y).
-
-        Returns
-        -------
-        The Tile object for the given position.
-        """
-        return self._tiles[position]
+    tiles: Dict[Tuple[int, int], Tile] = Field(default_factory=_create_empty_room)
 
     def place_element_like_editor(
         self, element, direction, position, end_position=None
@@ -91,7 +75,7 @@ class Room:
                 position[1],
                 end_position[1] + 1 if end_position is not None else position[1] + 1,
             ):
-                tile = copy.deepcopy(self._tiles[(x, y)])
+                tile = copy.deepcopy(self.tiles[(x, y)])
                 # Cannot place things on same layer as something else, unless either is
                 # a floor.
                 if (
@@ -114,7 +98,7 @@ class Room:
                     continue
                 # TODO: Implement more conditions where elements block each other
                 setattr(tile, layer, (element, direction))
-                self._tiles[(x, y)] = tile
+                self.tiles[(x, y)] = tile
 
     def find_coordinates(self, element):
         """Find the coordinates of all elements of a type.
@@ -129,7 +113,7 @@ class Room:
         The coordinates of all elements of that type, as a list of (x, y) tuples.
         """
         return [
-            pos for pos, tile in self._tiles.items() if element in tile.get_elements()
+            pos for pos, tile in self.tiles.items() if element in tile.get_elements()
         ]
 
     def find_player(self):

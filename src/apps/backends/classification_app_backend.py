@@ -288,7 +288,7 @@ class ClassificationAppBackend:
             shutil.rmtree(self._sample_data_dir)
         os.makedirs(self._sample_data_dir)
         for (element, direction, x, y) in elements:
-            tile_info = room.get_tile((x, y))
+            tile_info = room.tiles[(x, y)]
             minimap_color = colors[(x, y)]
             png_info = PngInfo()
             png_info.add_text("tile_json", tile_info.json())

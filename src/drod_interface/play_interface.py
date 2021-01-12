@@ -131,9 +131,7 @@ class PlayInterface:
             return visual_info
 
         tile_contents = self._classifier.classify_tiles(tiles, minimap_colors)
-        room = Room()
-        for coords, tile in tile_contents.items():
-            room.set_tile(coords, tile)
+        room = Room(tiles=tile_contents)
         visual_info["room"] = room
 
         # If no earlier step is specified, include the normal room image
