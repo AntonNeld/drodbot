@@ -1,12 +1,10 @@
-from dataclasses import dataclass
-import json
+from pydantic import BaseModel
 from typing import Tuple
 
 from .element import Element, Direction
 
 
-@dataclass
-class Tile:
+class Tile(BaseModel):
     """A representation of a tile.
 
     This contains information about what element is in each layer, as a tuple of
@@ -52,46 +50,3 @@ class Tile:
             ]
             if e[0] != Element.NOTHING
         ]
-
-    def to_json(self):
-        """Encodes the tile as JSON.
-
-        Returns
-        -------
-        The JSON-encoded tile.
-        """
-
-        return json.dumps(
-            {
-                "room_piece": [e.value for e in self.room_piece],
-                "floor_control": [e.value for e in self.floor_control],
-                "checkpoint": [e.value for e in self.checkpoint],
-                "item": [e.value for e in self.item],
-                "monster": [e.value for e in self.monster],
-            }
-        )
-
-    @staticmethod
-    def from_json(json_string):
-        """Creates a Tile object from a JSON representation.
-
-        Parameters
-        ----------
-        json_string
-            A JSON-encoded Tile object.
-
-        Returns
-        -------
-        A Tile object.
-        """
-        json_dict = json.loads(json_string)
-        constructor_args = {
-            key: _element_tuple_from_json(value) for key, value in json_dict.items()
-        }
-        return Tile(**constructor_args)
-
-
-def _element_tuple_from_json(pair):
-    element = next(e for e in Element if e.value == pair[0])
-    direction = next(d for d in Direction if d.value == pair[1])
-    return (element, direction)

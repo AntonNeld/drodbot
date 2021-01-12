@@ -65,7 +65,7 @@ class ClassificationAppBackend:
             return
         for file_name in file_names:
             image = PIL.Image.open(os.path.join(self._sample_data_dir, file_name))
-            content = Tile.from_json(image.info["tile_json"])
+            content = Tile.parse_raw(image.info["tile_json"])
             minimap_color = tuple(json.loads(image.info["minimap_color"]))
             self._sample_data.append(
                 {
@@ -291,7 +291,7 @@ class ClassificationAppBackend:
             tile_info = room.get_tile((x, y))
             minimap_color = colors[(x, y)]
             png_info = PngInfo()
-            png_info.add_text("tile_json", tile_info.to_json())
+            png_info.add_text("tile_json", tile_info.json())
             png_info.add_text("minimap_color", json.dumps(minimap_color))
             image = PIL.Image.fromarray(tiles[(x, y)])
             image.save(
