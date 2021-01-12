@@ -34,6 +34,32 @@ class Room(BaseModel):
 
     tiles: Dict[Tuple[int, int], Tile] = Field(default_factory=_create_empty_room)
 
+    # Override BaseModel.__init__(), to convert any string keys in 'tiles'
+    # to tuples. This is needed to deserialize a JSON room.
+    def __init__(self, **kwargs):
+        if "tiles" in kwargs:
+            new_tiles = {}
+            for key, value in kwargs["tiles"].items():
+                if isinstance(key, str):
+                    new_key = tuple(
+                        [int(coord) for coord in key.strip("()").split(",")]
+                    )
+                    new_tiles[new_key] = value
+                else:
+                    new_tiles[key] = value
+            kwargs["tiles"] = new_tiles
+        super().__init__(**kwargs)
+
+    # Override BaseModel.dict(), to convert the keys in 'tiles' to strings.
+    # This is needed to serialize it as JSON.
+    def dict(self, **kwargs):
+        as_dict = super().dict(**kwargs)
+        new_tiles = {}
+        for key, value in as_dict["tiles"].items():
+            new_tiles[str(key)] = value
+        as_dict["tiles"] = new_tiles
+        return as_dict
+
     def place_element(self, element, direction, position, end_position=None):
         """Place an element, like in the editor.
 
