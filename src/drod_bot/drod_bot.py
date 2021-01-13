@@ -53,6 +53,11 @@ class DrodBot:
         visited rooms.
     drod_interface
         The interface for playing rooms.
+
+    Attributes
+    ----------
+    state
+        The current DRODbot state.
     """
 
     def __init__(self, state_file, drod_interface):
@@ -60,10 +65,10 @@ class DrodBot:
         self._interface = drod_interface
         self._state_subscribers = []
         try:
-            self._state = DrodBotState.parse_file(self._state_file)
+            self.state = DrodBotState.parse_file(self._state_file)
             print(f"Loaded state from {self._state_file}")
         except FileNotFoundError:
-            self._state = DrodBotState()
+            self.state = DrodBotState()
 
     def subscribe_to_state_update(self, callback):
         """Subscribe to changes in the state.
@@ -78,7 +83,7 @@ class DrodBot:
 
     def _notify_state_update(self):
         for callback in self._state_subscribers:
-            callback(self._state)
+            callback(self.state)
 
     async def initialize(self):
         """Focus the window and get the room content."""
@@ -88,7 +93,7 @@ class DrodBot:
     async def save_state(self):
         """Save the current state to disk."""
         with open(self._state_file, "w") as f:
-            f.write(self._state.json())
+            f.write(self.state.json())
         print(f"Saved state to {self._state_file}")
 
     async def go_to(self, element):
@@ -99,7 +104,7 @@ class DrodBot:
         element
             The element to go to.
         """
-        room = self._state.get_current_room()
+        room = self.state.get_current_room()
         player_position = room.find_player()
         goal_positions = room.find_coordinates(element)
         actions = find_path(player_position, goal_positions, room)
@@ -107,7 +112,7 @@ class DrodBot:
 
     async def go_to_edge(self):
         """Go to the nearest edge tile."""
-        room = self._state.get_current_room()
+        room = self.state.get_current_room()
         player_position = room.find_player()
         goal_positions = (
             [(0, y) for y in range(32)]
@@ -128,7 +133,7 @@ class DrodBot:
         direction
             The direction to go in. Cannot be diagonal.
         """
-        x, y = self._state.current_room
+        x, y = self.state.current_room
         if direction == Direction.N:
             action = Action.N
             new_coords = (x, y - 1)
@@ -146,13 +151,13 @@ class DrodBot:
         await self._interface.do_action(action)
         # Wait for the animation to finish
         await asyncio.sleep(1)
-        self._state.current_room = new_coords
+        self.state.current_room = new_coords
         await self._interpret_room()
 
     async def _interpret_room(self):
         print("Interpreting room...")
         visual_info = await self._interface.get_view()
-        self._state.set_current_room(visual_info["room"])
+        self.state.set_current_room(visual_info["room"])
         self._notify_state_update()
         print("Interpreted room")
 

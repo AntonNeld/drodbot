@@ -1,8 +1,16 @@
 import asyncio
+import numpy
+import PIL
 import tkinter
 import traceback
 
-from common import Strategy
+from common import Strategy, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
+from room import Element
+
+_CANVAS_WIDTH = 190
+_CANVAS_HEIGHT = 160
+_CURRENT_ROOM_ORIGIN_X = 76
+_CURRENT_ROOM_ORIGIN_Y = 64
 
 
 class PlayingApp(tkinter.Frame):
@@ -27,8 +35,12 @@ class PlayingApp(tkinter.Frame):
         self._selected_strategy.set(list(Strategy)[0].value)
 
         # Create widgets
+        self._canvas = tkinter.Canvas(
+            self, width=_CANVAS_WIDTH, height=_CANVAS_HEIGHT, bg="white"
+        )
+        self._canvas.pack(side=tkinter.LEFT)
         self._control_panel = tkinter.Frame(self)
-        self._control_panel.pack(side=tkinter.RIGHT)
+        self._control_panel.pack(side=tkinter.LEFT)
         self._run_controls = tkinter.Frame(self._control_panel)
         self._run_controls.pack(side=tkinter.TOP)
         self._strategy_dropdown = tkinter.OptionMenu(
@@ -53,6 +65,24 @@ class PlayingApp(tkinter.Frame):
             The DRODbot state.
         """
         self._data = data
+        self._draw_level()
+
+    def _draw_level(self):
+        image = numpy.ones((_CANVAS_HEIGHT, _CANVAS_WIDTH, 3), dtype=numpy.uint8) * 128
+        for (x, y), room in self._data.level.rooms.items():
+            relative_x = x - self._data.current_room[0]
+            relative_y = y - self._data.current_room[1]
+            image_x = _CURRENT_ROOM_ORIGIN_X + relative_x * ROOM_WIDTH_IN_TILES
+            image_y = _CURRENT_ROOM_ORIGIN_Y + relative_y * ROOM_HEIGHT_IN_TILES
+            image[
+                image_y : image_y + ROOM_HEIGHT_IN_TILES,
+                image_x : image_x + ROOM_WIDTH_IN_TILES,
+                :,
+            ] = _room_to_image(room)
+        pil_image = PIL.Image.fromarray(image)
+        # Assign to self._view to prevent from being garbage collected
+        self._view = PIL.ImageTk.PhotoImage(image=pil_image)
+        self._canvas.create_image(0, 0, image=self._view, anchor=tkinter.NW)
 
     def _run_coroutine(self, coroutine):
         async def wrapped_coroutine():
@@ -70,3 +100,13 @@ class PlayingApp(tkinter.Frame):
 
     def _save_state(self):
         self._run_coroutine(self._backend.save_state())
+
+
+def _room_to_image(room):
+    image = (
+        numpy.ones((ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES, 3), dtype=numpy.uint8)
+        * 255
+    )
+    for (x, y) in room.find_coordinates(Element.WALL):
+        image[y, x, :] = 0
+    return image

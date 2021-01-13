@@ -17,6 +17,7 @@ class PlayingAppBackend:
         self._bot = bot
         self._bot.subscribe_to_state_update(self._push_state_update)
         self._queue = window_queue
+        self._queue.put((GUIEvent.SET_PLAYING_DATA, self._bot.state))
 
     async def run_strategy(self, strategy):
         """Have Beethro do something, usually trying to solve the room.
