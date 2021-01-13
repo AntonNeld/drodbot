@@ -82,6 +82,8 @@ class MainApp(tkinter.Frame):
                 self._interpret_screen_app.set_data(*detail)
             elif item == GUIEvent.SET_CLASSIFICATION_DATA:
                 self._classification_app.set_data(*detail)
+            elif item == GUIEvent.SET_PLAYING_DATA:
+                self._playing_app.set_data(*detail)
         except Empty:
             pass
         self._main_window.after(_QUEUE_POLL_INTERVAL, self._check_queue)

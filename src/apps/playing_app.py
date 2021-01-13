@@ -22,6 +22,7 @@ class PlayingApp(tkinter.Frame):
         super().__init__(root)
         self._event_loop = event_loop
         self._backend = backend
+        self._data = None
         self._selected_strategy = tkinter.StringVar(self)
         self._selected_strategy.set(list(Strategy)[0].value)
 
@@ -42,6 +43,16 @@ class PlayingApp(tkinter.Frame):
             self._control_panel, text="Save state", command=self._save_state
         )
         self._save_state_button.pack(side=tkinter.TOP)
+
+    def set_data(self, data):
+        """Set the DRODbot state to show in the app.
+
+        Parameters
+        ----------
+        data
+            The DRODbot state.
+        """
+        self._data = data
 
     def _run_coroutine(self, coroutine):
         async def wrapped_coroutine():

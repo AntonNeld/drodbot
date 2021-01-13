@@ -1,4 +1,4 @@
-from common import Strategy
+from common import Strategy, GUIEvent
 from room import Element, Direction
 
 
@@ -15,6 +15,7 @@ class PlayingAppBackend:
 
     def __init__(self, bot, window_queue):
         self._bot = bot
+        self._bot.subscribe_to_state_update(self._push_state_update)
         self._queue = window_queue
 
     async def run_strategy(self, strategy):
@@ -38,3 +39,6 @@ class PlayingAppBackend:
     async def save_state(self):
         """Save the DRODbot state to disk."""
         await self._bot.save_state()
+
+    def _push_state_update(self, state):
+        self._queue.put((GUIEvent.SET_PLAYING_DATA, state))

@@ -34,6 +34,7 @@ class GUIEvent(Enum):
     QUIT = "quit"
     SET_INTERPRET_SCREEN_DATA = "set_interpret_screen_data"
     SET_CLASSIFICATION_DATA = "set_classification_data"
+    SET_PLAYING_DATA = "set_playing_data"
 
 
 # The values are also what will be displayed in the GUI

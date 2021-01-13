@@ -58,11 +58,27 @@ class DrodBot:
     def __init__(self, state_file, drod_interface):
         self._state_file = state_file
         self._interface = drod_interface
+        self._state_subscribers = []
         try:
             self._state = DrodBotState.parse_file(self._state_file)
             print(f"Loaded state from {self._state_file}")
         except FileNotFoundError:
             self._state = DrodBotState()
+
+    def subscribe_to_state_update(self, callback):
+        """Subscribe to changes in the state.
+
+        Parameters
+        ----------
+        callback
+            A function that will be called when the state is updated.
+            Will be called with a DrodBotState instance.
+        """
+        self._state_subscribers.append(callback)
+
+    def _notify_state_update(self):
+        for callback in self._state_subscribers:
+            callback(self._state)
 
     async def initialize(self):
         """Focus the window and get the room content."""
@@ -137,6 +153,7 @@ class DrodBot:
         print("Interpreting room...")
         visual_info = await self._interface.get_view()
         self._state.set_current_room(visual_info["room"])
+        self._notify_state_update()
         print("Interpreted room")
 
     async def _do_actions(self, actions):
