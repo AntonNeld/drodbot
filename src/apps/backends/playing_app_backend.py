@@ -1,5 +1,5 @@
 from common import Strategy
-from room import Element
+from room import Element, Direction
 
 
 class PlayingAppBackend:
@@ -30,6 +30,8 @@ class PlayingAppBackend:
             await self._bot.go_to(Element.CONQUER_TOKEN)
         elif strategy == Strategy.GO_TO_EDGE:
             await self._bot.go_to_edge()
+        elif strategy == Strategy.ENTER_ROOM_EAST:
+            await self._bot.enter_room(Direction.E)
         else:
             raise RuntimeError(f"Unknown strategy {strategy}")
 

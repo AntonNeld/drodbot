@@ -2,8 +2,9 @@ import asyncio
 from pydantic import BaseModel, Field
 from typing import Tuple
 
+from common import Action
 from .pathfinding import find_path
-from room import Level
+from room import Level, Direction
 
 _ACTION_DELAY = 0.1
 
@@ -43,7 +44,7 @@ class DrodBotState(BaseModel):
 
 
 class DrodBot:
-    """This class if responsible for playing DROD.
+    """This class is responsible for playing DROD.
 
     Parameters
     ----------
@@ -66,10 +67,7 @@ class DrodBot:
     async def initialize(self):
         """Focus the window and get the room content."""
         await self._interface.initialize()
-        print("Interpreting room...")
-        visual_info = await self._interface.get_view()
-        self._state.set_current_room(visual_info["room"])
-        print("Interpreted room")
+        await self._interpret_room()
 
     async def save_state(self):
         """Save the current state to disk."""
@@ -103,6 +101,43 @@ class DrodBot:
         )
         actions = find_path(player_position, goal_positions, room)
         await self._do_actions(actions)
+
+    async def enter_room(self, direction):
+        """Enter a new room.
+
+        The player must be on the correct edge for this to work.
+
+        Parameters
+        ----------
+        direction
+            The direction to go in. Cannot be diagonal.
+        """
+        x, y = self._state.current_room
+        if direction == Direction.N:
+            action = Action.N
+            new_coords = (x, y - 1)
+        elif direction == Direction.W:
+            action = Action.W
+            new_coords = (x - 1, y)
+        elif direction == Direction.S:
+            action = Action.S
+            new_coords = (x, y + 1)
+        elif direction == Direction.E:
+            action = Action.E
+            new_coords = (x + 1, y)
+        else:
+            raise RuntimeError(f"Unknown direction {direction}")
+        await self._interface.do_action(action)
+        # Wait for the animation to finish
+        await asyncio.sleep(1)
+        self._state.current_room = new_coords
+        await self._interpret_room()
+
+    async def _interpret_room(self):
+        print("Interpreting room...")
+        visual_info = await self._interface.get_view()
+        self._state.set_current_room(visual_info["room"])
+        print("Interpreted room")
 
     async def _do_actions(self, actions):
         for action in actions:

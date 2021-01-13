@@ -56,3 +56,4 @@ class Strategy(Enum):
 
     MOVE_TO_CONQUER_TOKEN = "Move to a conquer token"
     GO_TO_EDGE = "Move to the nearest edge"
+    ENTER_ROOM_EAST = "Enter east room"
