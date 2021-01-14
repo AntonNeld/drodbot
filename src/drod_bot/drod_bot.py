@@ -2,7 +2,7 @@ import asyncio
 from pydantic import BaseModel, Field
 from typing import Tuple, Optional
 
-from common import Action
+from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .pathfinding import find_path
 from room import Level, Direction, Element
 
@@ -134,25 +134,34 @@ class DrodBot:
         direction
             The direction to go in. Cannot be diagonal.
         """
-        x, y = self.state.current_room
+        room_x, room_y = self.state.current_room
+        player_x, player_y = self.state.current_position
         if direction == Direction.N:
+            if player_y != 0:
+                raise RuntimeError(f"Cannot enter new room by moving N, y={player_y}")
             action = Action.N
-            new_coords = (x, y - 1)
+            new_room_coords = (room_x, room_y - 1)
         elif direction == Direction.W:
+            if player_x != 0:
+                raise RuntimeError(f"Cannot enter new room by moving W, x={player_x}")
             action = Action.W
-            new_coords = (x - 1, y)
+            new_room_coords = (room_x - 1, room_y)
         elif direction == Direction.S:
+            if player_y != ROOM_HEIGHT_IN_TILES - 1:
+                raise RuntimeError(f"Cannot enter new room by moving S, y={player_y}")
             action = Action.S
-            new_coords = (x, y + 1)
+            new_room_coords = (room_x, room_y + 1)
         elif direction == Direction.E:
+            if player_x != ROOM_WIDTH_IN_TILES - 1:
+                raise RuntimeError(f"Cannot enter new room by moving E, x={player_x}")
             action = Action.E
-            new_coords = (x + 1, y)
+            new_room_coords = (room_x + 1, room_y)
         else:
             raise RuntimeError(f"Unknown direction {direction}")
         await self._interface.do_action(action)
         # Wait for the animation to finish
         await asyncio.sleep(1)
-        self.state.current_room = new_coords
+        self.state.current_room = new_room_coords
         await self._interpret_room()
 
     async def _interpret_room(self):
