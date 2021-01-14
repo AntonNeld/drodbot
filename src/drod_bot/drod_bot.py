@@ -1,6 +1,6 @@
 import asyncio
 from pydantic import BaseModel, Field
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 
 from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .pathfinding import find_path, get_position_after
@@ -18,11 +18,16 @@ class DrodBotState(BaseModel):
         The level it's playing.
     current_room
         The current room being played.
+    current_position
+        The current position in the current room.
+    plan
+        The current plan to execute.
     """
 
     level: Level = Field(default_factory=lambda: Level())
     current_room: Tuple[int, int] = (0, 0)
     current_position: Optional[Tuple[int, int]]
+    plan: List[Action] = []
 
     def get_current_room(self):
         """Get the current room.
@@ -110,7 +115,8 @@ class DrodBot:
         player_position = self.state.current_position
         goal_positions = room.find_coordinates(element)
         actions = find_path(player_position, goal_positions, room)
-        await self._do_actions(actions)
+        self.state.plan = actions
+        await self._execute_plan()
 
     async def cross_edge(self):
         """Go to the nearest edge tile and cross into a new room."""
@@ -132,7 +138,8 @@ class DrodBot:
             actions.append(Action.N)
         elif y == ROOM_HEIGHT_IN_TILES - 1:
             actions.append(Action.S)
-        await self._do_actions(actions)
+        self.state.plan = actions
+        await self._execute_plan()
 
     async def _interpret_room(self):
         print("Interpreting room...")
@@ -149,8 +156,10 @@ class DrodBot:
         self._notify_state_update()
         print("Interpreted room")
 
-    async def _do_actions(self, actions):
-        for action in actions:
+    async def _execute_plan(self):
+        print("Executing plan...")
+        while self.state.plan:
+            action = self.state.plan.pop(0)
             x, y = self.state.current_position
             if x == ROOM_WIDTH_IN_TILES - 1 and action == Action.E:
                 await self._enter_room(Direction.E)
@@ -175,6 +184,7 @@ class DrodBot:
                 )
             self._notify_state_update()
             await asyncio.sleep(_ACTION_DELAY)
+        print("Executed plan")
 
     async def _enter_room(self, direction):
         """Enter a new room.
@@ -186,6 +196,7 @@ class DrodBot:
         direction
             The direction to go in. Cannot be diagonal.
         """
+        print(f"Entering new room in direction {direction.value}")
         room_x, room_y = self.state.current_room
         player_x, player_y = self.state.current_position
         if direction == Direction.N:
