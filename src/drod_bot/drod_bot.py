@@ -1,10 +1,10 @@
 import asyncio
 from pydantic import BaseModel, Field
-from typing import Tuple
+from typing import Tuple, Optional
 
 from common import Action
 from .pathfinding import find_path
-from room import Level, Direction
+from room import Level, Direction, Element
 
 _ACTION_DELAY = 0.1
 
@@ -22,6 +22,7 @@ class DrodBotState(BaseModel):
 
     level: Level = Field(default_factory=lambda: Level())
     current_room: Tuple[int, int] = (0, 0)
+    current_position: Optional[Tuple[int, int]]
 
     def get_current_room(self):
         """Get the current room.
@@ -105,7 +106,7 @@ class DrodBot:
             The element to go to.
         """
         room = self.state.get_current_room()
-        player_position = room.find_player()
+        player_position = self.state.current_position
         goal_positions = room.find_coordinates(element)
         actions = find_path(player_position, goal_positions, room)
         await self._do_actions(actions)
@@ -113,7 +114,7 @@ class DrodBot:
     async def go_to_edge(self):
         """Go to the nearest edge tile."""
         room = self.state.get_current_room()
-        player_position = room.find_player()
+        player_position = self.state.current_position
         goal_positions = (
             [(0, y) for y in range(32)]
             + [(x, 0) for x in range(38)]
@@ -157,7 +158,15 @@ class DrodBot:
     async def _interpret_room(self):
         print("Interpreting room...")
         visual_info = await self._interface.get_view()
-        self.state.set_current_room(visual_info["room"])
+        room = visual_info["room"]
+        self.state.current_position = room.find_player()
+        # Remove Beethro from the room, so the saved level doesn't
+        # have a bunch of Beethros standing around
+        room.tiles[self.state.current_position].monster = (
+            Element.NOTHING,
+            Direction.NONE,
+        )
+        self.state.set_current_room(room)
         self._notify_state_update()
         print("Interpreted room")
 

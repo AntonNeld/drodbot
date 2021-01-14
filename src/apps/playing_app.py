@@ -79,6 +79,14 @@ class PlayingApp(tkinter.Frame):
                 image_x : image_x + ROOM_WIDTH_IN_TILES,
                 :,
             ] = _room_to_image(room)
+        if self._data.current_position is not None:
+            player_x = _CURRENT_ROOM_ORIGIN_X + self._data.current_position[0]
+            player_y = _CURRENT_ROOM_ORIGIN_Y + self._data.current_position[1]
+            image[
+                player_y - 1 : player_y + 2,
+                player_x - 1 : player_x + 2,
+                :,
+            ] = [255, 0, 0]
         pil_image = PIL.Image.fromarray(image)
         # Assign to self._view to prevent from being garbage collected
         self._view = PIL.ImageTk.PhotoImage(image=pil_image)
