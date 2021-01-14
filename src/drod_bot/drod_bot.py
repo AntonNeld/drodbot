@@ -111,8 +111,6 @@ class DrodBot:
         goal_positions = room.find_coordinates(element)
         actions = find_path(player_position, goal_positions, room)
         await self._do_actions(actions)
-        self.state.current_position = get_position_after(actions, player_position)
-        self._notify_state_update()
 
     async def cross_edge(self):
         """Go to the nearest edge tile and cross into a new room."""
@@ -125,18 +123,16 @@ class DrodBot:
             + [(x, 31) for x in range(38)]
         )
         actions = find_path(player_position, goal_positions, room)
-        await self._do_actions(actions)
-        self.state.current_position = get_position_after(actions, player_position)
-        self._notify_state_update()
-        x, y = self.state.current_position
+        x, y = get_position_after(actions, player_position)
         if x == 0:
-            await self.enter_room(Direction.W)
+            actions.append(Action.W)
         elif x == ROOM_WIDTH_IN_TILES - 1:
-            await self.enter_room(Direction.E)
+            actions.append(Action.E)
         elif y == 0:
-            await self.enter_room(Direction.N)
+            actions.append(Action.N)
         elif y == ROOM_HEIGHT_IN_TILES - 1:
-            await self.enter_room(Direction.S)
+            actions.append(Action.S)
+        await self._do_actions(actions)
 
     async def enter_room(self, direction):
         """Enter a new room.
@@ -203,5 +199,27 @@ class DrodBot:
 
     async def _do_actions(self, actions):
         for action in actions:
-            await self._interface.do_action(action)
+            x, y = self.state.current_position
+            if x == ROOM_WIDTH_IN_TILES - 1 and action == Action.E:
+                await self.enter_room(Direction.E)
+            elif x == ROOM_WIDTH_IN_TILES - 1 and action in [Action.SE, Action.NE]:
+                raise RuntimeError(f"Tried to move {action} out of the room")
+            elif x == 0 and action == Action.W:
+                await self.enter_room(Direction.W)
+            elif x == 0 and action in [Action.SW, Action.NW]:
+                raise RuntimeError(f"Tried to move {action} out of the room")
+            elif y == ROOM_HEIGHT_IN_TILES - 1 and action == Action.S:
+                await self.enter_room(Direction.S)
+            elif y == ROOM_HEIGHT_IN_TILES - 1 and action in [Action.SW, Action.SE]:
+                raise RuntimeError(f"Tried to move {action} out of the room")
+            elif y == 0 and action == Action.N:
+                await self.enter_room(Direction.N)
+            elif y == 0 and action in [Action.NW, Action.NE]:
+                raise RuntimeError(f"Tried to move {action} out of the room")
+            else:
+                await self._interface.do_action(action)
+                self.state.current_position = get_position_after(
+                    [action], self.state.current_position
+                )
+            self._notify_state_update()
             await asyncio.sleep(_ACTION_DELAY)
