@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 from typing import Tuple, Optional
 
 from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
-from .pathfinding import find_path
+from .pathfinding import find_path, get_position_after
 from room import Level, Direction, Element
 
 _ACTION_DELAY = 0.1
@@ -110,6 +110,8 @@ class DrodBot:
         goal_positions = room.find_coordinates(element)
         actions = find_path(player_position, goal_positions, room)
         await self._do_actions(actions)
+        self.state.current_position = get_position_after(actions, player_position)
+        self._notify_state_update()
 
     async def go_to_edge(self):
         """Go to the nearest edge tile."""
@@ -123,6 +125,8 @@ class DrodBot:
         )
         actions = find_path(player_position, goal_positions, room)
         await self._do_actions(actions)
+        self.state.current_position = get_position_after(actions, player_position)
+        self._notify_state_update()
 
     async def enter_room(self, direction):
         """Enter a new room.
