@@ -89,7 +89,8 @@ class DrodBot:
     async def initialize(self):
         """Focus the window and get the room content."""
         await self._interface.initialize()
-        await self._interpret_room()
+        if self.state.current_room not in self.state.level.rooms:
+            await self._interpret_room()
 
     async def save_state(self):
         """Save the current state to disk."""
@@ -154,28 +155,36 @@ class DrodBot:
                 raise RuntimeError(f"Cannot enter new room by moving N, y={player_y}")
             action = Action.N
             new_room_coords = (room_x, room_y - 1)
+            position_after = (player_x, ROOM_HEIGHT_IN_TILES - 1)
         elif direction == Direction.W:
             if player_x != 0:
                 raise RuntimeError(f"Cannot enter new room by moving W, x={player_x}")
             action = Action.W
             new_room_coords = (room_x - 1, room_y)
+            position_after = (ROOM_WIDTH_IN_TILES - 1, player_y)
         elif direction == Direction.S:
             if player_y != ROOM_HEIGHT_IN_TILES - 1:
                 raise RuntimeError(f"Cannot enter new room by moving S, y={player_y}")
             action = Action.S
             new_room_coords = (room_x, room_y + 1)
+            position_after = (player_x, 0)
         elif direction == Direction.E:
             if player_x != ROOM_WIDTH_IN_TILES - 1:
                 raise RuntimeError(f"Cannot enter new room by moving E, x={player_x}")
             action = Action.E
             new_room_coords = (room_x + 1, room_y)
+            position_after = (0, player_y)
         else:
             raise RuntimeError(f"Unknown direction {direction}")
         await self._interface.do_action(action)
         # Wait for the animation to finish
         await asyncio.sleep(1)
         self.state.current_room = new_room_coords
-        await self._interpret_room()
+        if new_room_coords in self.state.level.rooms:
+            self.state.current_position = position_after
+            self._notify_state_update()
+        else:
+            await self._interpret_room()
 
     async def _interpret_room(self):
         print("Interpreting room...")
