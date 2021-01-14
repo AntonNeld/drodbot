@@ -56,5 +56,5 @@ class Strategy(Enum):
     """A strategy for what Beethro should do."""
 
     MOVE_TO_CONQUER_TOKEN = "Move to a conquer token"
-    GO_TO_EDGE = "Move to the nearest edge"
+    GO_TO_NEXT_ROOM = "Go to the next room"
     ENTER_ROOM_EAST = "Enter east room"

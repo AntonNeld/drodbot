@@ -113,8 +113,8 @@ class DrodBot:
         self.state.current_position = get_position_after(actions, player_position)
         self._notify_state_update()
 
-    async def go_to_edge(self):
-        """Go to the nearest edge tile."""
+    async def cross_edge(self):
+        """Go to the nearest edge tile and cross into a new room."""
         room = self.state.get_current_room()
         player_position = self.state.current_position
         goal_positions = (
@@ -127,6 +127,15 @@ class DrodBot:
         await self._do_actions(actions)
         self.state.current_position = get_position_after(actions, player_position)
         self._notify_state_update()
+        x, y = self.state.current_position
+        if x == 0:
+            await self.enter_room(Direction.W)
+        elif x == ROOM_WIDTH_IN_TILES - 1:
+            await self.enter_room(Direction.E)
+        elif y == 0:
+            await self.enter_room(Direction.N)
+        elif y == ROOM_HEIGHT_IN_TILES - 1:
+            await self.enter_room(Direction.S)
 
     async def enter_room(self, direction):
         """Enter a new room.
