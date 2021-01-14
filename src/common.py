@@ -55,6 +55,5 @@ class ImageProcessingStep(Enum):
 class Strategy(Enum):
     """A strategy for what Beethro should do."""
 
-    MOVE_TO_CONQUER_TOKEN = "Move to a conquer token"
     GO_TO_NEXT_ROOM = "Go to the next room"
-    ENTER_ROOM_EAST = "Enter east room"
+    MOVE_TO_CONQUER_TOKEN = "Move to a conquer token"
