@@ -42,3 +42,25 @@ class Level(BaseModel):
             new_rooms[str(key)] = value
         as_dict["rooms"] = new_rooms
         return as_dict
+
+    def find_element(self, element):
+        """Find instances of an element in the level.
+
+        Parameters
+        ----------
+        element
+            The element to find.
+
+        Returns
+        -------
+        A list of tuples ((room_x, room_y), (tile_x, tile_y)).
+        """
+        return_coordinates = []
+        for room_position, room in self.rooms.items():
+            return_coordinates.extend(
+                [
+                    (room_position, tile_position)
+                    for tile_position in room.find_coordinates(element)
+                ]
+            )
+        return return_coordinates

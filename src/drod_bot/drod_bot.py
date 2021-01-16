@@ -111,6 +111,8 @@ class DrodBot:
         element
             The element to go to.
         """
+        goal_tiles = self.state.level.find_element(element)
+        print(goal_tiles)
         print("Not implemented")
 
     async def cross_edge(self):
