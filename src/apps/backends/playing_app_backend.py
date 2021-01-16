@@ -39,5 +39,9 @@ class PlayingAppBackend:
         """Save the DRODbot state to disk."""
         await self._bot.save_state()
 
+    async def recheck_room(self):
+        """Interpret the current room again and replace the state."""
+        await self._bot.reinterpret_room()
+
     def _push_state_update(self, state):
         self._queue.put((GUIEvent.SET_PLAYING_DATA, state))

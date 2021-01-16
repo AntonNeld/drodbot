@@ -141,6 +141,10 @@ class DrodBot:
         self.state.plan = actions
         await self._execute_plan()
 
+    async def reinterpret_room(self):
+        """Reinterpret the current room, and replace its state."""
+        await self._interpret_room()
+
     async def _interpret_room(self):
         print("Interpreting room...")
         visual_info = await self._interface.get_view()

@@ -51,10 +51,16 @@ class PlayingApp(tkinter.Frame):
             self._run_controls, text="Go", command=self._run_strategy
         )
         self._go.pack(side=tkinter.RIGHT)
+        self._state_controls = tkinter.Frame(self._control_panel)
+        self._state_controls.pack(side=tkinter.TOP)
         self._save_state_button = tkinter.Button(
-            self._control_panel, text="Save state", command=self._save_state
+            self._state_controls, text="Save state", command=self._save_state
         )
-        self._save_state_button.pack(side=tkinter.TOP)
+        self._save_state_button.pack(side=tkinter.RIGHT)
+        self._recheck_room_button = tkinter.Button(
+            self._state_controls, text="Recheck room", command=self._recheck_room
+        )
+        self._recheck_room_button.pack(side=tkinter.RIGHT)
 
     def set_data(self, data):
         """Set the DRODbot state to show in the app.
@@ -124,6 +130,9 @@ class PlayingApp(tkinter.Frame):
 
     def _save_state(self):
         self._run_coroutine(self._backend.save_state())
+
+    def _recheck_room(self):
+        self._run_coroutine(self._backend.recheck_room())
 
 
 def _room_to_image(room):
