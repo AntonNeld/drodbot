@@ -3,7 +3,8 @@ from pydantic import BaseModel, Field
 from typing import Tuple, Optional, List
 
 from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
-from .pathfinding import find_path, get_position_after
+from .pathfinding import get_position_after
+from .room_solver import solve_room, ReachTileObjective
 from room import Level, Direction, Element
 
 _ACTION_DELAY = 0.1
@@ -111,24 +112,28 @@ class DrodBot:
         element
             The element to go to.
         """
-        room = self.state.get_current_room()
         player_position = self.state.current_position
-        goal_positions = room.find_coordinates(element)
-        actions = find_path(player_position, goal_positions, room)
+        room = self.state.get_current_room().copy(deep=True)
+        # TODO: Use the real direction
+        room.tiles[player_position].monster = (Element.BEETHRO, Direction.SE)
+        goal_tiles = room.find_coordinates(element)
+        actions = solve_room(room, ReachTileObjective(goal_tiles=goal_tiles))
         self.state.plan = actions
         await self._execute_plan()
 
     async def cross_edge(self):
         """Go to the nearest edge tile and cross into a new room."""
-        room = self.state.get_current_room()
         player_position = self.state.current_position
-        goal_positions = (
+        room = self.state.get_current_room().copy(deep=True)
+        # TODO: Use the real direction
+        room.tiles[player_position].monster = (Element.BEETHRO, Direction.SE)
+        goal_tiles = (
             [(0, y) for y in range(32)]
             + [(x, 0) for x in range(38)]
             + [(37, y) for y in range(32)]
             + [(x, 31) for x in range(38)]
         )
-        actions = find_path(player_position, goal_positions, room)
+        actions = solve_room(room, ReachTileObjective(goal_tiles=goal_tiles))
         x, y = get_position_after(actions, player_position)
         if x == 0:
             actions.append(Action.W)
