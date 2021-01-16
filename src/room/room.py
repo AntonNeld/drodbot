@@ -2,7 +2,7 @@ import copy
 from pydantic import BaseModel, Field
 from typing import Dict, Tuple
 
-from common import ROOM_WIDTH_IN_TILES, ROOM_HEIGHT_IN_TILES
+from common import ROOM_WIDTH_IN_TILES, ROOM_HEIGHT_IN_TILES, Action
 from .element import (
     Element,
     Direction,
@@ -133,3 +133,78 @@ class Room(BaseModel):
         if len(beethros) > 1:
             raise RuntimeError(f"Too many Beethros: {beethros}")
         return beethros[0]
+
+    def do_actions(self, actions):
+        """Do multiple actions, and return a copy of the room after the actions.
+
+        Parameters
+        ----------
+        actions
+            The actions to perform.
+
+        Returns
+        -------
+        A copy of the room after having performed the actions.
+        """
+        room = self.copy(deep=True)
+        for action in actions:
+            room._do_action_in_place(action)
+        return room
+
+    def do_action(self, action):
+        """Do an action, and return a copy of the room after the action.
+
+        The room after will match the result of performing an
+        action in the actual game.
+
+        Parameters
+        ----------
+        action
+            The action to perform.
+
+        Returns
+        -------
+        A copy of the room after having performed the action.
+        """
+        room = self.copy(deep=True)
+        room._do_action_in_place(action)
+        return room
+
+    def _do_action_in_place(self, action):
+        # TODO: This should use DRODLib from the DROD source instead of
+        # reimplementing everything.
+        x, y = self.find_player()
+        direction = self.tiles[(x, y)].monster[1]
+        # TODO: Handle rotation
+        if action == Action.N:
+            pos_after = (x, y - 1)
+        elif action == Action.NE:
+            pos_after = (x + 1, y - 1)
+        elif action == Action.E:
+            pos_after = (x + 1, y)
+        elif action == Action.SE:
+            pos_after = (x + 1, y + 1)
+        elif action == Action.S:
+            pos_after = (x, y + 1)
+        elif action == Action.SW:
+            pos_after = (x - 1, y + 1)
+        elif action == Action.W:
+            pos_after = (x - 1, y)
+        elif action == Action.NW:
+            pos_after = (x - 1, y - 1)
+        obstacles = set(
+            [
+                Element.WALL,
+                Element.MASTER_WALL,
+                Element.OBSTACLE,
+                Element.YELLOW_DOOR,
+                Element.BLUE_DOOR,
+                Element.GREEN_DOOR,
+                Element.ORB,
+                Element.PIT,
+                Element.ROACH,
+            ]
+        )
+        if not set(self.tiles[pos_after].get_elements()) & obstacles:
+            self.tiles[(x, y)].monster = (Element.NOTHING, Direction.NONE)
+            self.tiles[pos_after].monster = (Element.BEETHRO, direction)

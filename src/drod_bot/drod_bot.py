@@ -134,7 +134,7 @@ class DrodBot:
             + [(x, 31) for x in range(38)]
         )
         actions = solve_room(room, ReachTileObjective(goal_tiles=goal_tiles))
-        x, y = get_position_after(actions, player_position)
+        x, y = room.do_actions(actions).find_player()
         if x == 0:
             actions.append(Action.W)
         elif x == ROOM_WIDTH_IN_TILES - 1:
