@@ -57,3 +57,4 @@ class Strategy(Enum):
 
     GO_TO_NEXT_ROOM = "Go to the next room"
     MOVE_TO_CONQUER_TOKEN = "Move to a conquer token"
+    MOVE_TO_CONQUER_TOKEN_IN_LEVEL = "Move to a conquer token anywhere in the level"

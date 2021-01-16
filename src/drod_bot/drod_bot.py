@@ -84,8 +84,10 @@ class DrodBot:
             f.write(self.state.json())
         print(f"Saved state to {self._state_file}")
 
-    async def go_to(self, element):
+    async def go_to_element_in_room(self, element):
         """Go to the nearest tile with the given element.
+
+        We will not leave the current room.
 
         Parameters
         ----------
@@ -97,6 +99,19 @@ class DrodBot:
         actions = solve_room(room, ReachTileObjective(goal_tiles=goal_tiles))
         self.state.plan = actions
         await self._execute_plan()
+
+    async def go_to_element_in_level(self, element):
+        """Go to the nearest tile with the given element.
+
+        This works across rooms, as long as the element and path
+        to it are in known rooms.
+
+        Parameters
+        ----------
+        element
+            The element to go to.
+        """
+        print("Not implemented")
 
     async def cross_edge(self):
         """Go to the nearest edge tile and cross into a new room."""
