@@ -1,4 +1,4 @@
-from common import Action
+from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from room import Element
 from .search import a_star_graph
 
@@ -16,21 +16,33 @@ class _PathfindingProblem:
         actions = []
         x = state[0]
         y = state[1]
-        if (x, y - 1) not in self.obstacles:
+        if (x, y - 1) not in self.obstacles and y > 0:
             actions.append(Action.N)
-        if (x + 1, y - 1) not in self.obstacles:
+        if (
+            (x + 1, y - 1) not in self.obstacles
+            and y > 0
+            and x < ROOM_WIDTH_IN_TILES - 1
+        ):
             actions.append(Action.NE)
-        if (x + 1, y) not in self.obstacles:
+        if (x + 1, y) not in self.obstacles and x < ROOM_WIDTH_IN_TILES - 1:
             actions.append(Action.E)
-        if (x + 1, y + 1) not in self.obstacles:
+        if (
+            (x + 1, y + 1) not in self.obstacles
+            and y < ROOM_HEIGHT_IN_TILES - 1
+            and x < ROOM_WIDTH_IN_TILES - 1
+        ):
             actions.append(Action.SE)
-        if (x, y + 1) not in self.obstacles:
+        if (x, y + 1) not in self.obstacles and y < ROOM_HEIGHT_IN_TILES - 1:
             actions.append(Action.S)
-        if (x - 1, y + 1) not in self.obstacles:
+        if (
+            (x - 1, y + 1) not in self.obstacles
+            and y < ROOM_HEIGHT_IN_TILES - 1
+            and x > 0
+        ):
             actions.append(Action.SW)
-        if (x - 1, y) not in self.obstacles:
+        if (x - 1, y) not in self.obstacles and x > 0:
             actions.append(Action.W)
-        if (x - 1, y - 1) not in self.obstacles:
+        if (x - 1, y - 1) not in self.obstacles and y > 0 and x > 0:
             actions.append(Action.NW)
         return actions
 
@@ -53,7 +65,7 @@ class _PathfindingProblem:
             return (x - 1, y)
         elif action == Action.NW:
             return (x - 1, y - 1)
-        raise RuntimeError(f"Uknown action {action}")
+        raise RuntimeError(f"Unknown action {action}")
 
     def goal_test(self, state):
         return state in self.goals
