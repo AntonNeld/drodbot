@@ -106,29 +106,3 @@ def find_path(start, goals, room):
     problem = _PathfindingProblem(start, goals, obstacles)
     solution = a_star_graph(problem, _get_heuristic(goals))
     return solution
-
-
-def get_position_after(actions, position_before):
-    """Get the new position after the given actions.
-
-    This function assumes that the path is not blocked
-    and never goes outside the room.
-
-    Parameters
-    ----------
-    actions
-        A list of actions.
-    position_before
-        The starting position as an (x, y) tuple.
-
-    Returns
-    -------
-    The resulting position as an (x, y) tuple.
-    """
-    x = position_before[0]
-    y = position_before[1]
-    x += actions.count(Action.NE) + actions.count(Action.E) + actions.count(Action.SE)
-    x -= actions.count(Action.NW) + actions.count(Action.W) + actions.count(Action.SW)
-    y += actions.count(Action.SE) + actions.count(Action.S) + actions.count(Action.SW)
-    y -= actions.count(Action.NE) + actions.count(Action.N) + actions.count(Action.NW)
-    return (x, y)

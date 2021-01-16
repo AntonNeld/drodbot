@@ -1,11 +1,10 @@
 import asyncio
 from pydantic import BaseModel, Field
-from typing import Tuple, Optional, List
+from typing import Tuple, List, Optional
 
 from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
-from .pathfinding import get_position_after
 from .room_solver import solve_room, ReachTileObjective
-from room import Level, Direction, Element
+from room import Level, Direction, Element, Room
 
 _ACTION_DELAY = 0.1
 
@@ -16,38 +15,19 @@ class DrodBotState(BaseModel):
     Parameters
     ----------
     level
-        The level it's playing.
+        The level it's playing, with the rooms as they are when entering them.
     current_room
-        The current room being played.
-    current_position
-        The current position in the current room.
+        The current room being played, as it is now.
+    current_room_position.
+        The position in the level of the current room.
     plan
         The current plan to execute.
     """
 
     level: Level = Field(default_factory=lambda: Level())
-    current_room: Tuple[int, int] = (0, 0)
-    current_position: Optional[Tuple[int, int]]
+    current_room: Optional[Room]
+    current_room_position: Tuple[int, int] = (0, 0)
     plan: List[Action] = []
-
-    def get_current_room(self):
-        """Get the current room.
-
-        Returns
-        -------
-        The current room contents.
-        """
-        return self.level.rooms[self.current_room]
-
-    def set_current_room(self, room):
-        """Set the current room.
-
-        Parameters
-        ----------
-        room
-            The current room contents.
-        """
-        self.level.rooms[self.current_room] = room
 
 
 class DrodBot:
@@ -95,7 +75,7 @@ class DrodBot:
     async def initialize(self):
         """Focus the window and get the room content."""
         await self._interface.initialize()
-        if self.state.current_room not in self.state.level.rooms:
+        if self.state.current_room_position not in self.state.level.rooms:
             await self._interpret_room()
 
     async def save_state(self):
@@ -112,10 +92,7 @@ class DrodBot:
         element
             The element to go to.
         """
-        player_position = self.state.current_position
-        room = self.state.get_current_room().copy(deep=True)
-        # TODO: Use the real direction
-        room.tiles[player_position].monster = (Element.BEETHRO, Direction.SE)
+        room = self.state.current_room
         goal_tiles = room.find_coordinates(element)
         actions = solve_room(room, ReachTileObjective(goal_tiles=goal_tiles))
         self.state.plan = actions
@@ -123,10 +100,7 @@ class DrodBot:
 
     async def cross_edge(self):
         """Go to the nearest edge tile and cross into a new room."""
-        player_position = self.state.current_position
-        room = self.state.get_current_room().copy(deep=True)
-        # TODO: Use the real direction
-        room.tiles[player_position].monster = (Element.BEETHRO, Direction.SE)
+        room = self.state.current_room
         goal_tiles = (
             [(0, y) for y in range(32)]
             + [(x, 0) for x in range(38)]
@@ -154,14 +128,16 @@ class DrodBot:
         print("Interpreting room...")
         visual_info = await self._interface.get_view()
         room = visual_info["room"]
-        self.state.current_position = room.find_player()
+        self.state.current_room = room
+        room_in_level = room.copy(deep=True)
+        player_position = room_in_level.find_player()
         # Remove Beethro from the room, so the saved level doesn't
         # have a bunch of Beethros standing around
-        room.tiles[self.state.current_position].monster = (
+        room_in_level.tiles[player_position].monster = (
             Element.NOTHING,
             Direction.NONE,
         )
-        self.state.set_current_room(room)
+        self.state.level.rooms[self.state.current_room_position] = room_in_level
         self._notify_state_update()
         print("Interpreted room")
 
@@ -169,7 +145,7 @@ class DrodBot:
         print("Executing plan...")
         while self.state.plan:
             action = self.state.plan.pop(0)
-            x, y = self.state.current_position
+            x, y = self.state.current_room.find_player()
             if x == ROOM_WIDTH_IN_TILES - 1 and action == Action.E:
                 await self._enter_room(Direction.E)
             elif x == ROOM_WIDTH_IN_TILES - 1 and action in [Action.SE, Action.NE]:
@@ -188,8 +164,8 @@ class DrodBot:
                 raise RuntimeError(f"Tried to move {action} out of the room")
             else:
                 await self._interface.do_action(action)
-                self.state.current_position = get_position_after(
-                    [action], self.state.current_position
+                self.state.current_room = self.state.current_room.do_action(
+                    action, in_place=True
                 )
             self._notify_state_update()
             await asyncio.sleep(_ACTION_DELAY)
@@ -206,8 +182,11 @@ class DrodBot:
             The direction to go in. Cannot be diagonal.
         """
         print(f"Entering new room in direction {direction.value}")
-        room_x, room_y = self.state.current_room
-        player_x, player_y = self.state.current_position
+        room_x, room_y = self.state.current_room_position
+        player_x, player_y = self.state.current_room.find_player()
+        player_direction = self.state.current_room.tiles[(player_x, player_y)].monster[
+            1
+        ]
         if direction == Direction.N:
             if player_y != 0:
                 raise RuntimeError(f"Cannot enter new room by moving N, y={player_y}")
@@ -237,9 +216,11 @@ class DrodBot:
         await self._interface.do_action(action)
         # Wait for the animation to finish
         await asyncio.sleep(1)
-        self.state.current_room = new_room_coords
+        self.state.current_room_position = new_room_coords
         if new_room_coords in self.state.level.rooms:
-            self.state.current_position = position_after
+            room = self.state.level.rooms[new_room_coords].copy(deep=True)
+            room.tiles[position_after].monster = (Element.BEETHRO, player_direction)
+            self.state.current_room = room
             self._notify_state_update()
         else:
             await self._interpret_room()

@@ -77,8 +77,8 @@ class PlayingApp(tkinter.Frame):
         image = numpy.ones((_CANVAS_HEIGHT, _CANVAS_WIDTH, 3), dtype=numpy.uint8) * 128
         # Draw rooms
         for (x, y), room in self._data.level.rooms.items():
-            relative_x = x - self._data.current_room[0]
-            relative_y = y - self._data.current_room[1]
+            relative_x = x - self._data.current_room_position[0]
+            relative_y = y - self._data.current_room_position[1]
             image_x = _CURRENT_ROOM_ORIGIN_X + relative_x * ROOM_WIDTH_IN_TILES
             image_y = _CURRENT_ROOM_ORIGIN_Y + relative_y * ROOM_HEIGHT_IN_TILES
             image[
@@ -86,27 +86,28 @@ class PlayingApp(tkinter.Frame):
                 image_x : image_x + ROOM_WIDTH_IN_TILES,
                 :,
             ] = _room_to_image(room)
-        # Draw plan
-        if self._data.plan:
-            plan_x = self._data.current_position[0] + _CURRENT_ROOM_ORIGIN_X
-            plan_y = self._data.current_position[1] + _CURRENT_ROOM_ORIGIN_Y
-            for action in self._data.plan:
-                if action in [Action.N, Action.NE, Action.NW]:
-                    plan_y -= 1
-                if action in [Action.S, Action.SE, Action.SW]:
-                    plan_y += 1
-                if action in [Action.E, Action.SE, Action.NE]:
-                    plan_x += 1
-                if action in [Action.W, Action.SW, Action.NW]:
-                    plan_x -= 1
-                image[plan_y, plan_x, :] = [0, 0, 255]
-        # Draw player position
-        if self._data.current_position is not None:
-            player_x = _CURRENT_ROOM_ORIGIN_X + self._data.current_position[0]
-            player_y = _CURRENT_ROOM_ORIGIN_Y + self._data.current_position[1]
+        if self._data.current_room is not None:
+            player_x, player_y = self._data.current_room.find_player()
+            # Draw plan
+            if self._data.plan:
+                plan_x = player_x + _CURRENT_ROOM_ORIGIN_X
+                plan_y = player_y + _CURRENT_ROOM_ORIGIN_Y
+                for action in self._data.plan:
+                    if action in [Action.N, Action.NE, Action.NW]:
+                        plan_y -= 1
+                    if action in [Action.S, Action.SE, Action.SW]:
+                        plan_y += 1
+                    if action in [Action.E, Action.SE, Action.NE]:
+                        plan_x += 1
+                    if action in [Action.W, Action.SW, Action.NW]:
+                        plan_x -= 1
+                    image[plan_y, plan_x, :] = [0, 0, 255]
+            # Draw player position
+            image_player_x = _CURRENT_ROOM_ORIGIN_X + player_x
+            image_player_y = _CURRENT_ROOM_ORIGIN_Y + player_y
             image[
-                player_y - 1 : player_y + 2,
-                player_x - 1 : player_x + 2,
+                image_player_y - 1 : image_player_y + 2,
+                image_player_x - 1 : image_player_x + 2,
                 :,
             ] = [255, 0, 0]
         pil_image = PIL.Image.fromarray(image)
