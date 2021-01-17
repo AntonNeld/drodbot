@@ -34,6 +34,8 @@ class PlayingAppBackend:
             await self._bot.go_to_element_in_level(Element.CONQUER_TOKEN)
         elif strategy == Strategy.GO_TO_UNVISITED_ROOM:
             await self._bot.go_to_unvisited_room()
+        elif strategy == Strategy.EXPLORE:
+            await self._bot.explore_level_continuously()
         else:
             raise RuntimeError(f"Unknown strategy {strategy}")
 

@@ -6,6 +6,7 @@ from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .room_solver import solve_room, ReachTileObjective
 from .level_walker import find_path_in_level
 from room import Level, Direction, Element, Room
+from .search import NoSolutionError
 
 _ACTION_DELAY = 0.1
 
@@ -144,6 +145,13 @@ class DrodBot:
         elif y == ROOM_HEIGHT_IN_TILES - 1:
             self.state.plan = [Action.S]
         await self._execute_plan()
+
+    async def explore_level_continuously(self):
+        try:
+            while True:
+                await self.go_to_unvisited_room()
+        except NoSolutionError:
+            print("Done exploring")
 
     async def reinterpret_room(self):
         """Reinterpret the current room, and replace its state."""
