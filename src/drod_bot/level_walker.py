@@ -117,6 +117,7 @@ def find_path_in_level(goal_tiles, current_room, current_room_position, level):
 
     detailed_actions = []
     room = current_room
+    latest_room_position = current_room_position
     direction = current_room.tiles[current_room.find_player()].monster[1]
     # Find the actual paths between the room edges
     for high_level_action in solution:
@@ -126,13 +127,19 @@ def find_path_in_level(goal_tiles, current_room, current_room_position, level):
         direction = direction_after(actions, direction)
         detailed_actions.extend(actions)
         detailed_actions.append(high_level_action.action)
-        new_room_position, new_tile_position = high_level_action.result
-        room = level.rooms[new_room_position].copy(deep=True)
+        latest_room_position, new_tile_position = high_level_action.result
+        room = level.rooms[latest_room_position].copy(deep=True)
         room.tiles[new_tile_position].monster = (Element.BEETHRO, direction)
     # Find the path to the final tile in the last room
     actions = solve_room(
         room,
-        ReachTileObjective(goal_tiles=[tile for room_position, tile in goal_tiles]),
+        ReachTileObjective(
+            goal_tiles=[
+                tile
+                for room_position, tile in goal_tiles
+                if room_position == latest_room_position
+            ]
+        ),
     )
     detailed_actions.extend(actions)
     return detailed_actions
