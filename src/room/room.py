@@ -13,6 +13,7 @@ from .element import (
     MONSTERS,
 )
 from .tile import Tile
+from util import direction_after
 
 
 def _create_empty_room():
@@ -183,7 +184,6 @@ class Room(BaseModel):
         # reimplementing everything.
         x, y = self.find_player()
         direction = self.tiles[(x, y)].monster[1]
-        # TODO: Handle rotation
         if action == Action.N:
             pos_after = (x, y - 1)
         elif action == Action.NE:
@@ -200,19 +200,8 @@ class Room(BaseModel):
             pos_after = (x - 1, y)
         elif action == Action.NW:
             pos_after = (x - 1, y - 1)
-        obstacles = set(
-            [
-                Element.WALL,
-                Element.MASTER_WALL,
-                Element.OBSTACLE,
-                Element.YELLOW_DOOR,
-                Element.BLUE_DOOR,
-                Element.GREEN_DOOR,
-                Element.ORB,
-                Element.PIT,
-                Element.ROACH,
-            ]
-        )
-        if not set(self.tiles[pos_after].get_elements()) & obstacles:
+        elif action in [Action.CW, Action.CCW]:
+            direction = direction_after([action], direction)
+        if self.tiles[pos_after].is_passable():
             self.tiles[(x, y)].monster = (Element.NOTHING, Direction.NONE)
             self.tiles[pos_after].monster = (Element.BEETHRO, direction)
