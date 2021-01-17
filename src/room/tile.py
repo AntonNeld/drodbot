@@ -50,3 +50,29 @@ class Tile(BaseModel):
             ]
             if e[0] != Element.NOTHING
         ]
+
+    def is_passable(self):
+        """Check whether the tile is passable.
+
+        It currently does not take into account force arrows, or
+        whether doors can be opened.
+
+        Returns
+        -------
+        Whether the tile is passable or not.
+        """
+        return (
+            not set(
+                [
+                    Element.WALL,
+                    Element.MASTER_WALL,
+                    Element.OBSTACLE,
+                    Element.YELLOW_DOOR,
+                    Element.BLUE_DOOR,
+                    Element.GREEN_DOOR,
+                    Element.ORB,
+                    Element.PIT,
+                ]
+            )
+            & set(self.get_elements())
+        )
