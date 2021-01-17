@@ -67,6 +67,50 @@ class Level(BaseModel):
             )
         return return_coordinates
 
+    def find_uncrossed_edges(self):
+        """Find edges to unexplored rooms.
+
+        Returns
+        -------
+        A list of tuples ((room_x, room_y), (tile_x, tile_y)).
+        """
+        uncrossed_edge_tiles = []
+        for room_pos, room in self.rooms.items():
+            room_x, room_y = room_pos
+            if (room_x, room_y - 1) not in self.rooms:
+                uncrossed_edge_tiles.extend(
+                    [
+                        (room_pos, (x, 0))
+                        for x in range(ROOM_WIDTH_IN_TILES)
+                        if room.tiles[(x, 0)].is_passable()
+                    ]
+                )
+            if (room_x + 1, room_y) not in self.rooms:
+                uncrossed_edge_tiles.extend(
+                    [
+                        (room_pos, (ROOM_WIDTH_IN_TILES - 1, y))
+                        for y in range(ROOM_HEIGHT_IN_TILES)
+                        if room.tiles[(ROOM_WIDTH_IN_TILES - 1, y)].is_passable()
+                    ]
+                )
+            if (room_x, room_y + 1) not in self.rooms:
+                uncrossed_edge_tiles.extend(
+                    [
+                        (room_pos, (x, ROOM_HEIGHT_IN_TILES - 1))
+                        for x in range(ROOM_WIDTH_IN_TILES)
+                        if room.tiles[(x, ROOM_HEIGHT_IN_TILES - 1)].is_passable()
+                    ]
+                )
+            if (room_x - 1, room_y) not in self.rooms:
+                uncrossed_edge_tiles.extend(
+                    [
+                        (room_pos, (0, y))
+                        for y in range(ROOM_HEIGHT_IN_TILES)
+                        if room.tiles[(0, y)].is_passable()
+                    ]
+                )
+        return uncrossed_edge_tiles
+
     def get_room_exits(self, room_position):
         """Get all valid exits from a room.
 

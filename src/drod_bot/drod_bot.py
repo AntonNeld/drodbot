@@ -122,26 +122,27 @@ class DrodBot:
         self.state.plan = actions
         await self._execute_plan()
 
-    async def cross_edge(self):
-        """Go to the nearest edge tile and cross into a new room."""
-        room = self.state.current_room
-        goal_tiles = (
-            [(0, y) for y in range(32)]
-            + [(x, 0) for x in range(38)]
-            + [(37, y) for y in range(32)]
-            + [(x, 31) for x in range(38)]
+    async def go_to_unvisited_room(self):
+        """Enter the nearest unvisited room."""
+        goal_tiles = self.state.level.find_uncrossed_edges()
+        actions = find_path_in_level(
+            goal_tiles,
+            self.state.current_room,
+            self.state.current_room_position,
+            self.state.level,
         )
-        actions = solve_room(room, ReachTileObjective(goal_tiles=goal_tiles))
-        x, y = room.do_actions(actions).find_player()
-        if x == 0:
-            actions.append(Action.W)
-        elif x == ROOM_WIDTH_IN_TILES - 1:
-            actions.append(Action.E)
-        elif y == 0:
-            actions.append(Action.N)
-        elif y == ROOM_HEIGHT_IN_TILES - 1:
-            actions.append(Action.S)
         self.state.plan = actions
+        await self._execute_plan()
+        # Actually cross into the room
+        x, y = self.state.current_room.find_player()
+        if x == 0:
+            self.state.plan = [Action.W]
+        elif x == ROOM_WIDTH_IN_TILES - 1:
+            self.state.plan = [Action.E]
+        elif y == 0:
+            self.state.plan = [Action.N]
+        elif y == ROOM_HEIGHT_IN_TILES - 1:
+            self.state.plan = [Action.S]
         await self._execute_plan()
 
     async def reinterpret_room(self):
