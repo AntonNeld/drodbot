@@ -4,6 +4,7 @@ from typing import Tuple, List, Optional
 
 from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .room_solver import solve_room, ReachTileObjective
+from .level_walker import find_path_in_level
 from room import Level, Direction, Element, Room
 
 _ACTION_DELAY = 0.1
@@ -112,8 +113,14 @@ class DrodBot:
             The element to go to.
         """
         goal_tiles = self.state.level.find_element(element)
-        print(goal_tiles)
-        print("Not implemented")
+        actions = find_path_in_level(
+            goal_tiles,
+            self.state.current_room,
+            self.state.current_room_position,
+            self.state.level,
+        )
+        self.state.plan = actions
+        await self._execute_plan()
 
     async def cross_edge(self):
         """Go to the nearest edge tile and cross into a new room."""
