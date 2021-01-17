@@ -6,7 +6,7 @@ from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .room_solver import solve_room, ReachTileObjective
 from .level_walker import find_path_in_level
 from room import Level, Direction, Element, Room
-from .search import NoSolutionError
+from search import NoSolutionError
 
 _ACTION_DELAY = 0.1
 

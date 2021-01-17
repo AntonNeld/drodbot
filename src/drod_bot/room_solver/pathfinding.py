@@ -1,6 +1,6 @@
 from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from room import Element
-from .search import a_star_graph
+from search import a_star_graph
 
 
 class _PathfindingProblem:
