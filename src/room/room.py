@@ -184,6 +184,7 @@ class Room(BaseModel):
         # reimplementing everything.
         x, y = self.find_player()
         direction = self.tiles[(x, y)].monster[1]
+        pos_after = (x, y)
         if action == Action.N:
             pos_after = (x, y - 1)
         elif action == Action.NE:

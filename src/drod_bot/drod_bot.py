@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 from typing import Tuple, List, Optional
 
 from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
-from .room_solver import solve_room, ReachTileObjective
+from .room_solver import solve_room, ReachTileObjective, StrikeTileObjective
 from .level_walker import find_path_in_level
 from room import Level, Direction, Element, Room
 from search import NoSolutionError
@@ -147,11 +147,26 @@ class DrodBot:
         await self._execute_plan()
 
     async def explore_level_continuously(self):
+        """Explore the level while there are unvisited rooms."""
         try:
             while True:
                 await self.go_to_unvisited_room()
         except NoSolutionError:
             print("Done exploring")
+
+    async def strike_element(self, element):
+        """Strike the nearest instance of the given element with the sword.
+
+        Parameters
+        ----------
+        element
+            The element to strike.
+        """
+        room = self.state.current_room
+        goal_tiles = room.find_coordinates(element)
+        actions = solve_room(room, StrikeTileObjective(goal_tiles=goal_tiles))
+        self.state.plan = actions
+        await self._execute_plan()
 
     async def reinterpret_room(self):
         """Reinterpret the current room, and replace its state."""

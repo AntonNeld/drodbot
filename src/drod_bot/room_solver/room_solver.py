@@ -19,6 +19,20 @@ class ReachTileObjective(BaseModel):
     goal_tiles: List[Tuple[int, int]]
 
 
+class StrikeTileObjective(BaseModel):
+    """Try to strike one of a set of tiles.
+
+    Parameters
+    ----------
+    goal_tiles
+        If Beethro's sword is in any of these coordinates,
+        the objective is reached.
+    """
+
+    objective_type: Literal["strike_tile"] = "strike_tile"
+    goal_tiles: List[Tuple[int, int]]
+
+
 def solve_room(room, objective):
     """Find a sequence of actions to solve a room.
 
@@ -31,8 +45,17 @@ def solve_room(room, objective):
     """
     if objective.objective_type == "reach_tile":
         player_position = room.find_player()
+        direction = room.tiles[player_position].monster[1]
         goal_positions = objective.goal_tiles
-        actions = find_path(player_position, goal_positions, room)
+        actions = find_path(player_position, direction, goal_positions, room)
+        return actions
+    if objective.objective_type == "strike_tile":
+        player_position = room.find_player()
+        direction = room.tiles[player_position].monster[1]
+        goal_positions = objective.goal_tiles
+        actions = find_path(
+            player_position, direction, goal_positions, room, sword_at_goal=True
+        )
         return actions
     else:
         raise RuntimeError(f"Unknown objective {objective.objective_type}")

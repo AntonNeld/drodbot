@@ -1,21 +1,27 @@
+from collections import namedtuple
+
 from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
-from room import Element
+from room import Element, Direction
 from search import a_star_graph
+from util import direction_after
+
+_State = namedtuple("_State", "position direction")
 
 
 class _PathfindingProblem:
-    def __init__(self, start, goals, obstacles):
+    def __init__(self, start, start_direction, goals, obstacles, sword_at_goal):
         self.start = start
+        self.start_direction = start_direction
         self.goals = goals
         self.obstacles = obstacles
+        self.sword_at_goal = sword_at_goal
 
     def initial_state(self):
-        return self.start
+        return _State(position=self.start, direction=self.start_direction)
 
     def actions(self, state):
-        actions = []
-        x = state[0]
-        y = state[1]
+        actions = [Action.CW, Action.CCW]
+        x, y = state.position
         if (x, y - 1) not in self.obstacles and y > 0:
             actions.append(Action.N)
         if (
@@ -47,28 +53,49 @@ class _PathfindingProblem:
         return actions
 
     def result(self, state, action):
-        x = state[0]
-        y = state[1]
+        x, y = state.position
+        direction = state.direction
         if action == Action.N:
-            return (x, y - 1)
+            return _State(position=(x, y - 1), direction=direction)
         elif action == Action.NE:
-            return (x + 1, y - 1)
+            return _State(position=(x + 1, y - 1), direction=direction)
         elif action == Action.E:
-            return (x + 1, y)
+            return _State(position=(x + 1, y), direction=direction)
         elif action == Action.SE:
-            return (x + 1, y + 1)
+            return _State(position=(x + 1, y + 1), direction=direction)
         elif action == Action.S:
-            return (x, y + 1)
+            return _State(position=(x, y + 1), direction=direction)
         elif action == Action.SW:
-            return (x - 1, y + 1)
+            return _State(position=(x - 1, y + 1), direction=direction)
         elif action == Action.W:
-            return (x - 1, y)
+            return _State(position=(x - 1, y), direction=direction)
         elif action == Action.NW:
-            return (x - 1, y - 1)
+            return _State(position=(x - 1, y - 1), direction=direction)
+        elif action == Action.CW:
+            return _State(
+                position=(x, y), direction=direction_after([Action.CW], direction)
+            )
+        elif action == Action.CCW:
+            return _State(
+                position=(x, y), direction=direction_after([Action.CCW], direction)
+            )
         raise RuntimeError(f"Unknown action {action}")
 
     def goal_test(self, state):
-        return state in self.goals
+        if self.sword_at_goal:
+            x, y = state.position
+            return (
+                (state.direction == Direction.N and (x, y - 1) in self.goals)
+                or (state.direction == Direction.NE and (x + 1, y - 1) in self.goals)
+                or (state.direction == Direction.E and (x + 1, y) in self.goals)
+                or (state.direction == Direction.SE and (x + 1, y + 1) in self.goals)
+                or (state.direction == Direction.S and (x, y + 1) in self.goals)
+                or (state.direction == Direction.SW and (x - 1, y + 1) in self.goals)
+                or (state.direction == Direction.W and (x - 1, y) in self.goals)
+                or (state.direction == Direction.NW and (x - 1, y - 1) in self.goals)
+            )
+        else:
+            return state in self.goals
 
     def step_cost(self, state, action, result):
         return 1
@@ -77,7 +104,8 @@ class _PathfindingProblem:
 def _get_heuristic(goals):
     def heuristic(state):
         distances = [
-            max(abs(goal[0] - state[0]), abs(goal[1] - state[1])) for goal in goals
+            max(abs(goal[0] - state.position[0]), abs(goal[1] - state.position[1]))
+            for goal in goals
         ]
         if distances:
             return min(distances)
@@ -86,17 +114,22 @@ def _get_heuristic(goals):
     return heuristic
 
 
-def find_path(start, goals, room):
+def find_path(start, start_direction, goals, room, sword_at_goal=False):
     """Find a path from a position to the nearest goal position.
 
     Parameters
     ----------
     start
         The starting position given as a tuple (x, y).
+    start_direction
+        The starting direction.
     goals
         An iterable of goal positions, as tuples (x, y).
     room
         Entities in the room, as a dict of positions to lists of entities.
+    sword_at_goal
+        Whether the player's sword should be in the goal tiles rather than
+        the player itself.
 
     Returns
     -------
@@ -115,6 +148,8 @@ def find_path(start, goals, room):
         Element.PIT,
     ]:
         obstacles.update(room.find_coordinates(element))
-    problem = _PathfindingProblem(start, goals, obstacles)
+    problem = _PathfindingProblem(
+        start, start_direction, goals, obstacles, sword_at_goal=sword_at_goal
+    )
     solution = a_star_graph(problem, _get_heuristic(goals))
     return solution

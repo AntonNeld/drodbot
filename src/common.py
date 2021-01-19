@@ -59,3 +59,4 @@ class Strategy(Enum):
     GO_TO_UNVISITED_ROOM = "Go to the nearest unvisited room"
     MOVE_TO_CONQUER_TOKEN = "Move to a conquer token in the room"
     MOVE_TO_CONQUER_TOKEN_IN_LEVEL = "Move to a conquer token anywhere in the level"
+    STRIKE_ORB = "Strike the nearest orb"
