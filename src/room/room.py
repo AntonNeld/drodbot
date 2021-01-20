@@ -13,7 +13,7 @@ from .element import (
     MONSTERS,
 )
 from .tile import Tile
-from util import direction_after
+from util import direction_after, position_in_direction
 
 
 def _create_empty_room():
@@ -182,27 +182,13 @@ class Room(BaseModel):
     def _do_action_in_place(self, action):
         # TODO: This should use DRODLib from the DROD source instead of
         # reimplementing everything.
-        x, y = self.find_player()
-        direction = self.tiles[(x, y)].monster[1]
-        pos_after = (x, y)
-        if action == Action.N:
-            pos_after = (x, y - 1)
-        elif action == Action.NE:
-            pos_after = (x + 1, y - 1)
-        elif action == Action.E:
-            pos_after = (x + 1, y)
-        elif action == Action.SE:
-            pos_after = (x + 1, y + 1)
-        elif action == Action.S:
-            pos_after = (x, y + 1)
-        elif action == Action.SW:
-            pos_after = (x - 1, y + 1)
-        elif action == Action.W:
-            pos_after = (x - 1, y)
-        elif action == Action.NW:
-            pos_after = (x - 1, y - 1)
-        elif action in [Action.CW, Action.CCW]:
+        position = self.find_player()
+        direction = self.tiles[position].monster[1]
+        pos_after = position
+        if action in [Action.CW, Action.CCW]:
             direction = direction_after([action], direction)
+        else:
+            pos_after = position_in_direction(position, action)
         if self.tiles[pos_after].is_passable():
-            self.tiles[(x, y)].monster = (Element.NOTHING, Direction.NONE)
+            self.tiles[position].monster = (Element.NOTHING, Direction.NONE)
             self.tiles[pos_after].monster = (Element.BEETHRO, direction)

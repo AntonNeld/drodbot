@@ -1,9 +1,9 @@
 from collections import namedtuple
 
 from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
-from room import Element, Direction
+from room import Element
 from search import a_star_graph
-from util import direction_after
+from util import direction_after, position_in_direction
 
 _State = namedtuple("_State", "position direction")
 
@@ -55,23 +55,7 @@ class _PathfindingProblem:
     def result(self, state, action):
         x, y = state.position
         direction = state.direction
-        if action == Action.N:
-            return _State(position=(x, y - 1), direction=direction)
-        elif action == Action.NE:
-            return _State(position=(x + 1, y - 1), direction=direction)
-        elif action == Action.E:
-            return _State(position=(x + 1, y), direction=direction)
-        elif action == Action.SE:
-            return _State(position=(x + 1, y + 1), direction=direction)
-        elif action == Action.S:
-            return _State(position=(x, y + 1), direction=direction)
-        elif action == Action.SW:
-            return _State(position=(x - 1, y + 1), direction=direction)
-        elif action == Action.W:
-            return _State(position=(x - 1, y), direction=direction)
-        elif action == Action.NW:
-            return _State(position=(x - 1, y - 1), direction=direction)
-        elif action == Action.CW:
+        if action == Action.CW:
             return _State(
                 position=(x, y), direction=direction_after([Action.CW], direction)
             )
@@ -79,21 +63,14 @@ class _PathfindingProblem:
             return _State(
                 position=(x, y), direction=direction_after([Action.CCW], direction)
             )
-        raise RuntimeError(f"Unknown action {action}")
+        else:
+            return _State(
+                position=position_in_direction((x, y), action), direction=direction
+            )
 
     def goal_test(self, state):
         if self.sword_at_goal:
-            x, y = state.position
-            return (
-                (state.direction == Direction.N and (x, y - 1) in self.goals)
-                or (state.direction == Direction.NE and (x + 1, y - 1) in self.goals)
-                or (state.direction == Direction.E and (x + 1, y) in self.goals)
-                or (state.direction == Direction.SE and (x + 1, y + 1) in self.goals)
-                or (state.direction == Direction.S and (x, y + 1) in self.goals)
-                or (state.direction == Direction.SW and (x - 1, y + 1) in self.goals)
-                or (state.direction == Direction.W and (x - 1, y) in self.goals)
-                or (state.direction == Direction.NW and (x - 1, y - 1) in self.goals)
-            )
+            return position_in_direction(state.position, state.direction) in self.goals
         else:
             return state in self.goals
 

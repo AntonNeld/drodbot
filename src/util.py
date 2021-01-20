@@ -72,3 +72,39 @@ def direction_after(actions, direction):
         elif action == Action.CCW:
             dir_number -= 1
     return number_to_direction[dir_number % 8]
+
+
+def position_in_direction(original_position, direction):
+    """Get the position in the given direction, relative to an original position.
+
+    Parameters
+    ----------
+    original_position
+        The original position as a tuple (x, y).
+    direction
+        The direction of the new position. Both Direcions
+        and (movement) Actions are valid.
+
+    Returns
+    -------
+    The new position as a tuple (x, y).
+    """
+    x, y = original_position
+    if direction == Action.N or direction == Direction.N:
+        return (x, y - 1)
+    elif direction == Action.NE or direction == Direction.NE:
+        return (x + 1, y - 1)
+    elif direction == Action.E or direction == Direction.E:
+        return (x + 1, y)
+    elif direction == Action.SE or direction == Direction.SE:
+        return (x + 1, y + 1)
+    elif direction == Action.S or direction == Direction.S:
+        return (x, y + 1)
+    elif direction == Action.SW or direction == Direction.SW:
+        return (x - 1, y + 1)
+    elif direction == Action.W or direction == Direction.W:
+        return (x - 1, y)
+    elif direction == Action.NW or direction == Direction.NW:
+        return (x - 1, y - 1)
+    else:
+        raise RuntimeError(f"Unknown direction {direction}")
