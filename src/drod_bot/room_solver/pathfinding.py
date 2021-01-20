@@ -72,7 +72,7 @@ class _PathfindingProblem:
         if self.sword_at_goal:
             return position_in_direction(state.position, state.direction) in self.goals
         else:
-            return state in self.goals
+            return state.position in self.goals
 
     def step_cost(self, state, action, result):
         return 1
