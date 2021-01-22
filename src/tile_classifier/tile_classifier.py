@@ -8,7 +8,7 @@ from common import (
     TILE_SIZE,
 )
 from room import (
-    Element,
+    ElementType,
     Direction,
     Tile,
     ROOM_PIECES,
@@ -46,7 +46,9 @@ class TileClassifier:
             for file_name in file_names:
                 image = PIL.Image.open(os.path.join(tile_data_dir, file_name))
                 image_array = numpy.array(image)
-                element = next(e for e in Element if e.value == image.info["element"])
+                element = next(
+                    e for e in ElementType if e.value == image.info["element"]
+                )
                 direction = next(
                     d for d in Direction if d.value == image.info["direction"]
                 )
@@ -106,11 +108,11 @@ class TileClassifier:
             raise RuntimeError("No tile data loaded, cannot classify tiles")
         classified_tiles = {
             key: Tile(
-                room_piece=(Element.UNKNOWN, Direction.UNKNOWN),
-                floor_control=(Element.UNKNOWN, Direction.UNKNOWN),
-                checkpoint=(Element.UNKNOWN, Direction.UNKNOWN),
-                item=(Element.UNKNOWN, Direction.UNKNOWN),
-                monster=(Element.UNKNOWN, Direction.UNKNOWN),
+                room_piece=(ElementType.UNKNOWN, Direction.UNKNOWN),
+                floor_control=(ElementType.UNKNOWN, Direction.UNKNOWN),
+                checkpoint=(ElementType.UNKNOWN, Direction.UNKNOWN),
+                item=(ElementType.UNKNOWN, Direction.UNKNOWN),
+                monster=(ElementType.UNKNOWN, Direction.UNKNOWN),
             )
             for key in tiles
         }
@@ -164,12 +166,12 @@ class TileClassifier:
                         (
                             a["layer"] == "swords"
                             and classified_tiles[key].monster
-                            == (Element.UNKNOWN, Direction.UNKNOWN)
+                            == (ElementType.UNKNOWN, Direction.UNKNOWN)
                         )
                         or (
                             a["layer"] != "swords"
                             and getattr(classified_tiles[key], a["layer"])
-                            == (Element.UNKNOWN, Direction.UNKNOWN)
+                            == (ElementType.UNKNOWN, Direction.UNKNOWN)
                         )
                     )
                     and mask_sizes[i] != 0
@@ -225,7 +227,7 @@ class TileClassifier:
                         "room_piece",
                     ]
                     if getattr(classified_tiles[key], layer) != (
-                        Element.UNKNOWN,
+                        ElementType.UNKNOWN,
                         Direction.UNKNOWN,
                     ):
                         raise RuntimeError(
@@ -236,34 +238,55 @@ class TileClassifier:
                     setattr(classified_tiles[key], layer, (element, direction))
                     for layer_above in layers[: layers.index(layer)]:
                         if getattr(classified_tiles[key], layer_above) == (
-                            Element.UNKNOWN,
+                            ElementType.UNKNOWN,
                             Direction.UNKNOWN,
                         ):
                             setattr(
                                 classified_tiles[key],
                                 layer_above,
-                                (Element.NOTHING, Direction.NONE),
+                                (ElementType.NOTHING, Direction.NONE),
                             )
             # Assume there is nothing below an obstacle. Unless it's a tunnel, it
             # doesn't matter anyway. The classifier easily gets confused about what
             # is under obstacles, because of the shadows.
-            if classified_tiles[key].item == (Element.OBSTACLE, Direction.NONE):
-                classified_tiles[key].checkpoint = (Element.NOTHING, Direction.NONE)
-                classified_tiles[key].floor_control = (Element.NOTHING, Direction.NONE)
-                classified_tiles[key].room_piece = (Element.FLOOR, Direction.NONE)
+            if classified_tiles[key].item == (
+                ElementType.OBSTACLE,
+                Direction.NONE,
+            ):
+                classified_tiles[key].checkpoint = (
+                    ElementType.NOTHING,
+                    Direction.NONE,
+                )
+                classified_tiles[key].floor_control = (
+                    ElementType.NOTHING,
+                    Direction.NONE,
+                )
+                classified_tiles[key].room_piece = (
+                    ElementType.FLOOR,
+                    Direction.NONE,
+                )
             # Open master walls are tricky because they can have several different
             # appearances, and are closed when playtesting. If we know there is a
             # master wall in a tile (because of the minimap), let's assume there is
             # nothing else there (except possibly Beethro).
             if classified_tiles[key].room_piece == (
-                Element.MASTER_WALL,
+                ElementType.MASTER_WALL,
                 Direction.NONE,
             ):
-                classified_tiles[key].floor_control = (Element.NOTHING, Direction.NONE)
-                classified_tiles[key].checkpoint = (Element.NOTHING, Direction.NONE)
-                classified_tiles[key].item = (Element.NOTHING, Direction.NONE)
-                if classified_tiles[key].monster[0] != Element.BEETHRO:
-                    classified_tiles[key].monster = (Element.NOTHING, Direction.NONE)
+                classified_tiles[key].floor_control = (
+                    ElementType.NOTHING,
+                    Direction.NONE,
+                )
+                classified_tiles[key].checkpoint = (
+                    ElementType.NOTHING,
+                    Direction.NONE,
+                )
+                classified_tiles[key].item = (ElementType.NOTHING, Direction.NONE)
+                if classified_tiles[key].monster[0] != ElementType.BEETHRO:
+                    classified_tiles[key].monster = (
+                        ElementType.NOTHING,
+                        Direction.NONE,
+                    )
 
         if return_debug_images:
             return classified_tiles, debug_images
@@ -313,48 +336,51 @@ def _compatible_with_minimap_color(element, layer, color):
     if layer == "item":
         if color != (128, 128, 128):
             # If there were an obstacle here, the color would be gray
-            return element != Element.OBSTACLE
+            return element != ElementType.OBSTACLE
         # TODO: Same reasoning (but different color) holds for bombs
     if layer == "room_piece":
         if color == (0, 0, 0):
             # TODO: This can be broken or secret walls too
-            return element == Element.WALL
+            return element == ElementType.WALL
         if color == (0, 0, 128):
-            return element == Element.PIT
+            return element == ElementType.PIT
         if color == (255, 128, 0):
             # TODO: This can be hold complete walls or hot tiles too
-            return element == Element.MASTER_WALL
+            return element == ElementType.MASTER_WALL
         if color == (255, 255, 0):
-            return element == Element.YELLOW_DOOR
+            return element == ElementType.YELLOW_DOOR
         if color == (255, 255, 164):
-            return element == Element.YELLOW_DOOR_OPEN
+            return element == ElementType.YELLOW_DOOR_OPEN
         if color == (0, 255, 0):
-            return element == Element.GREEN_DOOR
+            return element == ElementType.GREEN_DOOR
         if color == (128, 255, 128):  # Open green door, or recently cleared room
             # TODO: This can be oremites too. They are not the same color, but
             # they disappear from the minimap when the room is just cleared.
-            return element in [Element.FLOOR, Element.GREEN_DOOR_OPEN]
+            return element in [
+                ElementType.FLOOR,
+                ElementType.GREEN_DOOR_OPEN,
+            ]
         if color == (0, 255, 255):
-            return element == Element.BLUE_DOOR
+            return element == ElementType.BLUE_DOOR
         if color == (164, 255, 255):
-            return element == Element.BLUE_DOOR_OPEN
+            return element == ElementType.BLUE_DOOR_OPEN
         if color == (210, 210, 100):
-            return element == Element.STAIRS
+            return element == ElementType.STAIRS
         if color == (255, 200, 200):
             # This only appears in the editor, but we may as well have it
-            return element == Element.FLOOR
+            return element == ElementType.FLOOR
         if color == (255, 0, 0):  # Not cleared, required room
             # TODO: This can be red doors too
-            return element == Element.FLOOR
+            return element == ElementType.FLOOR
         if color == (255, 0, 255):  # Not cleared, not required room
-            return element == Element.FLOOR
+            return element == ElementType.FLOOR
         if color == (229, 229, 229):  # Cleared room, revisited
-            return element == Element.FLOOR
+            return element == ElementType.FLOOR
         if color == (128, 128, 128):
             # This could be an obstacle, so there may be anything below it.
             # But it doesn't actually matter unless it's a tunnel, so let's
             # say it's either a tunnel or a floor.
             # TODO: It could also be a tunnel
-            return element == Element.FLOOR
+            return element == ElementType.FLOOR
         print(f"Unknown minimap color {color}")
     return True

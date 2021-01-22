@@ -1,5 +1,5 @@
 from common import Strategy, GUIEvent
-from room import Element
+from room import ElementType
 
 
 class PlayingAppBackend:
@@ -29,15 +29,15 @@ class PlayingAppBackend:
         """
         await self._bot.initialize()
         if strategy == Strategy.MOVE_TO_CONQUER_TOKEN:
-            await self._bot.go_to_element_in_room(Element.CONQUER_TOKEN)
+            await self._bot.go_to_element_in_room(ElementType.CONQUER_TOKEN)
         elif strategy == Strategy.MOVE_TO_CONQUER_TOKEN_IN_LEVEL:
-            await self._bot.go_to_element_in_level(Element.CONQUER_TOKEN)
+            await self._bot.go_to_element_in_level(ElementType.CONQUER_TOKEN)
         elif strategy == Strategy.GO_TO_UNVISITED_ROOM:
             await self._bot.go_to_unvisited_room()
         elif strategy == Strategy.EXPLORE:
             await self._bot.explore_level_continuously()
         elif strategy == Strategy.STRIKE_ORB:
-            await self._bot.strike_element(Element.ORB)
+            await self._bot.strike_element(ElementType.ORB)
         else:
             raise RuntimeError(f"Unknown strategy {strategy}")
 

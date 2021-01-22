@@ -1,5 +1,5 @@
 from .element import (
-    Element,
+    ElementType,
     Direction,
     ROOM_PIECES,
     FLOOR_CONTROLS,
@@ -13,7 +13,7 @@ from .tile import Tile
 
 __all__ = (
     "Direction",
-    "Element",
+    "ElementType",
     "Level",
     "Room",
     "Tile",

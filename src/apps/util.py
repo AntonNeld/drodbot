@@ -9,30 +9,30 @@ from common import (
     ROOM_WIDTH_IN_TILES,
     TILE_SIZE,
 )
-from room import Element, Direction
+from room import ElementType, Direction
 
 # These are overlaid over the room to show tile classifications
 ELEMENT_CHARACTERS = {
-    Element.UNKNOWN: "?",
-    Element.WALL: "#",
-    Element.PIT: ",",
-    Element.MASTER_WALL: "M",
-    Element.YELLOW_DOOR: "Y",
-    Element.YELLOW_DOOR_OPEN: "y",
-    Element.GREEN_DOOR: "G",
-    Element.GREEN_DOOR_OPEN: "g",
-    Element.BLUE_DOOR: "B",
-    Element.BLUE_DOOR_OPEN: "b",
-    Element.STAIRS: ">",
-    Element.FORCE_ARROW: "^",
-    Element.CHECKPOINT: "x",
-    Element.ORB: "O",
-    Element.SCROLL: "s",
-    Element.OBSTACLE: "+",
-    Element.BEETHRO: "B",
-    Element.ROACH: "R",
-    Element.CONQUER_TOKEN: "C",
-    Element.FLOOR: ".",
+    ElementType.UNKNOWN: "?",
+    ElementType.WALL: "#",
+    ElementType.PIT: ",",
+    ElementType.MASTER_WALL: "M",
+    ElementType.YELLOW_DOOR: "Y",
+    ElementType.YELLOW_DOOR_OPEN: "y",
+    ElementType.GREEN_DOOR: "G",
+    ElementType.GREEN_DOOR_OPEN: "g",
+    ElementType.BLUE_DOOR: "B",
+    ElementType.BLUE_DOOR_OPEN: "b",
+    ElementType.STAIRS: ">",
+    ElementType.FORCE_ARROW: "^",
+    ElementType.CHECKPOINT: "x",
+    ElementType.ORB: "O",
+    ElementType.SCROLL: "s",
+    ElementType.OBSTACLE: "+",
+    ElementType.BEETHRO: "B",
+    ElementType.ROACH: "R",
+    ElementType.CONQUER_TOKEN: "C",
+    ElementType.FLOOR: ".",
 }
 
 

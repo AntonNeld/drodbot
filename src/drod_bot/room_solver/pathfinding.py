@@ -1,7 +1,7 @@
 from collections import namedtuple
 
 from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
-from room import Element
+from room import ElementType
 from search import a_star_graph
 from util import direction_after, position_in_direction
 
@@ -115,14 +115,14 @@ def find_path(start, start_direction, goals, room, sword_at_goal=False):
     """
     obstacles = set()
     for element in [
-        Element.WALL,
-        Element.MASTER_WALL,
-        Element.OBSTACLE,
-        Element.YELLOW_DOOR,
-        Element.BLUE_DOOR,
-        Element.GREEN_DOOR,
-        Element.ORB,
-        Element.PIT,
+        ElementType.WALL,
+        ElementType.MASTER_WALL,
+        ElementType.OBSTACLE,
+        ElementType.YELLOW_DOOR,
+        ElementType.BLUE_DOOR,
+        ElementType.GREEN_DOOR,
+        ElementType.ORB,
+        ElementType.PIT,
     ]:
         obstacles.update(room.find_coordinates(element))
     problem = _PathfindingProblem(

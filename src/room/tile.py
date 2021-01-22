@@ -1,14 +1,14 @@
 from pydantic import BaseModel
 from typing import Tuple
 
-from .element import Element, Direction
+from .element import ElementType, Direction
 
 
 class Tile(BaseModel):
     """A representation of a tile.
 
     This contains information about what element is in each layer, as a tuple of
-    (Element, Direction).
+    (ElementType, Direction).
 
     Parameters
     ----------
@@ -24,16 +24,28 @@ class Tile(BaseModel):
         The element in the "monsters" layer.
     """
 
-    room_piece: Tuple[Element, Direction]
-    floor_control: Tuple[Element, Direction] = (Element.NOTHING, Direction.NONE)
-    checkpoint: Tuple[Element, Direction] = (Element.NOTHING, Direction.NONE)
-    item: Tuple[Element, Direction] = (Element.NOTHING, Direction.NONE)
-    monster: Tuple[Element, Direction] = (Element.NOTHING, Direction.NONE)
+    room_piece: Tuple[ElementType, Direction]
+    floor_control: Tuple[ElementType, Direction] = (
+        ElementType.NOTHING,
+        Direction.NONE,
+    )
+    checkpoint: Tuple[ElementType, Direction] = (
+        ElementType.NOTHING,
+        Direction.NONE,
+    )
+    item: Tuple[ElementType, Direction] = (
+        ElementType.NOTHING,
+        Direction.NONE,
+    )
+    monster: Tuple[ElementType, Direction] = (
+        ElementType.NOTHING,
+        Direction.NONE,
+    )
 
     def get_elements(self):
         """Get all elements in the tile.
 
-        Element.NOTHING is skipped.
+        ElementType.NOTHING is skipped.
 
         Returns
         -------
@@ -48,7 +60,7 @@ class Tile(BaseModel):
                 self.item,
                 self.monster,
             ]
-            if e[0] != Element.NOTHING
+            if e[0] != ElementType.NOTHING
         ]
 
     def is_passable(self):
@@ -64,14 +76,14 @@ class Tile(BaseModel):
         return (
             not set(
                 [
-                    Element.WALL,
-                    Element.MASTER_WALL,
-                    Element.OBSTACLE,
-                    Element.YELLOW_DOOR,
-                    Element.BLUE_DOOR,
-                    Element.GREEN_DOOR,
-                    Element.ORB,
-                    Element.PIT,
+                    ElementType.WALL,
+                    ElementType.MASTER_WALL,
+                    ElementType.OBSTACLE,
+                    ElementType.YELLOW_DOOR,
+                    ElementType.BLUE_DOOR,
+                    ElementType.GREEN_DOOR,
+                    ElementType.ORB,
+                    ElementType.PIT,
                 ]
             )
             & set(self.get_elements())

@@ -4,7 +4,7 @@ from typing import Dict, Tuple
 
 from common import ROOM_WIDTH_IN_TILES, ROOM_HEIGHT_IN_TILES, Action
 from .element import (
-    Element,
+    ElementType,
     Direction,
     ROOM_PIECES,
     FLOOR_CONTROLS,
@@ -20,7 +20,7 @@ def _create_empty_room():
     tiles = {}
     for x in range(ROOM_WIDTH_IN_TILES):
         for y in range(ROOM_HEIGHT_IN_TILES):
-            tiles[(x, y)] = Tile(room_piece=(Element.FLOOR, Direction.NONE))
+            tiles[(x, y)] = Tile(room_piece=(ElementType.FLOOR, Direction.NONE))
     return tiles
 
 
@@ -92,7 +92,7 @@ class Room(BaseModel):
         elif element in MONSTERS:
             layer = "monster"
         else:
-            raise RuntimeError(f"Element {element} not in any layer")
+            raise RuntimeError(f"ElementType {element} not in any layer")
         for x in range(
             position[0],
             end_position[0] + 1 if end_position is not None else position[0] + 1,
@@ -128,7 +128,7 @@ class Room(BaseModel):
         -------
         The coordinates of the player, as an (x, y) tuple.
         """
-        beethros = self.find_coordinates(Element.BEETHRO)
+        beethros = self.find_coordinates(ElementType.BEETHRO)
         if len(beethros) < 1:
             raise RuntimeError("Cannot find Beethro")
         if len(beethros) > 1:
@@ -190,5 +190,5 @@ class Room(BaseModel):
         else:
             pos_after = position_in_direction(position, action)
         if self.tiles[pos_after].is_passable():
-            self.tiles[position].monster = (Element.NOTHING, Direction.NONE)
-            self.tiles[pos_after].monster = (Element.BEETHRO, direction)
+            self.tiles[position].monster = (ElementType.NOTHING, Direction.NONE)
+            self.tiles[pos_after].monster = (ElementType.BEETHRO, direction)

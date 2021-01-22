@@ -5,7 +5,7 @@ from typing import Tuple, List, Optional
 from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .room_solver import solve_room, ReachTileObjective, StrikeTileObjective
 from .level_walker import find_path_in_level
-from room import Level, Direction, Element, Room
+from room import Level, Direction, ElementType, Room
 from search import NoSolutionError
 
 _ACTION_DELAY = 0.1
@@ -182,7 +182,7 @@ class DrodBot:
         # Remove Beethro from the room, so the saved level doesn't
         # have a bunch of Beethros standing around
         room_in_level.tiles[player_position].monster = (
-            Element.NOTHING,
+            ElementType.NOTHING,
             Direction.NONE,
         )
         self.state.level.rooms[self.state.current_room_position] = room_in_level
@@ -267,7 +267,10 @@ class DrodBot:
         self.state.current_room_position = new_room_coords
         if new_room_coords in self.state.level.rooms:
             room = self.state.level.rooms[new_room_coords].copy(deep=True)
-            room.tiles[position_after].monster = (Element.BEETHRO, player_direction)
+            room.tiles[position_after].monster = (
+                ElementType.BEETHRO,
+                player_direction,
+            )
             self.state.current_room = room
             self._notify_state_update()
         else:

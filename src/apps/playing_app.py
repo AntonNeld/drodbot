@@ -5,7 +5,7 @@ import tkinter
 import traceback
 
 from common import Strategy, Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
-from room import Element
+from room import ElementType
 
 _CANVAS_WIDTH = 190
 _CANVAS_HEIGHT = 160
@@ -141,6 +141,6 @@ def _room_to_image(room):
         numpy.ones((ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES, 3), dtype=numpy.uint8)
         * 255
     )
-    for (x, y) in room.find_coordinates(Element.WALL):
+    for (x, y) in room.find_coordinates(ElementType.WALL):
         image[y, x, :] = 0
     return image

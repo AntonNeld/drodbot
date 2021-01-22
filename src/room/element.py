@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class Element(Enum):
+class ElementType(Enum):
     """A game element that can be in a tile."""
 
     UNKNOWN = "Unknown"
@@ -30,28 +30,32 @@ class Element(Enum):
 
 # Which elements can be in which layers
 ROOM_PIECES = [
-    Element.WALL,
-    Element.FLOOR,
-    Element.PIT,
-    Element.MASTER_WALL,
-    Element.YELLOW_DOOR,
-    Element.YELLOW_DOOR_OPEN,
-    Element.GREEN_DOOR,
-    Element.GREEN_DOOR_OPEN,
-    Element.BLUE_DOOR,
-    Element.BLUE_DOOR_OPEN,
-    Element.STAIRS,
+    ElementType.WALL,
+    ElementType.FLOOR,
+    ElementType.PIT,
+    ElementType.MASTER_WALL,
+    ElementType.YELLOW_DOOR,
+    ElementType.YELLOW_DOOR_OPEN,
+    ElementType.GREEN_DOOR,
+    ElementType.GREEN_DOOR_OPEN,
+    ElementType.BLUE_DOOR,
+    ElementType.BLUE_DOOR_OPEN,
+    ElementType.STAIRS,
 ]
-FLOOR_CONTROLS = [Element.FORCE_ARROW, Element.NOTHING]
-CHECKPOINTS = [Element.CHECKPOINT, Element.NOTHING]
+FLOOR_CONTROLS = [ElementType.FORCE_ARROW, ElementType.NOTHING]
+CHECKPOINTS = [ElementType.CHECKPOINT, ElementType.NOTHING]
 ITEMS = [
-    Element.CONQUER_TOKEN,
-    Element.ORB,
-    Element.SCROLL,
-    Element.OBSTACLE,
-    Element.NOTHING,
+    ElementType.CONQUER_TOKEN,
+    ElementType.ORB,
+    ElementType.SCROLL,
+    ElementType.OBSTACLE,
+    ElementType.NOTHING,
 ]
-MONSTERS = [Element.BEETHRO, Element.ROACH, Element.NOTHING]
+MONSTERS = [
+    ElementType.BEETHRO,
+    ElementType.ROACH,
+    ElementType.NOTHING,
+]
 
 
 class Direction(Enum):

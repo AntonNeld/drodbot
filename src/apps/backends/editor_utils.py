@@ -1,4 +1,4 @@
-from room import Element, Direction
+from room import ElementType, Direction
 
 
 async def place_sworded_element(interface, element, sword, x, y):
@@ -190,7 +190,7 @@ async def place_sized_obstacles(interface, style, x, y, sizes):
     current_x = x
     for size in sizes:
         await interface.place_element(
-            Element.OBSTACLE,
+            ElementType.OBSTACLE,
             Direction.NONE,
             (current_x, y),
             (current_x + size - 1, y + size - 1) if size != 1 else None,
@@ -199,7 +199,13 @@ async def place_sized_obstacles(interface, style, x, y, sizes):
         for placed_x in range(current_x, current_x + size):
             for placed_y in range(y, y + size):
                 return_elements.append(
-                    (Element.OBSTACLE, Direction.NONE, placed_x, placed_y, style)
+                    (
+                        ElementType.OBSTACLE,
+                        Direction.NONE,
+                        placed_x,
+                        placed_y,
+                        style,
+                    )
                 )
         current_x = current_x + size + 1
     return return_elements

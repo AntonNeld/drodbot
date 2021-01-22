@@ -9,7 +9,7 @@ from PIL.PngImagePlugin import PngInfo
 
 from common import GUIEvent
 from room import (
-    Element,
+    ElementType,
     Direction,
     Room,
     Tile,
@@ -92,39 +92,43 @@ class ClassificationAppBackend:
             os.path.dirname(os.path.realpath(__file__)), "background"
         )
         await self._interface.place_element(
-            Element.FLOOR, Direction.NONE, (0, 0), (37, 31), style="image"
+            ElementType.FLOOR, Direction.NONE, (0, 0), (37, 31), style="image"
         )
 
         elements = (
             await place_sworded_element(
-                self._interface, Element.BEETHRO, Element.BEETHRO_SWORD, 0, 0
+                self._interface,
+                ElementType.BEETHRO,
+                ElementType.BEETHRO_SWORD,
+                0,
+                0,
             )
             + await place_fully_directional_elements(
-                self._interface, Element.ROACH, 0, 3
+                self._interface, ElementType.ROACH, 0, 3
             )
             + await place_fully_directional_elements(
-                self._interface, Element.FORCE_ARROW, 8, 2
+                self._interface, ElementType.FORCE_ARROW, 8, 2
             )
             + await place_nondirectional_edges_elements(
-                self._interface, Element.WALL, 1, 4, "hard"
+                self._interface, ElementType.WALL, 1, 4, "hard"
             )
             + await place_nondirectional_edges_elements(
-                self._interface, Element.YELLOW_DOOR, 1, 9
+                self._interface, ElementType.YELLOW_DOOR, 1, 9
             )
             + await place_nondirectional_edges_elements(
-                self._interface, Element.BLUE_DOOR, 1, 14
+                self._interface, ElementType.BLUE_DOOR, 1, 14
             )
             + await place_nondirectional_edges_elements(
-                self._interface, Element.GREEN_DOOR, 1, 19
+                self._interface, ElementType.GREEN_DOOR, 1, 19
             )
             + await place_nondirectional_edges_elements(
-                self._interface, Element.YELLOW_DOOR_OPEN, 11, 9
+                self._interface, ElementType.YELLOW_DOOR_OPEN, 11, 9
             )
             + await place_nondirectional_edges_elements(
-                self._interface, Element.BLUE_DOOR_OPEN, 11, 14
+                self._interface, ElementType.BLUE_DOOR_OPEN, 11, 14
             )
             + await place_nondirectional_edges_elements(
-                self._interface, Element.GREEN_DOOR_OPEN, 11, 19
+                self._interface, ElementType.GREEN_DOOR_OPEN, 11, 19
             )
             + await place_sized_obstacles(self._interface, "rock_1", 7, 0, [1, 2, 3])
             + await place_sized_obstacles(self._interface, "rock_2", 11, 4, [1, 2, 3])
@@ -132,42 +136,54 @@ class ClassificationAppBackend:
                 self._interface, "square_statue", 16, 1, [1, 2, 4]
             )
             + await place_rectangle(
-                self._interface, Element.WALL, 20, 5, 9, 9, include_all_sides=False
+                self._interface,
+                ElementType.WALL,
+                20,
+                5,
+                9,
+                9,
+                include_all_sides=False,
             )
             # Place some force arrows in the shadow, since we're having trouble seeing
             # those otherwise
             + await place_fully_directional_elements(
-                self._interface, Element.FORCE_ARROW, 21, 14, one_line=True
+                self._interface, ElementType.FORCE_ARROW, 21, 14, one_line=True
             )
-            + await place_rectangle(self._interface, Element.PIT, 20, 15, 9, 9)
+            + await place_rectangle(self._interface, ElementType.PIT, 20, 15, 9, 9)
             + await place_rectangle(
-                self._interface, Element.FLOOR, 30, 5, 4, 4, style="mosaic"
-            )
-            + await place_rectangle(
-                self._interface, Element.FLOOR, 30, 9, 4, 4, style="road"
+                self._interface, ElementType.FLOOR, 30, 5, 4, 4, style="mosaic"
             )
             + await place_rectangle(
-                self._interface, Element.FLOOR, 30, 13, 4, 4, style="grass"
+                self._interface, ElementType.FLOOR, 30, 9, 4, 4, style="road"
             )
             + await place_rectangle(
-                self._interface, Element.FLOOR, 30, 17, 4, 4, style="dirt"
+                self._interface, ElementType.FLOOR, 30, 13, 4, 4, style="grass"
             )
             + await place_rectangle(
-                self._interface, Element.FLOOR, 30, 21, 4, 4, style="alternate"
+                self._interface, ElementType.FLOOR, 30, 17, 4, 4, style="dirt"
             )
-            + await place_rectangle(self._interface, Element.STAIRS, 34, 5, 1, 19)
             + await place_rectangle(
-                self._interface, Element.STAIRS, 35, 5, 1, 19, style="up"
+                self._interface,
+                ElementType.FLOOR,
+                30,
+                21,
+                4,
+                4,
+                style="alternate",
+            )
+            + await place_rectangle(self._interface, ElementType.STAIRS, 34, 5, 1, 19)
+            + await place_rectangle(
+                self._interface, ElementType.STAIRS, 35, 5, 1, 19, style="up"
             )
         )
         extra_elements = [
-            (Element.FLOOR, Direction.NONE, 2, 2, "normal"),
-            (Element.FLOOR, Direction.NONE, 3, 2, "normal"),
-            (Element.CONQUER_TOKEN, Direction.NONE, 0, 5, None),
-            (Element.MASTER_WALL, Direction.NONE, 4, 3, None),
-            (Element.ORB, Direction.NONE, 6, 1, None),
-            (Element.CHECKPOINT, Direction.NONE, 7, 1, None),
-            (Element.SCROLL, Direction.NONE, 12, 3, None),
+            (ElementType.FLOOR, Direction.NONE, 2, 2, "normal"),
+            (ElementType.FLOOR, Direction.NONE, 3, 2, "normal"),
+            (ElementType.CONQUER_TOKEN, Direction.NONE, 0, 5, None),
+            (ElementType.MASTER_WALL, Direction.NONE, 4, 3, None),
+            (ElementType.ORB, Direction.NONE, 6, 1, None),
+            (ElementType.CHECKPOINT, Direction.NONE, 7, 1, None),
+            (ElementType.SCROLL, Direction.NONE, 12, 3, None),
         ]
         for (element, direction, x, y, style) in extra_elements:
             await self._interface.place_element(element, direction, (x, y), style=style)
@@ -228,58 +244,58 @@ class ClassificationAppBackend:
         room = Room()
 
         elements = [
-            (Element.FLOOR, Direction.NONE, 0, 0),
-            (Element.BEETHRO, Direction.N, 0, 1),
-            (Element.BEETHRO, Direction.N, 0, 2),
-            (Element.BEETHRO, Direction.NE, 1, 1),
-            (Element.FLOOR, Direction.NONE, 2, 1),
-            (Element.BEETHRO, Direction.NW, 3, 1),
-            (Element.ROACH, Direction.N, 2, 0),
-            (Element.ROACH, Direction.NE, 3, 3),
-            (Element.ROACH, Direction.SW, 3, 4),
-            (Element.GREEN_DOOR_OPEN, Direction.NONE, 5, 5),
-            (Element.ROACH, Direction.SE, 5, 5),
-            (Element.WALL, Direction.NONE, 12, 25),
-            (Element.WALL, Direction.NONE, 13, 25),
-            (Element.WALL, Direction.NONE, 13, 24),
-            (Element.WALL, Direction.NONE, 11, 26),
-            (Element.WALL, Direction.NONE, 12, 26),
-            (Element.FLOOR, Direction.NONE, 11, 27),
-            (Element.FLOOR, Direction.NONE, 12, 27),
-            (Element.FLOOR, Direction.NONE, 13, 27),
-            (Element.FLOOR, Direction.NONE, 13, 26),
-            (Element.FLOOR, Direction.NONE, 14, 25),
-            (Element.FLOOR, Direction.NONE, 14, 24),
-            (Element.WALL, Direction.NONE, 15, 23),
-            (Element.WALL, Direction.NONE, 16, 22),
-            (Element.FLOOR, Direction.NONE, 16, 23),
-            (Element.BLUE_DOOR, Direction.NONE, 6, 5),
-            (Element.BLUE_DOOR, Direction.NONE, 7, 5),
-            (Element.BLUE_DOOR, Direction.NONE, 8, 5),
-            (Element.BLUE_DOOR, Direction.NONE, 6, 6),
-            (Element.BLUE_DOOR, Direction.NONE, 7, 6),
-            (Element.BLUE_DOOR, Direction.NONE, 8, 6),
-            (Element.BLUE_DOOR, Direction.NONE, 6, 7),
-            (Element.BLUE_DOOR, Direction.NONE, 7, 7),
-            (Element.BLUE_DOOR, Direction.NONE, 8, 7),
-            (Element.OBSTACLE, Direction.NONE, 28, 5),
-            (Element.FORCE_ARROW, Direction.NW, 9, 9),
-            (Element.FORCE_ARROW, Direction.W, 7, 16),
+            (ElementType.FLOOR, Direction.NONE, 0, 0),
+            (ElementType.BEETHRO, Direction.N, 0, 1),
+            (ElementType.BEETHRO, Direction.N, 0, 2),
+            (ElementType.BEETHRO, Direction.NE, 1, 1),
+            (ElementType.FLOOR, Direction.NONE, 2, 1),
+            (ElementType.BEETHRO, Direction.NW, 3, 1),
+            (ElementType.ROACH, Direction.N, 2, 0),
+            (ElementType.ROACH, Direction.NE, 3, 3),
+            (ElementType.ROACH, Direction.SW, 3, 4),
+            (ElementType.GREEN_DOOR_OPEN, Direction.NONE, 5, 5),
+            (ElementType.ROACH, Direction.SE, 5, 5),
+            (ElementType.WALL, Direction.NONE, 12, 25),
+            (ElementType.WALL, Direction.NONE, 13, 25),
+            (ElementType.WALL, Direction.NONE, 13, 24),
+            (ElementType.WALL, Direction.NONE, 11, 26),
+            (ElementType.WALL, Direction.NONE, 12, 26),
+            (ElementType.FLOOR, Direction.NONE, 11, 27),
+            (ElementType.FLOOR, Direction.NONE, 12, 27),
+            (ElementType.FLOOR, Direction.NONE, 13, 27),
+            (ElementType.FLOOR, Direction.NONE, 13, 26),
+            (ElementType.FLOOR, Direction.NONE, 14, 25),
+            (ElementType.FLOOR, Direction.NONE, 14, 24),
+            (ElementType.WALL, Direction.NONE, 15, 23),
+            (ElementType.WALL, Direction.NONE, 16, 22),
+            (ElementType.FLOOR, Direction.NONE, 16, 23),
+            (ElementType.BLUE_DOOR, Direction.NONE, 6, 5),
+            (ElementType.BLUE_DOOR, Direction.NONE, 7, 5),
+            (ElementType.BLUE_DOOR, Direction.NONE, 8, 5),
+            (ElementType.BLUE_DOOR, Direction.NONE, 6, 6),
+            (ElementType.BLUE_DOOR, Direction.NONE, 7, 6),
+            (ElementType.BLUE_DOOR, Direction.NONE, 8, 6),
+            (ElementType.BLUE_DOOR, Direction.NONE, 6, 7),
+            (ElementType.BLUE_DOOR, Direction.NONE, 7, 7),
+            (ElementType.BLUE_DOOR, Direction.NONE, 8, 7),
+            (ElementType.OBSTACLE, Direction.NONE, 28, 5),
+            (ElementType.FORCE_ARROW, Direction.NW, 9, 9),
+            (ElementType.FORCE_ARROW, Direction.W, 7, 16),
         ]
         for (element, direction, x, y) in elements:
             await self._interface.place_element(element, direction, (x, y))
             room.place_element(element, direction, (x, y))
         await self._interface.place_element(
-            Element.FLOOR, Direction.NONE, (7, 16), style="road"
+            ElementType.FLOOR, Direction.NONE, (7, 16), style="road"
         )
 
         await self._interface.place_element(
-            Element.WALL, Direction.NONE, (5, 10), (10, 15)
+            ElementType.WALL, Direction.NONE, (5, 10), (10, 15)
         )
-        room.place_element(Element.WALL, Direction.NONE, (5, 10), (10, 15))
+        room.place_element(ElementType.WALL, Direction.NONE, (5, 10), (10, 15))
         for x in range(5, 11):
             for y in range(10, 16):
-                elements.append((Element.WALL, Direction.NONE, x, y))
+                elements.append((ElementType.WALL, Direction.NONE, x, y))
 
         await self._interface.start_test_room((37, 31), Direction.SE)
         tiles, colors = await self._interface.get_tiles_and_colors()

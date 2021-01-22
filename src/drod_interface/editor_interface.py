@@ -8,7 +8,7 @@ from common import (
     ROOM_HEIGHT_IN_TILES,
     TILE_SIZE,
 )
-from room import Element, Direction
+from room import ElementType, Direction
 from .consts import ROOM_ORIGIN_X, ROOM_ORIGIN_Y
 from .util import get_drod_window, extract_room, extract_minimap, extract_tiles
 
@@ -315,30 +315,30 @@ class EditorInterface:
             placing all characters before any other layers.
         style
             The cosmetic style of the element. It does not count as a separate element
-            in the model (the Element enum), but may be of interest to place anyway.
+            in the model (the ElementType enum), but may be of interest to place anyway.
             The possible values depend on the element to place.
         """
         button = "left"
-        if element in [Element.BEETHRO]:
+        if element in [ElementType.BEETHRO]:
             # Some elements cannot be placed freely, so we place characters to fake it
             await self._place_character(
                 element, direction, position, copy_characters=copy_characters
             )
             return
 
-        if element == Element.WALL:
+        if element == ElementType.WALL:
             await self._select_element(_ROOM_PIECES_TAB, _WALL)
             if (style == "hard") != self._hard_walls:
                 await self._click(_WALL)
                 self._hard_walls = style == "hard"
-        elif element == Element.PIT:
+        elif element == ElementType.PIT:
             await self._select_element(_ROOM_PIECES_TAB, _PIT)
-        elif element == Element.STAIRS:
+        elif element == ElementType.STAIRS:
             await self._select_element(_ROOM_PIECES_TAB, _STAIRS)
             if (style == "up") != self._stairs_up:
                 await self._click(_STAIRS)
                 self._stairs_up = style == "up"
-        elif element == Element.FLOOR:
+        elif element == ElementType.FLOOR:
             button = "right"
             if style == "mosaic":
                 await self._select_element(_ROOM_PIECES_TAB, _MOSAIC_FLOOR)
@@ -357,29 +357,29 @@ class EditorInterface:
                 button = "left"
             else:
                 await self._select_element(_ROOM_PIECES_TAB, _FLOOR)
-        elif element == Element.YELLOW_DOOR:
+        elif element == ElementType.YELLOW_DOOR:
             await self._select_element(_ROOM_PIECES_TAB, _YELLOW_DOOR)
-        elif element == Element.YELLOW_DOOR_OPEN:
+        elif element == ElementType.YELLOW_DOOR_OPEN:
             await self._select_element(_ROOM_PIECES_TAB, _YELLOW_DOOR_OPEN)
-        elif element == Element.GREEN_DOOR:
+        elif element == ElementType.GREEN_DOOR:
             await self._select_element(_ROOM_PIECES_TAB, _GREEN_DOOR)
-        elif element == Element.GREEN_DOOR_OPEN:
+        elif element == ElementType.GREEN_DOOR_OPEN:
             await self._select_element(_ROOM_PIECES_TAB, _GREEN_DOOR_OPEN)
-        elif element == Element.BLUE_DOOR:
+        elif element == ElementType.BLUE_DOOR:
             await self._select_element(_ROOM_PIECES_TAB, _BLUE_DOOR)
-        elif element == Element.BLUE_DOOR_OPEN:
+        elif element == ElementType.BLUE_DOOR_OPEN:
             await self._select_element(_ROOM_PIECES_TAB, _BLUE_DOOR_OPEN)
-        elif element == Element.MASTER_WALL:
+        elif element == ElementType.MASTER_WALL:
             await self._select_element(_ROOM_PIECES_TAB, _MASTER_WALL)
             if self._hold_complete_wall:
                 await self._click(_MASTER_WALL)
                 self._hold_complete_wall = False
-        elif element == Element.FORCE_ARROW:
+        elif element == ElementType.FORCE_ARROW:
             await self._select_element(_FLOOR_CONTROLS_TAB, _FORCE_ARROW)
             await self._set_direction(direction, kind="force_arrow")
-        elif element == Element.CHECKPOINT:
+        elif element == ElementType.CHECKPOINT:
             await self._select_element(_FLOOR_CONTROLS_TAB, _CHECKPOINT)
-        elif element == Element.ORB:
+        elif element == ElementType.ORB:
             await self._select_element(_ITEMS_TAB, _ORB)
             if self._orb_type == _OrbType.CRACKED:
                 await self._click(_ORB)
@@ -387,9 +387,9 @@ class EditorInterface:
             elif self._orb_type == _OrbType.BROKEN:
                 await self._click(_ORB)
             self._orb_type = _OrbType.NORMAL
-        elif element == Element.SCROLL:
+        elif element == ElementType.SCROLL:
             await self._select_element(_ITEMS_TAB, _SCROLL)
-        elif element == Element.OBSTACLE:
+        elif element == ElementType.OBSTACLE:
             used_style = style if style is not None else "rock_1"
             await self._select_element(_ITEMS_TAB, _OBSTACLE)
             if self._selected_obstacle != _OBSTACLE_STYLES[used_style]:
@@ -397,14 +397,14 @@ class EditorInterface:
                 await self._click(_OBSTACLE)
                 await self._click(_OBSTACLE_STYLES[used_style])
                 self._selected_obstacle = _OBSTACLE_STYLES[used_style]
-        elif element == Element.CONQUER_TOKEN:
+        elif element == ElementType.CONQUER_TOKEN:
             await self._select_element(_ITEMS_TAB, _TOKEN)
             if self._selected_token != _CONQUER_TOKEN_IN_MENU:
                 # Click it again to bring up the menu, and select it
                 await self._click(_TOKEN)
                 await self._click(_CONQUER_TOKEN_IN_MENU)
                 self._selected_token = _CONQUER_TOKEN_IN_MENU
-        elif element == Element.ROACH:
+        elif element == ElementType.ROACH:
             await self._select_element(_MONSTERS_TAB, _ROACH)
             await self._set_direction(direction)
         else:
@@ -427,10 +427,10 @@ class EditorInterface:
                 yOffset=(end_position[1] - position[1]) * TILE_SIZE,
                 button=button,
             )
-        if element == Element.STAIRS:
+        if element == ElementType.STAIRS:
             # Close the stairs window, it doesn't matter where the stairs go
             await self._click(_STAIRS_WINDOW_OK)
-        elif element == Element.SCROLL:
+        elif element == ElementType.SCROLL:
             # Write something and close the scroll window
             pyautogui.press("space")
             await self._click(_SCROLL_WINDOW_OK)
@@ -455,7 +455,7 @@ class EditorInterface:
             await self._set_direction(direction)
             await self._click((real_x, real_y))
             # We're now in the character menu
-            if element == Element.BEETHRO:
+            if element == ElementType.BEETHRO:
                 await self._click(_CHARACTER_WINDOW_SCROLL_UP)
                 await self._click(_CHARACTER_WINDOW_SCROLL_UP)
                 await self._click(_CHARACTER_WINDOW_FIRST_TYPE)
