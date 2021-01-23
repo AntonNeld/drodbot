@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Dict, Tuple
 
 from common import Action
-from .element import ElementType, Element, element_from_apparent
+from .element import ElementType, Beethro, element_from_apparent
 from .tile import Tile
 from util import direction_after, position_in_direction
 
@@ -132,9 +132,7 @@ class Room(BaseModel):
             pos_after = position_in_direction(position, action)
         if self.tiles[pos_after].is_passable():
             self.tiles[position].monster = None
-            self.tiles[pos_after].monster = Element(
-                element_type=ElementType.BEETHRO, direction=direction
-            )
+            self.tiles[pos_after].monster = Beethro(direction=direction)
 
     @staticmethod
     def from_apparent_tiles(apparent_tiles):

@@ -2,7 +2,7 @@ from collections import namedtuple
 
 from .room_solver import solve_room, ReachTileObjective
 from search import NoSolutionError, a_star_graph
-from room import ElementType, Direction, Element
+from room import Direction, Beethro
 from util import direction_after
 
 
@@ -40,9 +40,7 @@ class _LevelPathfindingProblem:
         else:
             room = self.level.rooms[state.room].copy(deep=True)
             # Let's just make up the direction for now.
-            room.tiles[state.tile].monster = Element(
-                element_type=ElementType.BEETHRO, direction=Direction.SE
-            )
+            room.tiles[state.tile].monster = Beethro(direction=Direction.SE)
             room_position = state.room
 
         exits = self.level.get_room_exits(room_position)
@@ -68,9 +66,7 @@ class _LevelPathfindingProblem:
         else:
             room = self.level.rooms[state.room].copy(deep=True)
             # Let's just make up the direction for now.
-            room.tiles[state.tile].monster = Element(
-                element_type=ElementType.BEETHRO, direction=Direction.SE
-            )
+            room.tiles[state.tile].monster = Beethro(direction=Direction.SE)
             room_position = state.room
         goal_tiles_in_room = [
             tile for goal_room, tile in self.goal_tiles if goal_room == room_position
@@ -133,9 +129,7 @@ def find_path_in_level(goal_tiles, current_room, current_room_position, level):
         detailed_actions.append(high_level_action.action)
         latest_room_position, new_tile_position = high_level_action.result
         room = level.rooms[latest_room_position].copy(deep=True)
-        room.tiles[new_tile_position].monster = Element(
-            element_type=ElementType.BEETHRO, direction=direction
-        )
+        room.tiles[new_tile_position].monster = Beethro(direction=direction)
     # Find the path to the final tile in the last room
     actions = solve_room(
         room,

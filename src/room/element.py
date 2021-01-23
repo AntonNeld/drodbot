@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Union, Literal
 
 from pydantic import BaseModel
 
@@ -78,17 +79,52 @@ class Direction(Enum):
     UNKNOWN = "?"
 
 
-class Element(BaseModel):
-    """An game element that can be in a tile."""
+class UndirectionalElement(BaseModel):
+    """An game element without a direction."""
 
-    element_type: ElementType
+    element_type: Union[
+        Literal[ElementType.UNKNOWN],
+        Literal[ElementType.WALL],
+        Literal[ElementType.FLOOR],
+        Literal[ElementType.PIT],
+        Literal[ElementType.MASTER_WALL],
+        Literal[ElementType.YELLOW_DOOR],
+        Literal[ElementType.YELLOW_DOOR_OPEN],
+        Literal[ElementType.GREEN_DOOR],
+        Literal[ElementType.GREEN_DOOR_OPEN],
+        Literal[ElementType.BLUE_DOOR],
+        Literal[ElementType.BLUE_DOOR_OPEN],
+        Literal[ElementType.STAIRS],
+        Literal[ElementType.CHECKPOINT],
+        Literal[ElementType.CONQUER_TOKEN],
+        Literal[ElementType.ORB],
+        Literal[ElementType.SCROLL],
+        Literal[ElementType.OBSTACLE],
+    ]
+
+
+class DirectionalElement(BaseModel):
+    """An game element with a direction."""
+
+    element_type: Union[Literal[ElementType.FORCE_ARROW], Literal[ElementType.ROACH]]
     direction: Direction
+
+
+# Let's make Beethro a separate class because we instantiate him so often
+class Beethro(BaseModel):
+    """The player."""
+
+    element_type: Literal[ElementType.BEETHRO] = ElementType.BEETHRO
+    direction: Direction
+
+
+Element = Union[UndirectionalElement, DirectionalElement, Beethro]
 
 
 def element_from_apparent(element_type, direction):
     """Create an element from an element type and a direction.
 
-    Some information may be missing initially.
+    Some information may be missing initially. ElementType.NOTHING becomes None.
 
     Parameters
     ----------
@@ -96,5 +132,15 @@ def element_from_apparent(element_type, direction):
         The element type.
     direction
         The direction.
+
+    Returns
+    -------
+    An element or None.
     """
-    return Element(element_type=element_type, direction=direction)
+    if element_type == ElementType.NOTHING:
+        return None
+    if element_type == ElementType.BEETHRO:
+        return Beethro(direction=direction)
+    if direction == Direction.NONE:
+        return UndirectionalElement(element_type=element_type)
+    return DirectionalElement(element_type=element_type, direction=direction)
