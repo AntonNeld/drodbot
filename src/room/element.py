@@ -1,8 +1,10 @@
 from enum import Enum
 
+from pydantic import BaseModel
+
 
 class ElementType(Enum):
-    """A game element that can be in a tile."""
+    """A kind of game element."""
 
     UNKNOWN = "Unknown"
     NOTHING = "Nothing"
@@ -74,3 +76,25 @@ class Direction(Enum):
     NW = "NW"
     NONE = " "
     UNKNOWN = "?"
+
+
+class Element(BaseModel):
+    """An game element that can be in a tile."""
+
+    element_type: ElementType
+    direction: Direction
+
+
+def element_from_apparent(element_type, direction):
+    """Create an element from an element type and a direction.
+
+    Some information may be missing initially.
+
+    Parameters
+    ----------
+    element_type
+        The element type.
+    direction
+        The direction.
+    """
+    return Element(element_type=element_type, direction=direction)

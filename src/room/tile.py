@@ -1,15 +1,13 @@
 from pydantic import BaseModel
-from typing import Tuple
+from typing import Optional
 
-from .element import ElementType, Direction
+from .element import ElementType, Element
 
 
 class Tile(BaseModel):
     """A representation of a tile.
 
-    This contains information about what element is in each layer, as a tuple of
-    (ElementType, Direction).
-
+    This contains information about what element is in each layer.
     Parameters
     ----------
     room_piece
@@ -24,35 +22,23 @@ class Tile(BaseModel):
         The element in the "monsters" layer.
     """
 
-    room_piece: Tuple[ElementType, Direction]
-    floor_control: Tuple[ElementType, Direction] = (
-        ElementType.NOTHING,
-        Direction.NONE,
-    )
-    checkpoint: Tuple[ElementType, Direction] = (
-        ElementType.NOTHING,
-        Direction.NONE,
-    )
-    item: Tuple[ElementType, Direction] = (
-        ElementType.NOTHING,
-        Direction.NONE,
-    )
-    monster: Tuple[ElementType, Direction] = (
-        ElementType.NOTHING,
-        Direction.NONE,
-    )
+    room_piece: Element
+    floor_control: Optional[Element]
+    checkpoint: Optional[Element]
+    item: Optional[Element]
+    monster: Optional[Element]
 
-    def get_elements(self):
-        """Get all elements in the tile.
+    def get_element_types(self):
+        """Get the types of all elements in the tile.
 
-        ElementType.NOTHING is skipped.
+        ElementType.NOTHING is not included.
 
         Returns
         -------
-        A list of all elements (without directions) in the tile.
+        A list of all element types in the tile.
         """
         return [
-            e[0]
+            e.element_type
             for e in [
                 self.room_piece,
                 self.floor_control,
@@ -60,7 +46,7 @@ class Tile(BaseModel):
                 self.item,
                 self.monster,
             ]
-            if e[0] != ElementType.NOTHING
+            if e is not None
         ]
 
     def is_passable(self):
@@ -86,5 +72,5 @@ class Tile(BaseModel):
                     ElementType.PIT,
                 ]
             )
-            & set(self.get_elements())
+            & set(self.get_element_types())
         )

@@ -5,7 +5,7 @@ from typing import Tuple, List, Optional
 from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .room_solver import solve_room, ReachTileObjective, StrikeTileObjective
 from .level_walker import find_path_in_level
-from room import Level, Direction, ElementType, Room
+from room import Level, Direction, ElementType, Room, Element
 from search import NoSolutionError
 
 _ACTION_DELAY = 0.1
@@ -181,10 +181,7 @@ class DrodBot:
         player_position = room_in_level.find_player()
         # Remove Beethro from the room, so the saved level doesn't
         # have a bunch of Beethros standing around
-        room_in_level.tiles[player_position].monster = (
-            ElementType.NOTHING,
-            Direction.NONE,
-        )
+        room_in_level.tiles[player_position].monster = None
         self.state.level.rooms[self.state.current_room_position] = room_in_level
         self._notify_state_update()
         print("Interpreted room")
@@ -232,9 +229,9 @@ class DrodBot:
         print(f"Entering new room in direction {direction.value}")
         room_x, room_y = self.state.current_room_position
         player_x, player_y = self.state.current_room.find_player()
-        player_direction = self.state.current_room.tiles[(player_x, player_y)].monster[
-            1
-        ]
+        player_direction = self.state.current_room.tiles[
+            (player_x, player_y)
+        ].monster.direction
         if direction == Direction.N:
             if player_y != 0:
                 raise RuntimeError(f"Cannot enter new room by moving N, y={player_y}")
@@ -267,9 +264,9 @@ class DrodBot:
         self.state.current_room_position = new_room_coords
         if new_room_coords in self.state.level.rooms:
             room = self.state.level.rooms[new_room_coords].copy(deep=True)
-            room.tiles[position_after].monster = (
-                ElementType.BEETHRO,
-                player_direction,
+            room.tiles[position_after].monster = Element(
+                element_type=ElementType.BEETHRO,
+                direction=player_direction,
             )
             self.state.current_room = room
             self._notify_state_update()

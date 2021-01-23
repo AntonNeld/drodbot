@@ -2,10 +2,7 @@ from pydantic import BaseModel
 from typing import Dict, Tuple
 
 from common import Action
-from .element import (
-    ElementType,
-    Direction,
-)
+from .element import ElementType, Element, element_from_apparent
 from .tile import Tile
 from util import direction_after, position_in_direction
 
@@ -60,7 +57,9 @@ class Room(BaseModel):
         The coordinates of all elements of that type, as a list of (x, y) tuples.
         """
         return [
-            pos for pos, tile in self.tiles.items() if element in tile.get_elements()
+            pos
+            for pos, tile in self.tiles.items()
+            if element in tile.get_element_types()
         ]
 
     def find_player(self):
@@ -125,15 +124,17 @@ class Room(BaseModel):
         # TODO: This should use DRODLib from the DROD source instead of
         # reimplementing everything.
         position = self.find_player()
-        direction = self.tiles[position].monster[1]
+        direction = self.tiles[position].monster.direction
         pos_after = position
         if action in [Action.CW, Action.CCW]:
             direction = direction_after([action], direction)
         else:
             pos_after = position_in_direction(position, action)
         if self.tiles[pos_after].is_passable():
-            self.tiles[position].monster = (ElementType.NOTHING, Direction.NONE)
-            self.tiles[pos_after].monster = (ElementType.BEETHRO, direction)
+            self.tiles[position].monster = None
+            self.tiles[pos_after].monster = Element(
+                element_type=ElementType.BEETHRO, direction=direction
+            )
 
     @staticmethod
     def from_apparent_tiles(apparent_tiles):
@@ -154,11 +155,11 @@ class Room(BaseModel):
         return Room(
             tiles={
                 key: Tile(
-                    room_piece=tile.room_piece,
-                    floor_control=tile.floor_control,
-                    checkpoint=tile.checkpoint,
-                    item=tile.item,
-                    monster=tile.monster,
+                    room_piece=element_from_apparent(*tile.room_piece),
+                    floor_control=element_from_apparent(*tile.floor_control),
+                    checkpoint=element_from_apparent(*tile.checkpoint),
+                    item=element_from_apparent(*tile.item),
+                    monster=element_from_apparent(*tile.monster),
                 )
                 for key, tile in apparent_tiles.items()
             }
