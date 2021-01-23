@@ -175,7 +175,7 @@ class DrodBot:
     async def _interpret_room(self):
         print("Interpreting room...")
         visual_info = await self._interface.get_view()
-        room = visual_info["room"]
+        room = Room.from_apparent_tiles(visual_info["tile_contents"])
         self.state.current_room = room
         room_in_level = room.copy(deep=True)
         player_position = room_in_level.find_player()

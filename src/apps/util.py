@@ -33,16 +33,17 @@ ELEMENT_CHARACTERS = {
     ElementType.ROACH: "R",
     ElementType.CONQUER_TOKEN: "C",
     ElementType.FLOOR: ".",
+    ElementType.NOTHING: " ",
 }
 
 
-def tile_to_text(tile):
-    """Given a tile representation, return text describing the contents.
+def apparent_tile_to_text(tile):
+    """Describe an apparent tile in a human-friendly format.
 
     Parameters
     ----------
     tile
-        The tile representation.
+        The apparent tile representation.
 
     Returns
     -------
@@ -66,21 +67,21 @@ def _format_element(pair):
         return f"{element.value} {direction.value}"
 
 
-def annotate_room_image_with_tile_contents(image, room):
+def annotate_room_image_with_tile_contents(image, tile_contents):
     """Get an image of a room, annotated with tile contents.
 
     Parameters
     ----------
     image
         The original room image.
-    room
-        A representation of the room, describing its content.
+    tile_contents
+        A dict mapping (x, y) coordinates to ApparentTile instances.
 
     Returns
     -------
     A grayscale image of the room, with the elements in each tile
     overlaid as characters. The character that corresponds to each
-    element is defined in common.ELEMENT_CHARACTERS.
+    element is defined in ELEMENT_CHARACTERS.
     """
     annotated_image = numpy.zeros(image.shape, dtype=numpy.uint8)
     for x in range(ROOM_WIDTH_IN_TILES):
@@ -88,14 +89,20 @@ def annotate_room_image_with_tile_contents(image, room):
             tile_image = image[
                 y * TILE_SIZE : (y + 1) * TILE_SIZE, x * TILE_SIZE : (x + 1) * TILE_SIZE
             ]
-            tile = room.tiles[(x, y)]
+            tile = tile_contents[(x, y)]
             # Convert the tile to grayscale to make the text stand out.
             # We're converting it back to RGB so we can add the text, but
             # the tile will still look grayscale since we lose color information.
             modified_tile = cv2.cvtColor(
                 cv2.cvtColor(tile_image, cv2.COLOR_RGB2GRAY), cv2.COLOR_GRAY2RGB
             )
-            for element in tile.get_elements():
+            for element, _ in [
+                tile.room_piece,
+                tile.floor_control,
+                tile.checkpoint,
+                tile.item,
+                tile.monster,
+            ]:
                 cv2.putText(
                     modified_tile,
                     ELEMENT_CHARACTERS[element],

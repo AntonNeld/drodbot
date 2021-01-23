@@ -4,7 +4,6 @@ from common import (
     Action,
     ImageProcessingStep,
 )
-from room import Room
 from .util import (
     get_drod_window,
     extract_room,
@@ -131,8 +130,7 @@ class PlayInterface:
             return visual_info
 
         tile_contents = self._classifier.classify_tiles(tiles, minimap_colors)
-        room = Room.from_apparent_tiles(tile_contents)
-        visual_info["room"] = room
+        visual_info["tile_contents"] = tile_contents
 
         # If no earlier step is specified, include the normal room image
         visual_info["image"] = room_image

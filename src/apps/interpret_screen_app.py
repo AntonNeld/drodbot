@@ -9,7 +9,7 @@ from common import (
     ImageProcessingStep,
     TILE_SIZE,
 )
-from .util import tile_to_text, annotate_room_image_with_tile_contents
+from .util import apparent_tile_to_text, annotate_room_image_with_tile_contents
 
 # The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
 _CANVAS_WIDTH = 418
@@ -42,7 +42,7 @@ class InterpretScreenApp(tkinter.Frame):
         self._selected_view_step.set(list(ImageProcessingStep)[-1].value)
         self._enlarged_view = False
         self._raw_view_image = None
-        self._room = None
+        self._all_tile_contents = None
 
         # Create widgets
         self._canvas = tkinter.Canvas(
@@ -69,28 +69,27 @@ class InterpretScreenApp(tkinter.Frame):
         self._tile_content = tkinter.Label(self._control_panel, text="")
         self._tile_content.pack(side=tkinter.BOTTOM)
 
-    def set_data(self, image, room=None):
+    def set_data(self, image, tile_contents=None):
         """Set the data to show in the app.
 
         Parameters
         ----------
         image
             The image to show.
-        room
-            If given, annotate the tiles in the image with their contents,
-            as they appear in this room.
+        tile_contents
+            If given, annotate the tiles in the image with these contents.
         """
         self._raw_view_image = image
-        self._room = room
+        self._all_tile_contents = tile_contents
         self._draw_view()
 
     def _draw_view(self):
         if self._raw_view_image is not None:
-            if self._room is not None:
+            if self._all_tile_contents is not None:
                 # Let's assume the image is of the room here. If that is not the case,
                 # the below function will produce weird results.
                 image = annotate_room_image_with_tile_contents(
-                    self._raw_view_image, self._room
+                    self._raw_view_image, self._all_tile_contents
                 )
             else:
                 image = self._raw_view_image
@@ -137,9 +136,9 @@ class InterpretScreenApp(tkinter.Frame):
         else:
             x = event.x // (TILE_SIZE // 2)
             y = event.y // (TILE_SIZE // 2)
-        if self._room is not None:
-            tile = self._room.tiles[(x, y)]
-            self._tile_content.config(text=tile_to_text(tile))
+        if self._all_tile_contents is not None:
+            tile = self._all_tile_contents[(x, y)]
+            self._tile_content.config(text=apparent_tile_to_text(tile))
         elif self._raw_view_image.shape == (32, 38, 3):
             # This is probably the minimap, so showing the color is nice
             color = self._raw_view_image[y, x, :]

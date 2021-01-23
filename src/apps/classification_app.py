@@ -6,7 +6,7 @@ from PIL import ImageTk, Image
 import tkinter
 import traceback
 
-from .util import tile_to_text, ScrollableFrame
+from .util import apparent_tile_to_text, ScrollableFrame
 
 _CANVAS_WIDTH = 88
 _CANVAS_HEIGHT = 88
@@ -174,11 +174,12 @@ class ClassificationApp(tkinter.Frame):
             text=f"File: {self._data[index]['file_name']} ({index+1}/{len(self._data)})"
         )
         self._real_tile_content.config(
-            text="==Real content==\n" + tile_to_text(self._data[index]["real_content"])
+            text="==Real content==\n"
+            + apparent_tile_to_text(self._data[index]["real_content"])
         )
         self._predicted_tile_content.config(
             text="==Predicted content==\n"
-            + tile_to_text(self._data[index]["predicted_content"])
+            + apparent_tile_to_text(self._data[index]["predicted_content"])
         )
 
     def _set_debug_steps(self):

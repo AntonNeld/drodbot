@@ -19,7 +19,7 @@ class InterpretScreenAppBackend:
     async def show_view_step(self, step):
         """Show the given view step in the GUI.
 
-        This method will add the image and room to the window queue.
+        This method will add the image and tile contents to the window queue.
 
         Parameters
         ----------
@@ -31,6 +31,8 @@ class InterpretScreenAppBackend:
             (
                 GUIEvent.SET_INTERPRET_SCREEN_DATA,
                 visual_info["image"],
-                visual_info["room"] if "room" in visual_info else None,
+                visual_info["tile_contents"]
+                if "tile_contents" in visual_info
+                else None,
             )
         )
