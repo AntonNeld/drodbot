@@ -11,9 +11,13 @@ from common import GUIEvent
 from room import (
     ElementType,
     Direction,
-    Room,
-    Tile,
+    ROOM_PIECES,
+    FLOOR_CONTROLS,
+    CHECKPOINTS,
+    ITEMS,
+    MONSTERS,
 )
+from tile_classifier import ApparentTile
 from .editor_utils import (
     place_fully_directional_elements,
     place_nondirectional_edges_elements,
@@ -65,7 +69,7 @@ class ClassificationAppBackend:
             return
         for file_name in file_names:
             image = PIL.Image.open(os.path.join(self._sample_data_dir, file_name))
-            content = Tile.parse_raw(image.info["tile_json"])
+            content = ApparentTile.parse_raw(image.info["tile_json"])
             minimap_color = tuple(json.loads(image.info["minimap_color"]))
             self._sample_data.append(
                 {
@@ -241,70 +245,78 @@ class ClassificationAppBackend:
         print("Generating sample data...")
         await self._interface.initialize()
         await self._interface.clear_room()
-        room = Room()
 
-        elements = [
-            (ElementType.FLOOR, Direction.NONE, 0, 0),
-            (ElementType.BEETHRO, Direction.N, 0, 1),
-            (ElementType.BEETHRO, Direction.N, 0, 2),
-            (ElementType.BEETHRO, Direction.NE, 1, 1),
-            (ElementType.FLOOR, Direction.NONE, 2, 1),
-            (ElementType.BEETHRO, Direction.NW, 3, 1),
-            (ElementType.ROACH, Direction.N, 2, 0),
-            (ElementType.ROACH, Direction.NE, 3, 3),
-            (ElementType.ROACH, Direction.SW, 3, 4),
-            (ElementType.GREEN_DOOR_OPEN, Direction.NONE, 5, 5),
-            (ElementType.ROACH, Direction.SE, 5, 5),
-            (ElementType.WALL, Direction.NONE, 12, 25),
-            (ElementType.WALL, Direction.NONE, 13, 25),
-            (ElementType.WALL, Direction.NONE, 13, 24),
-            (ElementType.WALL, Direction.NONE, 11, 26),
-            (ElementType.WALL, Direction.NONE, 12, 26),
-            (ElementType.FLOOR, Direction.NONE, 11, 27),
-            (ElementType.FLOOR, Direction.NONE, 12, 27),
-            (ElementType.FLOOR, Direction.NONE, 13, 27),
-            (ElementType.FLOOR, Direction.NONE, 13, 26),
-            (ElementType.FLOOR, Direction.NONE, 14, 25),
-            (ElementType.FLOOR, Direction.NONE, 14, 24),
-            (ElementType.WALL, Direction.NONE, 15, 23),
-            (ElementType.WALL, Direction.NONE, 16, 22),
-            (ElementType.FLOOR, Direction.NONE, 16, 23),
-            (ElementType.BLUE_DOOR, Direction.NONE, 6, 5),
-            (ElementType.BLUE_DOOR, Direction.NONE, 7, 5),
-            (ElementType.BLUE_DOOR, Direction.NONE, 8, 5),
-            (ElementType.BLUE_DOOR, Direction.NONE, 6, 6),
-            (ElementType.BLUE_DOOR, Direction.NONE, 7, 6),
-            (ElementType.BLUE_DOOR, Direction.NONE, 8, 6),
-            (ElementType.BLUE_DOOR, Direction.NONE, 6, 7),
-            (ElementType.BLUE_DOOR, Direction.NONE, 7, 7),
-            (ElementType.BLUE_DOOR, Direction.NONE, 8, 7),
-            (ElementType.OBSTACLE, Direction.NONE, 28, 5),
-            (ElementType.FORCE_ARROW, Direction.NW, 9, 9),
-            (ElementType.FORCE_ARROW, Direction.W, 7, 16),
+        elements = await place_rectangle(self._interface, ElementType.WALL, 5, 10, 6, 6)
+        extra_elements = [
+            (ElementType.FLOOR, Direction.NONE, 0, 0, None),
+            (ElementType.BEETHRO, Direction.N, 0, 1, None),
+            (ElementType.BEETHRO, Direction.N, 0, 2, None),
+            (ElementType.BEETHRO, Direction.NE, 1, 1, None),
+            (ElementType.FLOOR, Direction.NONE, 2, 1, None),
+            (ElementType.BEETHRO, Direction.NW, 3, 1, None),
+            (ElementType.ROACH, Direction.N, 2, 0, None),
+            (ElementType.ROACH, Direction.NE, 3, 3, None),
+            (ElementType.ROACH, Direction.SW, 3, 4, None),
+            (ElementType.GREEN_DOOR_OPEN, Direction.NONE, 5, 5, None),
+            (ElementType.ROACH, Direction.SE, 5, 5, None),
+            (ElementType.WALL, Direction.NONE, 12, 25, None),
+            (ElementType.WALL, Direction.NONE, 13, 25, None),
+            (ElementType.WALL, Direction.NONE, 13, 24, None),
+            (ElementType.WALL, Direction.NONE, 11, 26, None),
+            (ElementType.WALL, Direction.NONE, 12, 26, None),
+            (ElementType.FLOOR, Direction.NONE, 11, 27, None),
+            (ElementType.FLOOR, Direction.NONE, 12, 27, None),
+            (ElementType.FLOOR, Direction.NONE, 13, 27, None),
+            (ElementType.FLOOR, Direction.NONE, 13, 26, None),
+            (ElementType.FLOOR, Direction.NONE, 14, 25, None),
+            (ElementType.FLOOR, Direction.NONE, 14, 24, None),
+            (ElementType.WALL, Direction.NONE, 15, 23, None),
+            (ElementType.WALL, Direction.NONE, 16, 22, None),
+            (ElementType.FLOOR, Direction.NONE, 16, 23, None),
+            (ElementType.BLUE_DOOR, Direction.NONE, 6, 5, None),
+            (ElementType.BLUE_DOOR, Direction.NONE, 7, 5, None),
+            (ElementType.BLUE_DOOR, Direction.NONE, 8, 5, None),
+            (ElementType.BLUE_DOOR, Direction.NONE, 6, 6, None),
+            (ElementType.BLUE_DOOR, Direction.NONE, 7, 6, None),
+            (ElementType.BLUE_DOOR, Direction.NONE, 8, 6, None),
+            (ElementType.BLUE_DOOR, Direction.NONE, 6, 7, None),
+            (ElementType.BLUE_DOOR, Direction.NONE, 7, 7, None),
+            (ElementType.BLUE_DOOR, Direction.NONE, 8, 7, None),
+            (ElementType.OBSTACLE, Direction.NONE, 28, 5, None),
+            (ElementType.FORCE_ARROW, Direction.NW, 9, 9, None),
+            (ElementType.FLOOR, Direction.NONE, 7, 16, "road"),
+            (ElementType.FORCE_ARROW, Direction.W, 7, 16, None),
         ]
-        for (element, direction, x, y) in elements:
-            await self._interface.place_element(element, direction, (x, y))
-            room.place_element(element, direction, (x, y))
-        await self._interface.place_element(
-            ElementType.FLOOR, Direction.NONE, (7, 16), style="road"
-        )
+        for (element, direction, x, y, style) in extra_elements:
+            await self._interface.place_element(element, direction, (x, y), style=style)
 
-        await self._interface.place_element(
-            ElementType.WALL, Direction.NONE, (5, 10), (10, 15)
-        )
-        room.place_element(ElementType.WALL, Direction.NONE, (5, 10), (10, 15))
-        for x in range(5, 11):
-            for y in range(10, 16):
-                elements.append((ElementType.WALL, Direction.NONE, x, y))
+        elements.extend(extra_elements)
 
         await self._interface.start_test_room((37, 31), Direction.SE)
         tiles, colors = await self._interface.get_tiles_and_colors()
         await self._interface.stop_test_room()
+
+        # Assign elements to tiles
+        tile_contents = {}
+        for (element, direction, x, y, style) in elements:
+            if (x, y) not in tile_contents:
+                tile_contents[(x, y)] = ApparentTile(
+                    room_piece=(ElementType.FLOOR, Direction.NONE)
+                )
+            if element in ROOM_PIECES:
+                tile_contents[(x, y)].room_piece = (element, direction)
+            elif element in FLOOR_CONTROLS:
+                tile_contents[(x, y)].floor_control = (element, direction)
+            elif element in CHECKPOINTS:
+                tile_contents[(x, y)].checkpoint = (element, direction)
+            elif element in ITEMS:
+                tile_contents[(x, y)].item = (element, direction)
+            elif element in MONSTERS:
+                tile_contents[(x, y)].monster = (element, direction)
         if os.path.exists(self._sample_data_dir):
             shutil.rmtree(self._sample_data_dir)
         os.makedirs(self._sample_data_dir)
-        for (element, direction, x, y) in elements:
-            tile_info = room.tiles[(x, y)]
+        for (x, y), tile_info in tile_contents.items():
             minimap_color = colors[(x, y)]
             png_info = PngInfo()
             png_info.add_text("tile_json", tile_info.json())
