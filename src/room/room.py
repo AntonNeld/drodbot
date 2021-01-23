@@ -192,3 +192,32 @@ class Room(BaseModel):
         if self.tiles[pos_after].is_passable():
             self.tiles[position].monster = (ElementType.NOTHING, Direction.NONE)
             self.tiles[pos_after].monster = (ElementType.BEETHRO, direction)
+
+    @staticmethod
+    def from_apparent_tiles(apparent_tiles):
+        """Create a room from apparent tiles.
+
+        Not all information will be present in the beginning, only
+        what can be seen from a screenshot.
+
+        Parameters
+        ----------
+        apparent_tiles
+            A dict mapping coordinates to ApparentTile instances.
+
+        Returns
+        -------
+        A new room.
+        """
+        return Room(
+            tiles={
+                key: Tile(
+                    room_piece=tile.room_piece,
+                    floor_control=tile.floor_control,
+                    checkpoint=tile.checkpoint,
+                    item=tile.item,
+                    monster=tile.monster,
+                )
+                for key, tile in apparent_tiles.items()
+            }
+        )

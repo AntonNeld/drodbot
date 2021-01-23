@@ -4,13 +4,13 @@ import os.path
 import numpy
 import PIL
 
+from .apparent_tile import ApparentTile
 from common import (
     TILE_SIZE,
 )
 from room import (
     ElementType,
     Direction,
-    Tile,
     ROOM_PIECES,
     FLOOR_CONTROLS,
     CHECKPOINTS,
@@ -100,14 +100,14 @@ class TileClassifier:
 
         Returns
         -------
-        A dict with the same keys as `tiles`, but Tile objects
+        A dict with the same keys as `tiles`, but ApparentTile objects
         representing the tile contents as the values. If `return_debug_images`
         is True, return a second dict with debug images.
         """
         if self._tile_data is None:
             raise RuntimeError("No tile data loaded, cannot classify tiles")
         classified_tiles = {
-            key: Tile(
+            key: ApparentTile(
                 room_piece=(ElementType.UNKNOWN, Direction.UNKNOWN),
                 floor_control=(ElementType.UNKNOWN, Direction.UNKNOWN),
                 checkpoint=(ElementType.UNKNOWN, Direction.UNKNOWN),
