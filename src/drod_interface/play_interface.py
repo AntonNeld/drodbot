@@ -2,7 +2,6 @@ import pyautogui
 
 from common import (
     Action,
-    ImageProcessingStep,
     TILE_SIZE,
 )
 from .consts import ROOM_ORIGIN_X, ROOM_ORIGIN_Y
@@ -85,59 +84,48 @@ class PlayInterface:
             key = "w"
         pyautogui.press(key)
 
-    async def get_view(self, step=None):
+    async def get_view(self, return_debug_images=False):
         """Get the room contents and other information from the DROD window.
 
         Parameters
         ----------
-        step
-            If given, stop at this step and return an intermediate image.
+        return_debug_images
+            If True, return an additional list of tuples (name, debug_image).
 
         Returns
         -------
-        A dict containing the following keys:
-        - "image": The room image or intermediate image
-        - "tile_contents": A dict mapping (x, y) coordinates to apparent tiles
-        - "orb_effects": A dict mapping (x, y) coordinates to orb effects
-        Not all keys may be present if `step` is given.
+        tile_contents
+            A dict mapping all coordinates to apparent tiles.
+        orb_effects
+            A dict mapping some coordinates to orb effects.
+        debug_images
+            Only returned if `return_debug_images` is True. A list of (name, image).
         """
-        visual_info = {}
-        if step in [
-            ImageProcessingStep.SCREENSHOT,
-            ImageProcessingStep.FIND_UPPER_EDGE_COLOR,
-            ImageProcessingStep.FIND_UPPER_EDGE_LINE,
-        ]:
-            _, _, image = await get_drod_window(stop_after=step)
-            visual_info["image"] = image
-            return visual_info
-        origin_x, origin_y, image = await get_drod_window()
-        if step == ImageProcessingStep.CROP_WINDOW:
-            visual_info["image"] = image
-            return visual_info
+        if return_debug_images:
+            debug_images = []
+
+        if return_debug_images:
+            origin_x, origin_y, image, window_debug_images = await get_drod_window(
+                return_debug_images=True
+            )
+            debug_images.extend(window_debug_images)
+            debug_images.append(("Extract DROD window", image))
+        else:
+            origin_x, origin_y, image = await get_drod_window()
 
         room_image = extract_room(image)
-
-        if step == ImageProcessingStep.CROP_ROOM:
-            visual_info["image"] = room_image
-            return visual_info
+        if return_debug_images:
+            debug_images.append(("Extract room", room_image))
 
         minimap = extract_minimap(image)
-
-        if step == ImageProcessingStep.EXTRACT_MINIMAP:
-            visual_info["image"] = minimap
-            return visual_info
+        if return_debug_images:
+            debug_images.append(("Extract minimap", minimap))
 
         # == Extract and classify tiles in the room ==
 
         tiles, minimap_colors = extract_tiles(room_image, minimap)
 
-        if step == ImageProcessingStep.EXTRACT_TILES:
-            # We can't show anything more interesting here
-            visual_info["image"] = room_image
-            return visual_info
-
         tile_contents = self._classifier.classify_tiles(tiles, minimap_colors)
-        visual_info["tile_contents"] = tile_contents
 
         orb_positions = [
             pos
@@ -153,13 +141,13 @@ class PlayInterface:
             and tile.room_piece[0]
             not in [ElementType.YELLOW_DOOR, ElementType.YELLOW_DOOR_OPEN]
         )
-        visual_info["orb_effects"] = await self._get_orb_effects(
+        orb_effects = await self._get_orb_effects(
             orb_positions, room_image, free_position
         )
 
-        # If no earlier step is specified, include the normal room image
-        visual_info["image"] = room_image
-        return visual_info
+        if return_debug_images:
+            return tile_contents, orb_effects, debug_images
+        return tile_contents, orb_effects
 
     async def _get_orb_effects(self, positions, original_room_image, free_position):
         """Get the orb effects for the given positions.

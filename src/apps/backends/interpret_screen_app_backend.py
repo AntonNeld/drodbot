@@ -16,7 +16,7 @@ class InterpretScreenAppBackend:
         self._queue = window_queue
         self._interface = play_interface
 
-    async def show_view_step(self, step):
+    async def show_view(self):
         """Show the given view step in the GUI.
 
         This method will add the image and tile contents to the window queue.
@@ -26,13 +26,10 @@ class InterpretScreenAppBackend:
         step
             The step to stop at.
         """
-        visual_info = await self._interface.get_view(step)
+        await self._interface.initialize()
+        tile_contents, _, debug_images = await self._interface.get_view(
+            return_debug_images=True
+        )
         self._queue.put(
-            (
-                GUIEvent.SET_INTERPRET_SCREEN_DATA,
-                visual_info["image"],
-                visual_info["tile_contents"]
-                if "tile_contents" in visual_info
-                else None,
-            )
+            (GUIEvent.SET_INTERPRET_SCREEN_DATA, debug_images, tile_contents)
         )

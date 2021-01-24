@@ -5,10 +5,7 @@ from PIL import ImageTk, Image
 import tkinter
 import traceback
 
-from common import (
-    ImageProcessingStep,
-    TILE_SIZE,
-)
+from common import TILE_SIZE
 from .util import apparent_tile_to_text, annotate_room_image_with_tile_contents
 
 # The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
@@ -39,9 +36,9 @@ class InterpretScreenApp(tkinter.Frame):
         self._event_loop = event_loop
         self._backend = backend
         self._selected_view_step = tkinter.StringVar(self)
-        self._selected_view_step.set(list(ImageProcessingStep)[-1].value)
         self._enlarged_view = False
-        self._raw_view_image = None
+        self._debug_images = None
+        self._radio_buttons = []
         self._all_tile_contents = None
 
         # Create widgets
@@ -52,47 +49,77 @@ class InterpretScreenApp(tkinter.Frame):
         self._canvas.pack(side=tkinter.LEFT)
         self._control_panel = tkinter.Frame(self)
         self._control_panel.pack(side=tkinter.RIGHT)
-        self._toggle_view_size_button = tkinter.Button(
-            self._control_panel, text="Enlarge view", command=self._toggle_view_size
-        )
-        self._toggle_view_size_button.pack(side=tkinter.BOTTOM)
+        self._tile_content = tkinter.Label(self._control_panel, text="")
+        self._tile_content.pack(side=tkinter.TOP)
         self._get_view = tkinter.Button(
             self._control_panel, text="Get view", command=self._show_view
         )
-        self._get_view.pack(side=tkinter.BOTTOM)
-        self._view_step_dropdown = tkinter.OptionMenu(
-            self._control_panel,
-            self._selected_view_step,
-            *[s.value for s in ImageProcessingStep]
+        self._get_view.pack(side=tkinter.TOP)
+        self._toggle_view_size_button = tkinter.Button(
+            self._control_panel, text="Enlarge view", command=self._toggle_view_size
         )
-        self._view_step_dropdown.pack(side=tkinter.BOTTOM)
-        self._tile_content = tkinter.Label(self._control_panel, text="")
-        self._tile_content.pack(side=tkinter.BOTTOM)
+        self._toggle_view_size_button.pack(side=tkinter.TOP)
+        self._debug_step_frame = tkinter.Frame(self._control_panel)
+        self._debug_step_frame.pack(side=tkinter.TOP)
 
-    def set_data(self, image, tile_contents=None):
+        self._set_debug_steps()
+
+    def set_data(self, debug_images, tile_contents):
         """Set the data to show in the app.
 
         Parameters
         ----------
-        image
-            The image to show.
+        debug_images
+            A list of (name, image) pairs.
         tile_contents
-            If given, annotate the tiles in the image with these contents.
+            The classified contents of the tiles.
         """
-        self._raw_view_image = image
+        self._debug_images = debug_images
         self._all_tile_contents = tile_contents
+        self._set_debug_steps()
         self._draw_view()
 
+    def _set_debug_steps(self):
+        debug_steps = (
+            [name for name, image in self._debug_images] + ["Classify tiles"]
+            if self._debug_images is not None
+            else ["Screenshot"]
+        )
+        if self._selected_view_step.get() not in debug_steps:
+            self._selected_view_step.set("Screenshot")
+
+        for radio_button in self._radio_buttons:
+            radio_button.pack_forget()
+        self._radio_buttons = [
+            tkinter.Radiobutton(
+                self._debug_step_frame,
+                text=step,
+                value=step,
+                variable=self._selected_view_step,
+                command=self._draw_view,
+            )
+            for step in debug_steps
+        ]
+        for radio_button in self._radio_buttons:
+            radio_button.pack(side=tkinter.TOP)
+
     def _draw_view(self):
-        if self._raw_view_image is not None:
-            if self._all_tile_contents is not None:
-                # Let's assume the image is of the room here. If that is not the case,
-                # the below function will produce weird results.
+        if self._debug_images is not None:
+            step = self._selected_view_step.get()
+            if step == "Classify tiles":
+                # Let's assume the "Extract room" image exists
                 image = annotate_room_image_with_tile_contents(
-                    self._raw_view_image, self._all_tile_contents
+                    next(
+                        image
+                        for name, image in self._debug_images
+                        if name == "Extract room"
+                    ),
+                    self._all_tile_contents,
                 )
             else:
-                image = self._raw_view_image
+                image = next(
+                    image for name, image in self._debug_images if name == step
+                )
             pil_image = PIL.Image.fromarray(image)
             resized_image = pil_image.resize(
                 (int(self._canvas["width"]), int(self._canvas["height"])), Image.NEAREST
@@ -111,9 +138,7 @@ class InterpretScreenApp(tkinter.Frame):
         asyncio.run_coroutine_threadsafe(wrapped_coroutine(), self._event_loop)
 
     def _show_view(self):
-        step_value = self._selected_view_step.get()
-        step = next(e for e in ImageProcessingStep if e.value == step_value)
-        self._run_coroutine(self._backend.show_view_step(step))
+        self._run_coroutine(self._backend.show_view())
 
     def _toggle_view_size(self):
         if self._enlarged_view:
@@ -136,10 +161,11 @@ class InterpretScreenApp(tkinter.Frame):
         else:
             x = event.x // (TILE_SIZE // 2)
             y = event.y // (TILE_SIZE // 2)
-        if self._all_tile_contents is not None:
+        if self._selected_view_step.get() == "Classify tiles":
             tile = self._all_tile_contents[(x, y)]
             self._tile_content.config(text=apparent_tile_to_text(tile))
-        elif self._raw_view_image.shape == (32, 38, 3):
-            # This is probably the minimap, so showing the color is nice
-            color = self._raw_view_image[y, x, :]
+        elif self._selected_view_step.get() == "Extract minimap":
+            color = next(
+                image for name, image in self._debug_images if name == "Extract minimap"
+            )[y, x, :]
             self._tile_content.config(text=str(color))

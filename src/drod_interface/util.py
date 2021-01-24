@@ -2,7 +2,6 @@ import numpy
 import pyautogui
 
 from common import (
-    ImageProcessingStep,
     UserError,
     ROOM_HEIGHT_IN_TILES,
     ROOM_WIDTH_IN_TILES,
@@ -25,7 +24,7 @@ _MINIMAP_ROOM_ORIGIN_X = 61
 _MINIMAP_ROOM_ORIGIN_Y = 631
 
 
-async def get_drod_window(stop_after=None):
+async def get_drod_window(return_debug_images=False):
     """Take a screenshot and find the DROD window.
 
     Only the inside of the window is included, not the window
@@ -33,10 +32,8 @@ async def get_drod_window(stop_after=None):
 
     Parameters
     ----------
-    stop_after
-        If this is not None, stop after the given step and
-        return the current state of the image. If the origin
-        coordinates have not been determined, they will be (0, 0).
+    return_debug_images
+        If this is True, return an additional list of (name, debug_image).
 
     Returns
     -------
@@ -45,19 +42,23 @@ async def get_drod_window(stop_after=None):
     origin_y : int
         The Y coordinate of upper left corner of the window.
     image : numpy.ndarray
-        The DROD window, or an earlier image depending on `stop_after`.
+        The DROD window.
+    debug_images
+        Debug images. Only returned if `return_debug_images` is True.
     """
+    if return_debug_images:
+        debug_images = []
     raw_image = numpy.array(pyautogui.screenshot())
-    if stop_after == ImageProcessingStep.SCREENSHOT:
-        return 0, 0, raw_image
+    if return_debug_images:
+        debug_images.append(("Screenshot", raw_image))
 
     # Try finding the upper edge of the room, which is a long line of constant color
     correct_color = find_color(raw_image, _ROOM_UPPER_EDGE_COLOR)
-    if stop_after == ImageProcessingStep.FIND_UPPER_EDGE_COLOR:
-        return 0, 0, correct_color
+    if return_debug_images:
+        debug_images.append(("Find upper edge color", correct_color))
 
     lines = _find_horizontal_lines(correct_color, _ROOM_UPPER_EDGE_LENGTH)
-    if stop_after == ImageProcessingStep.FIND_UPPER_EDGE_LINE:
+    if return_debug_images:
         # We can't show the line coordinates directly, so we'll overlay the line on
         # the screenshot
         with_line = raw_image.copy()
@@ -67,7 +68,7 @@ async def get_drod_window(stop_after=None):
             with_line[
                 start_y : start_y + _OVERLAY_WIDTH, start_x:end_x, :
             ] = _OVERLAY_COLOR
-        return 0, 0, with_line
+        debug_images.append(("Find upper edge line", with_line))
 
     if len(lines) > 1:
         raise UserError("Cannot identify DROD window, too many candidate lines")
@@ -86,6 +87,8 @@ async def get_drod_window(stop_after=None):
         window_start_x:window_end_x,
         :,
     ]
+    if return_debug_images:
+        return window_start_x, window_start_y, drod_window, debug_images
     return window_start_x, window_start_y, drod_window
 
 

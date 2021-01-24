@@ -38,20 +38,6 @@ class GUIEvent(Enum):
 
 
 # The values are also what will be displayed in the GUI
-class ImageProcessingStep(Enum):
-    """An image processing step, used to show intermediate images."""
-
-    SCREENSHOT = "Screenshot"
-    FIND_UPPER_EDGE_COLOR = "Find upper edge color"
-    FIND_UPPER_EDGE_LINE = "Find upper edge line"
-    CROP_WINDOW = "Extract DROD window"
-    CROP_ROOM = "Extract room"
-    EXTRACT_TILES = "Extract tiles"
-    EXTRACT_MINIMAP = "Extract minimap"
-    CLASSIFY_TILES = "Classify tiles"
-
-
-# The values are also what will be displayed in the GUI
 class Strategy(Enum):
     """A strategy for what Beethro should do."""
 
