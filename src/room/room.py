@@ -135,22 +135,25 @@ class Room(BaseModel):
             self.tiles[pos_after].monster = Beethro(direction=direction)
 
     @staticmethod
-    def from_apparent_tiles(apparent_tiles):
+    def from_apparent_tiles(apparent_tiles, orb_effects=None):
         """Create a room from apparent tiles.
 
         Not all information will be present in the beginning, only
-        what can be seen from a screenshot.
+        what can be seen without making any moves.
 
         Parameters
         ----------
         apparent_tiles
             A dict mapping coordinates to ApparentTile instances.
+        orb_effects
+            An optional dict mapping coordinates to (orb_effect, (x, y)),
+            that gives the effects of orbs in the room.
 
         Returns
         -------
         A new room.
         """
-        return Room(
+        room = Room(
             tiles={
                 key: Tile(
                     room_piece=element_from_apparent(*tile.room_piece),
@@ -162,3 +165,7 @@ class Room(BaseModel):
                 for key, tile in apparent_tiles.items()
             }
         )
+        if orb_effects is not None:
+            for position, effects in orb_effects.items():
+                room.tiles[position].item.effects = effects
+        return room

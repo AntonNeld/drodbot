@@ -3,7 +3,10 @@ import pyautogui
 from common import (
     Action,
     ImageProcessingStep,
+    TILE_SIZE,
 )
+from .consts import ROOM_ORIGIN_X, ROOM_ORIGIN_Y
+from room import ElementType
 from .util import (
     get_drod_window,
     extract_room,
@@ -40,6 +43,15 @@ class PlayInterface:
 
     async def _click(self, position):
         pyautogui.click(x=self._origin_x + position[0], y=self._origin_y + position[1])
+
+    async def _click_tile(self, position):
+        x, y = position
+        await self._click(
+            (
+                ROOM_ORIGIN_X + (x + 0.5) * TILE_SIZE,
+                ROOM_ORIGIN_Y + (y + 0.5) * TILE_SIZE,
+            )
+        )
 
     async def do_action(self, action):
         """Perform an action, like moving or swinging your sword.
@@ -132,6 +144,49 @@ class PlayInterface:
         tile_contents = self._classifier.classify_tiles(tiles, minimap_colors)
         visual_info["tile_contents"] = tile_contents
 
+        orb_positions = [
+            pos
+            for pos, tile in tile_contents.items()
+            if tile.item[0] == ElementType.ORB
+        ]
+        # A position we can click to get rid of the displayed orb effects
+        # TODO: Handle the case when there is no such position
+        free_position = next(
+            pos
+            for pos, tile in tile_contents.items()
+            if tile.item[0] != ElementType.ORB
+            and tile.room_piece[0]
+            not in [ElementType.YELLOW_DOOR, ElementType.YELLOW_DOOR_OPEN]
+        )
+        visual_info["orb_effects"] = await self._get_orb_effects(
+            orb_positions, room_image, free_position
+        )
+
         # If no earlier step is specified, include the normal room image
         visual_info["image"] = room_image
         return visual_info
+
+    async def _get_orb_effects(self, positions, original_room_image, free_position):
+        """Get the orb effects for the given positions.
+
+        Parameters
+        ----------
+        positions
+            The positions to get effects of.
+        original_room_image
+            The room image without clicking anything.
+        free_position
+            A free position we can click to restore the view to one without effects.
+
+        Returns
+        -------
+        A dict mapping positions to lists of orb effects
+        """
+        orb_effects = {}
+        for position in positions:
+            await self._click_tile(position)
+            # TODO: Compare room image to original room image to find orb effects
+            orb_effects[position] = []
+        # Click somewhere else to go back to the normal view
+        await self._click_tile(free_position)
+        return orb_effects

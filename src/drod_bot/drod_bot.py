@@ -170,12 +170,15 @@ class DrodBot:
 
     async def reinterpret_room(self):
         """Reinterpret the current room, and replace its state."""
+        await self._interface.initialize()
         await self._interpret_room()
 
     async def _interpret_room(self):
         print("Interpreting room...")
         visual_info = await self._interface.get_view()
-        room = Room.from_apparent_tiles(visual_info["tile_contents"])
+        room = Room.from_apparent_tiles(
+            visual_info["tile_contents"], visual_info["orb_effects"]
+        )
         self.state.current_room = room
         room_in_level = room.copy(deep=True)
         player_position = room_in_level.find_player()

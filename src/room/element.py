@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Union, Literal
+from typing import Union, Literal, List, Tuple
 
 from pydantic import BaseModel
 
@@ -97,10 +97,20 @@ class UndirectionalElement(BaseModel):
         Literal[ElementType.STAIRS],
         Literal[ElementType.CHECKPOINT],
         Literal[ElementType.CONQUER_TOKEN],
-        Literal[ElementType.ORB],
         Literal[ElementType.SCROLL],
         Literal[ElementType.OBSTACLE],
     ]
+
+
+class OrbEffectType(Enum):
+    TOGGLE = "toggle"
+    OPEN = "open"
+    CLOSE = "close"
+
+
+class Orb(BaseModel):
+    element_type: Literal[ElementType.ORB] = ElementType.ORB
+    effects: List[Tuple[OrbEffectType, Tuple[int, int]]] = []
 
 
 class DirectionalElement(BaseModel):
@@ -118,10 +128,10 @@ class Beethro(BaseModel):
     direction: Direction
 
 
-Element = Union[UndirectionalElement, DirectionalElement, Beethro]
+Element = Union[UndirectionalElement, Orb, DirectionalElement, Beethro]
 
 
-def element_from_apparent(element_type, direction):
+def element_from_apparent(element_type, direction, orb_effects=None):
     """Create an element from an element type and a direction.
 
     Some information may be missing initially. ElementType.NOTHING becomes None.
@@ -141,6 +151,8 @@ def element_from_apparent(element_type, direction):
         return None
     if element_type == ElementType.BEETHRO:
         return Beethro(direction=direction)
+    if element_type == ElementType.ORB:
+        return Orb(effects=orb_effects) if orb_effects is not None else Orb()
     if direction == Direction.NONE:
         return UndirectionalElement(element_type=element_type)
     return DirectionalElement(element_type=element_type, direction=direction)
