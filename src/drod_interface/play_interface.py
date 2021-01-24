@@ -97,10 +97,8 @@ class PlayInterface:
         -------
         A dict containing the following keys:
         - "image": The room image or intermediate image
-        - "origin_x": The X coordinate of the upper left corner of the window
-        - "origin_y": The Y coordinate of the upper left corner of the window
-        - "tiles": A dict mapping (x, y) coordinates to tile images
-        - "room": A representation of the room, interpreted from the screenshot
+        - "tile_contents": A dict mapping (x, y) coordinates to apparent tiles
+        - "orb_effects": A dict mapping (x, y) coordinates to orb effects
         Not all keys may be present if `step` is given.
         """
         visual_info = {}
@@ -113,8 +111,6 @@ class PlayInterface:
             visual_info["image"] = image
             return visual_info
         origin_x, origin_y, image = await get_drod_window()
-        visual_info["origin_x"] = origin_x
-        visual_info["origin_y"] = origin_y
         if step == ImageProcessingStep.CROP_WINDOW:
             visual_info["image"] = image
             return visual_info
@@ -134,7 +130,6 @@ class PlayInterface:
         # == Extract and classify tiles in the room ==
 
         tiles, minimap_colors = extract_tiles(room_image, minimap)
-        visual_info["tiles"] = tiles
 
         if step == ImageProcessingStep.EXTRACT_TILES:
             # We can't show anything more interesting here
