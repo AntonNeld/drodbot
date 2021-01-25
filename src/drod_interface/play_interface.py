@@ -1,5 +1,5 @@
+import numpy
 import pyautogui
-
 from common import (
     Action,
     TILE_SIZE,
@@ -141,15 +141,23 @@ class PlayInterface:
             and tile.room_piece[0]
             not in [ElementType.YELLOW_DOOR, ElementType.YELLOW_DOOR_OPEN]
         )
-        orb_effects = await self._get_orb_effects(
-            orb_positions, room_image, free_position
-        )
+        if return_debug_images:
+            orb_effects, effects_debug_images = await self._get_orb_effects(
+                orb_positions, room_image, free_position, return_debug_images=True
+            )
+            debug_images.extend(effects_debug_images)
+        else:
+            orb_effects = await self._get_orb_effects(
+                orb_positions, room_image, free_position
+            )
 
         if return_debug_images:
             return tile_contents, orb_effects, debug_images
         return tile_contents, orb_effects
 
-    async def _get_orb_effects(self, positions, original_room_image, free_position):
+    async def _get_orb_effects(
+        self, positions, original_room_image, free_position, return_debug_images=False
+    ):
         """Get the orb effects for the given positions.
 
         Parameters
@@ -160,16 +168,31 @@ class PlayInterface:
             The room image without clicking anything.
         free_position
             A free position we can click to restore the view to one without effects.
+        return_debug_images
+            Whether to return debug images.
 
         Returns
         -------
-        A dict mapping positions to lists of orb effects
+        A dict mapping positions to lists of orb effects. If `return_debug_images`
+        if True, also return a list of (name, image).
         """
         orb_effects = {}
+        if return_debug_images:
+            debug_images = []
         for position in positions:
             await self._click_tile(position)
-            # TODO: Compare room image to original room image to find orb effects
+            _, _, window_image = await get_drod_window()
+            room_image = extract_room(window_image).astype(float)
+            if return_debug_images:
+                debug_images.append(
+                    (
+                        f"Orb effects screenshot {position}",
+                        room_image.astype(numpy.uint8),
+                    )
+                )
             orb_effects[position] = []
         # Click somewhere else to go back to the normal view
         await self._click_tile(free_position)
+        if return_debug_images:
+            return orb_effects, debug_images
         return orb_effects
