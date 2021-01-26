@@ -1,5 +1,6 @@
 from .element import (
     ElementType,
+    OrbEffectType,
     Direction,
     Element,
     Beethro,
@@ -16,6 +17,7 @@ from .tile import Tile
 __all__ = (
     "Direction",
     "ElementType",
+    "OrbEffectType",
     "Element",
     "Beethro",
     "Level",

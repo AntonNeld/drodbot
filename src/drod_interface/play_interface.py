@@ -1,11 +1,8 @@
 import numpy
 import pyautogui
-from common import (
-    Action,
-    TILE_SIZE,
-)
+from common import Action, TILE_SIZE, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .consts import ROOM_ORIGIN_X, ROOM_ORIGIN_Y
-from room import ElementType
+from room import ElementType, OrbEffectType
 from .util import (
     get_drod_window,
     extract_room,
@@ -179,20 +176,96 @@ class PlayInterface:
         orb_effects = {}
         if return_debug_images:
             debug_images = []
+        averaged_original = _average_tiles(original_room_image.astype(float))
+        if return_debug_images:
+            debug_images.append(
+                ("Averaged room image", averaged_original.astype(numpy.uint8))
+            )
         for position in positions:
             await self._click_tile(position)
             _, _, window_image = await get_drod_window()
             room_image = extract_room(window_image).astype(float)
+            averaged_room = _average_tiles(room_image)
+            diff = numpy.sqrt(
+                numpy.sum((averaged_room - averaged_original) ** 2, axis=-1)
+            )
+            affected_tiles = diff > 10
             if return_debug_images:
-                debug_images.append(
-                    (
-                        f"Orb effects screenshot {position}",
-                        room_image.astype(numpy.uint8),
-                    )
+                debug_images.extend(
+                    [
+                        (
+                            f"Orb effects screenshot {position}",
+                            room_image.astype(numpy.uint8),
+                        ),
+                        (
+                            f"Orb effects averaged screenshot {position}",
+                            averaged_room.astype(numpy.uint8),
+                        ),
+                        (f"Orb effects diff {position}", diff.astype(numpy.uint8)),
+                        (
+                            f"Orb affected tiles {position}",
+                            affected_tiles,
+                        ),
+                    ]
                 )
+            if return_debug_images:
+                recovered_highlights = numpy.zeros(averaged_room.shape)
+                determined_effects = numpy.zeros(averaged_room.shape)
             orb_effects[position] = []
+            for coords in numpy.argwhere(affected_tiles):
+                # Convert to int so we can save the coordinates in orb_effects
+                y = int(coords[0])
+                x = int(coords[1])
+                # Recover the source using the background and the result,
+                # given the alpha blending equation
+                # result = source*alpha + background*(1-alpha)
+                # with alpha=0.5
+                color = 2 * averaged_room[y, x] - averaged_original[y, x]
+                if return_debug_images:
+                    recovered_highlights[y, x] = color
+                if numpy.linalg.norm(color - [255, 0, 64]) < 10:
+                    if return_debug_images:
+                        determined_effects[y, x] = [255, 0, 64]
+                    orb_effects[position].append((OrbEffectType.CLOSE, (x, y)))
+                elif numpy.linalg.norm(color - [255, 128, 0]) < 10:
+                    if return_debug_images:
+                        determined_effects[y, x] = [255, 128, 0]
+                    orb_effects[position].append((OrbEffectType.TOGGLE, (x, y)))
+                elif numpy.linalg.norm(color - [0, 255, 255]) < 10:
+                    if return_debug_images:
+                        determined_effects[y, x] = [0, 255, 255]
+                    orb_effects[position].append((OrbEffectType.OPEN, (x, y)))
+            if return_debug_images:
+                recovered_highlights[recovered_highlights < 0] = 0
+                recovered_highlights[recovered_highlights > 255] = 255
+                debug_images.extend(
+                    [
+                        (
+                            f"Recovered highlights {position}",
+                            recovered_highlights.astype(numpy.uint8),
+                        ),
+                        (
+                            f"Determined effects {position}",
+                            determined_effects.astype(numpy.uint8),
+                        ),
+                    ]
+                )
+
         # Click somewhere else to go back to the normal view
         await self._click_tile(free_position)
         if return_debug_images:
             return orb_effects, debug_images
         return orb_effects
+
+
+def _average_tiles(room_image):
+    height, width, colors = room_image.shape
+    return room_image.reshape(
+        (
+            ROOM_HEIGHT_IN_TILES,
+            height // ROOM_HEIGHT_IN_TILES,
+            ROOM_WIDTH_IN_TILES,
+            width // ROOM_WIDTH_IN_TILES,
+            colors,
+        )
+    ).mean((1, 3))
