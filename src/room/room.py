@@ -82,19 +82,26 @@ class Room(BaseModel):
             raise RuntimeError(f"Too many Beethros: {beethros}")
         return beethros[0]
 
-    def do_actions(self, actions):
+    def do_actions(self, actions, in_place=False):
         """Do multiple actions, and return a copy of the room after the actions.
 
         Parameters
         ----------
         actions
             The actions to perform.
+        in_place
+            Whether to modify the room in place. The room will still be
+            returned. Use this if you will not use the old room and performance
+            is critical.
 
         Returns
         -------
         A copy of the room after having performed the actions.
         """
-        room = self.copy(deep=True)
+        if in_place:
+            room = self
+        else:
+            room = self.copy(deep=True)
         for action in actions:
             room._do_action_in_place(action)
         return room

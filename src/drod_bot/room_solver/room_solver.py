@@ -2,7 +2,7 @@ from typing import List, Tuple, Literal
 
 from pydantic import BaseModel
 
-from .pathfinding import find_path
+from .orb_puzzle import find_path_with_orbs
 
 
 class ReachTileObjective(BaseModel):
@@ -47,13 +47,13 @@ def solve_room(room, objective):
         player_position = room.find_player()
         direction = room.tiles[player_position].monster.direction
         goal_positions = objective.goal_tiles
-        actions = find_path(player_position, direction, goal_positions, room)
+        actions = find_path_with_orbs(player_position, direction, goal_positions, room)
         return actions
     if objective.objective_type == "strike_tile":
         player_position = room.find_player()
         direction = room.tiles[player_position].monster.direction
         goal_positions = objective.goal_tiles
-        actions = find_path(
+        actions = find_path_with_orbs(
             player_position, direction, goal_positions, room, sword_at_goal=True
         )
         return actions

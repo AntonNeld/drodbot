@@ -103,7 +103,7 @@ def find_path(start, start_direction, goals, room, sword_at_goal=False):
     goals
         An iterable of goal positions, as tuples (x, y).
     room
-        Entities in the room, as a dict of positions to lists of entities.
+        The room.
     sword_at_goal
         Whether the player's sword should be in the goal tiles rather than
         the player itself.
