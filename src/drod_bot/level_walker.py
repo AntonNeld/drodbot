@@ -61,13 +61,14 @@ class _LevelPathfindingProblem:
 
     def goal_test(self, state):
         if state is None:
-            room = self.current_room
-            room_position = self.current_room_position
-        else:
-            room = self.level.rooms[state.room].copy(deep=True)
-            # Let's just make up the direction for now.
-            room.tiles[state.tile].monster = Beethro(direction=Direction.SE)
-            room_position = state.room
+            # We already know we can't reach the objective from the
+            # initial state
+            return False
+
+        room = self.level.rooms[state.room].copy(deep=True)
+        # Let's just make up the direction for now.
+        room.tiles[state.tile].monster = Beethro(direction=Direction.SE)
+        room_position = state.room
         goal_tiles_in_room = [
             tile for goal_room, tile in self.goal_tiles if goal_room == room_position
         ]
@@ -110,6 +111,22 @@ def find_path_in_level(goal_tiles, current_room, current_room_position, level):
     -------
     A list of actions that result in reaching a goal tile.
     """
+    # Often we can go to the goal in this room directly, and
+    # we don't need to search
+    try:
+        return solve_room(
+            current_room,
+            ReachTileObjective(
+                goal_tiles=[
+                    tile
+                    for room_position, tile in goal_tiles
+                    if room_position == current_room_position
+                ]
+            ),
+        )
+    except NoSolutionError:
+        pass
+
     problem = _LevelPathfindingProblem(
         goal_tiles, current_room, current_room_position, level
     )
