@@ -49,30 +49,33 @@ class _OrbPuzzleProblem:
         for coords in self.goals:
             try:
                 # Make up a direction for now
-                find_path(state.position, Direction.SE, [coords], self.room)
-                actions.append(coords)
+                cost = len(find_path(state.position, Direction.SE, [coords], self.room))
+                actions.append((coords, cost))
             except NoSolutionError:
                 pass
         # See which orbs are reachable
         for coords in self.orbs:
             try:
                 # Make up a direction for now
-                find_path(
-                    state.position,
-                    Direction.SE,
-                    [coords],
-                    self.room,
-                    sword_at_goal=True,
+                cost = len(
+                    find_path(
+                        state.position,
+                        Direction.SE,
+                        [coords],
+                        self.room,
+                        sword_at_goal=True,
+                    )
                 )
-                actions.append(coords)
+                actions.append((coords, cost))
             except NoSolutionError:
                 pass
         return actions
 
     def result(self, state, action):
+        destination, _ = action
         door_state = list(state.door_state)
-        if action in self.orbs:
-            for effect, coords in self.room.tiles[action].item.effects:
+        if destination in self.orbs:
+            for effect, coords in self.room.tiles[destination].item.effects:
                 index = self.door_coords_to_index[coords]
                 if effect == OrbEffectType.OPEN:
                     door_state[index] = False
@@ -80,13 +83,14 @@ class _OrbPuzzleProblem:
                     door_state[index] = True
                 else:  # Toggle
                     door_state[index] = not door_state[index]
-        return _State(position=action, door_state=tuple(door_state))
+        return _State(position=destination, door_state=tuple(door_state))
 
     def goal_test(self, state):
         return state.position in self.goals
 
     def step_cost(self, state, action, result):
-        return 1
+        _, cost = action
+        return cost
 
 
 def _get_heuristic():
@@ -130,7 +134,7 @@ def find_path_with_orbs(start, start_direction, goals, room, sword_at_goal=False
     pathfinding_room.tiles[start].monster = Beethro(direction=start_direction)
     # Find the actual paths between the positions
     all_actions = []
-    for coords in solution:
+    for coords, _ in solution:
         player_position = pathfinding_room.find_player()
         player_direction = pathfinding_room.tiles[player_position].monster.direction
         if coords in goals:
