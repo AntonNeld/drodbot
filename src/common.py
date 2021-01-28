@@ -12,7 +12,7 @@ class UserError(Exception):
     pass
 
 
-class Action(Enum):
+class Action(int, Enum):
     """An action the player can take."""
 
     N = 8
@@ -28,7 +28,7 @@ class Action(Enum):
     CCW = 11
 
 
-class GUIEvent(Enum):
+class GUIEvent(str, Enum):
     """A message from the backend thread to the GUI."""
 
     QUIT = "quit"
@@ -38,7 +38,7 @@ class GUIEvent(Enum):
 
 
 # The values are also what will be displayed in the GUI
-class Strategy(Enum):
+class Strategy(str, Enum):
     """A strategy for what Beethro should do."""
 
     EXPLORE = "Explore the current level"

@@ -4,7 +4,7 @@ from typing import Union, Literal, List, Tuple
 from pydantic import BaseModel
 
 
-class ElementType(Enum):
+class ElementType(str, Enum):
     """A kind of game element."""
 
     UNKNOWN = "Unknown"
@@ -61,7 +61,7 @@ MONSTERS = [
 ]
 
 
-class Direction(Enum):
+class Direction(str, Enum):
     """A direction of an element.
 
     Not all elements can have all directions, but this is not enforced.
@@ -102,7 +102,7 @@ class UndirectionalElement(BaseModel):
     ]
 
 
-class OrbEffectType(Enum):
+class OrbEffectType(str, Enum):
     TOGGLE = "toggle"
     OPEN = "open"
     CLOSE = "close"

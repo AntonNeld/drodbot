@@ -73,7 +73,7 @@ _STAIRS_WINDOW_OK = (545, 670)
 _SCROLL_WINDOW_OK = (460, 580)
 
 
-class _OrbType(Enum):
+class _OrbType(int, Enum):
     NORMAL = 0
     CRACKED = 1
     BROKEN = 2
