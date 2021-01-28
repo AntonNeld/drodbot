@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Dict, Tuple
 
-from common import Action
+from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .element import (
     ElementType,
     OrbEffectType,
@@ -147,42 +147,52 @@ class Room(BaseModel):
             self.tiles[position].monster = None
             self.tiles[pos_after].monster = Beethro(direction=direction)
         sword_position = position_in_direction(pos_after, direction)
-        under_sword = self.tiles[sword_position]
         if (
-            under_sword.item is not None
-            and under_sword.item.element_type == ElementType.ORB
+            sword_position[0] >= 0
+            and sword_position[0] < ROOM_WIDTH_IN_TILES
+            and sword_position[1] >= 0
+            and sword_position[1] < ROOM_HEIGHT_IN_TILES
         ):
-            for effect, pos in under_sword.item.effects:
-                if self.tiles[pos].room_piece is None:
-                    raise RuntimeError(
-                        f"Orb at {sword_position} tried to {effect} element at {pos}, "
-                        f"but nothing is there"
-                    )
-                if self.tiles[pos].room_piece.element_type not in [
-                    ElementType.YELLOW_DOOR,
-                    ElementType.YELLOW_DOOR_OPEN,
-                ]:
-                    raise RuntimeError(
-                        f"Orb at {sword_position} tried to {effect} element at {pos}, "
-                        f"but it is a {self.tiles[pos].room_piece.element_type}"
-                    )
-                if effect == OrbEffectType.OPEN:
-                    self.tiles[pos].room_piece = UndirectionalElement(
-                        element_type=ElementType.YELLOW_DOOR_OPEN
-                    )
-                elif effect == OrbEffectType.CLOSE:
-                    self.tiles[pos].room_piece = UndirectionalElement(
-                        element_type=ElementType.YELLOW_DOOR
-                    )
-                # Toggle
-                elif self.tiles[pos].room_piece.element_type == ElementType.YELLOW_DOOR:
-                    self.tiles[pos].room_piece = UndirectionalElement(
-                        element_type=ElementType.YELLOW_DOOR_OPEN
-                    )
-                else:
-                    self.tiles[pos].room_piece = UndirectionalElement(
-                        element_type=ElementType.YELLOW_DOOR
-                    )
+            under_sword = self.tiles[sword_position]
+            if (
+                under_sword.item is not None
+                and under_sword.item.element_type == ElementType.ORB
+            ):
+                for effect, pos in under_sword.item.effects:
+                    if self.tiles[pos].room_piece is None:
+                        raise RuntimeError(
+                            f"Orb at {sword_position} tried to {effect} element "
+                            f"at {pos}, but nothing is there"
+                        )
+                    if self.tiles[pos].room_piece.element_type not in [
+                        ElementType.YELLOW_DOOR,
+                        ElementType.YELLOW_DOOR_OPEN,
+                    ]:
+                        raise RuntimeError(
+                            f"Orb at {sword_position} tried to {effect} element "
+                            f"at {pos}, but it is a "
+                            f"{self.tiles[pos].room_piece.element_type}"
+                        )
+                    if effect == OrbEffectType.OPEN:
+                        self.tiles[pos].room_piece = UndirectionalElement(
+                            element_type=ElementType.YELLOW_DOOR_OPEN
+                        )
+                    elif effect == OrbEffectType.CLOSE:
+                        self.tiles[pos].room_piece = UndirectionalElement(
+                            element_type=ElementType.YELLOW_DOOR
+                        )
+                    # Toggle
+                    elif (
+                        self.tiles[pos].room_piece.element_type
+                        == ElementType.YELLOW_DOOR
+                    ):
+                        self.tiles[pos].room_piece = UndirectionalElement(
+                            element_type=ElementType.YELLOW_DOOR_OPEN
+                        )
+                    else:
+                        self.tiles[pos].room_piece = UndirectionalElement(
+                            element_type=ElementType.YELLOW_DOOR
+                        )
 
     @staticmethod
     def from_apparent_tiles(apparent_tiles, orb_effects=None):
