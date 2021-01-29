@@ -79,13 +79,19 @@ class PlayingApp(tkinter.Frame):
         for (x, y), room in self._data.level.rooms.items():
             relative_x = x - self._data.current_room_position[0]
             relative_y = y - self._data.current_room_position[1]
-            image_x = _CURRENT_ROOM_ORIGIN_X + relative_x * ROOM_WIDTH_IN_TILES
-            image_y = _CURRENT_ROOM_ORIGIN_Y + relative_y * ROOM_HEIGHT_IN_TILES
-            image[
-                image_y : image_y + ROOM_HEIGHT_IN_TILES,
-                image_x : image_x + ROOM_WIDTH_IN_TILES,
-                :,
-            ] = _room_to_image(room)
+            if (
+                relative_x > -3
+                and relative_x < 3
+                and relative_y > -3
+                and relative_y < 3
+            ):
+                image_x = _CURRENT_ROOM_ORIGIN_X + relative_x * ROOM_WIDTH_IN_TILES
+                image_y = _CURRENT_ROOM_ORIGIN_Y + relative_y * ROOM_HEIGHT_IN_TILES
+                image[
+                    image_y : image_y + ROOM_HEIGHT_IN_TILES,
+                    image_x : image_x + ROOM_WIDTH_IN_TILES,
+                    :,
+                ] = _room_to_image(room)
         if self._data.current_room is not None:
             player_x, player_y = self._data.current_room.find_player()
             # Draw plan
@@ -101,7 +107,13 @@ class PlayingApp(tkinter.Frame):
                         plan_x += 1
                     if action in [Action.W, Action.SW, Action.NW]:
                         plan_x -= 1
-                    image[plan_y, plan_x, :] = [0, 0, 255]
+                    if (
+                        plan_x >= 0
+                        and plan_x < _CANVAS_WIDTH
+                        and plan_y >= 0
+                        and plan_y < _CANVAS_HEIGHT
+                    ):
+                        image[plan_y, plan_x, :] = [0, 0, 255]
             # Draw player position
             image_player_x = _CURRENT_ROOM_ORIGIN_X + player_x
             image_player_y = _CURRENT_ROOM_ORIGIN_Y + player_y
