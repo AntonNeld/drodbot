@@ -11,9 +11,11 @@ class NoSolutionError(Exception):
     iteration_limited
         Whether the search failed because the maximum number
         of iterations was reached.
+    precheck_failed
+        Whether the problem was deemed unsolvable by some precheck.
     """
 
-    def __init__(self, iterations, depth_limited=False, iteration_limited=False):
+    def __init__(self, iterations, iteration_limited=False, precheck_failed=False):
         self.iterations = iterations
         self.iteration_limited = iteration_limited
 

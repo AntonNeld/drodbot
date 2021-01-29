@@ -1,9 +1,9 @@
 from collections import namedtuple
 
 from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
-from room import ElementType
-from search import a_star_graph
-from util import direction_after, position_in_direction
+from room import ElementType, Direction
+from search import a_star_graph, NoSolutionError
+from util import direction_after, position_in_direction, inside_room
 
 _State = namedtuple("_State", "position direction")
 
@@ -125,8 +125,66 @@ def find_path(start, start_direction, goals, room, sword_at_goal=False):
         ElementType.PIT,
     ]:
         obstacles.update(room.find_coordinates(element))
+    if not _is_reachable(start, goals, obstacles):
+        raise NoSolutionError(0, precheck_failed=True)
     problem = _PathfindingProblem(
         start, start_direction, goals, obstacles, sword_at_goal=sword_at_goal
     )
     solution = a_star_graph(problem, _get_heuristic(goals))
     return solution
+
+
+def _is_reachable(start, goals, obstacles):
+    """Check whether any of the goals is reachable at all.
+
+    A quick sanity check to see whether it's worth it to
+    search for a solution.
+
+    Parameters
+    ----------
+    start
+        Starting position (x, y).
+    goals
+        Iterable of goal positions (x, y).
+    obstacles
+        Set of obstacles (x, y).
+
+    Returns
+    -------
+    Whether any of the goals has the potential to be reachable.
+    Even if this function returns True, there is no guarantee a
+    solution exists.
+    """
+    # Simultaneously fill regions centered on the goals and player,
+    # and see if they touch.
+    goal_edge = set(goals)
+    goal_filled = set()
+    player_edge = set([start])
+    player_filled = set()
+    while goal_edge and player_edge:
+        for edge, filled in [(goal_edge, goal_filled), (player_edge, player_filled)]:
+            if goal_edge & player_edge:
+                return True
+            new_edge = set()
+            for coords in edge:
+                for new_coords in [
+                    position_in_direction(coords, direction)
+                    for direction in [
+                        Direction.N,
+                        Direction.NE,
+                        Direction.E,
+                        Direction.SE,
+                        Direction.S,
+                        Direction.SW,
+                        Direction.W,
+                        Direction.NW,
+                    ]
+                ]:
+                    if new_coords not in obstacles | filled | edge and inside_room(
+                        new_coords
+                    ):
+                        new_edge.add(new_coords)
+            filled.update(goal_edge)
+            edge.clear()
+            edge.update(new_edge)
+    return False

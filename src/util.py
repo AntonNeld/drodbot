@@ -1,6 +1,6 @@
 import numpy
 
-from common import Action
+from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from room import Direction
 
 
@@ -108,3 +108,19 @@ def position_in_direction(original_position, direction):
         return (x - 1, y - 1)
     else:
         raise RuntimeError(f"Unknown direction {direction}")
+
+
+def inside_room(position):
+    """Check whether a position is inside the room.
+
+    Parameters
+    ----------
+    position
+        The (x, y) coordinates.
+
+    Returns
+    -------
+    Whether the coordinates are inside the room.
+    """
+    x, y = position
+    return x >= 0 and x < ROOM_WIDTH_IN_TILES and y >= 0 and y < ROOM_HEIGHT_IN_TILES
