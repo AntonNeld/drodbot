@@ -6,6 +6,8 @@ It will attempt to solve some types of rooms (see [What it can do](#what-it-can-
 ## Prerequisites
 
 > **Note:** I'm trying to use platform-independent dependencies, but I have only tried running it on Linux.
+> The section on compiling the C++ parts below is completely written with Linux in mind and may need extensive
+> modification to work on other OSes. (Or not, I have no idea.)
 
 You need Python 3.8 and pipenv installed. Then install the Python packages:
 
@@ -14,6 +16,15 @@ pipenv install
 ```
 
 On Linux, you may also be asked to install some system-wide dependencies the first time you run it.
+
+### Compiling the C++ parts
+
+Parts of DRODbot is written in C++, since it uses source code from DROD itself.
+To compile this, you need `g++`. From the root of the repo, run:
+
+```sh
+./build.sh
+```
 
 ## Running DRODbot
 
