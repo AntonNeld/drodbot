@@ -1,6 +1,8 @@
 import asyncio
-from pydantic import BaseModel, Field
+import time
 from typing import Tuple, List, Optional
+
+from pydantic import BaseModel, Field
 
 from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .room_solver import solve_room, ReachTileObjective, StrikeTileObjective
@@ -98,7 +100,10 @@ class DrodBot:
         """
         room = self.state.current_room
         goal_tiles = room.find_coordinates(element)
+        print("Thinking...")
+        t = time.time()
         actions = solve_room(room, ReachTileObjective(goal_tiles=goal_tiles))
+        print(f"Thought in {time.time()-t:.2f}s")
         self.state.plan = actions
         await self._execute_plan()
 
@@ -114,24 +119,30 @@ class DrodBot:
             The element to go to.
         """
         goal_tiles = self.state.level.find_element(element)
+        print("Thinking...")
+        t = time.time()
         actions = find_path_in_level(
             goal_tiles,
             self.state.current_room,
             self.state.current_room_position,
             self.state.level,
         )
+        print(f"Thought in {time.time()-t:.2f}s")
         self.state.plan = actions
         await self._execute_plan()
 
     async def go_to_unvisited_room(self):
         """Enter the nearest unvisited room."""
         goal_tiles = self.state.level.find_uncrossed_edges()
+        print("Thinking...")
+        t = time.time()
         actions = find_path_in_level(
             goal_tiles,
             self.state.current_room,
             self.state.current_room_position,
             self.state.level,
         )
+        print(f"Thought in {time.time()-t:.2f}s")
         self.state.plan = actions
         await self._execute_plan()
         # Actually cross into the room
@@ -175,6 +186,7 @@ class DrodBot:
 
     async def _interpret_room(self):
         print("Interpreting room...")
+        t = time.time()
         tile_contents, orb_effects = await self._interface.get_view()
         room = Room.from_apparent_tiles(tile_contents, orb_effects)
         self.state.current_room = room
@@ -185,10 +197,9 @@ class DrodBot:
         room_in_level.tiles[player_position].monster = None
         self.state.level.rooms[self.state.current_room_position] = room_in_level
         self._notify_state_update()
-        print("Interpreted room")
+        print(f"Interpreted room in {time.time()-t:.2f}s")
 
     async def _execute_plan(self):
-        print("Executing plan...")
         while self.state.plan:
             action = self.state.plan.pop(0)
             x, y = self.state.current_room.find_player()
@@ -215,7 +226,6 @@ class DrodBot:
                 )
             self._notify_state_update()
             await asyncio.sleep(_ACTION_DELAY)
-        print("Executed plan")
 
     async def _enter_room(self, direction):
         """Enter a new room.
