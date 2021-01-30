@@ -40,13 +40,11 @@ Enter "Manage classifier" mode in the DRODbot window, and:
 
 ## What it can do
 
-It can handle the following elements:
+It can:
 
-- Conquer tokens
-- Beethro
-- Walls
-- Floors
+- recognize all elements that appear in the first level of King Dugan's Dungeon
+- explore a level
+- solve orb puzzles
 
-As long as a room is limited to those, it can:
-
-- Move to a conquer token using the shortest path
+There are some [Youtube videos](https://www.youtube.com/watch?v=8uvHPBq1W5Y&list=PLkYGKleB7n-8U_dU3aR3vouqIywl4owcx)
+showing it in action.
