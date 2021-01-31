@@ -1,0 +1,3 @@
+[submodule "src/drod_lib/drod"]
+	path = src/drod_lib/drod
+	url = git@github.com:CaravelGames/drod.git
