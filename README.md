@@ -23,7 +23,7 @@ Parts of DRODbot is written in C++, since it uses source code from DROD itself.
 To compile this, you need `g++`. From the root of the repo, run:
 
 ```sh
-./build.sh
+pipenv run ./build.sh
 ```
 
 ## Running DRODbot

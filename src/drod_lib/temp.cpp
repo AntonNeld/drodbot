@@ -2,8 +2,16 @@
 // It will be removed later.
 
 #include <iostream>
+#include <pybind11/pybind11.h>
 
-int main() {
+int temp()
+{
     std::cout << "Hello Eight from C++!";
     return 0;
+}
+
+PYBIND11_MODULE(temp_module_name, m)
+{
+    m.doc() = "Just a module.";
+    m.def("hello_world", &temp, "Print a hello");
 }
