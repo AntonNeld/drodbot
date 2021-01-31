@@ -28,6 +28,7 @@ To compile this, you need:
 From the root of the repo, run:
 
 ```sh
+git submodule update --init --recursive
 pipenv run ./build.sh
 ```
 

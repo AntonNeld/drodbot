@@ -3,8 +3,7 @@
 
 #include <iostream>
 #include <pybind11/pybind11.h>
-// Does not compile yet:
-// #include <DRODLib/CurrentGame.h>
+#include <DRODLib/CurrentGame.h>
 
 int temp()
 {
