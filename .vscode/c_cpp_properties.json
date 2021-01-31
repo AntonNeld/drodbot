@@ -5,7 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/src/drod_lib/drod",
-                "${workspaceFolder}/src/drod_lib/metakit/include"
+                "${workspaceFolder}/src/drod_lib/metakit/include",
+                "/usr/include/SDL2"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

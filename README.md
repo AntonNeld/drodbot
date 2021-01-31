@@ -20,7 +20,12 @@ On Linux, you may also be asked to install some system-wide dependencies the fir
 ### Compiling the C++ parts
 
 Parts of DRODbot is written in C++, since it uses source code from DROD itself.
-To compile this, you need `g++`. From the root of the repo, run:
+To compile this, you need:
+
+- `g++`
+- SDL 2.0 (on Ubuntu, install `libsdl2-dev`)
+
+From the root of the repo, run:
 
 ```sh
 pipenv run ./build.sh
