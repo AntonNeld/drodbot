@@ -4,7 +4,8 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/src/drod_lib/drod"
+                "${workspaceFolder}/src/drod_lib/drod",
+                "${workspaceFolder}/src/drod_lib/metakit/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
