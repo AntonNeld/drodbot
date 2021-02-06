@@ -3,10 +3,13 @@
 
 #include <iostream>
 #include <pybind11/pybind11.h>
-#include <DRODLib/CurrentGame.h>
+#include <DRODLib/Db.h>
 
 int temp()
 {
+    // CDb *db = new CDb;
+    // CDbRoom *room = db->Rooms.GetNew();
+    // room->AddNewMonster(M_ROACH, 1, 1);
     std::cout << "Hello Eight from C++!";
     return 0;
 }
