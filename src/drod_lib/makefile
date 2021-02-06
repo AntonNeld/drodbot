@@ -15,34 +15,32 @@ OBJECT_FILES=$(BACKENDLIB_OBJECT_FILES) $(DRODLIB_OBJECT_FILES) $(METAKIT_OBJECT
 
 LINK_LIBS=$(shell sdl2-config --libs) -lpython3.8 -ljsoncpp -lcurl
 
-all: temp_module_name$(MODULE_SUFFIX)
-
 temp_module_name$(MODULE_SUFFIX): build/temp.o $(OBJECT_FILES)
 	g++ -shared -o temp_module_name$(MODULE_SUFFIX) build/temp.o $(OBJECT_FILES) $(LINK_LIBS)
 
-build/temp.o: temp.cpp build
+build/temp.o: temp.cpp
 	g++ -c $(WARNING_ARGS) $(COMMON_COMPILE_ARGS) temp.cpp -o build/temp.o
 
 # We don't include warnings when compiling source from other projects,
 # since we won't change it anyway
-build/DRODLib/%.o: drod/DRODLib/%.cpp build
+build/DRODLib/%.o: drod/DRODLib/%.cpp
 	g++ -c $(COMMON_COMPILE_ARGS) $< -o $@
 
-build/BackEndLib/%.o: drod/BackEndLib/%.cpp build
+build/BackEndLib/%.o: drod/BackEndLib/%.cpp
 	g++ -c $(COMMON_COMPILE_ARGS) $< -o $@
 
 # Even though this is a pattern rule, it will only be run once
-build/metakit/%.o: metakit/src/%.cpp build
+build/metakit/%.o: metakit/src/%.cpp
 	cd metakit/builds && ../unix/configure && make
 	mv metakit/builds/*.o build/metakit/
 	find metakit/builds/ ! -name '!keepme.txt' -type f -exec rm -f {} +
 
-build:
+clean:
+	rm -rf build
+	rm -f temp_module_name$(MODULE_SUFFIX)
+	# Init directory structure again
 	mkdir build
 	mkdir build/DRODLib
 	mkdir build/BackEndLib
 	mkdir build/metakit
-
-clean:
-	rm -rf build
-	rm -f temp_module_name$(MODULE_SUFFIX)
+	mkdir build/DRODLibTests
