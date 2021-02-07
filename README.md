@@ -5,9 +5,8 @@ It will attempt to solve some types of rooms (see [What it can do](#what-it-can-
 
 ## Prerequisites
 
-> **Note:** I'm trying to use platform-independent dependencies, but I have only tried running it on Linux.
-> The section on compiling the C++ parts below is completely written with Linux in mind and may need extensive
-> modification to work on other OSes. (Or not, I have no idea.)
+> **Note:** Only Linux is supported. While I have used cross-platform libraries in
+> the Python part, the C++ part will need some modifications to work on other OSes.
 
 You need Python 3.8 and pipenv installed. Then install the Python packages:
 
@@ -15,7 +14,7 @@ You need Python 3.8 and pipenv installed. Then install the Python packages:
 pipenv install
 ```
 
-On Linux, you may also be asked to install some system-wide dependencies the first time you run it.
+You may also be asked to install some system-wide dependencies the first time you run it.
 
 ### Compiling the C++ parts
 
