@@ -2,6 +2,7 @@
 tile_data
 sample_tiles
 bot_state.json
+fake_drod_home
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
