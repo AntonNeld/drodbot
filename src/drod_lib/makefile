@@ -10,16 +10,18 @@ BACKENDLIB_OBJECT_FILES=$(patsubst drod/BackEndLib/%.cpp,build/BackEndLib/%.o,$(
 DRODLIB_FILES=$(shell find drod/DRODLib -name '*.cpp')
 DRODLIB_OBJECT_FILES=$(patsubst drod/DRODLib/%.cpp,build/DRODLib/%.o,$(DRODLIB_FILES))
 METAKIT_FILES=$(shell find metakit/src -name '*.cpp')
-METAKIT_OBJECT_FILES=$(patsubst metakit/src/%.cpp,build/metakit/%.o,$(METAKIT_FILES)) 
-OBJECT_FILES=$(BACKENDLIB_OBJECT_FILES) $(DRODLIB_OBJECT_FILES) $(METAKIT_OBJECT_FILES)
+METAKIT_OBJECT_FILES=$(patsubst metakit/src/%.cpp,build/metakit/%.o,$(METAKIT_FILES))
+OWN_FILES=$(shell find . -maxdepth 1 -name '*.cpp')
+OWN_OBJECT_FILES=$(patsubst %.cpp,build/own/%.o,$(OWN_FILES))
+OBJECT_FILES=$(BACKENDLIB_OBJECT_FILES) $(DRODLIB_OBJECT_FILES) $(METAKIT_OBJECT_FILES) $(OWN_OBJECT_FILES)
 
 LINK_LIBS=$(shell sdl2-config --libs) -lpython3.8 -ljsoncpp -lcurl
 
-temp_module_name$(MODULE_SUFFIX): build/temp.o $(OBJECT_FILES)
-	g++ -shared -o temp_module_name$(MODULE_SUFFIX) build/temp.o $(OBJECT_FILES) $(LINK_LIBS)
+temp_module_name$(MODULE_SUFFIX): $(OBJECT_FILES)
+	g++ -shared -o temp_module_name$(MODULE_SUFFIX) $(OBJECT_FILES) $(LINK_LIBS)
 
-build/temp.o: temp.cpp
-	g++ -c $(WARNING_ARGS) $(COMMON_COMPILE_ARGS) temp.cpp -o build/temp.o
+build/own/%.o: %.cpp
+	g++ -c $(WARNING_ARGS) $(COMMON_COMPILE_ARGS) $< -o $@
 
 # We don't include warnings when compiling source from other projects,
 # since we won't change it anyway
