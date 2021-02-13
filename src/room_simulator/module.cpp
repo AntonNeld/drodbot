@@ -6,26 +6,40 @@
 
 #include "RoomPlayer.h"
 
-int temp()
-{
-    RoomPlayer roomPlayer = RoomPlayer();
-    roomPlayer.initialize();
-    std::cout << "==Room 0==" << std::endl;
-    roomPlayer.setRoom(0);
-    std::cout << "X before: " << roomPlayer.getRoom() << std::endl;
-    roomPlayer.performAction();
-    std::cout << "X after: " << roomPlayer.getRoom() << std::endl;
+RoomPlayer roomPlayer = RoomPlayer();
 
-    std::cout << "==Room 1==" << std::endl;
-    roomPlayer.setRoom(1);
-    std::cout << "X before: " << roomPlayer.getRoom() << std::endl;
+void initialize()
+{
+    roomPlayer.initialize();
+}
+
+int simulateMove(int roomType)
+{
+    roomPlayer.setRoom(roomType);
     roomPlayer.performAction();
-    std::cout << "X after: " << roomPlayer.getRoom() << std::endl;
-    return 0;
+    return roomPlayer.getRoom();
 }
 
 PYBIND11_MODULE(room_simulator, m)
 {
-    m.doc() = "Just a module.";
-    m.def("hello_world", &temp, "Do something in some rooms");
+    m.doc() = "This module uses the DROD code to simulate moves in rooms.";
+    m.def("initialize", &initialize, R"docstr(
+Initialize the room simulator.
+
+This has side effects on the file system and should only be done once.
+)docstr");
+    m.def("simulate_move", &simulateMove, R"docstr(
+Simulate a move in a room.
+
+Currently only simulates moving SE in one of three predefined rooms.
+
+Parameters
+----------
+roomType
+    The predefined room to use. 0, 1 or other.
+
+Returns
+-------
+The X coordinate of Beethro after the move.
+)docstr");
 }
