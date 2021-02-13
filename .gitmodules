@@ -1,6 +1,6 @@
 [submodule "src/drod_lib/drod"]
-	path = src/drod_lib/drod
+	path = src/room_simulator/drod
 	url = git@github.com:CaravelGames/drod.git
 [submodule "src/drod_lib/metakit"]
-	path = src/drod_lib/metakit
+	path = src/room_simulator/metakit
 	url = git@github.com:jnorthrup/metakit.git

@@ -24,7 +24,7 @@ int temp()
     return 0;
 }
 
-PYBIND11_MODULE(temp_module_name, m)
+PYBIND11_MODULE(room_simulator, m)
 {
     m.doc() = "Just a module.";
     m.def("hello_world", &temp, "Do something in some rooms");
