@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Tuple
 
-from room import ElementType, Direction
+from .element import ElementType, Direction
 
 
 class ApparentTile(BaseModel):

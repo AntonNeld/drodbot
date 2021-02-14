@@ -14,6 +14,7 @@ from .element import (
 from .level import Level
 from .room import Room
 from .tile import Tile
+from .apparent_tile import ApparentTile
 
 __all__ = (
     "Direction",
@@ -25,6 +26,7 @@ __all__ = (
     "Level",
     "Room",
     "Tile",
+    "ApparentTile",
     "ROOM_PIECES",
     "FLOOR_CONTROLS",
     "CHECKPOINTS",

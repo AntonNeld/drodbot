@@ -156,3 +156,22 @@ def element_from_apparent(element_type, direction, orb_effects=None):
     if direction == Direction.NONE:
         return UndirectionalElement(element_type=element_type)
     return DirectionalElement(element_type=element_type, direction=direction)
+
+
+def element_to_apparent(element):
+    """Create an apparent element from an element.
+
+    Parameters
+    ----------
+    element
+        The element, can be None.
+
+    Returns
+    -------
+    A tuple (ElementType, Direction).
+    """
+    if element is None:
+        return (ElementType.NOTHING, Direction.NONE)
+    if hasattr(element, "direction"):
+        return (element.element_type, element.direction)
+    return (element.element_type, Direction.NONE)

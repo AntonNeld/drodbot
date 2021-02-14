@@ -4,13 +4,13 @@ import os.path
 import numpy
 import PIL
 
-from .apparent_tile import ApparentTile
 from common import (
     TILE_SIZE,
 )
 from room import (
     ElementType,
     Direction,
+    ApparentTile,
     ROOM_PIECES,
     FLOOR_CONTROLS,
     CHECKPOINTS,

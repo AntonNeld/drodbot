@@ -8,8 +8,10 @@ from .element import (
     UndirectionalElement,
     Beethro,
     element_from_apparent,
+    element_to_apparent,
 )
 from .tile import Tile
+from .apparent_tile import ApparentTile
 from util import direction_after, position_in_direction
 
 
@@ -193,6 +195,24 @@ class Room(BaseModel):
                         self.tiles[pos].room_piece = UndirectionalElement(
                             element_type=ElementType.YELLOW_DOOR
                         )
+
+    def to_apparent_tiles(self):
+        """Create apparent tiles from a room.
+
+        Returns
+        -------
+        A dict mapping coordinates to ApparentTile instances.
+        """
+        return {
+            key: ApparentTile(
+                room_piece=element_to_apparent(tile.room_piece),
+                floor_control=element_to_apparent(tile.floor_control),
+                checkpoint=element_to_apparent(tile.checkpoint),
+                item=element_to_apparent(tile.item),
+                monster=element_to_apparent(tile.monster),
+            )
+            for key, tile in self.tiles.items()
+        }
 
     @staticmethod
     def from_apparent_tiles(apparent_tiles, orb_effects=None):
