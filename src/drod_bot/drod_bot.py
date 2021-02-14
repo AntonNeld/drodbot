@@ -72,6 +72,15 @@ class DrodBot:
         """
         self._state_subscribers.append(callback)
 
+    def get_current_room(self):
+        """Get the current room.
+
+        Returns
+        -------
+        The current room
+        """
+        return self.state.current_room
+
     def _notify_state_update(self):
         for callback in self._state_subscribers:
             callback(self.state)

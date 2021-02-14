@@ -39,7 +39,7 @@ def main():
         play_interface, window_queue
     )
     playing_app_backend = PlayingAppBackend(bot, window_queue)
-    room_solver_app_backend = RoomSolverAppBackend(play_interface, window_queue)
+    room_solver_app_backend = RoomSolverAppBackend(play_interface, bot, window_queue)
 
     window = tkinter.Tk()
     window.title("DRODbot")

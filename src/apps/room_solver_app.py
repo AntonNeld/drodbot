@@ -48,10 +48,20 @@ class RoomSolverApp(tkinter.Frame):
         self._control_panel.pack(side=tkinter.RIGHT)
         self._tile_content_text = tkinter.Label(self._control_panel, text="")
         self._tile_content_text.pack(side=tkinter.TOP)
-        self._get_room_button = tkinter.Button(
-            self._control_panel, text="Get room", command=self._get_room
+        self._get_room_area = tkinter.Frame(self._control_panel)
+        self._get_room_area.pack(side=tkinter.TOP)
+        self._get_room_from_screenshot_button = tkinter.Button(
+            self._get_room_area,
+            text="Get room from screenshot",
+            command=self._get_room_from_screenshot,
         )
-        self._get_room_button.pack(side=tkinter.TOP)
+        self._get_room_from_screenshot_button.pack(side=tkinter.LEFT)
+        self._get_room_from_bot_button = tkinter.Button(
+            self._get_room_area,
+            text="Get room from bot",
+            command=self._get_room_from_bot,
+        )
+        self._get_room_from_bot_button.pack(side=tkinter.LEFT)
         self._toggle_view_size_button = tkinter.Button(
             self._control_panel, text="Enlarge view", command=self._toggle_view_size
         )
@@ -102,8 +112,11 @@ class RoomSolverApp(tkinter.Frame):
 
         asyncio.run_coroutine_threadsafe(wrapped_coroutine(), self._event_loop)
 
-    def _get_room(self):
-        self._run_coroutine(self._backend.get_room())
+    def _get_room_from_screenshot(self):
+        self._run_coroutine(self._backend.get_room_from_screenshot())
+
+    def _get_room_from_bot(self):
+        self._run_coroutine(self._backend.get_room_from_bot())
 
     def _simulate_move_east(self):
         self._run_coroutine(self._backend.simulate_move_east())
