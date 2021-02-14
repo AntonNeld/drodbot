@@ -24,14 +24,15 @@ void RoomPlayer::initialize()
     mkdir(fakeHome, 0777);
     char fakeDataDir[] = "./fake_drod_home/Data";
     mkdir(fakeDataDir, 0777);
-    // The file with DROD assets.
+    // The file with DROD assets
     char fakeDataFile[] = "./fake_drod_home/Data/drod5_0.dat";
     // Touch the file. For our purposes it only needs to exist,
     // not have any particular contents.
     std::ofstream output(fakeDataFile);
+    // Get the current HOME environment variable, so we can restore it later
+    char *oldHomeEnv = getenv("HOME");
     // Point DROD to the fake home dir
-    char fakeHomeEnv[] = "HOME=./fake_drod_home";
-    putenv(fakeHomeEnv);
+    setenv("HOME", "./fake_drod_home", 1);
 
     // == Initialize file paths ==
     // Data file. Sometimes DROD creates this from drodName and drodVersion below instead.
@@ -78,6 +79,9 @@ void RoomPlayer::initialize()
     level->dwHoldID = holdID;
     level->Update();
     hold->InsertLevel(level);
+
+    // == Restore home dir ==
+    setenv("HOME", oldHomeEnv, 1);
 }
 
 // Set the room that is being played.
