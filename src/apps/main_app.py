@@ -11,7 +11,7 @@ from .classification_app import ClassificationApp
 _QUEUE_POLL_INTERVAL = 50
 
 _APPS = ["Play game", "Interpret screen", "Examine room solver", "Manage classifier"]
-_DEFAULT_APP = 0
+_DEFAULT_APP = 2
 
 
 class MainApp(tkinter.Frame):

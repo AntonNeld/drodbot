@@ -56,6 +56,12 @@ class RoomSolverApp(tkinter.Frame):
             self._control_panel, text="Enlarge view", command=self._toggle_view_size
         )
         self._toggle_view_size_button.pack(side=tkinter.TOP)
+        self._simulate_move_east_button = tkinter.Button(
+            self._control_panel,
+            text="Simulate move east",
+            command=self._simulate_move_east,
+        )
+        self._simulate_move_east_button.pack(side=tkinter.TOP)
 
     def set_data(self, room_image, tile_contents):
         """Set the data to show in the app.
@@ -67,8 +73,10 @@ class RoomSolverApp(tkinter.Frame):
         tile_contents
             The simulated contents of the tiles.
         """
-        self._room_image = room_image
-        self._tile_contents = tile_contents
+        if room_image is not None:
+            self._room_image = room_image
+        if tile_contents is not None:
+            self._tile_contents = tile_contents
         self._draw_view()
 
     def _draw_view(self):
@@ -96,6 +104,9 @@ class RoomSolverApp(tkinter.Frame):
 
     def _get_room(self):
         self._run_coroutine(self._backend.get_room())
+
+    def _simulate_move_east(self):
+        self._run_coroutine(self._backend.simulate_move_east())
 
     def _toggle_view_size(self):
         if self._enlarged_view:
