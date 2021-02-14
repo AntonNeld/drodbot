@@ -80,35 +80,34 @@ void RoomPlayer::initialize()
     hold->InsertLevel(level);
 }
 
-// Set the room that is being played. Currently only selects between a few rooms.
-// In the future, it will be possible to pass a room to it.
-void RoomPlayer::setRoom(int roomType)
+// Set the room that is being played.
+void RoomPlayer::setRoom(Room room)
 {
     // Clear any existing room
-    if (room != NULL)
+    if (drodRoom != NULL)
     {
-        db->Rooms.Delete(room->dwRoomID);
+        db->Rooms.Delete(drodRoom->dwRoomID);
     }
     // Create new room
-    room = db->Rooms.GetNew();
-    room->dwLevelID = level->dwLevelID;
-    room->wRoomCols = 38;
-    room->wRoomRows = 32;
-    room->AllocTileLayers();
-    const UINT dwSquareCount = room->CalcRoomArea();
-    memset(room->pszOSquares, T_FLOOR, dwSquareCount * sizeof(char));
-    memset(room->pszFSquares, T_EMPTY, dwSquareCount * sizeof(char));
-    room->ClearTLayer();
-    room->coveredOSquares.Init(38, 32);
-    room->Update();
-    UINT roomID = room->dwRoomID;
-    delete room;
-    room = db->Rooms.GetByID(roomID);
+    drodRoom = db->Rooms.GetNew();
+    drodRoom->dwLevelID = level->dwLevelID;
+    drodRoom->wRoomCols = 38;
+    drodRoom->wRoomRows = 32;
+    drodRoom->AllocTileLayers();
+    const UINT dwSquareCount = drodRoom->CalcRoomArea();
+    memset(drodRoom->pszOSquares, T_FLOOR, dwSquareCount * sizeof(char));
+    memset(drodRoom->pszFSquares, T_EMPTY, dwSquareCount * sizeof(char));
+    drodRoom->ClearTLayer();
+    drodRoom->coveredOSquares.Init(38, 32);
+    drodRoom->Update();
+    UINT roomID = drodRoom->dwRoomID;
+    delete drodRoom;
+    drodRoom = db->Rooms.GetByID(roomID);
     // Place things in room
     unsigned int beethroX;
     unsigned int beethroY;
     unsigned int beethroDir;
-    switch (roomType)
+    switch (room)
     {
     case 0:
         beethroX = 15;
@@ -125,14 +124,14 @@ void RoomPlayer::setRoom(int roomType)
         beethroY = 30;
         beethroDir = W;
     }
-    CEntranceData *pEntrance = new CEntranceData(0, 0, room->dwRoomID,
+    CEntranceData *pEntrance = new CEntranceData(0, 0, drodRoom->dwRoomID,
                                                  beethroX, beethroY, beethroDir,
                                                  true, CEntranceData::DD_No, 0);
     hold->AddEntrance(pEntrance);
     hold->Update();
-    CMonster *monster = room->AddNewMonster(M_ROACH, 10, 10);
+    CMonster *monster = drodRoom->AddNewMonster(M_ROACH, 10, 10);
     monster->wO = N;
-    room->Update();
+    drodRoom->Update();
     // Start current game
     CCueEvents cueEvents;
     currentGame = db->GetNewCurrentGame(hold->dwHoldID, cueEvents);

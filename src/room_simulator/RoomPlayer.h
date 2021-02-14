@@ -9,12 +9,12 @@ class RoomPlayer
 public:
     RoomPlayer();
     void initialize();
-    void setRoom(int roomType);
+    void setRoom(Room room);
     void performAction(Action action);
     int getRoom();
 
 private:
-    CDbRoom *room;
+    CDbRoom *drodRoom;
     CDbLevel *level;
     CDbHold *hold;
     CDb *db;

@@ -17,4 +17,8 @@ enum class Action
     CCW = 11,
 };
 
+// A representation of a room that can be imported/exported from/to Python code.
+// Currently only an ID.
+typedef int Room;
+
 #endif // DRODBOT_TYPEDEFS_H

@@ -11,9 +11,9 @@ void initialize()
     roomPlayer.initialize();
 }
 
-int simulateAction(int roomType, int action)
+int simulateAction(Room room, int action)
 {
-    roomPlayer.setRoom(roomType);
+    roomPlayer.setRoom(room);
     roomPlayer.performAction(static_cast<Action>(action));
     return roomPlayer.getRoom();
 }
@@ -33,8 +33,8 @@ Currently only simulates one of three predefined rooms.
 
 Parameters
 ----------
-room_type
-    The predefined room to use. 0, 1 or other.
+room
+    The room before taking the action. Currently only an ID for a predefined room.
 action
     The action to take, as an integer. The integer for each action is the value
     of the action in the Action enum in common.py.
@@ -43,5 +43,5 @@ Returns
 -------
 The X coordinate of Beethro after the move.
 )docstr",
-          pybind11::arg("room_type"), pybind11::arg("action"));
+          pybind11::arg("room"), pybind11::arg("action"));
 }
