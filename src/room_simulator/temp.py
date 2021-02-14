@@ -3,7 +3,6 @@
 import room_simulator
 
 if __name__ == "__main__":
-    print(room_simulator.simulate_move.__doc__)
     room_simulator.initialize()
     print("==Room 0==")
     print(f"X after: {room_simulator.simulate_move(0)}")

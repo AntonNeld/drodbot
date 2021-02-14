@@ -1,7 +1,3 @@
-// This file is just to play around to try to get C++ bindings working at all.
-// It will be removed later.
-
-#include <iostream>
 #include <pybind11/pybind11.h>
 
 #include "RoomPlayer.h"
@@ -35,11 +31,12 @@ Currently only simulates moving SE in one of three predefined rooms.
 
 Parameters
 ----------
-roomType
+room_type
     The predefined room to use. 0, 1 or other.
 
 Returns
 -------
 The X coordinate of Beethro after the move.
-)docstr");
+)docstr",
+          pybind11::arg("room_type"));
 }
