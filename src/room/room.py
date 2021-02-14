@@ -13,6 +13,7 @@ from .element import (
 from .tile import Tile
 from .apparent_tile import ApparentTile
 from util import direction_after, position_in_direction
+from room_simulator import simulate_action
 
 
 class Room(BaseModel):
@@ -136,8 +137,9 @@ class Room(BaseModel):
         return room
 
     def _do_action_in_place(self, action):
-        # TODO: This should use DRODLib from the DROD source instead of
-        # reimplementing everything.
+        # Do nothing with the result for now
+        simulate_action(0, action.value)
+
         position, direction = self.find_player()
         pos_after = position
         if action in [Action.CW, Action.CCW]:

@@ -17,8 +17,8 @@ OBJECT_FILES=$(BACKENDLIB_OBJECT_FILES) $(DRODLIB_OBJECT_FILES) $(METAKIT_OBJECT
 
 LINK_LIBS=$(shell sdl2-config --libs) -lpython3.8 -ljsoncpp -lcurl
 
-room_simulator$(MODULE_SUFFIX): $(OBJECT_FILES)
-	g++ -shared -o room_simulator$(MODULE_SUFFIX) $(OBJECT_FILES) $(LINK_LIBS)
+../room_simulator$(MODULE_SUFFIX): $(OBJECT_FILES)
+	g++ -shared -o ../room_simulator$(MODULE_SUFFIX) $(OBJECT_FILES) $(LINK_LIBS)
 
 build/own/%.o: %.cpp
 	g++ -c $(WARNING_ARGS) $(COMMON_COMPILE_ARGS) $< -o $@

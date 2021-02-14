@@ -3,6 +3,7 @@ import queue
 import threading
 import tkinter
 
+import room_simulator
 from tile_classifier import TileClassifier
 from drod_bot import DrodBot
 from drod_interface import PlayInterface, EditorInterface
@@ -16,6 +17,9 @@ from apps.backends import (
 
 
 def main():
+    # It should be fine to initialize the room simulator in this thread,
+    # we only have one right now so no race conditions.
+    room_simulator.initialize()
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     asyncio_thread = threading.Thread(target=loop.run_forever)
