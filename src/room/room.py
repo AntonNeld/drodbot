@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import Dict, Tuple
+from pydantic import BaseModel, Field
+from typing import List
 
 from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .element import (
@@ -21,36 +21,18 @@ class Room(BaseModel):
     Parameters
     ----------
     tiles
-        The room tiles as a mapping from coordinates to Tile objects.
+        The room tiles as a list of lists containing Tile objects.
     """
 
-    tiles: Dict[Tuple[int, int], Tile]
-
-    # Override BaseModel.__init__(), to convert any string keys in 'tiles'
-    # to tuples. This is needed to deserialize a JSON room.
-    def __init__(self, **kwargs):
-        if "tiles" in kwargs:
-            new_tiles = {}
-            for key, value in kwargs["tiles"].items():
-                if isinstance(key, str):
-                    new_key = tuple(
-                        [int(coord) for coord in key.strip("()").split(",")]
-                    )
-                    new_tiles[new_key] = value
-                else:
-                    new_tiles[key] = value
-            kwargs["tiles"] = new_tiles
-        super().__init__(**kwargs)
-
-    # Override BaseModel.dict(), to convert the keys in 'tiles' to strings.
-    # This is needed to serialize it as JSON.
-    def dict(self, **kwargs):
-        as_dict = super().dict(**kwargs)
-        new_tiles = {}
-        for key, value in as_dict["tiles"].items():
-            new_tiles[str(key)] = value
-        as_dict["tiles"] = new_tiles
-        return as_dict
+    tiles: List[List[Tile]] = Field(
+        default_factory=lambda: [
+            [
+                Tile(room_piece=UndirectionalElement(element_type=ElementType.FLOOR))
+                for y in range(ROOM_HEIGHT_IN_TILES)
+            ]
+            for x in range(ROOM_WIDTH_IN_TILES)
+        ]
+    )
 
     def tile_at(self, position):
         """Return the tile at the given position.
@@ -64,7 +46,8 @@ class Room(BaseModel):
         -------
         The tile at that position.
         """
-        return self.tiles[position]
+        x, y = position
+        return self.tiles[x][y]
 
     def find_coordinates(self, element):
         """Find the coordinates of all elements of a type.
@@ -72,15 +55,16 @@ class Room(BaseModel):
         Parameters
         ----------
         element
-            The element to find the coordinates of.
+            The element type to find the coordinates of.
 
         Returns
         -------
         The coordinates of all elements of that type, as a list of (x, y) tuples.
         """
         return [
-            pos
-            for pos, tile in self.tiles.items()
+            (x, y)
+            for x, columns in enumerate(self.tiles)
+            for y, tile in enumerate(columns)
             if element in tile.get_element_types()
         ]
 
@@ -97,7 +81,7 @@ class Room(BaseModel):
         if len(beethros) > 1:
             raise RuntimeError(f"Too many Beethros: {beethros}")
         position = beethros[0]
-        direction = self.tiles[position].monster.direction
+        direction = self.tile_at(position).monster.direction
         return position, direction
 
     def do_actions(self, actions, in_place=False):
@@ -160,9 +144,9 @@ class Room(BaseModel):
             direction = direction_after([action], direction)
         else:
             pos_after = position_in_direction(position, action)
-        if self.tiles[pos_after].is_passable():
-            self.tiles[position].monster = None
-            self.tiles[pos_after].monster = Beethro(direction=direction)
+        if self.tile_at(pos_after).is_passable():
+            self.tile_at(position).monster = None
+            self.tile_at(pos_after).monster = Beethro(direction=direction)
         sword_position = position_in_direction(pos_after, direction)
         if (
             sword_position[0] >= 0
@@ -170,44 +154,44 @@ class Room(BaseModel):
             and sword_position[1] >= 0
             and sword_position[1] < ROOM_HEIGHT_IN_TILES
         ):
-            under_sword = self.tiles[sword_position]
+            under_sword = self.tile_at(sword_position)
             if (
                 under_sword.item is not None
                 and under_sword.item.element_type == ElementType.ORB
             ):
                 for effect, pos in under_sword.item.effects:
-                    if self.tiles[pos].room_piece is None:
+                    if self.tile_at(pos).room_piece is None:
                         raise RuntimeError(
                             f"Orb at {sword_position} tried to {effect} element "
                             f"at {pos}, but nothing is there"
                         )
-                    if self.tiles[pos].room_piece.element_type not in [
+                    if self.tile_at(pos).room_piece.element_type not in [
                         ElementType.YELLOW_DOOR,
                         ElementType.YELLOW_DOOR_OPEN,
                     ]:
                         raise RuntimeError(
                             f"Orb at {sword_position} tried to {effect} element "
                             f"at {pos}, but it is a "
-                            f"{self.tiles[pos].room_piece.element_type}"
+                            f"{self.tile_at(pos).room_piece.element_type}"
                         )
                     if effect == OrbEffectType.OPEN:
-                        self.tiles[pos].room_piece = UndirectionalElement(
+                        self.tile_at(pos).room_piece = UndirectionalElement(
                             element_type=ElementType.YELLOW_DOOR_OPEN
                         )
                     elif effect == OrbEffectType.CLOSE:
-                        self.tiles[pos].room_piece = UndirectionalElement(
+                        self.tile_at(pos).room_piece = UndirectionalElement(
                             element_type=ElementType.YELLOW_DOOR
                         )
                     # Toggle
                     elif (
-                        self.tiles[pos].room_piece.element_type
+                        self.tile_at(pos).room_piece.element_type
                         == ElementType.YELLOW_DOOR
                     ):
-                        self.tiles[pos].room_piece = UndirectionalElement(
+                        self.tile_at(pos).room_piece = UndirectionalElement(
                             element_type=ElementType.YELLOW_DOOR_OPEN
                         )
                     else:
-                        self.tiles[pos].room_piece = UndirectionalElement(
+                        self.tile_at(pos).room_piece = UndirectionalElement(
                             element_type=ElementType.YELLOW_DOOR
                         )
 
@@ -219,14 +203,15 @@ class Room(BaseModel):
         A dict mapping coordinates to ApparentTile instances.
         """
         return {
-            key: ApparentTile(
+            (x, y): ApparentTile(
                 room_piece=element_to_apparent(tile.room_piece),
                 floor_control=element_to_apparent(tile.floor_control),
                 checkpoint=element_to_apparent(tile.checkpoint),
                 item=element_to_apparent(tile.item),
                 monster=element_to_apparent(tile.monster),
             )
-            for key, tile in self.tiles.items()
+            for x, columns in enumerate(self.tiles)
+            for y, tile in enumerate(columns)
         }
 
     @staticmethod
@@ -248,19 +233,17 @@ class Room(BaseModel):
         -------
         A new room.
         """
-        room = Room(
-            tiles={
-                key: Tile(
-                    room_piece=element_from_apparent(*tile.room_piece),
-                    floor_control=element_from_apparent(*tile.floor_control),
-                    checkpoint=element_from_apparent(*tile.checkpoint),
-                    item=element_from_apparent(*tile.item),
-                    monster=element_from_apparent(*tile.monster),
-                )
-                for key, tile in apparent_tiles.items()
-            }
-        )
+        room = Room()
+        for (x, y), tile in apparent_tiles.items():
+            room.tiles[x][y] = Tile(
+                room_piece=element_from_apparent(*tile.room_piece),
+                floor_control=element_from_apparent(*tile.floor_control),
+                checkpoint=element_from_apparent(*tile.checkpoint),
+                item=element_from_apparent(*tile.item),
+                monster=element_from_apparent(*tile.monster),
+            )
+
         if orb_effects is not None:
             for position, effects in orb_effects.items():
-                room.tiles[position].item.effects = effects
+                room.tile_at(position).item.effects = effects
         return room
