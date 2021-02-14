@@ -82,7 +82,7 @@ class Level(BaseModel):
                     [
                         (room_pos, (x, 0))
                         for x in range(ROOM_WIDTH_IN_TILES)
-                        if room.tiles[(x, 0)].is_passable()
+                        if room.tile_at((x, 0)).is_passable()
                     ]
                 )
             if (room_x + 1, room_y) not in self.rooms:
@@ -90,7 +90,7 @@ class Level(BaseModel):
                     [
                         (room_pos, (ROOM_WIDTH_IN_TILES - 1, y))
                         for y in range(ROOM_HEIGHT_IN_TILES)
-                        if room.tiles[(ROOM_WIDTH_IN_TILES - 1, y)].is_passable()
+                        if room.tile_at((ROOM_WIDTH_IN_TILES - 1, y)).is_passable()
                     ]
                 )
             if (room_x, room_y + 1) not in self.rooms:
@@ -98,7 +98,7 @@ class Level(BaseModel):
                     [
                         (room_pos, (x, ROOM_HEIGHT_IN_TILES - 1))
                         for x in range(ROOM_WIDTH_IN_TILES)
-                        if room.tiles[(x, ROOM_HEIGHT_IN_TILES - 1)].is_passable()
+                        if room.tile_at((x, ROOM_HEIGHT_IN_TILES - 1)).is_passable()
                     ]
                 )
             if (room_x - 1, room_y) not in self.rooms:
@@ -106,7 +106,7 @@ class Level(BaseModel):
                     [
                         (room_pos, (0, y))
                         for y in range(ROOM_HEIGHT_IN_TILES)
-                        if room.tiles[(0, y)].is_passable()
+                        if room.tile_at((0, y)).is_passable()
                     ]
                 )
         return uncrossed_edge_tiles
@@ -184,20 +184,20 @@ class Level(BaseModel):
                     n
                     for n in range(edge_length)
                     if self.rooms[room_position]
-                    .tiles[
+                    .tile_at(
                         (
                             n if x_current_room is None else x_current_room,
                             n if y_current_room is None else y_current_room,
                         )
-                    ]
+                    )
                     .is_passable()
                     and self.rooms[target_room]
-                    .tiles[
+                    .tile_at(
                         (
                             n if x_next_room is None else x_next_room,
                             n if y_next_room is None else y_next_room,
                         )
-                    ]
+                    )
                     .is_passable()
                 ]
                 # Find continuous regions

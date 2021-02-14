@@ -38,11 +38,11 @@ class _OrbPuzzleProblem:
         # Set the door state in the room
         for i, coords in enumerate(self.door_index_to_coords):
             if state.door_state[i]:
-                self.room.tiles[coords].room_piece = UndirectionalElement(
+                self.room.tile_at(coords).room_piece = UndirectionalElement(
                     element_type=ElementType.YELLOW_DOOR
                 )
             else:
-                self.room.tiles[coords].room_piece = UndirectionalElement(
+                self.room.tile_at(coords).room_piece = UndirectionalElement(
                     element_type=ElementType.YELLOW_DOOR_OPEN
                 )
         # See which goals are reachable
@@ -75,7 +75,7 @@ class _OrbPuzzleProblem:
         destination, _ = action
         door_state = list(state.door_state)
         if destination in self.orbs:
-            for effect, coords in self.room.tiles[destination].item.effects:
+            for effect, coords in self.room.tile_at(destination).item.effects:
                 index = self.door_coords_to_index[coords]
                 if effect == OrbEffectType.OPEN:
                     door_state[index] = False
@@ -131,8 +131,8 @@ def find_path_with_orbs(start, start_direction, goals, room, sword_at_goal=False
     # Initialize the pathfinding room with starting position and direction
     pathfinding_room = room.copy(deep=True)
     player_position, _ = pathfinding_room.find_player()
-    pathfinding_room.tiles[player_position].monster = None
-    pathfinding_room.tiles[start].monster = Beethro(direction=start_direction)
+    pathfinding_room.tile_at(player_position).monster = None
+    pathfinding_room.tile_at(start).monster = Beethro(direction=start_direction)
     # Find the actual paths between the positions
     all_actions = []
     for coords, _ in solution:

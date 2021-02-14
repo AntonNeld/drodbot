@@ -52,6 +52,20 @@ class Room(BaseModel):
         as_dict["tiles"] = new_tiles
         return as_dict
 
+    def tile_at(self, position):
+        """Return the tile at the given position.
+
+        Parameters
+        ----------
+        position
+            A tuple (x, y).
+
+        Returns
+        -------
+        The tile at that position.
+        """
+        return self.tiles[position]
+
     def find_coordinates(self, element):
         """Find the coordinates of all elements of a type.
 
