@@ -146,7 +146,7 @@ class DrodBot:
         self.state.plan = actions
         await self._execute_plan()
         # Actually cross into the room
-        x, y = self.state.current_room.find_player()
+        (x, y), _ = self.state.current_room.find_player()
         if x == 0:
             self.state.plan = [Action.W]
         elif x == ROOM_WIDTH_IN_TILES - 1:
@@ -191,7 +191,7 @@ class DrodBot:
         room = Room.from_apparent_tiles(tile_contents, orb_effects)
         self.state.current_room = room
         room_in_level = room.copy(deep=True)
-        player_position = room_in_level.find_player()
+        player_position, _ = room_in_level.find_player()
         # Remove Beethro from the room, so the saved level doesn't
         # have a bunch of Beethros standing around
         room_in_level.tiles[player_position].monster = None
@@ -202,7 +202,7 @@ class DrodBot:
     async def _execute_plan(self):
         while self.state.plan:
             action = self.state.plan.pop(0)
-            x, y = self.state.current_room.find_player()
+            (x, y), _ = self.state.current_room.find_player()
             if x == ROOM_WIDTH_IN_TILES - 1 and action == Action.E:
                 await self._enter_room(Direction.E)
             elif x == ROOM_WIDTH_IN_TILES - 1 and action in [Action.SE, Action.NE]:
@@ -239,10 +239,7 @@ class DrodBot:
         """
         print(f"Entering new room in direction {direction.value}")
         room_x, room_y = self.state.current_room_position
-        player_x, player_y = self.state.current_room.find_player()
-        player_direction = self.state.current_room.tiles[
-            (player_x, player_y)
-        ].monster.direction
+        (player_x, player_y), player_direction = self.state.current_room.find_player()
         if direction == Direction.N:
             if player_y != 0:
                 raise RuntimeError(f"Cannot enter new room by moving N, y={player_y}")

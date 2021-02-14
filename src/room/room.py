@@ -75,14 +75,16 @@ class Room(BaseModel):
 
         Returns
         -------
-        The coordinates of the player, as an (x, y) tuple.
+        A tuple ((x, y), direction).
         """
         beethros = self.find_coordinates(ElementType.BEETHRO)
         if len(beethros) < 1:
             raise RuntimeError("Cannot find Beethro")
         if len(beethros) > 1:
             raise RuntimeError(f"Too many Beethros: {beethros}")
-        return beethros[0]
+        position = beethros[0]
+        direction = self.tiles[position].monster.direction
+        return position, direction
 
     def do_actions(self, actions, in_place=False):
         """Do multiple actions, and return a copy of the room after the actions.
@@ -138,8 +140,7 @@ class Room(BaseModel):
     def _do_action_in_place(self, action):
         # TODO: This should use DRODLib from the DROD source instead of
         # reimplementing everything.
-        position = self.find_player()
-        direction = self.tiles[position].monster.direction
+        position, direction = self.find_player()
         pos_after = position
         if action in [Action.CW, Action.CCW]:
             direction = direction_after([action], direction)

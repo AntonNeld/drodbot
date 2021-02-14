@@ -44,14 +44,12 @@ def solve_room(room, objective):
         The objective to reach.
     """
     if objective.objective_type == "reach_tile":
-        player_position = room.find_player()
-        direction = room.tiles[player_position].monster.direction
+        player_position, direction = room.find_player()
         goal_positions = objective.goal_tiles
         actions = find_path_with_orbs(player_position, direction, goal_positions, room)
         return actions
     if objective.objective_type == "strike_tile":
-        player_position = room.find_player()
-        direction = room.tiles[player_position].monster.direction
+        player_position, direction = room.find_player()
         goal_positions = objective.goal_tiles
         actions = find_path_with_orbs(
             player_position, direction, goal_positions, room, sword_at_goal=True

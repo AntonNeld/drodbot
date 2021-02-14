@@ -135,7 +135,7 @@ def find_path_in_level(goal_tiles, current_room, current_room_position, level):
     detailed_actions = []
     room = current_room
     latest_room_position = current_room_position
-    direction = current_room.tiles[current_room.find_player()].monster.direction
+    _, direction = current_room.find_player()
     # Find the actual paths between the room edges
     for high_level_action in solution:
         actions = solve_room(

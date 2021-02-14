@@ -130,13 +130,13 @@ def find_path_with_orbs(start, start_direction, goals, room, sword_at_goal=False
 
     # Initialize the pathfinding room with starting position and direction
     pathfinding_room = room.copy(deep=True)
-    pathfinding_room.tiles[pathfinding_room.find_player()].monster = None
+    player_position, _ = pathfinding_room.find_player()
+    pathfinding_room.tiles[player_position].monster = None
     pathfinding_room.tiles[start].monster = Beethro(direction=start_direction)
     # Find the actual paths between the positions
     all_actions = []
     for coords, _ in solution:
-        player_position = pathfinding_room.find_player()
-        player_direction = pathfinding_room.tiles[player_position].monster.direction
+        player_position, player_direction = pathfinding_room.find_player()
         if coords in goals:
             actions = find_path(
                 player_position, player_direction, [coords], pathfinding_room

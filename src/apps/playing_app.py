@@ -93,7 +93,7 @@ class PlayingApp(tkinter.Frame):
                     :,
                 ] = _room_to_image(room)
         if self._data.current_room is not None:
-            player_x, player_y = self._data.current_room.find_player()
+            (player_x, player_y), _ = self._data.current_room.find_player()
             # Draw plan
             if self._data.plan:
                 plan_x = player_x + _CURRENT_ROOM_ORIGIN_X
