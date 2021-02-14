@@ -5,6 +5,6 @@ import room_simulator
 if __name__ == "__main__":
     room_simulator.initialize()
     print("==Room 0==")
-    print(f"X after: {room_simulator.simulate_move(0)}")
+    print(f"X after: {room_simulator.simulate_action(0, 1)}")
     print("==Room 1==")
-    print(f"X after: {room_simulator.simulate_move(1)}")
+    print(f"X after: {room_simulator.simulate_action(1, 2)}")

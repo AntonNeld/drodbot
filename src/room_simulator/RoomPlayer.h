@@ -2,6 +2,7 @@
 #define DRODBOT_ROOMPLAYER_H
 
 #include <DRODLib/Db.h>
+#include "typedefs.h"
 
 class RoomPlayer
 {
@@ -9,7 +10,7 @@ public:
     RoomPlayer();
     void initialize();
     void setRoom(int roomType);
-    void performAction();
+    void performAction(Action action);
     int getRoom();
 
 private:

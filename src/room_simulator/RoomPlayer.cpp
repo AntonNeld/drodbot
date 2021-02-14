@@ -1,12 +1,14 @@
 
 #include <fstream>
 #include <sys/stat.h>
+#include <string>
 
 #include <BackEndLib/Files.h>
 #include <DRODLib/CurrentGame.h>
 #include <DRODLib/Db.h>
 
 #include "RoomPlayer.h"
+#include "typedefs.h"
 
 // This class creates a room and plays it.
 RoomPlayer::RoomPlayer()
@@ -138,10 +140,49 @@ void RoomPlayer::setRoom(int roomType)
 
 // Perform an action in the room. Currently takes no arguments, but will take
 // an action later.
-void RoomPlayer::performAction()
+void RoomPlayer::performAction(Action action)
 {
     CCueEvents cueEvents;
-    currentGame->ProcessCommand(CMD_SE, cueEvents);
+    int drodAction;
+    switch (action)
+    {
+    case Action::SW:
+        drodAction = CMD_SW;
+        break;
+    case Action::S:
+        drodAction = CMD_S;
+        break;
+    case Action::SE:
+        drodAction = CMD_SE;
+        break;
+    case Action::W:
+        drodAction = CMD_W;
+        break;
+    case Action::WAIT:
+        drodAction = CMD_WAIT;
+        break;
+    case Action::E:
+        drodAction = CMD_E;
+        break;
+    case Action::NW:
+        drodAction = CMD_NW;
+        break;
+    case Action::N:
+        drodAction = CMD_N;
+        break;
+    case Action::NE:
+        drodAction = CMD_NE;
+        break;
+    case Action::CW:
+        drodAction = CMD_C;
+        break;
+    case Action::CCW:
+        drodAction = CMD_CC;
+        break;
+    default:
+        throw std::invalid_argument("Unknown action");
+    }
+    currentGame->ProcessCommand(drodAction, cueEvents);
 }
 
 // Get a representation of the current room state. Currently only returns
