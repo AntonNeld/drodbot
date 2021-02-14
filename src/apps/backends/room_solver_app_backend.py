@@ -1,8 +1,10 @@
+import time
+
 from common import GUIEvent
 
 
-class InterpretScreenAppBackend:
-    """The backend for the interpret screen app.
+class RoomSolverAppBackend:
+    """The backend for the room solver app.
 
     Parameters
     ----------
@@ -16,15 +18,19 @@ class InterpretScreenAppBackend:
         self._queue = window_queue
         self._interface = play_interface
 
-    async def show_view(self):
-        """Show the given view step in the GUI.
-
-        This method will add the image and tile contents to the window queue.
-        """
+    async def get_room(self):
+        """Set the current room from a screenshot."""
+        print("Interpreting room...")
+        t = time.time()
         await self._interface.initialize()
         tile_contents, _, debug_images = await self._interface.get_view(
             return_debug_images=True
         )
         self._queue.put(
-            (GUIEvent.SET_INTERPRET_SCREEN_DATA, debug_images, tile_contents)
+            (
+                GUIEvent.SET_ROOM_SOLVER_DATA,
+                next(image for name, image in debug_images if name == "Extract room"),
+                tile_contents,
+            )
         )
+        print(f"Interpreted room in {time.time()-t:.2f}s")

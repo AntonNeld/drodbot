@@ -11,6 +11,7 @@ from apps.backends import (
     ClassificationAppBackend,
     InterpretScreenAppBackend,
     PlayingAppBackend,
+    RoomSolverAppBackend,
 )
 
 
@@ -34,6 +35,7 @@ def main():
         play_interface, window_queue
     )
     playing_app_backend = PlayingAppBackend(bot, window_queue)
+    room_solver_app_backend = RoomSolverAppBackend(play_interface, window_queue)
 
     window = tkinter.Tk()
     window.title("DRODbot")
@@ -43,6 +45,7 @@ def main():
         queue=window_queue,
         playing_app_backend=playing_app_backend,
         interpret_screen_app_backend=interpret_screen_app_backend,
+        room_solver_app_backend=room_solver_app_backend,
         classification_app_backend=classification_app_backend,
     )
     app.pack()

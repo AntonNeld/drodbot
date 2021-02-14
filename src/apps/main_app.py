@@ -5,11 +5,12 @@ from tkinter import ttk
 from common import GUIEvent
 from .interpret_screen_app import InterpretScreenApp
 from .playing_app import PlayingApp
+from .room_solver_app import RoomSolverApp
 from .classification_app import ClassificationApp
 
 _QUEUE_POLL_INTERVAL = 50
 
-_APPS = ["Play game", "Interpret screen", "Manage classifier"]
+_APPS = ["Play game", "Interpret screen", "Examine room solver", "Manage classifier"]
 _DEFAULT_APP = 0
 
 
@@ -42,6 +43,7 @@ class MainApp(tkinter.Frame):
         queue,
         playing_app_backend,
         interpret_screen_app_backend,
+        room_solver_app_backend,
         classification_app_backend,
     ):
         super().__init__(root)
@@ -71,6 +73,7 @@ class MainApp(tkinter.Frame):
         self._classification_app = ClassificationApp(
             self, event_loop, classification_app_backend
         )
+        self._room_solver_app = RoomSolverApp(self, event_loop, room_solver_app_backend)
         self._switch_app(_APPS[_DEFAULT_APP])
 
     def _check_queue(self):
@@ -84,6 +87,8 @@ class MainApp(tkinter.Frame):
                 self._classification_app.set_data(*detail)
             elif item == GUIEvent.SET_PLAYING_DATA:
                 self._playing_app.set_data(*detail)
+            elif item == GUIEvent.SET_ROOM_SOLVER_DATA:
+                self._room_solver_app.set_data(*detail)
         except Empty:
             pass
         self._main_window.after(_QUEUE_POLL_INTERVAL, self._check_queue)
@@ -92,9 +97,12 @@ class MainApp(tkinter.Frame):
         self._playing_app.pack_forget()
         self._classification_app.pack_forget()
         self._interpret_screen_app.pack_forget()
+        self._room_solver_app.pack_forget()
         if app == "Play game":
             self._playing_app.pack(side=tkinter.TOP)
         elif app == "Interpret screen":
             self._interpret_screen_app.pack(side=tkinter.TOP)
+        elif app == "Examine room solver":
+            self._room_solver_app.pack(side=tkinter.TOP)
         elif app == "Manage classifier":
             self._classification_app.pack(side=tkinter.TOP)
