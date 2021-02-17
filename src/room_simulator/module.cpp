@@ -44,4 +44,52 @@ Returns
 The X coordinate of Beethro after the move.
 )docstr",
           pybind11::arg("room"), pybind11::arg("action"));
+    pybind11::enum_<ElementType>(m, "ElementType")
+        .value("NOTHING", ElementType::NOTHING)
+        .value("WALL", ElementType::WALL)
+        .value("PIT", ElementType::PIT)
+        .value("MASTER_WALL", ElementType::MASTER_WALL)
+        .value("YELLOW_DOOR", ElementType::YELLOW_DOOR)
+        .value("YELLOW_DOOR_OPEN", ElementType::YELLOW_DOOR_OPEN)
+        .value("GREEN_DOOR", ElementType::GREEN_DOOR)
+        .value("GREEN_DOOR_OPEN", ElementType::GREEN_DOOR_OPEN)
+        .value("BLUE_DOOR", ElementType::BLUE_DOOR)
+        .value("BLUE_DOOR_OPEN", ElementType::BLUE_DOOR_OPEN)
+        .value("STAIRS", ElementType::STAIRS)
+        .value("FORCE_ARROW", ElementType::FORCE_ARROW)
+        .value("CHECKPOINT", ElementType::CHECKPOINT)
+        .value("ORB", ElementType::ORB)
+        .value("SCROLL", ElementType::SCROLL)
+        .value("OBSTACLE", ElementType::OBSTACLE)
+        .value("BEETHRO", ElementType::BEETHRO)
+        .value("BEETHRO_SWORD", ElementType::BEETHRO_SWORD)
+        .value("ROACH", ElementType::ROACH)
+        .value("CONQUER_TOKEN", ElementType::CONQUER_TOKEN)
+        .value("FLOOR", ElementType::FLOOR)
+        .export_values();
+
+    pybind11::enum_<Direction>(m, "Direction")
+        .value("NONE", Direction::NONE)
+        .value("N", Direction::N)
+        .value("NE", Direction::NE)
+        .value("E", Direction::E)
+        .value("SE", Direction::SE)
+        .value("S", Direction::S)
+        .value("SW", Direction::SW)
+        .value("W", Direction::W)
+        .value("NW", Direction::NW)
+        .export_values();
+
+    pybind11::class_<Tile>(m, "Tile")
+        .def(pybind11::init<>())
+        .def_readwrite("room_piece", &Tile::roomPiece)
+        .def_readwrite("floor_control", &Tile::floorControl)
+        .def_readwrite("checkpoint", &Tile::checkpoint)
+        .def_readwrite("item", &Tile::item)
+        .def_readwrite("monster", &Tile::monster);
+
+    pybind11::class_<Element>(m, "Element")
+        .def(pybind11::init<ElementType, Direction>(),
+             pybind11::arg("element_type") = ElementType::NOTHING,
+             pybind11::arg("direction") = Direction::NONE);
 }

@@ -4,6 +4,7 @@ from typing import List
 from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .element import (
     ElementType,
+    Direction,
     OrbEffectType,
     UndirectionalElement,
     Beethro,
@@ -13,7 +14,7 @@ from .element import (
 from .tile import Tile
 from .apparent_tile import ApparentTile
 from util import direction_after, position_in_direction
-from room_simulator import simulate_action
+import room_simulator
 
 
 class Room(BaseModel):
@@ -138,7 +139,7 @@ class Room(BaseModel):
 
     def _do_action_in_place(self, action):
         # Do nothing with the result for now
-        simulate_action(0, action.value)
+        room_simulator.simulate_action(self._to_simulator_room(), action.value)
 
         position, direction = self.find_player()
         pos_after = position
@@ -197,6 +198,22 @@ class Room(BaseModel):
                             element_type=ElementType.YELLOW_DOOR
                         )
 
+    def _to_simulator_room(self):
+        simulator_room = []
+        for column in self.tiles:
+            simulator_column = []
+            for tile in column:
+                simulator_tile = room_simulator.Tile()
+                simulator_tile.room_piece = _to_simulator_element(tile.room_piece)
+                simulator_tile.floor_control = _to_simulator_element(tile.floor_control)
+                simulator_tile.checkpoint = _to_simulator_element(tile.checkpoint)
+                simulator_tile.item = _to_simulator_element(tile.item)
+                simulator_tile.monster = _to_simulator_element(tile.monster)
+                simulator_column.append(simulator_tile)
+            simulator_room.append(simulator_column)
+
+        return simulator_room
+
     def to_apparent_tiles(self):
         """Create apparent tiles from a room.
 
@@ -249,3 +266,98 @@ class Room(BaseModel):
             for position, effects in orb_effects.items():
                 room.tile_at(position).item.effects = effects
         return room
+
+
+def _to_simulator_element(element):
+    """Creates a simulator element from an element.
+
+    Parameters
+    ----------
+    element
+        The element to convert.
+
+    Returns
+    -------
+    A simulator element.
+    """
+    if element is None:
+        return room_simulator.Element()
+    if element.element_type == ElementType.WALL:
+        return room_simulator.Element(element_type=room_simulator.ElementType.WALL)
+    if element.element_type == ElementType.PIT:
+        return room_simulator.Element(element_type=room_simulator.ElementType.PIT)
+    if element.element_type == ElementType.MASTER_WALL:
+        return room_simulator.Element(
+            element_type=room_simulator.ElementType.MASTER_WALL
+        )
+    if element.element_type == ElementType.YELLOW_DOOR:
+        return room_simulator.Element(
+            element_type=room_simulator.ElementType.YELLOW_DOOR
+        )
+    if element.element_type == ElementType.YELLOW_DOOR_OPEN:
+        return room_simulator.Element(
+            element_type=room_simulator.ElementType.YELLOW_DOOR_OPEN
+        )
+    if element.element_type == ElementType.GREEN_DOOR:
+        return room_simulator.Element(
+            element_type=room_simulator.ElementType.GREEN_DOOR
+        )
+    if element.element_type == ElementType.GREEN_DOOR_OPEN:
+        return room_simulator.Element(
+            element_type=room_simulator.ElementType.GREEN_DOOR_OPEN
+        )
+    if element.element_type == ElementType.BLUE_DOOR:
+        return room_simulator.Element(element_type=room_simulator.ElementType.BLUE_DOOR)
+    if element.element_type == ElementType.BLUE_DOOR_OPEN:
+        return room_simulator.Element(
+            element_type=room_simulator.ElementType.BLUE_DOOR_OPEN
+        )
+    if element.element_type == ElementType.STAIRS:
+        return room_simulator.Element(element_type=room_simulator.ElementType.STAIRS)
+    if element.element_type == ElementType.CHECKPOINT:
+        return room_simulator.Element(
+            element_type=room_simulator.ElementType.CHECKPOINT
+        )
+    if element.element_type == ElementType.SCROLL:
+        return room_simulator.Element(element_type=room_simulator.ElementType.SCROLL)
+    if element.element_type == ElementType.OBSTACLE:
+        return room_simulator.Element(element_type=room_simulator.ElementType.OBSTACLE)
+    if element.element_type == ElementType.CONQUER_TOKEN:
+        return room_simulator.Element(
+            element_type=room_simulator.ElementType.CONQUER_TOKEN
+        )
+    if element.element_type == ElementType.FLOOR:
+        return room_simulator.Element(element_type=room_simulator.ElementType.FLOOR)
+    # TODO: orb effects
+    if element.element_type == ElementType.ORB:
+        return room_simulator.Element(element_type=room_simulator.ElementType.ORB)
+    # Directional elements
+    if element.direction == Direction.N:
+        direction = room_simulator.Direction.N
+    if element.direction == Direction.NE:
+        direction = room_simulator.Direction.NE
+    if element.direction == Direction.E:
+        direction = room_simulator.Direction.E
+    if element.direction == Direction.SE:
+        direction = room_simulator.Direction.SE
+    if element.direction == Direction.S:
+        direction = room_simulator.Direction.S
+    if element.direction == Direction.SW:
+        direction = room_simulator.Direction.SW
+    if element.direction == Direction.W:
+        direction = room_simulator.Direction.W
+    if element.direction == Direction.NW:
+        direction = room_simulator.Direction.NW
+
+    if element.element_type == ElementType.FORCE_ARROW:
+        return room_simulator.Element(
+            element_type=room_simulator.ElementType.FORCE_ARROW, direction=direction
+        )
+    if element.element_type == ElementType.BEETHRO:
+        return room_simulator.Element(
+            element_type=room_simulator.ElementType.BEETHRO, direction=direction
+        )
+    if element.element_type == ElementType.ROACH:
+        return room_simulator.Element(
+            element_type=room_simulator.ElementType.ROACH, direction=direction
+        )

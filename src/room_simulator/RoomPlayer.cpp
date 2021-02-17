@@ -111,23 +111,9 @@ void RoomPlayer::setRoom(Room room)
     unsigned int beethroX;
     unsigned int beethroY;
     unsigned int beethroDir;
-    switch (room)
-    {
-    case 0:
-        beethroX = 15;
-        beethroY = 15;
-        beethroDir = SE;
-        break;
-    case 1:
-        beethroX = 10;
-        beethroY = 5;
-        beethroDir = N;
-        break;
-    default:
-        beethroX = 2;
-        beethroY = 30;
-        beethroDir = W;
-    }
+    beethroX = 15;
+    beethroY = 15;
+    beethroDir = SE;
     CEntranceData *pEntrance = new CEntranceData(0, 0, drodRoom->dwRoomID,
                                                  beethroX, beethroY, beethroDir,
                                                  true, CEntranceData::DD_No, 0);
