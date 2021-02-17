@@ -67,7 +67,7 @@ struct Element
     ElementType type = ElementType::NOTHING;
     Direction direction = Direction::NONE;
 };
-// The contents of a tile.
+// The contents of a tile. TODO: Enforce correct element types in each layer.
 struct Tile
 {
     Element roomPiece = Element();

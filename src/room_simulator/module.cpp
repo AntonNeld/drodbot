@@ -29,12 +29,10 @@ This has side effects on the file system and should only be done once.
     m.def("simulate_action", &simulateAction, R"docstr(
 Simulate an action in a room.
 
-Currently only simulates one of three predefined rooms.
-
 Parameters
 ----------
 room
-    The room before taking the action. Currently only an ID for a predefined room.
+    The room before taking the action.
 action
     The action to take, as an integer. The integer for each action is the value
     of the action in the Action enum in common.py.

@@ -10,6 +10,32 @@
 #include "RoomPlayer.h"
 #include "typedefs.h"
 
+// Helper function to convert directions.
+UINT convertDirection(Direction direction)
+{
+    switch (direction)
+    {
+    case Direction::N:
+        return N;
+    case Direction::NE:
+        return NE;
+    case Direction::E:
+        return E;
+    case Direction::SE:
+        return SE;
+    case Direction::S:
+        return S;
+    case Direction::SW:
+        return SW;
+    case Direction::W:
+        return W;
+    case Direction::NW:
+        return NW;
+    default:
+        throw std::invalid_argument("Unknown direction");
+    }
+}
+
 // This class creates a room and plays it.
 RoomPlayer::RoomPlayer()
 {
@@ -107,28 +133,155 @@ void RoomPlayer::setRoom(Room room)
     UINT roomID = drodRoom->dwRoomID;
     delete drodRoom;
     drodRoom = db->Rooms.GetByID(roomID);
+
     // Place things in room
-    unsigned int beethroX;
-    unsigned int beethroY;
-    unsigned int beethroDir;
-    beethroX = 15;
-    beethroY = 15;
-    beethroDir = SE;
-    CEntranceData *pEntrance = new CEntranceData(0, 0, drodRoom->dwRoomID,
-                                                 beethroX, beethroY, beethroDir,
-                                                 true, CEntranceData::DD_No, 0);
-    hold->AddEntrance(pEntrance);
-    hold->Update();
-    CMonster *monster = drodRoom->AddNewMonster(M_ROACH, 10, 10);
-    monster->wO = N;
+    for (unsigned int x = 0; x < room.size(); x += 1)
+    {
+        Column column = room[x];
+        for (unsigned int y = 0; y < column.size(); y += 1)
+        {
+            Tile &tile = column[y];
+            switch (tile.roomPiece.type)
+            {
+            case ElementType::FLOOR:
+                break;
+            case ElementType::WALL:
+                drodRoom->Plot(x, y, T_WALL);
+                break;
+            case ElementType::PIT:
+                drodRoom->Plot(x, y, T_PIT);
+                break;
+            case ElementType::MASTER_WALL:
+                drodRoom->Plot(x, y, T_WALL_M);
+                break;
+            case ElementType::YELLOW_DOOR:
+                drodRoom->Plot(x, y, T_DOOR_Y);
+                break;
+            case ElementType::YELLOW_DOOR_OPEN:
+                drodRoom->Plot(x, y, T_DOOR_YO);
+                break;
+            // TODO: These may be switched depending on whether the room is
+            // conquered. Investigate.
+            case ElementType::GREEN_DOOR:
+                drodRoom->Plot(x, y, T_DOOR_M);
+                break;
+            case ElementType::GREEN_DOOR_OPEN:
+                drodRoom->Plot(x, y, T_DOOR_GO);
+                break;
+            case ElementType::BLUE_DOOR:
+                drodRoom->Plot(x, y, T_DOOR_C);
+                break;
+            case ElementType::BLUE_DOOR_OPEN:
+                drodRoom->Plot(x, y, T_DOOR_CO);
+                break;
+            case ElementType::STAIRS:
+                drodRoom->Plot(x, y, T_STAIRS);
+                break;
+            default:
+                throw std::invalid_argument("Wrong type in room piece layer");
+            }
+
+            switch (tile.floorControl.type)
+            {
+            case ElementType::NOTHING:
+                break;
+            case ElementType::FORCE_ARROW:
+                switch (tile.floorControl.direction)
+                {
+                case Direction::N:
+                    drodRoom->Plot(x, y, T_ARROW_N);
+                    break;
+                case Direction::NE:
+                    drodRoom->Plot(x, y, T_ARROW_NE);
+                    break;
+                case Direction::E:
+                    drodRoom->Plot(x, y, T_ARROW_E);
+                    break;
+                case Direction::SE:
+                    drodRoom->Plot(x, y, T_ARROW_SE);
+                    break;
+                case Direction::S:
+                    drodRoom->Plot(x, y, T_ARROW_S);
+                    break;
+                case Direction::SW:
+                    drodRoom->Plot(x, y, T_ARROW_SW);
+                    break;
+                case Direction::W:
+                    drodRoom->Plot(x, y, T_ARROW_W);
+                    break;
+                case Direction::NW:
+                    drodRoom->Plot(x, y, T_ARROW_NW);
+                    break;
+                default:
+                    throw std::invalid_argument("Wrong force arrow direction");
+                }
+                break;
+            default:
+                throw std::invalid_argument("Wrong type in floor control layer");
+            }
+
+            switch (tile.checkpoint.type)
+            {
+            case ElementType::NOTHING:
+                break;
+            case ElementType::CHECKPOINT:
+                // T_CHECKPOINT is deprecated, but we may as well use it to keep
+                // track of where the checkpoints are
+                drodRoom->Plot(x, y, T_CHECKPOINT);
+                break;
+            default:
+                throw std::invalid_argument("Wrong type in checkpoint layer");
+            }
+
+            switch (tile.item.type)
+            {
+            case ElementType::NOTHING:
+                break;
+            case ElementType::ORB:
+                drodRoom->Plot(x, y, T_ORB);
+                break;
+            case ElementType::OBSTACLE:
+                drodRoom->Plot(x, y, T_OBSTACLE);
+                break;
+            case ElementType::SCROLL:
+                drodRoom->Plot(x, y, T_SCROLL);
+                break;
+            case ElementType::CONQUER_TOKEN:
+                drodRoom->Plot(x, y, T_TOKEN);
+                break;
+            default:
+                throw std::invalid_argument("Wrong type in item layer");
+            }
+
+            switch (tile.monster.type)
+            {
+            case ElementType::NOTHING:
+                break;
+            case ElementType::BEETHRO:
+            {
+                CEntranceData *pEntrance = new CEntranceData(0, 0, drodRoom->dwRoomID,
+                                                             x, y, convertDirection(tile.monster.direction),
+                                                             true, CEntranceData::DD_No, 0);
+                hold->AddEntrance(pEntrance);
+                hold->Update();
+                break;
+            }
+            case ElementType::ROACH:
+                drodRoom->AddNewMonster(M_ROACH, x, y)->wO = convertDirection(tile.monster.direction);
+                break;
+            default:
+                throw std::invalid_argument("Wrong type in monster layer");
+            }
+        }
+    }
     drodRoom->Update();
+
     // Start current game
     CCueEvents cueEvents;
     currentGame = db->GetNewCurrentGame(hold->dwHoldID, cueEvents);
 }
 
-// Perform an action in the room. Currently takes no arguments, but will take
-// an action later.
+// Perform an action in the room.
 void RoomPlayer::performAction(Action action)
 {
     CCueEvents cueEvents;
