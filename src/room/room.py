@@ -1,19 +1,21 @@
 from pydantic import BaseModel, Field
 from typing import List
 
-from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
+from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .element import (
     ElementType,
     Direction,
     OrbEffectType,
     UndirectionalElement,
+    Orb,
+    DirectionalElement,
     Beethro,
     element_from_apparent,
     element_to_apparent,
 )
 from .tile import Tile
 from .apparent_tile import ApparentTile
-from util import direction_after, position_in_direction
+from util import position_in_direction
 import room_simulator
 
 
@@ -139,18 +141,13 @@ class Room(BaseModel):
 
     def _do_action_in_place(self, action):
         # Do nothing with the result for now
-        room_simulator.simulate_action(self._to_simulator_room(), action.value)
+        room_after = room_simulator.simulate_action(
+            self._to_simulator_room(), action.value
+        )
+        self._set_from_simulator_room(room_after)
 
         position, direction = self.find_player()
-        pos_after = position
-        if action in [Action.CW, Action.CCW]:
-            direction = direction_after([action], direction)
-        else:
-            pos_after = position_in_direction(position, action)
-        if self.tile_at(pos_after).is_passable():
-            self.tile_at(position).monster = None
-            self.tile_at(pos_after).monster = Beethro(direction=direction)
-        sword_position = position_in_direction(pos_after, direction)
+        sword_position = position_in_direction(position, direction)
         if (
             sword_position[0] >= 0
             and sword_position[0] < ROOM_WIDTH_IN_TILES
@@ -213,6 +210,30 @@ class Room(BaseModel):
             simulator_room.append(simulator_column)
 
         return simulator_room
+
+    def _set_from_simulator_room(self, simulator_room):
+        tiles = []
+        for x, simulator_column in enumerate(simulator_room):
+            column = []
+            for y, simulator_tile in enumerate(simulator_column):
+                room_piece = _from_simulator_element(simulator_tile.room_piece)
+                floor_control = _from_simulator_element(simulator_tile.floor_control)
+                checkpoint = _from_simulator_element(simulator_tile.checkpoint)
+                item = _from_simulator_element(simulator_tile.item)
+                if item is not None and item.element_type == ElementType.ORB:
+                    item.effects = self.tiles[x][y].item.effects
+                monster = _from_simulator_element(simulator_tile.monster)
+                column.append(
+                    Tile(
+                        room_piece=room_piece,
+                        floor_control=floor_control,
+                        checkpoint=checkpoint,
+                        item=item,
+                        monster=monster,
+                    )
+                )
+            tiles.append(column)
+        self.tiles = tiles
 
     def to_apparent_tiles(self):
         """Create apparent tiles from a room.
@@ -361,3 +382,80 @@ def _to_simulator_element(element):
         return room_simulator.Element(
             element_type=room_simulator.ElementType.ROACH, direction=direction
         )
+
+
+def _from_simulator_element(simulator_element):
+    """Creates an element from a simulator element.
+
+    Parameters
+    ----------
+    simulator_element
+        The simulator melement to convert.
+
+    Returns
+    -------
+    An element.
+    """
+    element_type = simulator_element.element_type
+    element_direction = simulator_element.direction
+    if element_type == room_simulator.ElementType.NOTHING:
+        return None
+    if element_type == room_simulator.ElementType.WALL:
+        return UndirectionalElement(element_type=ElementType.WALL)
+    if element_type == room_simulator.ElementType.PIT:
+        return UndirectionalElement(element_type=ElementType.PIT)
+    if element_type == room_simulator.ElementType.MASTER_WALL:
+        return UndirectionalElement(element_type=ElementType.MASTER_WALL)
+    if element_type == room_simulator.ElementType.YELLOW_DOOR:
+        return UndirectionalElement(element_type=ElementType.YELLOW_DOOR)
+    if element_type == room_simulator.ElementType.YELLOW_DOOR_OPEN:
+        return UndirectionalElement(element_type=ElementType.YELLOW_DOOR_OPEN)
+    if element_type == room_simulator.ElementType.GREEN_DOOR:
+        return UndirectionalElement(element_type=ElementType.GREEN_DOOR)
+    if element_type == room_simulator.ElementType.GREEN_DOOR_OPEN:
+        return UndirectionalElement(element_type=ElementType.GREEN_DOOR_OPEN)
+    if element_type == room_simulator.ElementType.BLUE_DOOR:
+        return UndirectionalElement(element_type=ElementType.BLUE_DOOR)
+    if element_type == room_simulator.ElementType.BLUE_DOOR_OPEN:
+        return UndirectionalElement(element_type=ElementType.BLUE_DOOR_OPEN)
+    if element_type == room_simulator.ElementType.STAIRS:
+        return UndirectionalElement(element_type=ElementType.STAIRS)
+    if element_type == room_simulator.ElementType.CHECKPOINT:
+        return UndirectionalElement(element_type=ElementType.CHECKPOINT)
+    if element_type == room_simulator.ElementType.SCROLL:
+        return UndirectionalElement(element_type=ElementType.SCROLL)
+    if element_type == room_simulator.ElementType.OBSTACLE:
+        return UndirectionalElement(element_type=ElementType.OBSTACLE)
+    if element_type == room_simulator.ElementType.CONQUER_TOKEN:
+        return UndirectionalElement(element_type=ElementType.CONQUER_TOKEN)
+    if element_type == room_simulator.ElementType.FLOOR:
+        return UndirectionalElement(element_type=ElementType.FLOOR)
+    # TODO: orb effects
+    if element_type == room_simulator.ElementType.ORB:
+        return Orb()
+    # Directional elements
+    if element_direction == room_simulator.Direction.N:
+        direction = Direction.N
+    if element_direction == room_simulator.Direction.NE:
+        direction = Direction.NE
+    if element_direction == room_simulator.Direction.E:
+        direction = Direction.E
+    if element_direction == room_simulator.Direction.SE:
+        direction = Direction.SE
+    if element_direction == room_simulator.Direction.S:
+        direction = Direction.S
+    if element_direction == room_simulator.Direction.SW:
+        direction = Direction.SW
+    if element_direction == room_simulator.Direction.W:
+        direction = Direction.W
+    if element_direction == room_simulator.Direction.NW:
+        direction = Direction.NW
+
+    if element_type == room_simulator.ElementType.FORCE_ARROW:
+        return DirectionalElement(
+            element_type=ElementType.FORCE_ARROW, direction=direction
+        )
+    if element_type == room_simulator.ElementType.BEETHRO:
+        return Beethro(direction=direction)
+    if element_type == room_simulator.ElementType.ROACH:
+        return DirectionalElement(element_type=ElementType.ROACH, direction=direction)
