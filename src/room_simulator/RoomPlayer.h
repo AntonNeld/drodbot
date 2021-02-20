@@ -11,7 +11,7 @@ public:
     void initialize();
     void setRoom(Room room);
     void performAction(Action action);
-    int getRoom();
+    Room getRoom();
 
 private:
     CDbRoom *drodRoom;

@@ -10,7 +10,7 @@
 #include "RoomPlayer.h"
 #include "typedefs.h"
 
-// Helper function to convert directions.
+// Helper function to convert direction from our format to DROD format.
 UINT convertDirection(Direction direction)
 {
     switch (direction)
@@ -31,6 +31,32 @@ UINT convertDirection(Direction direction)
         return W;
     case Direction::NW:
         return NW;
+    default:
+        throw std::invalid_argument("Unknown direction");
+    }
+}
+
+// Helper function to convert direction from DROD format to our format.
+Direction convertDirectionBack(UINT direction)
+{
+    switch (direction)
+    {
+    case N:
+        return Direction::N;
+    case NE:
+        return Direction::NE;
+    case E:
+        return Direction::E;
+    case SE:
+        return Direction::SE;
+    case S:
+        return Direction::S;
+    case SW:
+        return Direction::SW;
+    case W:
+        return Direction::W;
+    case NW:
+        return Direction::NW;
     default:
         throw std::invalid_argument("Unknown direction");
     }
@@ -220,18 +246,7 @@ void RoomPlayer::setRoom(Room room)
                 throw std::invalid_argument("Wrong type in floor control layer");
             }
 
-            switch (tile.checkpoint.type)
-            {
-            case ElementType::NOTHING:
-                break;
-            case ElementType::CHECKPOINT:
-                // T_CHECKPOINT is deprecated, but we may as well use it to keep
-                // track of where the checkpoints are
-                drodRoom->Plot(x, y, T_CHECKPOINT);
-                break;
-            default:
-                throw std::invalid_argument("Wrong type in checkpoint layer");
-            }
+            // TODO: Keep track of checkpoints
 
             switch (tile.item.type)
             {
@@ -327,9 +342,147 @@ void RoomPlayer::performAction(Action action)
     currentGame->ProcessCommand(drodAction, cueEvents);
 }
 
-// Get a representation of the current room state. Currently only returns
-// the player's X coordinate, but will return the full room later.
-int RoomPlayer::getRoom()
+// Get a representation of the current room state.
+Room RoomPlayer::getRoom()
 {
-    return currentGame->swordsman.wX;
+    Room room;
+    for (unsigned int x = 0; x < 38; x += 1)
+    {
+        for (unsigned int y = 0; y < 32; y += 1)
+        {
+            Tile tile;
+            Element roomPiece;
+            switch (drodRoom->GetOSquare(x, y))
+            {
+            case T_FLOOR:
+                roomPiece = Element(ElementType::FLOOR);
+                break;
+            case T_WALL:
+                roomPiece = Element(ElementType::WALL);
+                break;
+            case T_PIT:
+                roomPiece = Element(ElementType::PIT);
+                break;
+            case T_WALL_M:
+                roomPiece = Element(ElementType::MASTER_WALL);
+                break;
+            case T_DOOR_Y:
+                roomPiece = Element(ElementType::YELLOW_DOOR);
+                break;
+            case T_DOOR_YO:
+                roomPiece = Element(ElementType::YELLOW_DOOR_OPEN);
+                break;
+            // TODO: These may be switched depending on whether the room is
+            // conquered. Investigate.
+            case T_DOOR_M:
+                roomPiece = Element(ElementType::GREEN_DOOR);
+                break;
+            case T_DOOR_GO:
+                roomPiece = Element(ElementType::GREEN_DOOR_OPEN);
+                break;
+            case T_DOOR_C:
+                roomPiece = Element(ElementType::BLUE_DOOR);
+                break;
+            case T_DOOR_CO:
+                roomPiece = Element(ElementType::BLUE_DOOR_OPEN);
+                break;
+            case T_STAIRS:
+                roomPiece = Element(ElementType::STAIRS);
+                break;
+            default:
+                throw std::invalid_argument("Unknown element in room piece layer");
+            }
+            tile.roomPiece = roomPiece;
+
+            Element floorControl;
+            switch (drodRoom->GetFSquare(x, y))
+            {
+            case T_EMPTY:
+                floorControl = Element();
+                break;
+            case T_ARROW_N:
+                floorControl = Element(ElementType::FORCE_ARROW, Direction::N);
+                break;
+            case T_ARROW_NE:
+                floorControl = Element(ElementType::FORCE_ARROW, Direction::NE);
+                break;
+            case T_ARROW_E:
+                floorControl = Element(ElementType::FORCE_ARROW, Direction::E);
+                break;
+            case T_ARROW_SE:
+                floorControl = Element(ElementType::FORCE_ARROW, Direction::SE);
+                break;
+            case T_ARROW_S:
+                floorControl = Element(ElementType::FORCE_ARROW, Direction::S);
+                break;
+            case T_ARROW_SW:
+                floorControl = Element(ElementType::FORCE_ARROW, Direction::SW);
+                break;
+            case T_ARROW_W:
+                floorControl = Element(ElementType::FORCE_ARROW, Direction::W);
+                break;
+            case T_ARROW_NW:
+                floorControl = Element(ElementType::FORCE_ARROW, Direction::NW);
+                break;
+            default:
+                throw std::invalid_argument("Unknown element in floor control layer");
+            }
+            tile.floorControl = floorControl;
+
+            // TODO: Keep track of checkpoints
+            tile.checkpoint = Element();
+
+            Element item;
+            switch (drodRoom->GetTSquare(x, y))
+            {
+            case T_EMPTY:
+                floorControl = Element();
+                break;
+            case T_ORB:
+                item = Element(ElementType::ORB);
+                break;
+            case T_OBSTACLE:
+                item = Element(ElementType::OBSTACLE);
+                break;
+            case T_SCROLL:
+                item = Element(ElementType::SCROLL);
+                break;
+            case T_TOKEN:
+                item = Element(ElementType::CONQUER_TOKEN);
+                break;
+            default:
+                throw std::invalid_argument("Unknown element in item layer");
+            }
+            tile.item = item;
+
+            Element monster;
+            if (currentGame->swordsman.wX == x && currentGame->swordsman.wY == y)
+            {
+                monster = Element(ElementType::BEETHRO, convertDirectionBack(currentGame->swordsman.wO));
+            }
+            else
+            {
+                CMonster *pMonster = drodRoom->GetMonsterAtSquare(x, y);
+                if (pMonster == NULL)
+                {
+                    monster = Element();
+                }
+                else
+                {
+                    switch (pMonster->wType)
+                    {
+                    case M_ROACH:
+                        monster = Element(ElementType::ROACH, convertDirectionBack(pMonster->wO));
+                        break;
+                    default:
+                        throw std::invalid_argument("Wrong type in monster layer");
+                    }
+                }
+            }
+            tile.monster = monster;
+
+            room[x][y] = tile;
+        }
+    }
+    return room;
 }

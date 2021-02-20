@@ -11,7 +11,7 @@ void initialize()
     roomPlayer.initialize();
 }
 
-int simulateAction(Room room, int action)
+Room simulateAction(Room room, int action)
 {
     roomPlayer.setRoom(room);
     roomPlayer.performAction(static_cast<Action>(action));
@@ -39,7 +39,7 @@ action
 
 Returns
 -------
-The X coordinate of Beethro after the move.
+The room after the action.
 )docstr",
           pybind11::arg("room"), pybind11::arg("action"));
     pybind11::enum_<ElementType>(m, "ElementType")
@@ -89,5 +89,7 @@ The X coordinate of Beethro after the move.
     pybind11::class_<Element>(m, "Element")
         .def(pybind11::init<ElementType, Direction>(),
              pybind11::arg("element_type") = ElementType::NOTHING,
-             pybind11::arg("direction") = Direction::NONE);
+             pybind11::arg("direction") = Direction::NONE)
+        .def_readwrite("element_type", &Element::type)
+        .def_readwrite("direction", &Element::direction);
 }
