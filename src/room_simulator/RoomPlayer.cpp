@@ -137,7 +137,13 @@ void RoomPlayer::initialize()
 }
 
 // Set the room that is being played.
-void RoomPlayer::setRoom(Room room)
+void RoomPlayer::setRoom(
+    Room room,         // Representation of the room
+    bool firstEntrance // Whether we're first entering the room or
+                       // whether it's a room in progress. If false,
+                       // apply some workarounds to undo things that
+                       // happen when entering a room.
+)
 {
     // Clear any existing room
     if (drodRoom != NULL)
@@ -161,6 +167,13 @@ void RoomPlayer::setRoom(Room room)
     drodRoom = db->Rooms.GetByID(roomID);
 
     // Place things in room
+
+    // Optionally wait with placing the doors until after starting playing. This
+    // is because Beethro strikes orbs when first entering a room, which is
+    // undesirable if we're actually in the middle of playing the given room.
+    std::vector<std::pair<int, int>> closedDoors;
+    std::vector<std::pair<int, int>> openDoors;
+
     for (unsigned int x = 0; x < room.size(); x += 1)
     {
         Column column = room[x];
@@ -181,10 +194,24 @@ void RoomPlayer::setRoom(Room room)
                 drodRoom->Plot(x, y, T_WALL_M);
                 break;
             case ElementType::YELLOW_DOOR:
-                drodRoom->Plot(x, y, T_DOOR_Y);
+                if (firstEntrance)
+                {
+                    drodRoom->Plot(x, y, T_DOOR_Y);
+                }
+                else
+                {
+                    closedDoors.push_back({x, y});
+                }
                 break;
             case ElementType::YELLOW_DOOR_OPEN:
-                drodRoom->Plot(x, y, T_DOOR_YO);
+                if (firstEntrance)
+                {
+                    drodRoom->Plot(x, y, T_DOOR_YO);
+                }
+                else
+                {
+                    openDoors.push_back({x, y});
+                }
                 break;
             // TODO: These may be switched depending on whether the room is
             // conquered. Investigate.
@@ -253,8 +280,33 @@ void RoomPlayer::setRoom(Room room)
             case ElementType::NOTHING:
                 break;
             case ElementType::ORB:
+            {
                 drodRoom->Plot(x, y, T_ORB);
+                COrbData *orb = drodRoom->AddOrbToSquare(x, y);
+                for (unsigned int i = 0; i < tile.item.orbEffects.size(); i += 1)
+                {
+                    std::tuple<int, int, OrbEffect> effectTuple = tile.item.orbEffects[i];
+                    int doorX = std::get<0>(effectTuple);
+                    int doorY = std::get<1>(effectTuple);
+                    OrbAgentType doorAction;
+                    switch (std::get<2>(effectTuple))
+                    {
+                    case OrbEffect::CLOSE:
+                        doorAction = OA_CLOSE;
+                        break;
+                    case OrbEffect::OPEN:
+                        doorAction = OA_OPEN;
+                        break;
+                    case OrbEffect::TOGGLE:
+                        doorAction = OA_TOGGLE;
+                        break;
+                    default:
+                        throw std::invalid_argument("Wrong orb effect type");
+                    }
+                    orb->AddAgent(doorX, doorY, doorAction);
+                }
                 break;
+            }
             case ElementType::OBSTACLE:
                 drodRoom->Plot(x, y, T_OBSTACLE);
                 break;
@@ -294,6 +346,22 @@ void RoomPlayer::setRoom(Room room)
     // Start current game
     CCueEvents cueEvents;
     currentGame = db->GetNewCurrentGame(hold->dwHoldID, cueEvents);
+
+    if (!firstEntrance)
+    {
+        for (unsigned int i = 0; i < closedDoors.size(); i += 1)
+        {
+            int x = closedDoors[i].first;
+            int y = closedDoors[i].second;
+            currentGame->pRoom->Plot(x, y, T_DOOR_Y);
+        }
+        for (unsigned int i = 0; i < openDoors.size(); i += 1)
+        {
+            int x = openDoors[i].first;
+            int y = openDoors[i].second;
+            currentGame->pRoom->Plot(x, y, T_DOOR_YO);
+        }
+    }
 }
 
 // Perform an action in the room.
@@ -352,7 +420,7 @@ Room RoomPlayer::getRoom()
         {
             Tile tile;
             Element roomPiece;
-            switch (drodRoom->GetOSquare(x, y))
+            switch (currentGame->pRoom->GetOSquare(x, y))
             {
             case T_FLOOR:
                 roomPiece = Element(ElementType::FLOOR);
@@ -395,7 +463,7 @@ Room RoomPlayer::getRoom()
             tile.roomPiece = roomPiece;
 
             Element floorControl;
-            switch (drodRoom->GetFSquare(x, y))
+            switch (currentGame->pRoom->GetFSquare(x, y))
             {
             case T_EMPTY:
                 floorControl = Element();
@@ -433,14 +501,36 @@ Room RoomPlayer::getRoom()
             tile.checkpoint = Element();
 
             Element item;
-            switch (drodRoom->GetTSquare(x, y))
+            switch (currentGame->pRoom->GetTSquare(x, y))
             {
             case T_EMPTY:
                 floorControl = Element();
                 break;
             case T_ORB:
-                item = Element(ElementType::ORB);
+            {
+                OrbEffects orbEffects;
+                COrbData *orb = currentGame->pRoom->GetOrbAtCoords(x, y);
+                for (unsigned int i = 0; i < orb->agents.size(); i += 1)
+                {
+                    COrbAgentData *agent = orb->agents[i];
+                    switch (agent->action)
+                    {
+                    case OA_CLOSE:
+                        orbEffects.push_back(std::make_tuple(agent->wX, agent->wY, OrbEffect::CLOSE));
+                        break;
+                    case OA_OPEN:
+                        orbEffects.push_back(std::make_tuple(agent->wX, agent->wY, OrbEffect::OPEN));
+                        break;
+                    case OA_TOGGLE:
+                        orbEffects.push_back(std::make_tuple(agent->wX, agent->wY, OrbEffect::TOGGLE));
+                        break;
+                    default:
+                        throw std::invalid_argument("Unknown orb effect");
+                    }
+                }
+                item = Element(ElementType::ORB, Direction::NONE, orbEffects);
                 break;
+            }
             case T_OBSTACLE:
                 item = Element(ElementType::OBSTACLE);
                 break;
@@ -462,7 +552,7 @@ Room RoomPlayer::getRoom()
             }
             else
             {
-                CMonster *pMonster = drodRoom->GetMonsterAtSquare(x, y);
+                CMonster *pMonster = currentGame->pRoom->GetMonsterAtSquare(x, y);
                 if (pMonster == NULL)
                 {
                     monster = Element();

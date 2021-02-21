@@ -2,6 +2,8 @@
 #define DRODBOT_TYPEDEFS_H
 
 #include <array>
+#include <tuple>
+#include <vector>
 
 // An action the player can take. The values need to match the ones in common.py.
 enum class Action
@@ -60,13 +62,24 @@ enum class Direction
     NW,
 };
 
+enum class OrbEffect
+{
+    OPEN,
+    CLOSE,
+    TOGGLE,
+};
+
+typedef std::vector<std::tuple<int, int, OrbEffect>> OrbEffects; // x, y, effect
+
 // An element in a room.
 struct Element
 {
-    Element(ElementType type = ElementType::NOTHING, Direction direction = Direction::NONE) : type(type), direction(direction) {}
+    Element(ElementType type = ElementType::NOTHING, Direction direction = Direction::NONE, OrbEffects orbEffects = {}) : type(type), direction(direction), orbEffects(orbEffects) {}
     ElementType type = ElementType::NOTHING;
     Direction direction = Direction::NONE;
+    OrbEffects orbEffects = {}; // Only actually used for orbs
 };
+
 // The contents of a tile. TODO: Enforce correct element types in each layer.
 struct Tile
 {

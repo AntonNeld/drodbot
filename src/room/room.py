@@ -15,7 +15,6 @@ from .element import (
 )
 from .tile import Tile
 from .apparent_tile import ApparentTile
-from util import position_in_direction
 import room_simulator
 
 
@@ -146,55 +145,6 @@ class Room(BaseModel):
         )
         self._set_from_simulator_room(room_after)
 
-        position, direction = self.find_player()
-        sword_position = position_in_direction(position, direction)
-        if (
-            sword_position[0] >= 0
-            and sword_position[0] < ROOM_WIDTH_IN_TILES
-            and sword_position[1] >= 0
-            and sword_position[1] < ROOM_HEIGHT_IN_TILES
-        ):
-            under_sword = self.tile_at(sword_position)
-            if (
-                under_sword.item is not None
-                and under_sword.item.element_type == ElementType.ORB
-            ):
-                for effect, pos in under_sword.item.effects:
-                    if self.tile_at(pos).room_piece is None:
-                        raise RuntimeError(
-                            f"Orb at {sword_position} tried to {effect} element "
-                            f"at {pos}, but nothing is there"
-                        )
-                    if self.tile_at(pos).room_piece.element_type not in [
-                        ElementType.YELLOW_DOOR,
-                        ElementType.YELLOW_DOOR_OPEN,
-                    ]:
-                        raise RuntimeError(
-                            f"Orb at {sword_position} tried to {effect} element "
-                            f"at {pos}, but it is a "
-                            f"{self.tile_at(pos).room_piece.element_type}"
-                        )
-                    if effect == OrbEffectType.OPEN:
-                        self.tile_at(pos).room_piece = UndirectionalElement(
-                            element_type=ElementType.YELLOW_DOOR_OPEN
-                        )
-                    elif effect == OrbEffectType.CLOSE:
-                        self.tile_at(pos).room_piece = UndirectionalElement(
-                            element_type=ElementType.YELLOW_DOOR
-                        )
-                    # Toggle
-                    elif (
-                        self.tile_at(pos).room_piece.element_type
-                        == ElementType.YELLOW_DOOR
-                    ):
-                        self.tile_at(pos).room_piece = UndirectionalElement(
-                            element_type=ElementType.YELLOW_DOOR_OPEN
-                        )
-                    else:
-                        self.tile_at(pos).room_piece = UndirectionalElement(
-                            element_type=ElementType.YELLOW_DOOR
-                        )
-
     def _to_simulator_room(self):
         simulator_room = []
         for column in self.tiles:
@@ -220,8 +170,6 @@ class Room(BaseModel):
                 floor_control = _from_simulator_element(simulator_tile.floor_control)
                 checkpoint = _from_simulator_element(simulator_tile.checkpoint)
                 item = _from_simulator_element(simulator_tile.item)
-                if item is not None and item.element_type == ElementType.ORB:
-                    item.effects = self.tiles[x][y].item.effects
                 monster = _from_simulator_element(simulator_tile.monster)
                 column.append(
                     Tile(
@@ -349,9 +297,18 @@ def _to_simulator_element(element):
         )
     if element.element_type == ElementType.FLOOR:
         return room_simulator.Element(element_type=room_simulator.ElementType.FLOOR)
-    # TODO: orb effects
     if element.element_type == ElementType.ORB:
-        return room_simulator.Element(element_type=room_simulator.ElementType.ORB)
+        orb_effects = []
+        for effect, (x, y) in element.effects:
+            if effect == OrbEffectType.CLOSE:
+                orb_effects.append((x, y, room_simulator.OrbEffect.CLOSE))
+            elif effect == OrbEffectType.OPEN:
+                orb_effects.append((x, y, room_simulator.OrbEffect.OPEN))
+            else:  # Toggle
+                orb_effects.append((x, y, room_simulator.OrbEffect.TOGGLE))
+        return room_simulator.Element(
+            element_type=room_simulator.ElementType.ORB, orb_effects=orb_effects
+        )
     # Directional elements
     if element.direction == Direction.N:
         direction = room_simulator.Direction.N
@@ -430,9 +387,16 @@ def _from_simulator_element(simulator_element):
         return UndirectionalElement(element_type=ElementType.CONQUER_TOKEN)
     if element_type == room_simulator.ElementType.FLOOR:
         return UndirectionalElement(element_type=ElementType.FLOOR)
-    # TODO: orb effects
     if element_type == room_simulator.ElementType.ORB:
-        return Orb()
+        orb_effects = []
+        for x, y, effect in simulator_element.orb_effects:
+            if effect == room_simulator.OrbEffect.CLOSE:
+                orb_effects.append((OrbEffectType.CLOSE, (x, y)))
+            elif effect == room_simulator.OrbEffect.OPEN:
+                orb_effects.append((OrbEffectType.OPEN, (x, y)))
+            else:  # Toggle
+                orb_effects.append((OrbEffectType.TOGGLE, (x, y)))
+        return Orb(effects=orb_effects)
     # Directional elements
     if element_direction == room_simulator.Direction.N:
         direction = Direction.N

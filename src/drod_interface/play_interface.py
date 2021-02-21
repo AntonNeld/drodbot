@@ -1,5 +1,6 @@
 import numpy
 import pyautogui
+import scipy.ndimage
 from common import Action, TILE_SIZE, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .consts import ROOM_ORIGIN_X, ROOM_ORIGIN_Y
 from room import ElementType, OrbEffectType
@@ -208,11 +209,26 @@ class PlayInterface:
                         ),
                     ]
                 )
+
+            # If affected tiles belong to the same door, only one of the tiles
+            # is a target for the orb. We can't know which one, but it doesn't
+            # matter.
+            labels, num_labels = scipy.ndimage.label(affected_tiles)
+            effect_targets = numpy.zeros(affected_tiles.shape, dtype=bool)
+            for i in range(1, num_labels + 1):
+                coords = numpy.argwhere(labels == i)[0]
+                effect_targets[coords[0], coords[1]] = True
+            if return_debug_images:
+                debug_images.append(
+                    (f"Orb effect regions {position}", labels * 255 // num_labels)
+                )
+                debug_images.append((f"Orb effect targets {position}", effect_targets))
+
             if return_debug_images:
                 recovered_highlights = numpy.zeros(averaged_room.shape)
                 determined_effects = numpy.zeros(averaged_room.shape)
             orb_effects[position] = []
-            for coords in numpy.argwhere(affected_tiles):
+            for coords in numpy.argwhere(effect_targets):
                 # Convert to int so we can save the coordinates in orb_effects
                 y = int(coords[0])
                 x = int(coords[1])

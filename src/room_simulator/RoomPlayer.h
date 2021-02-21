@@ -9,7 +9,7 @@ class RoomPlayer
 public:
     RoomPlayer();
     void initialize();
-    void setRoom(Room room);
+    void setRoom(Room room, bool firstEntrance = false);
     void performAction(Action action);
     Room getRoom();
 

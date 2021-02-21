@@ -27,6 +27,30 @@ class _OrbPuzzleProblem:
             self.initial_door_state.append(False)
             self.door_coords_to_index[coords] = closed_door_amount + i
             self.door_index_to_coords.append(coords)
+        self.expanded_orb_effects = {}
+        for orb_coords in self.orbs:
+            self.expanded_orb_effects[orb_coords] = []
+            for effect, position in self.room.tile_at(orb_coords).item.effects:
+                door_tiles = set([position])
+                edge = [position]
+                while edge:
+                    (x, y) = edge.pop()
+                    for new_pos in [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]:
+                        if (
+                            new_pos not in door_tiles
+                            and new_pos not in edge
+                            and (
+                                self.room.tile_at(new_pos).room_piece.element_type
+                                == ElementType.YELLOW_DOOR
+                                or self.room.tile_at(new_pos).room_piece.element_type
+                                == ElementType.YELLOW_DOOR_OPEN
+                            )
+                        ):
+                            door_tiles.add(new_pos)
+                            edge.append(new_pos)
+                self.expanded_orb_effects[orb_coords].extend(
+                    [(effect, pos) for pos in door_tiles]
+                )
 
     def initial_state(self):
         return _State(
@@ -74,8 +98,8 @@ class _OrbPuzzleProblem:
     def result(self, state, action):
         destination, _ = action
         door_state = list(state.door_state)
-        if destination in self.orbs:
-            for effect, coords in self.room.tile_at(destination).item.effects:
+        if destination in self.expanded_orb_effects:
+            for effect, coords in self.expanded_orb_effects[destination]:
                 index = self.door_coords_to_index[coords]
                 if effect == OrbEffectType.OPEN:
                     door_state[index] = False
