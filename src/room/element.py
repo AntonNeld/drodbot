@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Union, Literal, List, Tuple
+from typing import List, Tuple
 
 from pydantic import BaseModel
 
@@ -79,62 +79,24 @@ class Direction(str, Enum):
     UNKNOWN = "?"
 
 
-class UndirectionalElement(BaseModel):
-    """An game element without a direction."""
-
-    element_type: Union[
-        Literal[ElementType.UNKNOWN],
-        Literal[ElementType.WALL],
-        Literal[ElementType.FLOOR],
-        Literal[ElementType.PIT],
-        Literal[ElementType.MASTER_WALL],
-        Literal[ElementType.YELLOW_DOOR],
-        Literal[ElementType.YELLOW_DOOR_OPEN],
-        Literal[ElementType.GREEN_DOOR],
-        Literal[ElementType.GREEN_DOOR_OPEN],
-        Literal[ElementType.BLUE_DOOR],
-        Literal[ElementType.BLUE_DOOR_OPEN],
-        Literal[ElementType.STAIRS],
-        Literal[ElementType.CHECKPOINT],
-        Literal[ElementType.CONQUER_TOKEN],
-        Literal[ElementType.SCROLL],
-        Literal[ElementType.OBSTACLE],
-    ]
-
-
 class OrbEffectType(str, Enum):
     TOGGLE = "toggle"
     OPEN = "open"
     CLOSE = "close"
 
 
-class Orb(BaseModel):
-    element_type: Literal[ElementType.ORB] = ElementType.ORB
-    effects: List[Tuple[OrbEffectType, Tuple[int, int]]] = []
+class Element(BaseModel):
+    """A game element."""
 
-
-class DirectionalElement(BaseModel):
-    """An game element with a direction."""
-
-    element_type: Union[Literal[ElementType.FORCE_ARROW], Literal[ElementType.ROACH]]
-    direction: Direction
-
-
-# Let's make Beethro a separate class because we instantiate him so often
-class Beethro(BaseModel):
-    """The player."""
-
-    element_type: Literal[ElementType.BEETHRO] = ElementType.BEETHRO
-    direction: Direction
-
-
-Element = Union[UndirectionalElement, Orb, DirectionalElement, Beethro]
+    element_type: ElementType = ElementType.NOTHING
+    direction: Direction = Direction.NONE
+    orb_effects: List[Tuple[OrbEffectType, Tuple[int, int]]] = []
 
 
 def element_from_apparent(element_type, direction, orb_effects=None):
     """Create an element from an element type and a direction.
 
-    Some information may be missing initially. ElementType.NOTHING becomes None.
+    Some information may be missing initially.
 
     Parameters
     ----------
@@ -147,15 +109,11 @@ def element_from_apparent(element_type, direction, orb_effects=None):
     -------
     An element or None.
     """
-    if element_type == ElementType.NOTHING:
-        return None
-    if element_type == ElementType.BEETHRO:
-        return Beethro(direction=direction)
-    if element_type == ElementType.ORB:
-        return Orb(effects=orb_effects) if orb_effects is not None else Orb()
-    if direction == Direction.NONE:
-        return UndirectionalElement(element_type=element_type)
-    return DirectionalElement(element_type=element_type, direction=direction)
+    if orb_effects is not None:
+        return Element(
+            element_type=element_type, direction=direction, orb_effects=orb_effects
+        )
+    return Element(element_type=element_type, direction=direction)
 
 
 def element_to_apparent(element):
@@ -164,14 +122,10 @@ def element_to_apparent(element):
     Parameters
     ----------
     element
-        The element, can be None.
+        The element.
 
     Returns
     -------
     A tuple (ElementType, Direction).
     """
-    if element is None:
-        return (ElementType.NOTHING, Direction.NONE)
-    if hasattr(element, "direction"):
-        return (element.element_type, element.direction)
-    return (element.element_type, Direction.NONE)
+    return (element.element_type, element.direction)

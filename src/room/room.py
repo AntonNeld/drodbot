@@ -4,12 +4,9 @@ from typing import List
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .element import (
     ElementType,
+    Element,
     Direction,
     OrbEffectType,
-    UndirectionalElement,
-    Orb,
-    DirectionalElement,
-    Beethro,
     element_from_apparent,
     element_to_apparent,
 )
@@ -30,7 +27,7 @@ class Room(BaseModel):
     tiles: List[List[Tile]] = Field(
         default_factory=lambda: [
             [
-                Tile(room_piece=UndirectionalElement(element_type=ElementType.FLOOR))
+                Tile(room_piece=Element(element_type=ElementType.FLOOR))
                 for y in range(ROOM_HEIGHT_IN_TILES)
             ]
             for x in range(ROOM_WIDTH_IN_TILES)
@@ -233,7 +230,7 @@ class Room(BaseModel):
 
         if orb_effects is not None:
             for position, effects in orb_effects.items():
-                room.tile_at(position).item.effects = effects
+                room.tile_at(position).item.orb_effects = effects
         return room
 
 
@@ -249,7 +246,7 @@ def _to_simulator_element(element):
     -------
     A simulator element.
     """
-    if element is None:
+    if element.element_type == ElementType.NOTHING:
         return room_simulator.Element()
     if element.element_type == ElementType.WALL:
         return room_simulator.Element(element_type=room_simulator.ElementType.WALL)
@@ -299,7 +296,7 @@ def _to_simulator_element(element):
         return room_simulator.Element(element_type=room_simulator.ElementType.FLOOR)
     if element.element_type == ElementType.ORB:
         orb_effects = []
-        for effect, (x, y) in element.effects:
+        for effect, (x, y) in element.orb_effects:
             if effect == OrbEffectType.CLOSE:
                 orb_effects.append((x, y, room_simulator.OrbEffect.CLOSE))
             elif effect == OrbEffectType.OPEN:
@@ -356,37 +353,37 @@ def _from_simulator_element(simulator_element):
     element_type = simulator_element.element_type
     element_direction = simulator_element.direction
     if element_type == room_simulator.ElementType.NOTHING:
-        return None
+        return Element()
     if element_type == room_simulator.ElementType.WALL:
-        return UndirectionalElement(element_type=ElementType.WALL)
+        return Element(element_type=ElementType.WALL)
     if element_type == room_simulator.ElementType.PIT:
-        return UndirectionalElement(element_type=ElementType.PIT)
+        return Element(element_type=ElementType.PIT)
     if element_type == room_simulator.ElementType.MASTER_WALL:
-        return UndirectionalElement(element_type=ElementType.MASTER_WALL)
+        return Element(element_type=ElementType.MASTER_WALL)
     if element_type == room_simulator.ElementType.YELLOW_DOOR:
-        return UndirectionalElement(element_type=ElementType.YELLOW_DOOR)
+        return Element(element_type=ElementType.YELLOW_DOOR)
     if element_type == room_simulator.ElementType.YELLOW_DOOR_OPEN:
-        return UndirectionalElement(element_type=ElementType.YELLOW_DOOR_OPEN)
+        return Element(element_type=ElementType.YELLOW_DOOR_OPEN)
     if element_type == room_simulator.ElementType.GREEN_DOOR:
-        return UndirectionalElement(element_type=ElementType.GREEN_DOOR)
+        return Element(element_type=ElementType.GREEN_DOOR)
     if element_type == room_simulator.ElementType.GREEN_DOOR_OPEN:
-        return UndirectionalElement(element_type=ElementType.GREEN_DOOR_OPEN)
+        return Element(element_type=ElementType.GREEN_DOOR_OPEN)
     if element_type == room_simulator.ElementType.BLUE_DOOR:
-        return UndirectionalElement(element_type=ElementType.BLUE_DOOR)
+        return Element(element_type=ElementType.BLUE_DOOR)
     if element_type == room_simulator.ElementType.BLUE_DOOR_OPEN:
-        return UndirectionalElement(element_type=ElementType.BLUE_DOOR_OPEN)
+        return Element(element_type=ElementType.BLUE_DOOR_OPEN)
     if element_type == room_simulator.ElementType.STAIRS:
-        return UndirectionalElement(element_type=ElementType.STAIRS)
+        return Element(element_type=ElementType.STAIRS)
     if element_type == room_simulator.ElementType.CHECKPOINT:
-        return UndirectionalElement(element_type=ElementType.CHECKPOINT)
+        return Element(element_type=ElementType.CHECKPOINT)
     if element_type == room_simulator.ElementType.SCROLL:
-        return UndirectionalElement(element_type=ElementType.SCROLL)
+        return Element(element_type=ElementType.SCROLL)
     if element_type == room_simulator.ElementType.OBSTACLE:
-        return UndirectionalElement(element_type=ElementType.OBSTACLE)
+        return Element(element_type=ElementType.OBSTACLE)
     if element_type == room_simulator.ElementType.CONQUER_TOKEN:
-        return UndirectionalElement(element_type=ElementType.CONQUER_TOKEN)
+        return Element(element_type=ElementType.CONQUER_TOKEN)
     if element_type == room_simulator.ElementType.FLOOR:
-        return UndirectionalElement(element_type=ElementType.FLOOR)
+        return Element(element_type=ElementType.FLOOR)
     if element_type == room_simulator.ElementType.ORB:
         orb_effects = []
         for x, y, effect in simulator_element.orb_effects:
@@ -396,7 +393,7 @@ def _from_simulator_element(simulator_element):
                 orb_effects.append((OrbEffectType.OPEN, (x, y)))
             else:  # Toggle
                 orb_effects.append((OrbEffectType.TOGGLE, (x, y)))
-        return Orb(effects=orb_effects)
+        return Element(element_type=ElementType.ORB, orb_effects=orb_effects)
     # Directional elements
     if element_direction == room_simulator.Direction.N:
         direction = Direction.N
@@ -416,10 +413,8 @@ def _from_simulator_element(simulator_element):
         direction = Direction.NW
 
     if element_type == room_simulator.ElementType.FORCE_ARROW:
-        return DirectionalElement(
-            element_type=ElementType.FORCE_ARROW, direction=direction
-        )
+        return Element(element_type=ElementType.FORCE_ARROW, direction=direction)
     if element_type == room_simulator.ElementType.BEETHRO:
-        return Beethro(direction=direction)
+        return Element(element_type=ElementType.BEETHRO, direction=direction)
     if element_type == room_simulator.ElementType.ROACH:
-        return DirectionalElement(element_type=ElementType.ROACH, direction=direction)
+        return Element(element_type=ElementType.ROACH, direction=direction)

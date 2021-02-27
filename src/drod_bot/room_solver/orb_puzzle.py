@@ -1,7 +1,7 @@
 from collections import namedtuple
 
 from .pathfinding import find_path
-from room import ElementType, Direction, UndirectionalElement, OrbEffectType, Beethro
+from room import ElementType, Direction, Element, OrbEffectType
 from search import a_star_graph, NoSolutionError
 
 _State = namedtuple("_State", "position door_state")
@@ -30,7 +30,7 @@ class _OrbPuzzleProblem:
         self.expanded_orb_effects = {}
         for orb_coords in self.orbs:
             self.expanded_orb_effects[orb_coords] = []
-            for effect, position in self.room.tile_at(orb_coords).item.effects:
+            for effect, position in self.room.tile_at(orb_coords).item.orb_effects:
                 door_tiles = set([position])
                 edge = [position]
                 while edge:
@@ -62,11 +62,11 @@ class _OrbPuzzleProblem:
         # Set the door state in the room
         for i, coords in enumerate(self.door_index_to_coords):
             if state.door_state[i]:
-                self.room.tile_at(coords).room_piece = UndirectionalElement(
+                self.room.tile_at(coords).room_piece = Element(
                     element_type=ElementType.YELLOW_DOOR
                 )
             else:
-                self.room.tile_at(coords).room_piece = UndirectionalElement(
+                self.room.tile_at(coords).room_piece = Element(
                     element_type=ElementType.YELLOW_DOOR_OPEN
                 )
         # See which goals are reachable
@@ -155,8 +155,10 @@ def find_path_with_orbs(start, start_direction, goals, room, sword_at_goal=False
     # Initialize the pathfinding room with starting position and direction
     pathfinding_room = room.copy(deep=True)
     player_position, _ = pathfinding_room.find_player()
-    pathfinding_room.tile_at(player_position).monster = None
-    pathfinding_room.tile_at(start).monster = Beethro(direction=start_direction)
+    pathfinding_room.tile_at(player_position).monster = Element()
+    pathfinding_room.tile_at(start).monster = Element(
+        element_type=ElementType.BEETHRO, direction=start_direction
+    )
     # Find the actual paths between the positions
     all_actions = []
     for coords, _ in solution:

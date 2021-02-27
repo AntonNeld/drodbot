@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .room_solver import solve_room, ReachTileObjective, StrikeTileObjective
 from .level_walker import find_path_in_level
-from room import Level, Direction, Room, Beethro
+from room import Level, Direction, Room, Element, ElementType
 from search import NoSolutionError
 
 _ACTION_DELAY = 0.1
@@ -203,7 +203,7 @@ class DrodBot:
         player_position, _ = room_in_level.find_player()
         # Remove Beethro from the room, so the saved level doesn't
         # have a bunch of Beethros standing around
-        room_in_level.tile_at(player_position).monster = None
+        room_in_level.tile_at(player_position).monster = Element()
         self.state.level.rooms[self.state.current_room_position] = room_in_level
         self._notify_state_update()
         print(f"Interpreted room in {time.time()-t:.2f}s")
@@ -281,7 +281,9 @@ class DrodBot:
         self.state.current_room_position = new_room_coords
         if new_room_coords in self.state.level.rooms:
             room = self.state.level.rooms[new_room_coords].copy(deep=True)
-            room.tile_at(position_after).monster = Beethro(direction=player_direction)
+            room.tile_at(position_after).monster = Element(
+                element_type=ElementType.BEETHRO, direction=player_direction
+            )
             self.state.current_room = room
             self._notify_state_update()
         else:

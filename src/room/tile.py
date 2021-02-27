@@ -1,5 +1,4 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field
 
 from .element import ElementType, Element
 
@@ -8,6 +7,7 @@ class Tile(BaseModel):
     """A representation of a tile.
 
     This contains information about what element is in each layer.
+
     Parameters
     ----------
     room_piece
@@ -22,11 +22,11 @@ class Tile(BaseModel):
         The element in the "monsters" layer.
     """
 
-    room_piece: Element
-    floor_control: Optional[Element]
-    checkpoint: Optional[Element]
-    item: Optional[Element]
-    monster: Optional[Element]
+    room_piece: Element = Field(default_factory=lambda: Element())
+    floor_control: Element = Field(default_factory=lambda: Element())
+    checkpoint: Element = Field(default_factory=lambda: Element())
+    item: Element = Field(default_factory=lambda: Element())
+    monster: Element = Field(default_factory=lambda: Element())
 
     def get_element_types(self):
         """Get the types of all elements in the tile.
@@ -46,7 +46,7 @@ class Tile(BaseModel):
                 self.item,
                 self.monster,
             ]
-            if e is not None
+            if e.element_type != ElementType.NOTHING
         ]
 
     def is_passable(self):
