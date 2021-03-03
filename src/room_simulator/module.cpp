@@ -43,6 +43,7 @@ The room after the action.
 )docstr",
           pybind11::arg("room"), pybind11::arg("action"));
     pybind11::enum_<ElementType>(m, "ElementType")
+        .value("UNKNOWN", ElementType::UNKNOWN)
         .value("NOTHING", ElementType::NOTHING)
         .value("WALL", ElementType::WALL)
         .value("PIT", ElementType::PIT)

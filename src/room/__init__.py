@@ -1,5 +1,4 @@
 from .element import (
-    ElementType,
     OrbEffectType,
     Direction,
     Element,
@@ -16,7 +15,6 @@ from .apparent_tile import ApparentTile
 
 __all__ = (
     "Direction",
-    "ElementType",
     "OrbEffectType",
     "Element",
     "Level",

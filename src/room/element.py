@@ -1,34 +1,9 @@
 from enum import Enum
 from typing import List, Tuple
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
-
-class ElementType(str, Enum):
-    """A kind of game element."""
-
-    UNKNOWN = "Unknown"
-    NOTHING = "Nothing"
-    WALL = "Wall"
-    PIT = "Pit"
-    MASTER_WALL = "Master wall"
-    YELLOW_DOOR = "Yellow door"
-    YELLOW_DOOR_OPEN = "Yellow door (open)"
-    GREEN_DOOR = "Green door"
-    GREEN_DOOR_OPEN = "Green door (open)"
-    BLUE_DOOR = "Blue door"
-    BLUE_DOOR_OPEN = "Blue door (open)"
-    STAIRS = "Stairs"
-    FORCE_ARROW = "Force arrow"
-    CHECKPOINT = "Checkpoint"
-    ORB = "Orb"
-    SCROLL = "Scroll"
-    OBSTACLE = "Obstacle"
-    BEETHRO = "Beethro"
-    BEETHRO_SWORD = "Really Big Sword (TM)"
-    ROACH = "Roach"
-    CONQUER_TOKEN = "Conquer token"
-    FLOOR = "Floor"
+from room_simulator import ElementType
 
 
 # Which elements can be in which layers
@@ -91,6 +66,13 @@ class Element(BaseModel):
     element_type: ElementType = ElementType.NOTHING
     direction: Direction = Direction.NONE
     orb_effects: List[Tuple[OrbEffectType, Tuple[int, int]]] = []
+
+    @validator("element_type", pre=True)
+    def element_type_name_to_enum(cls, v):
+        return v if isinstance(v, ElementType) else getattr(ElementType, v)
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 def element_from_apparent(element_type, direction, orb_effects=None):

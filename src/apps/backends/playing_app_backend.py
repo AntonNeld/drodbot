@@ -1,5 +1,5 @@
 from common import Strategy, GUIEvent
-from room import ElementType
+from room_simulator import ElementType
 
 
 class PlayingAppBackend:

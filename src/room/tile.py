@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 
-from .element import ElementType, Element
+from room_simulator import ElementType
+from .element import Element
 
 
 class Tile(BaseModel):

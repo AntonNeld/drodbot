@@ -24,6 +24,7 @@ enum class Action
 // A type of element.
 enum class ElementType
 {
+    UNKNOWN,
     NOTHING,
     WALL,
     PIT,

@@ -9,7 +9,8 @@ from common import (
     ROOM_WIDTH_IN_TILES,
     TILE_SIZE,
 )
-from room import ElementType, Direction
+from room_simulator import ElementType
+from room import Direction
 
 # These are overlaid over the room to show tile classifications
 ELEMENT_CHARACTERS = {
@@ -62,9 +63,9 @@ def apparent_tile_to_text(tile):
 def _format_element(pair):
     element, direction = pair
     if direction == Direction.NONE:
-        return element.value
+        return element.name
     else:
-        return f"{element.value} {direction.value}"
+        return f"{element.name} {direction.value}"
 
 
 def annotate_room_image_with_tile_contents(image, tile_contents):

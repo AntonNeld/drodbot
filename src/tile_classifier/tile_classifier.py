@@ -7,8 +7,8 @@ import PIL
 from common import (
     TILE_SIZE,
 )
+from room_simulator import ElementType
 from room import (
-    ElementType,
     Direction,
     ApparentTile,
     ROOM_PIECES,
@@ -46,9 +46,8 @@ class TileClassifier:
             for file_name in file_names:
                 image = PIL.Image.open(os.path.join(tile_data_dir, file_name))
                 image_array = numpy.array(image)
-                element = next(
-                    e for e in ElementType if e.value == image.info["element"]
-                )
+                element = getattr(ElementType, image.info["element"])
+
                 direction = next(
                     d for d in Direction if d.value == image.info["direction"]
                 )
@@ -80,7 +79,7 @@ class TileClassifier:
             self._tile_data = tile_data
         except FileNotFoundError:
             print(
-                f"No directory '{self._tile_data_dir}' found. "
+                f"No directory '{tile_data_dir}' found. "
                 "You need to generate tile data before you can classify tiles."
             )
 

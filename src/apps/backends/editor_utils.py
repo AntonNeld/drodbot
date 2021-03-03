@@ -1,4 +1,5 @@
-from room import ElementType, Direction
+from room_simulator import ElementType
+from room import Direction
 
 
 async def place_sworded_element(interface, element, sword, x, y):

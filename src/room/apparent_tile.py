@@ -1,7 +1,18 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import Tuple
 
-from .element import ElementType, Direction
+from room_simulator import ElementType
+from .element import Direction
+
+
+def _parse_pair(v):
+    element_type = v[0] if isinstance(v[0], ElementType) else getattr(ElementType, v[0])
+    direction = (
+        v[1]
+        if isinstance(v[1], Direction)
+        else next(d for d in Direction if d.value == v[1])
+    )
+    return (element_type, direction)
 
 
 class ApparentTile(BaseModel):
@@ -41,3 +52,15 @@ class ApparentTile(BaseModel):
         ElementType.NOTHING,
         Direction.NONE,
     )
+
+    _parse_room_piece = validator("room_piece", allow_reuse=True, pre=True)(_parse_pair)
+    _parse_floor_control = validator("floor_control", allow_reuse=True, pre=True)(
+        _parse_pair
+    )
+    _parse_checkpoint = validator("checkpoint", allow_reuse=True, pre=True)(_parse_pair)
+    _parse_item = validator("item", allow_reuse=True, pre=True)(_parse_pair)
+    _parse_monster = validator("monster", allow_reuse=True, pre=True)(_parse_pair)
+
+    class Config:
+        arbitrary_types_allowed = True
+        json_encoders = {ElementType: lambda e: e.name}
