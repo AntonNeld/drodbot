@@ -7,8 +7,8 @@ from pydantic import BaseModel, Field
 from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .room_solver import solve_room, ReachTileObjective, StrikeTileObjective
 from .level_walker import find_path_in_level
-from room_simulator import ElementType
-from room import Level, Direction, Room, Element
+from room_simulator import ElementType, Direction
+from room import Level, Room, Element
 from search import NoSolutionError
 
 _ACTION_DELAY = 0.1
@@ -35,7 +35,7 @@ class DrodBotState(BaseModel):
     plan: List[Action] = []
 
     class Config:
-        json_encoders = {ElementType: lambda e: e.name}
+        json_encoders = {ElementType: lambda e: e.name, Direction: lambda d: d.name}
 
 
 class DrodBot:
@@ -250,7 +250,7 @@ class DrodBot:
         direction
             The direction to go in. Cannot be diagonal.
         """
-        print(f"Entering new room in direction {direction.value}")
+        print(f"Entering new room in direction {direction.name}")
         room_x, room_y = self.state.current_room_position
         (player_x, player_y), player_direction = self.state.current_room.find_player()
         if direction == Direction.N:

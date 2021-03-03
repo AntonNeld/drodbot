@@ -8,10 +8,9 @@ import PIL
 from PIL.PngImagePlugin import PngInfo
 
 from common import GUIEvent
-from room_simulator import ElementType
+from room_simulator import ElementType, Direction
 from room import (
     ApparentTile,
-    Direction,
     ROOM_PIECES,
     FLOOR_CONTROLS,
     CHECKPOINTS,
@@ -203,9 +202,9 @@ class ClassificationAppBackend:
         for (element, direction, x, y, style) in elements:
             png_info = PngInfo()
             png_info.add_text("element", element.name)
-            png_info.add_text("direction", direction.value)
+            png_info.add_text("direction", direction.name)
             image = PIL.Image.fromarray(tiles[(x, y)])
-            direction_str = f"_{direction.value}" if direction != Direction.NONE else ""
+            direction_str = f"_{direction.name}" if direction != Direction.NONE else ""
             style_str = f"_{style}" if style is not None else ""
             base_name = f"{element.name}{direction_str}{style_str}"
             name_increment = 0

@@ -1,7 +1,7 @@
 import numpy
 
 from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
-from room import Direction
+from room_simulator import Direction
 
 
 def find_color(image, color):

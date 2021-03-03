@@ -5,7 +5,6 @@ from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from room_simulator import ElementType
 from .element import (
     Element,
-    Direction,
     OrbEffectType,
     element_from_apparent,
     element_to_apparent,
@@ -259,27 +258,8 @@ def _to_simulator_element(element):
             element_type=room_simulator.ElementType.ORB, orb_effects=orb_effects
         )
 
-    if element.direction == Direction.N:
-        direction = room_simulator.Direction.N
-    if element.direction == Direction.NE:
-        direction = room_simulator.Direction.NE
-    if element.direction == Direction.E:
-        direction = room_simulator.Direction.E
-    if element.direction == Direction.SE:
-        direction = room_simulator.Direction.SE
-    if element.direction == Direction.S:
-        direction = room_simulator.Direction.S
-    if element.direction == Direction.SW:
-        direction = room_simulator.Direction.SW
-    if element.direction == Direction.W:
-        direction = room_simulator.Direction.W
-    if element.direction == Direction.NW:
-        direction = room_simulator.Direction.NW
-    if element.direction == Direction.NONE:
-        direction = room_simulator.Direction.NONE
-
     return room_simulator.Element(
-        element_type=element.element_type, direction=direction
+        element_type=element.element_type, direction=element.direction
     )
 
 
@@ -297,24 +277,6 @@ def _from_simulator_element(simulator_element):
     """
     element_type = simulator_element.element_type
     element_direction = simulator_element.direction
-    if element_direction == room_simulator.Direction.N:
-        direction = Direction.N
-    if element_direction == room_simulator.Direction.NE:
-        direction = Direction.NE
-    if element_direction == room_simulator.Direction.E:
-        direction = Direction.E
-    if element_direction == room_simulator.Direction.SE:
-        direction = Direction.SE
-    if element_direction == room_simulator.Direction.S:
-        direction = Direction.S
-    if element_direction == room_simulator.Direction.SW:
-        direction = Direction.SW
-    if element_direction == room_simulator.Direction.W:
-        direction = Direction.W
-    if element_direction == room_simulator.Direction.NW:
-        direction = Direction.NW
-    if element_direction == room_simulator.Direction.NONE:
-        direction = Direction.NONE
 
     if element_type == ElementType.ORB:
         orb_effects = []
@@ -327,4 +289,4 @@ def _from_simulator_element(simulator_element):
                 orb_effects.append((OrbEffectType.TOGGLE, (x, y)))
         return Element(element_type=ElementType.ORB, orb_effects=orb_effects)
 
-    return Element(element_type=element_type, direction=direction)
+    return Element(element_type=element_type, direction=element_direction)

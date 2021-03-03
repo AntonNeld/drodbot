@@ -3,7 +3,7 @@ from typing import List, Tuple
 
 from pydantic import BaseModel, validator
 
-from room_simulator import ElementType
+from room_simulator import ElementType, Direction
 
 
 # Which elements can be in which layers
@@ -36,24 +36,6 @@ MONSTERS = [
 ]
 
 
-class Direction(str, Enum):
-    """A direction of an element.
-
-    Not all elements can have all directions, but this is not enforced.
-    """
-
-    N = "N"
-    NE = "NE"
-    E = "E"
-    SE = "SE"
-    S = "S"
-    SW = "SW"
-    W = "W"
-    NW = "NW"
-    NONE = " "
-    UNKNOWN = "?"
-
-
 class OrbEffectType(str, Enum):
     TOGGLE = "toggle"
     OPEN = "open"
@@ -70,6 +52,10 @@ class Element(BaseModel):
     @validator("element_type", pre=True)
     def element_type_name_to_enum(cls, v):
         return v if isinstance(v, ElementType) else getattr(ElementType, v)
+
+    @validator("direction", pre=True)
+    def direction_name_to_enum(cls, v):
+        return v if isinstance(v, Direction) else getattr(Direction, v)
 
     class Config:
         arbitrary_types_allowed = True

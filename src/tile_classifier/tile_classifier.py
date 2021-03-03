@@ -7,9 +7,8 @@ import PIL
 from common import (
     TILE_SIZE,
 )
-from room_simulator import ElementType
+from room_simulator import ElementType, Direction
 from room import (
-    Direction,
     ApparentTile,
     ROOM_PIECES,
     FLOOR_CONTROLS,
@@ -48,9 +47,7 @@ class TileClassifier:
                 image_array = numpy.array(image)
                 element = getattr(ElementType, image.info["element"])
 
-                direction = next(
-                    d for d in Direction if d.value == image.info["direction"]
-                )
+                direction = getattr(Direction, image.info["direction"])
                 tile_data.append(
                     {
                         "file_name": file_name,
@@ -107,11 +104,11 @@ class TileClassifier:
             raise RuntimeError("No tile data loaded, cannot classify tiles")
         classified_tiles = {
             key: ApparentTile(
-                room_piece=(ElementType.UNKNOWN, Direction.UNKNOWN),
-                floor_control=(ElementType.UNKNOWN, Direction.UNKNOWN),
-                checkpoint=(ElementType.UNKNOWN, Direction.UNKNOWN),
-                item=(ElementType.UNKNOWN, Direction.UNKNOWN),
-                monster=(ElementType.UNKNOWN, Direction.UNKNOWN),
+                room_piece=(ElementType.UNKNOWN, Direction.NONE),
+                floor_control=(ElementType.UNKNOWN, Direction.NONE),
+                checkpoint=(ElementType.UNKNOWN, Direction.NONE),
+                item=(ElementType.UNKNOWN, Direction.NONE),
+                monster=(ElementType.UNKNOWN, Direction.NONE),
             )
             for key in tiles
         }
@@ -165,12 +162,12 @@ class TileClassifier:
                         (
                             a["layer"] == "swords"
                             and classified_tiles[key].monster
-                            == (ElementType.UNKNOWN, Direction.UNKNOWN)
+                            == (ElementType.UNKNOWN, Direction.NONE)
                         )
                         or (
                             a["layer"] != "swords"
                             and getattr(classified_tiles[key], a["layer"])
-                            == (ElementType.UNKNOWN, Direction.UNKNOWN)
+                            == (ElementType.UNKNOWN, Direction.NONE)
                         )
                     )
                     and mask_sizes[i] != 0
@@ -227,7 +224,7 @@ class TileClassifier:
                     ]
                     if getattr(classified_tiles[key], layer) != (
                         ElementType.UNKNOWN,
-                        Direction.UNKNOWN,
+                        Direction.NONE,
                     ):
                         raise RuntimeError(
                             f"Saw {(element,direction)} in tile {key}, but it already "
@@ -238,7 +235,7 @@ class TileClassifier:
                     for layer_above in layers[: layers.index(layer)]:
                         if getattr(classified_tiles[key], layer_above) == (
                             ElementType.UNKNOWN,
-                            Direction.UNKNOWN,
+                            Direction.NONE,
                         ):
                             setattr(
                                 classified_tiles[key],
