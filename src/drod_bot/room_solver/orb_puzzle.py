@@ -1,8 +1,7 @@
 from collections import namedtuple
 
 from .pathfinding import find_path
-from room_simulator import ElementType, Direction, OrbEffect
-from room import Element
+from room_simulator import ElementType, Direction, OrbEffect, Element
 from search import a_star_graph, NoSolutionError
 
 _State = namedtuple("_State", "position door_state")

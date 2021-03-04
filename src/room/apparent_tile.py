@@ -1,8 +1,7 @@
 from pydantic import BaseModel, validator
 from typing import Tuple
 
-from room_simulator import ElementType, Direction
-from .element import Element
+from room_simulator import ElementType, Direction, Element
 
 
 def _parse_pair(v):

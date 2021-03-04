@@ -1,7 +1,13 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
-from room_simulator import ElementType
-from .element import Element
+from .dict_conversion import element_from_dict
+from room_simulator import ElementType, Element
+
+
+def _parse_element(element):
+    if isinstance(element, Element):
+        return element
+    return element_from_dict(element)
 
 
 class Tile(BaseModel):
@@ -28,6 +34,21 @@ class Tile(BaseModel):
     checkpoint: Element = Field(default_factory=lambda: Element())
     item: Element = Field(default_factory=lambda: Element())
     monster: Element = Field(default_factory=lambda: Element())
+
+    _parse_room_piece = validator("room_piece", allow_reuse=True, pre=True)(
+        _parse_element
+    )
+    _parse_floor_control = validator("floor_control", allow_reuse=True, pre=True)(
+        _parse_element
+    )
+    _parse_checkpoint = validator("checkpoint", allow_reuse=True, pre=True)(
+        _parse_element
+    )
+    _parse_item = validator("item", allow_reuse=True, pre=True)(_parse_element)
+    _parse_monster = validator("monster", allow_reuse=True, pre=True)(_parse_element)
+
+    class Config:
+        arbitrary_types_allowed = True
 
     def get_element_types(self):
         """Get the types of all elements in the tile.

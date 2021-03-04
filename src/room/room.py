@@ -2,10 +2,10 @@ from pydantic import BaseModel, Field
 from typing import List
 
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
-from room_simulator import ElementType
-from .element import Element
+from room_simulator import ElementType, Element
 from .tile import Tile
 from .apparent_tile import ApparentTile, element_from_apparent, element_to_apparent
+from .dict_conversion import element_to_dict
 import room_simulator
 
 
@@ -27,6 +27,28 @@ class Room(BaseModel):
             for x in range(ROOM_WIDTH_IN_TILES)
         ]
     )
+
+    class Config:
+        json_encoders = {Element: element_to_dict}
+
+    def copy(self, deep=False):
+        """Copy the room.
+
+        Override this with a stupid replacement, since we can't pickle types from
+        C++. Since this is temporary, there is no sense making the types pickleable.
+
+        Parameters
+        ----------
+        deep
+            Set to true for deep copy.
+
+        Returns
+        -------
+        A copy of the room.
+        """
+        if not deep:
+            return super().copy()
+        return Room.parse_raw(self.json())
 
     def tile_at(self, position):
         """Return the tile at the given position.
@@ -142,11 +164,11 @@ class Room(BaseModel):
             simulator_column = []
             for tile in column:
                 simulator_tile = room_simulator.Tile()
-                simulator_tile.room_piece = _to_simulator_element(tile.room_piece)
-                simulator_tile.floor_control = _to_simulator_element(tile.floor_control)
-                simulator_tile.checkpoint = _to_simulator_element(tile.checkpoint)
-                simulator_tile.item = _to_simulator_element(tile.item)
-                simulator_tile.monster = _to_simulator_element(tile.monster)
+                simulator_tile.room_piece = tile.room_piece
+                simulator_tile.floor_control = tile.floor_control
+                simulator_tile.checkpoint = tile.checkpoint
+                simulator_tile.item = tile.item
+                simulator_tile.monster = tile.monster
                 simulator_column.append(simulator_tile)
             simulator_room.append(simulator_column)
 
@@ -157,11 +179,11 @@ class Room(BaseModel):
         for x, simulator_column in enumerate(simulator_room):
             column = []
             for y, simulator_tile in enumerate(simulator_column):
-                room_piece = _from_simulator_element(simulator_tile.room_piece)
-                floor_control = _from_simulator_element(simulator_tile.floor_control)
-                checkpoint = _from_simulator_element(simulator_tile.checkpoint)
-                item = _from_simulator_element(simulator_tile.item)
-                monster = _from_simulator_element(simulator_tile.monster)
+                room_piece = simulator_tile.room_piece
+                floor_control = simulator_tile.floor_control
+                checkpoint = simulator_tile.checkpoint
+                item = simulator_tile.item
+                monster = simulator_tile.monster
                 column.append(
                     Tile(
                         room_piece=room_piece,
@@ -226,45 +248,3 @@ class Room(BaseModel):
             for position, effects in orb_effects.items():
                 room.tile_at(position).item.orb_effects = effects
         return room
-
-
-def _to_simulator_element(element):
-    """Creates a simulator element from an element.
-
-    Parameters
-    ----------
-    element
-        The element to convert.
-
-    Returns
-    -------
-    A simulator element.
-    """
-    return room_simulator.Element(
-        element_type=element.element_type,
-        direction=element.direction,
-        orb_effects=element.orb_effects,
-    )
-
-
-def _from_simulator_element(simulator_element):
-    """Creates an element from a simulator element.
-
-    Parameters
-    ----------
-    simulator_element
-        The simulator melement to convert.
-
-    Returns
-    -------
-    An element.
-    """
-    element_type = simulator_element.element_type
-    element_direction = simulator_element.direction
-    element_orb_effects = simulator_element.orb_effects
-
-    return Element(
-        element_type=element_type,
-        direction=element_direction,
-        orb_effects=element_orb_effects,
-    )

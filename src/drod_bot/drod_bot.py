@@ -7,8 +7,8 @@ from pydantic import BaseModel, Field
 from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .room_solver import solve_room, ReachTileObjective, StrikeTileObjective
 from .level_walker import find_path_in_level
-from room_simulator import ElementType, Direction, OrbEffect
-from room import Level, Room, Element
+from room_simulator import ElementType, Direction, Element
+from room import Level, Room, element_to_dict
 from search import NoSolutionError
 
 _ACTION_DELAY = 0.1
@@ -35,11 +35,7 @@ class DrodBotState(BaseModel):
     plan: List[Action] = []
 
     class Config:
-        json_encoders = {
-            ElementType: lambda e: e.name,
-            Direction: lambda d: d.name,
-            OrbEffect: lambda e: e.name,
-        }
+        json_encoders = {Element: element_to_dict}
 
 
 class DrodBot:
