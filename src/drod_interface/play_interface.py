@@ -3,8 +3,7 @@ import pyautogui
 import scipy.ndimage
 from common import Action, TILE_SIZE, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .consts import ROOM_ORIGIN_X, ROOM_ORIGIN_Y
-from room_simulator import ElementType
-from room import OrbEffectType
+from room_simulator import ElementType, OrbEffect
 from .util import (
     get_drod_window,
     extract_room,
@@ -243,15 +242,15 @@ class PlayInterface:
                 if numpy.linalg.norm(color - [255, 0, 64]) < 10:
                     if return_debug_images:
                         determined_effects[y, x] = [255, 0, 64]
-                    orb_effects[position].append((OrbEffectType.CLOSE, (x, y)))
+                    orb_effects[position].append((x, y, OrbEffect.CLOSE))
                 elif numpy.linalg.norm(color - [255, 128, 0]) < 10:
                     if return_debug_images:
                         determined_effects[y, x] = [255, 128, 0]
-                    orb_effects[position].append((OrbEffectType.TOGGLE, (x, y)))
+                    orb_effects[position].append((x, y, OrbEffect.TOGGLE))
                 elif numpy.linalg.norm(color - [0, 255, 255]) < 10:
                     if return_debug_images:
                         determined_effects[y, x] = [0, 255, 255]
-                    orb_effects[position].append((OrbEffectType.OPEN, (x, y)))
+                    orb_effects[position].append((x, y, OrbEffect.OPEN))
             if return_debug_images:
                 recovered_highlights[recovered_highlights < 0] = 0
                 recovered_highlights[recovered_highlights > 255] = 255

@@ -5,7 +5,6 @@ from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from room_simulator import ElementType
 from .element import (
     Element,
-    OrbEffectType,
     element_from_apparent,
     element_to_apparent,
 )
@@ -245,21 +244,10 @@ def _to_simulator_element(element):
     -------
     A simulator element.
     """
-    if element.element_type == ElementType.ORB:
-        orb_effects = []
-        for effect, (x, y) in element.orb_effects:
-            if effect == OrbEffectType.CLOSE:
-                orb_effects.append((x, y, room_simulator.OrbEffect.CLOSE))
-            elif effect == OrbEffectType.OPEN:
-                orb_effects.append((x, y, room_simulator.OrbEffect.OPEN))
-            else:  # Toggle
-                orb_effects.append((x, y, room_simulator.OrbEffect.TOGGLE))
-        return room_simulator.Element(
-            element_type=room_simulator.ElementType.ORB, orb_effects=orb_effects
-        )
-
     return room_simulator.Element(
-        element_type=element.element_type, direction=element.direction
+        element_type=element.element_type,
+        direction=element.direction,
+        orb_effects=element.orb_effects,
     )
 
 
@@ -277,16 +265,10 @@ def _from_simulator_element(simulator_element):
     """
     element_type = simulator_element.element_type
     element_direction = simulator_element.direction
+    element_orb_effects = simulator_element.orb_effects
 
-    if element_type == ElementType.ORB:
-        orb_effects = []
-        for x, y, effect in simulator_element.orb_effects:
-            if effect == room_simulator.OrbEffect.CLOSE:
-                orb_effects.append((OrbEffectType.CLOSE, (x, y)))
-            elif effect == room_simulator.OrbEffect.OPEN:
-                orb_effects.append((OrbEffectType.OPEN, (x, y)))
-            else:  # Toggle
-                orb_effects.append((OrbEffectType.TOGGLE, (x, y)))
-        return Element(element_type=ElementType.ORB, orb_effects=orb_effects)
-
-    return Element(element_type=element_type, direction=element_direction)
+    return Element(
+        element_type=element_type,
+        direction=element_direction,
+        orb_effects=element_orb_effects,
+    )

@@ -1,5 +1,4 @@
 from .element import (
-    OrbEffectType,
     Element,
     ROOM_PIECES,
     FLOOR_CONTROLS,
@@ -13,7 +12,6 @@ from .tile import Tile
 from .apparent_tile import ApparentTile
 
 __all__ = (
-    "OrbEffectType",
     "Element",
     "Level",
     "Room",

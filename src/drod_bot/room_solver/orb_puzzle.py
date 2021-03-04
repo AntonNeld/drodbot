@@ -1,8 +1,8 @@
 from collections import namedtuple
 
 from .pathfinding import find_path
-from room_simulator import ElementType, Direction
-from room import Element, OrbEffectType
+from room_simulator import ElementType, Direction, OrbEffect
+from room import Element
 from search import a_star_graph, NoSolutionError
 
 _State = namedtuple("_State", "position door_state")
@@ -31,9 +31,11 @@ class _OrbPuzzleProblem:
         self.expanded_orb_effects = {}
         for orb_coords in self.orbs:
             self.expanded_orb_effects[orb_coords] = []
-            for effect, position in self.room.tile_at(orb_coords).item.orb_effects:
-                door_tiles = set([position])
-                edge = [position]
+            for effect_x, effect_y, effect in self.room.tile_at(
+                orb_coords
+            ).item.orb_effects:
+                door_tiles = set([(effect_x, effect_y)])
+                edge = [(effect_x, effect_y)]
                 while edge:
                     (x, y) = edge.pop()
                     for new_pos in [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]:
@@ -50,7 +52,7 @@ class _OrbPuzzleProblem:
                             door_tiles.add(new_pos)
                             edge.append(new_pos)
                 self.expanded_orb_effects[orb_coords].extend(
-                    [(effect, pos) for pos in door_tiles]
+                    [(*pos, effect) for pos in door_tiles]
                 )
 
     def initial_state(self):
@@ -100,11 +102,11 @@ class _OrbPuzzleProblem:
         destination, _ = action
         door_state = list(state.door_state)
         if destination in self.expanded_orb_effects:
-            for effect, coords in self.expanded_orb_effects[destination]:
-                index = self.door_coords_to_index[coords]
-                if effect == OrbEffectType.OPEN:
+            for x, y, effect in self.expanded_orb_effects[destination]:
+                index = self.door_coords_to_index[(x, y)]
+                if effect == OrbEffect.OPEN:
                     door_state[index] = False
-                elif effect == OrbEffectType.CLOSE:
+                elif effect == OrbEffect.CLOSE:
                     door_state[index] = True
                 else:  # Toggle
                     door_state[index] = not door_state[index]
