@@ -2,6 +2,7 @@ from pydantic import BaseModel, validator
 from typing import Tuple
 
 from room_simulator import ElementType, Direction
+from .element import Element
 
 
 def _parse_pair(v):
@@ -59,3 +60,41 @@ class ApparentTile(BaseModel):
     class Config:
         arbitrary_types_allowed = True
         json_encoders = {ElementType: lambda e: e.name, Direction: lambda d: d.name}
+
+
+def element_from_apparent(element_type, direction, orb_effects=None):
+    """Create an element from an element type and a direction.
+
+    Some information may be missing initially.
+
+    Parameters
+    ----------
+    element_type
+        The element type.
+    direction
+        The direction.
+
+    Returns
+    -------
+    An element or None.
+    """
+    if orb_effects is not None:
+        return Element(
+            element_type=element_type, direction=direction, orb_effects=orb_effects
+        )
+    return Element(element_type=element_type, direction=direction)
+
+
+def element_to_apparent(element):
+    """Create an apparent element from an element.
+
+    Parameters
+    ----------
+    element
+        The element.
+
+    Returns
+    -------
+    A tuple (ElementType, Direction).
+    """
+    return (element.element_type, element.direction)

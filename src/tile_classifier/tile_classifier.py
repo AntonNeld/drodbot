@@ -8,15 +8,8 @@ from common import (
     TILE_SIZE,
 )
 from room_simulator import ElementType, Direction
-from room import (
-    ApparentTile,
-    ROOM_PIECES,
-    FLOOR_CONTROLS,
-    CHECKPOINTS,
-    ITEMS,
-    MONSTERS,
-)
-from util import find_color
+from room import ApparentTile
+from util import find_color, element_layer
 
 
 class TileClassifier:
@@ -60,17 +53,7 @@ class TileClassifier:
                         ),
                         "element": element,
                         "direction": direction,
-                        "layer": "monster"
-                        if element in MONSTERS
-                        else "item"
-                        if element in ITEMS
-                        else "checkpoint"
-                        if element in CHECKPOINTS
-                        else "floor_control"
-                        if element in FLOOR_CONTROLS
-                        else "room_piece"
-                        if element in ROOM_PIECES
-                        else "swords",
+                        "layer": element_layer(element),
                     }
                 )
             self._tile_data = tile_data

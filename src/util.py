@@ -1,7 +1,7 @@
 import numpy
 
 from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
-from room_simulator import Direction
+from room_simulator import Direction, ElementType
 
 
 def find_color(image, color):
@@ -124,3 +124,50 @@ def inside_room(position):
     """
     x, y = position
     return x >= 0 and x < ROOM_WIDTH_IN_TILES and y >= 0 and y < ROOM_HEIGHT_IN_TILES
+
+
+def element_layer(element_type):
+    """Get the layer an element belongs to.
+
+    Parameters
+    ----------
+    element_type
+        The type of the element.
+
+    Returns
+    -------
+    The layer as a string.
+    """
+    if element_type in [
+        ElementType.WALL,
+        ElementType.FLOOR,
+        ElementType.PIT,
+        ElementType.MASTER_WALL,
+        ElementType.YELLOW_DOOR,
+        ElementType.YELLOW_DOOR_OPEN,
+        ElementType.GREEN_DOOR,
+        ElementType.GREEN_DOOR_OPEN,
+        ElementType.BLUE_DOOR,
+        ElementType.BLUE_DOOR_OPEN,
+        ElementType.STAIRS,
+    ]:
+        return "room_piece"
+    if element_type in [ElementType.FORCE_ARROW]:
+        return "floor_control"
+    if element_type in [ElementType.CHECKPOINT]:
+        return "checkpoint"
+    if element_type in [
+        ElementType.CONQUER_TOKEN,
+        ElementType.ORB,
+        ElementType.SCROLL,
+        ElementType.OBSTACLE,
+    ]:
+        return "item"
+    if element_type in [
+        ElementType.BEETHRO,
+        ElementType.ROACH,
+    ]:
+        return "monster"
+    if element_type in [ElementType.BEETHRO_SWORD]:
+        return "swords"
+    raise RuntimeError(f"{element_type} has no defined layer")

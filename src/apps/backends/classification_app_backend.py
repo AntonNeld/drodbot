@@ -9,14 +9,7 @@ from PIL.PngImagePlugin import PngInfo
 
 from common import GUIEvent
 from room_simulator import ElementType, Direction
-from room import (
-    ApparentTile,
-    ROOM_PIECES,
-    FLOOR_CONTROLS,
-    CHECKPOINTS,
-    ITEMS,
-    MONSTERS,
-)
+from room import ApparentTile
 from .editor_utils import (
     place_fully_directional_elements,
     place_nondirectional_edges_elements,
@@ -24,6 +17,7 @@ from .editor_utils import (
     place_sized_obstacles,
     place_sworded_element,
 )
+from util import element_layer
 
 
 class ClassificationAppBackend:
@@ -300,15 +294,16 @@ class ClassificationAppBackend:
                 tile_contents[(x, y)] = ApparentTile(
                     room_piece=(ElementType.FLOOR, Direction.NONE)
                 )
-            if element in ROOM_PIECES:
+            layer = element_layer(element)
+            if layer == "room_piece":
                 tile_contents[(x, y)].room_piece = (element, direction)
-            elif element in FLOOR_CONTROLS:
+            elif layer == "floor_control":
                 tile_contents[(x, y)].floor_control = (element, direction)
-            elif element in CHECKPOINTS:
+            elif layer == "checkpoint":
                 tile_contents[(x, y)].checkpoint = (element, direction)
-            elif element in ITEMS:
+            elif layer == "item":
                 tile_contents[(x, y)].item = (element, direction)
-            elif element in MONSTERS:
+            elif layer == "monster":
                 tile_contents[(x, y)].monster = (element, direction)
         if os.path.exists(self._sample_data_dir):
             shutil.rmtree(self._sample_data_dir)

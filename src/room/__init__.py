@@ -1,11 +1,4 @@
-from .element import (
-    Element,
-    ROOM_PIECES,
-    FLOOR_CONTROLS,
-    CHECKPOINTS,
-    ITEMS,
-    MONSTERS,
-)
+from .element import Element
 from .level import Level
 from .room import Room
 from .tile import Tile
@@ -17,9 +10,4 @@ __all__ = (
     "Room",
     "Tile",
     "ApparentTile",
-    "ROOM_PIECES",
-    "FLOOR_CONTROLS",
-    "CHECKPOINTS",
-    "ITEMS",
-    "MONSTERS",
 )

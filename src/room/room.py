@@ -3,13 +3,9 @@ from typing import List
 
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from room_simulator import ElementType
-from .element import (
-    Element,
-    element_from_apparent,
-    element_to_apparent,
-)
+from .element import Element
 from .tile import Tile
-from .apparent_tile import ApparentTile
+from .apparent_tile import ApparentTile, element_from_apparent, element_to_apparent
 import room_simulator
 
 
