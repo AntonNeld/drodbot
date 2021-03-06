@@ -64,6 +64,53 @@ class Room(BaseModel):
         """
         x, y = position
         return self.tiles[x][y]
+    
+    def _get_element_types(self, x, y):
+        """Get the types of all elements in a tile.
+
+        ElementType.NOTHING is not included.
+
+        Returns
+        -------
+        A list of all element types in the tile.
+        """
+        return [
+            e.element_type
+            for e in [
+                self.tile_at((x, y)).room_piece,
+                self.tile_at((x, y)).floor_control,
+                self.tile_at((x, y)).checkpoint,
+                self.tile_at((x, y)).item,
+                self.tile_at((x, y)).monster,
+            ]
+            if e.element_type != ElementType.NOTHING
+        ]
+
+    def is_passable(self, x, y):
+        """Check whether a tile is passable.
+
+        It currently does not take into account force arrows, or
+        whether doors can be opened.
+
+        Returns
+        -------
+        Whether the tile is passable or not.
+        """
+        return (
+            not set(
+                [
+                    ElementType.WALL,
+                    ElementType.MASTER_WALL,
+                    ElementType.OBSTACLE,
+                    ElementType.YELLOW_DOOR,
+                    ElementType.BLUE_DOOR,
+                    ElementType.GREEN_DOOR,
+                    ElementType.ORB,
+                    ElementType.PIT,
+                ]
+            )
+            & set(self._get_element_types(x, y))
+        )
 
     def find_coordinates(self, element):
         """Find the coordinates of all elements of a type.
@@ -81,7 +128,7 @@ class Room(BaseModel):
             (x, y)
             for x, columns in enumerate(self.tiles)
             for y, tile in enumerate(columns)
-            if element in tile.get_element_types()
+            if element in self._get_element_types(x, y)
         ]
 
     def find_player(self):
