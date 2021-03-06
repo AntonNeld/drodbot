@@ -8,7 +8,19 @@ It will attempt to solve some types of rooms (see [What it can do](#what-it-can-
 > **Note:** Only Linux is supported. While I have used cross-platform libraries in
 > the Python part, the C++ part will need some modifications to work on other OSes.
 
-You need Python 3.8 and pipenv installed. Then install the Python packages:
+Install the following packages:
+
+- `pipenv`
+- `scrot`
+- `python3-tk`
+- `libsdl2-dev`
+- `libcurl4-gnutls-dev`
+- `libjsoncpp-dev`
+
+(On Ubuntu 20.04, or equivalent on other distros. If you use another distro, make
+sure your Python version is 3.8.)
+
+Then install the Python packages:
 
 ```sh
 pipenv install
@@ -19,12 +31,6 @@ You may also be asked to install some system-wide dependencies the first time yo
 ### Compiling the C++ parts
 
 Parts of DRODbot is written in C++, since it uses source code from DROD itself.
-To compile this, you need some dependencies. On Ubuntu 20.04, you can install:
-
-- `libsdl2-dev`
-- `libcurl4-gnutls-dev`
-- `libjsoncpp-dev`
-
 From the root of the repo, run:
 
 ```sh

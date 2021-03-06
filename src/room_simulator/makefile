@@ -46,3 +46,4 @@ clean:
 	mkdir build/BackEndLib
 	mkdir build/metakit
 	mkdir build/DRODLibTests
+	mkdur build/own
