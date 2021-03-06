@@ -1,9 +1,9 @@
 import numpy
 import pyautogui
 import scipy.ndimage
-from common import Action, TILE_SIZE, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
+from common import TILE_SIZE, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .consts import ROOM_ORIGIN_X, ROOM_ORIGIN_Y
-from room_simulator import ElementType, OrbEffect
+from room_simulator import ElementType, OrbEffect, Action
 from .util import (
     get_drod_window,
     extract_room,

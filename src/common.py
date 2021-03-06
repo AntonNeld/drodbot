@@ -12,22 +12,6 @@ class UserError(Exception):
     pass
 
 
-class Action(int, Enum):
-    """An action the player can take."""
-
-    SW = 1
-    S = 2
-    SE = 3
-    W = 4
-    WAIT = 5
-    E = 6
-    NW = 7
-    N = 8
-    NE = 9
-    CW = 10
-    CCW = 11
-
-
 class GUIEvent(str, Enum):
     """A message from the backend thread to the GUI."""
 

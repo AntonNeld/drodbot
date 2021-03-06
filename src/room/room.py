@@ -206,7 +206,7 @@ class Room(BaseModel):
     def _do_action_in_place(self, action):
         # Do nothing with the result for now
         room_after = room_simulator.simulate_action(
-            self._to_simulator_room(), action.value
+            self._to_simulator_room(), action
         )
         self._set_from_simulator_room(room_after)
 

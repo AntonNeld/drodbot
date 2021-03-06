@@ -2,12 +2,12 @@ import asyncio
 import time
 from typing import Tuple, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
-from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
+from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .room_solver import solve_room, ReachTileObjective, StrikeTileObjective
 from .level_walker import find_path_in_level
-from room_simulator import ElementType, Direction, Element, Tile
+from room_simulator import ElementType, Direction, Element, Tile, Action
 from room import Level, Room, tile_to_dict
 from search import NoSolutionError
 
@@ -35,7 +35,12 @@ class DrodBotState(BaseModel):
     plan: List[Action] = []
 
     class Config:
-        json_encoders = {Tile: tile_to_dict}
+        json_encoders = {Tile: tile_to_dict, Action: lambda a: a.name}
+        arbitrary_types_allowed = True
+    
+    @validator("plan", pre=True)
+    def parse_plan(cls, v):
+        return [action if isinstance(action, Action) else getattr(Action, action) for action in v]
 
 
 class DrodBot:

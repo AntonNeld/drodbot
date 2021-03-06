@@ -1,7 +1,7 @@
 from collections import namedtuple
 
-from common import Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
-from room_simulator import ElementType, Direction
+from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
+from room_simulator import ElementType, Direction, Action
 from search import a_star_graph, NoSolutionError
 from util import direction_after, position_in_direction, inside_room
 

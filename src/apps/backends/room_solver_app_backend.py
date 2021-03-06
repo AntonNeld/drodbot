@@ -8,9 +8,9 @@ from common import (
     ROOM_WIDTH_IN_TILES,
     TILE_SIZE,
     UserError,
-    Action,
 )
 from room import Room
+from room_simulator import Action
 
 
 class RoomSolverAppBackend:

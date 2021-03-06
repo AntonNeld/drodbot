@@ -4,8 +4,8 @@ import PIL
 import tkinter
 import traceback
 
-from common import Strategy, Action, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
-from room_simulator import ElementType
+from common import Strategy, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
+from room_simulator import ElementType, Action
 
 _CANVAS_WIDTH = 190
 _CANVAS_HEIGHT = 160

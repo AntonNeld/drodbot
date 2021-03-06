@@ -11,10 +11,10 @@ void initialize()
     roomPlayer.initialize();
 }
 
-Room simulateAction(Room room, int action)
+Room simulateAction(Room room, Action action)
 {
     roomPlayer.setRoom(room);
-    roomPlayer.performAction(static_cast<Action>(action));
+    roomPlayer.performAction(action);
     return roomPlayer.getRoom();
 }
 
@@ -42,6 +42,21 @@ Returns
 The room after the action.
 )docstr",
           pybind11::arg("room"), pybind11::arg("action"));
+
+    pybind11::enum_<Action>(m, "Action")
+        .value("SW", Action::SW)
+        .value("S", Action::S)
+        .value("SE", Action::SE)
+        .value("W", Action::W)
+        .value("WAIT", Action::WAIT)
+        .value("E", Action::E)
+        .value("NW", Action::NW)
+        .value("N", Action::N)
+        .value("NE", Action::NE)
+        .value("CW", Action::CW)
+        .value("CCW", Action::CCW)
+        .export_values();
+
     pybind11::enum_<ElementType>(m, "ElementType")
         .value("UNKNOWN", ElementType::UNKNOWN)
         .value("NOTHING", ElementType::NOTHING)

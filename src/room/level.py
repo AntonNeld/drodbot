@@ -4,7 +4,8 @@ from typing import Dict, Tuple
 from pydantic import BaseModel
 
 from .room import Room
-from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES, Action
+from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
+from room_simulator import Action
 
 
 class Level(BaseModel):
