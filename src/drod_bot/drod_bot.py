@@ -37,10 +37,13 @@ class DrodBotState(BaseModel):
     class Config:
         json_encoders = {Tile: tile_to_dict, Action: lambda a: a.name}
         arbitrary_types_allowed = True
-    
+
     @validator("plan", pre=True)
     def parse_plan(cls, v):
-        return [action if isinstance(action, Action) else getattr(Action, action) for action in v]
+        return [
+            action if isinstance(action, Action) else getattr(Action, action)
+            for action in v
+        ]
 
 
 class DrodBot:

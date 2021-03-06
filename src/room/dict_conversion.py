@@ -19,14 +19,16 @@ def element_from_dict(element_dict):
         ],
     )
 
+
 def tile_to_dict(tile):
     return {
         "room_piece": element_to_dict(tile.room_piece),
         "floor_control": element_to_dict(tile.floor_control),
         "checkpoint": element_to_dict(tile.checkpoint),
         "item": element_to_dict(tile.item),
-        "monster": element_to_dict(tile.monster)
+        "monster": element_to_dict(tile.monster),
     }
+
 
 def tile_from_dict(tile_dict):
     return Tile(
@@ -34,5 +36,5 @@ def tile_from_dict(tile_dict):
         floor_control=element_from_dict(tile_dict["floor_control"]),
         checkpoint=element_from_dict(tile_dict["checkpoint"]),
         item=element_from_dict(tile_dict["item"]),
-        monster=element_from_dict(tile_dict["monster"])
+        monster=element_from_dict(tile_dict["monster"]),
     )

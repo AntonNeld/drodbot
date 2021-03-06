@@ -30,11 +30,16 @@ class Room(BaseModel):
     class Config:
         json_encoders = {Tile: tile_to_dict}
         arbitrary_types_allowed = True
-    
+
     @validator("tiles", pre=True)
     def parse_tiles(cls, v):
-        return [[(tile if isinstance(tile, Tile) else tile_from_dict(tile)) for tile in column] for column in v]
-
+        return [
+            [
+                (tile if isinstance(tile, Tile) else tile_from_dict(tile))
+                for tile in column
+            ]
+            for column in v
+        ]
 
     def copy(self, deep=False):
         """Copy the room.
@@ -69,7 +74,7 @@ class Room(BaseModel):
         """
         x, y = position
         return self.tiles[x][y]
-    
+
     def _get_element_types(self, x, y):
         """Get the types of all elements in a tile.
 
@@ -205,9 +210,7 @@ class Room(BaseModel):
 
     def _do_action_in_place(self, action):
         # Do nothing with the result for now
-        room_after = room_simulator.simulate_action(
-            self._to_simulator_room(), action
-        )
+        room_after = room_simulator.simulate_action(self._to_simulator_room(), action)
         self._set_from_simulator_room(room_after)
 
     def _to_simulator_room(self):

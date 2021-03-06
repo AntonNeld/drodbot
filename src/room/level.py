@@ -184,13 +184,11 @@ class Level(BaseModel):
                 free_coords = [
                     n
                     for n in range(edge_length)
-                    if self.rooms[room_position]
-                    .is_passable(
+                    if self.rooms[room_position].is_passable(
                         n if x_current_room is None else x_current_room,
                         n if y_current_room is None else y_current_room,
                     )
-                    and self.rooms[target_room]
-                    .is_passable(
+                    and self.rooms[target_room].is_passable(
                         n if x_next_room is None else x_next_room,
                         n if y_next_room is None else y_next_room,
                     )

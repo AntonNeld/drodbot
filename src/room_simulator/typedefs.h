@@ -89,7 +89,13 @@ struct Tile
         Element floorControl = Element(),
         Element checkpoint = Element(),
         Element item = Element(),
-        Element monster = Element()) : roomPiece(roomPiece), floorControl(floorControl), checkpoint(checkpoint), item(item), monster(monster) {}
+        Element monster = Element()) : roomPiece(roomPiece),
+                                       floorControl(floorControl),
+                                       checkpoint(checkpoint),
+                                       item(item),
+                                       monster(monster)
+    {
+    }
     Element roomPiece = Element();
     Element floorControl = Element();
     Element checkpoint = Element();
