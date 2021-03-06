@@ -1,5 +1,5 @@
 from common import GUIEvent
-from room import Room
+from room import room_from_apparent_tiles
 
 
 class InterpretScreenAppBackend:
@@ -26,5 +26,5 @@ class InterpretScreenAppBackend:
         tile_contents, orb_effects, debug_images = await self._interface.get_view(
             return_debug_images=True
         )
-        room = Room.from_apparent_tiles(tile_contents, orb_effects)
+        room = room_from_apparent_tiles(tile_contents, orb_effects)
         self._queue.put((GUIEvent.SET_INTERPRET_SCREEN_DATA, debug_images, room))

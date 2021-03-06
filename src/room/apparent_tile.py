@@ -1,7 +1,8 @@
 from pydantic import BaseModel, validator
 from typing import Tuple
 
-from room_simulator import ElementType, Direction, Element
+from room import Room
+from room_simulator import ElementType, Direction, Element, Tile
 
 
 def _parse_pair(v):
@@ -97,3 +98,37 @@ def element_to_apparent(element):
     A tuple (ElementType, Direction).
     """
     return (element.element_type, element.direction)
+
+
+def room_from_apparent_tiles(apparent_tiles, orb_effects=None):
+    """Create a room from apparent tiles.
+
+    Not all information will be present in the beginning, only
+    what can be seen without making any moves.
+
+    Parameters
+    ----------
+    apparent_tiles
+        A dict mapping coordinates to ApparentTile instances.
+    orb_effects
+        An optional dict mapping coordinates to (orb_effect, (x, y)),
+        that gives the effects of orbs in the room.
+
+    Returns
+    -------
+    A new room.
+    """
+    room = Room()
+    for (x, y), tile in apparent_tiles.items():
+        room.tiles[x][y] = Tile(
+            room_piece=element_from_apparent(*tile.room_piece),
+            floor_control=element_from_apparent(*tile.floor_control),
+            checkpoint=element_from_apparent(*tile.checkpoint),
+            item=element_from_apparent(*tile.item),
+            monster=element_from_apparent(*tile.monster),
+        )
+
+    if orb_effects is not None:
+        for position, effects in orb_effects.items():
+            room.tile_at(position).item.orb_effects = effects
+    return room

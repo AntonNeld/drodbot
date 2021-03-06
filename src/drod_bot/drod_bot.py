@@ -8,7 +8,7 @@ from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .room_solver import solve_room, ReachTileObjective, StrikeTileObjective
 from .level_walker import find_path_in_level
 from room_simulator import ElementType, Direction, Element, Tile, Action
-from room import Level, Room, tile_to_dict
+from room import Level, Room, tile_to_dict, room_from_apparent_tiles
 from search import NoSolutionError
 
 _ACTION_DELAY = 0.1
@@ -209,7 +209,7 @@ class DrodBot:
         print("Interpreting room...")
         t = time.time()
         tile_contents, orb_effects = await self._interface.get_view()
-        room = Room.from_apparent_tiles(tile_contents, orb_effects)
+        room = room_from_apparent_tiles(tile_contents, orb_effects)
         self.state.current_room = room
         room_in_level = room.copy(deep=True)
         player_position, _ = room_in_level.find_player()

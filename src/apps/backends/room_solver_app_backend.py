@@ -9,7 +9,7 @@ from common import (
     TILE_SIZE,
     UserError,
 )
-from room import Room
+from room import room_from_apparent_tiles
 from room_simulator import Action
 
 
@@ -38,7 +38,7 @@ class RoomSolverAppBackend:
         tile_contents, orb_effects, debug_images = await self._interface.get_view(
             return_debug_images=True
         )
-        self._room = Room.from_apparent_tiles(tile_contents, orb_effects)
+        self._room = room_from_apparent_tiles(tile_contents, orb_effects)
         self._queue.put(
             (
                 GUIEvent.SET_ROOM_SOLVER_DATA,
