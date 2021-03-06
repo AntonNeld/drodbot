@@ -85,14 +85,6 @@ The room after the action.
         .value("TOGGLE", OrbEffect::TOGGLE)
         .export_values();
 
-    pybind11::class_<Tile>(m, "Tile")
-        .def(pybind11::init<>())
-        .def_readwrite("room_piece", &Tile::roomPiece)
-        .def_readwrite("floor_control", &Tile::floorControl)
-        .def_readwrite("checkpoint", &Tile::checkpoint)
-        .def_readwrite("item", &Tile::item)
-        .def_readwrite("monster", &Tile::monster);
-
     pybind11::class_<Element>(m, "Element")
         .def(pybind11::init<ElementType, Direction, OrbEffects>(),
              pybind11::arg("element_type") = ElementType::NOTHING,
@@ -101,4 +93,17 @@ The room after the action.
         .def_readwrite("element_type", &Element::type)
         .def_readwrite("direction", &Element::direction)
         .def_readwrite("orb_effects", &Element::orbEffects);
+
+    pybind11::class_<Tile>(m, "Tile")
+        .def(pybind11::init<Element, Element, Element, Element, Element>(),
+             pybind11::arg_v("room_piece", Element(), "Element()"),
+             pybind11::arg_v("floor_control", Element(), "Element()"),
+             pybind11::arg_v("checkpoint", Element(), "Element()"),
+             pybind11::arg_v("item", Element(), "Element()"),
+             pybind11::arg_v("monster", Element(), "Element()"))
+        .def_readwrite("room_piece", &Tile::roomPiece)
+        .def_readwrite("floor_control", &Tile::floorControl)
+        .def_readwrite("checkpoint", &Tile::checkpoint)
+        .def_readwrite("item", &Tile::item)
+        .def_readwrite("monster", &Tile::monster);
 }

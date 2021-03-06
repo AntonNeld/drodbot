@@ -1,11 +1,10 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 from typing import List
 
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
-from room_simulator import ElementType, Element
-from .tile import Tile
+from room_simulator import ElementType, Element, Tile
 from .apparent_tile import ApparentTile, element_from_apparent, element_to_apparent
-from .dict_conversion import element_to_dict
+from .dict_conversion import tile_to_dict, tile_from_dict
 import room_simulator
 
 
@@ -29,7 +28,13 @@ class Room(BaseModel):
     )
 
     class Config:
-        json_encoders = {Element: element_to_dict}
+        json_encoders = {Tile: tile_to_dict}
+        arbitrary_types_allowed = True
+    
+    @validator("tiles", pre=True)
+    def parse_tiles(cls, v):
+        return [[(tile if isinstance(tile, Tile) else tile_from_dict(tile)) for tile in column] for column in v]
+
 
     def copy(self, deep=False):
         """Copy the room.
