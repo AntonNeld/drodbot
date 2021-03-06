@@ -3,7 +3,7 @@ from typing import List
 
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from room_simulator import ElementType, Element, Tile
-from .apparent_tile import ApparentTile, element_from_apparent, element_to_apparent
+from .apparent_tile import element_from_apparent
 from .dict_conversion import tile_to_dict, tile_from_dict
 import room_simulator
 
@@ -250,25 +250,6 @@ class Room(BaseModel):
                 )
             tiles.append(column)
         self.tiles = tiles
-
-    def to_apparent_tiles(self):
-        """Create apparent tiles from a room.
-
-        Returns
-        -------
-        A dict mapping coordinates to ApparentTile instances.
-        """
-        return {
-            (x, y): ApparentTile(
-                room_piece=element_to_apparent(tile.room_piece),
-                floor_control=element_to_apparent(tile.floor_control),
-                checkpoint=element_to_apparent(tile.checkpoint),
-                item=element_to_apparent(tile.item),
-                monster=element_to_apparent(tile.monster),
-            )
-            for x, columns in enumerate(self.tiles)
-            for y, tile in enumerate(columns)
-        }
 
     @staticmethod
     def from_apparent_tiles(apparent_tiles, orb_effects=None):

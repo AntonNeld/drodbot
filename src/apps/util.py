@@ -50,6 +50,36 @@ def apparent_tile_to_text(tile):
     Human-readable text describing the tile contents.
     """
     lines = [
+        f"Room piece: {_format_apparent_element(tile.room_piece)}",
+        f"Floor control: {_format_apparent_element(tile.floor_control)}",
+        f"Checkpoint: {_format_apparent_element(tile.checkpoint)}",
+        f"Item: {_format_apparent_element(tile.item)}",
+        f"Monster: {_format_apparent_element(tile.monster)}",
+    ]
+    return "\n".join(lines)
+
+
+def _format_apparent_element(pair):
+    element, direction = pair
+    if direction == Direction.NONE:
+        return element.name
+    else:
+        return f"{element.name} {direction.name}"
+
+
+def tile_to_text(tile):
+    """Describe the tile in a human-friendly format.
+
+    Parameters
+    ----------
+    tile
+        The tile.
+
+    Returns
+    -------
+    A string describing the tile.
+    """
+    lines = [
         f"Room piece: {_format_element(tile.room_piece)}",
         f"Floor control: {_format_element(tile.floor_control)}",
         f"Checkpoint: {_format_element(tile.checkpoint)}",
@@ -59,23 +89,24 @@ def apparent_tile_to_text(tile):
     return "\n".join(lines)
 
 
-def _format_element(pair):
-    element, direction = pair
+def _format_element(element):
+    element_type = element.element_type
+    direction = element.direction
     if direction == Direction.NONE:
-        return element.name
+        return element_type.name
     else:
-        return f"{element.name} {direction.name}"
+        return f"{element_type.name} {direction.name}"
 
 
-def annotate_room_image_with_tile_contents(image, tile_contents):
+def annotate_room_image_with_tile_contents(image, room):
     """Get an image of a room, annotated with tile contents.
 
     Parameters
     ----------
     image
         The original room image.
-    tile_contents
-        A dict mapping (x, y) coordinates to ApparentTile instances.
+    room
+        A Room instance.
 
     Returns
     -------
@@ -89,14 +120,14 @@ def annotate_room_image_with_tile_contents(image, tile_contents):
             tile_image = image[
                 y * TILE_SIZE : (y + 1) * TILE_SIZE, x * TILE_SIZE : (x + 1) * TILE_SIZE
             ]
-            tile = tile_contents[(x, y)]
+            tile = room.tile_at((x, y))
             # Convert the tile to grayscale to make the text stand out.
             # We're converting it back to RGB so we can add the text, but
             # the tile will still look grayscale since we lose color information.
             modified_tile = cv2.cvtColor(
                 cv2.cvtColor(tile_image, cv2.COLOR_RGB2GRAY), cv2.COLOR_GRAY2RGB
             )
-            for element, _ in [
+            for element in [
                 tile.room_piece,
                 tile.floor_control,
                 tile.checkpoint,
@@ -105,7 +136,7 @@ def annotate_room_image_with_tile_contents(image, tile_contents):
             ]:
                 cv2.putText(
                     modified_tile,
-                    ELEMENT_CHARACTERS[element],
+                    ELEMENT_CHARACTERS[element.element_type],
                     (0, tile_image.shape[0]),
                     cv2.FONT_HERSHEY_PLAIN,
                     2,

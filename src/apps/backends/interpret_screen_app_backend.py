@@ -1,4 +1,5 @@
 from common import GUIEvent
+from room import Room
 
 
 class InterpretScreenAppBackend:
@@ -22,9 +23,8 @@ class InterpretScreenAppBackend:
         This method will add the image and tile contents to the window queue.
         """
         await self._interface.initialize()
-        tile_contents, _, debug_images = await self._interface.get_view(
+        tile_contents, orb_effects, debug_images = await self._interface.get_view(
             return_debug_images=True
         )
-        self._queue.put(
-            (GUIEvent.SET_INTERPRET_SCREEN_DATA, debug_images, tile_contents)
-        )
+        room = Room.from_apparent_tiles(tile_contents, orb_effects)
+        self._queue.put((GUIEvent.SET_INTERPRET_SCREEN_DATA, debug_images, room))

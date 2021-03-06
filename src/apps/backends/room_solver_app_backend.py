@@ -39,12 +39,11 @@ class RoomSolverAppBackend:
             return_debug_images=True
         )
         self._room = Room.from_apparent_tiles(tile_contents, orb_effects)
-        reconstructed_tile_contents = self._room.to_apparent_tiles()
         self._queue.put(
             (
                 GUIEvent.SET_ROOM_SOLVER_DATA,
                 next(image for name, image in debug_images if name == "Extract room"),
-                reconstructed_tile_contents,
+                self._room,
             )
         )
         print(f"Interpreted room in {time.time()-t:.2f}s")
@@ -52,7 +51,6 @@ class RoomSolverAppBackend:
     async def get_room_from_bot(self):
         """Set the current room to the current room from the bot."""
         self._room = self._bot.get_current_room()
-        tile_contents = self._room.to_apparent_tiles()
         # Let's create an empty image for now
         room_image = (
             numpy.ones(
@@ -65,7 +63,7 @@ class RoomSolverAppBackend:
             (
                 GUIEvent.SET_ROOM_SOLVER_DATA,
                 room_image,
-                tile_contents,
+                self._room,
             )
         )
 
@@ -74,11 +72,10 @@ class RoomSolverAppBackend:
         if self._room is None:
             raise UserError("Must get a room before simulating")
         self._room.do_action(Action.E, in_place=True)
-        tile_contents = self._room.to_apparent_tiles()
         self._queue.put(
             (
                 GUIEvent.SET_ROOM_SOLVER_DATA,
                 None,
-                tile_contents,
+                self._room,
             )
         )

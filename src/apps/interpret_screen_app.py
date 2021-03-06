@@ -6,7 +6,7 @@ import tkinter
 import traceback
 
 from common import TILE_SIZE
-from .util import apparent_tile_to_text, annotate_room_image_with_tile_contents
+from .util import tile_to_text, annotate_room_image_with_tile_contents
 
 # The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
 _CANVAS_WIDTH = 418
@@ -39,7 +39,7 @@ class InterpretScreenApp(tkinter.Frame):
         self._enlarged_view = False
         self._debug_images = None
         self._radio_buttons = []
-        self._all_tile_contents = None
+        self._room = None
 
         # Create widgets
         self._canvas = tkinter.Canvas(
@@ -64,18 +64,18 @@ class InterpretScreenApp(tkinter.Frame):
 
         self._set_debug_steps()
 
-    def set_data(self, debug_images, tile_contents):
+    def set_data(self, debug_images, room):
         """Set the data to show in the app.
 
         Parameters
         ----------
         debug_images
             A list of (name, image) pairs.
-        tile_contents
-            The classified contents of the tiles.
+        room
+            The room interpreted from the screenshot.
         """
         self._debug_images = debug_images
-        self._all_tile_contents = tile_contents
+        self._room = room
         self._set_debug_steps()
         self._draw_view()
 
@@ -114,7 +114,7 @@ class InterpretScreenApp(tkinter.Frame):
                         for name, image in self._debug_images
                         if name == "Extract room"
                     ),
-                    self._all_tile_contents,
+                    self._room,
                 )
             else:
                 image = next(
@@ -162,8 +162,8 @@ class InterpretScreenApp(tkinter.Frame):
             x = event.x // (TILE_SIZE // 2)
             y = event.y // (TILE_SIZE // 2)
         if self._selected_view_step.get() == "Classify tiles":
-            tile = self._all_tile_contents[(x, y)]
-            self._tile_content.config(text=apparent_tile_to_text(tile))
+            tile = self._room.tile_at((x, y))
+            self._tile_content.config(text=tile_to_text(tile))
         elif self._selected_view_step.get() == "Extract minimap":
             color = next(
                 image for name, image in self._debug_images if name == "Extract minimap"

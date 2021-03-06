@@ -6,7 +6,7 @@ import tkinter
 import traceback
 
 from common import TILE_SIZE
-from .util import apparent_tile_to_text, annotate_room_image_with_tile_contents
+from .util import tile_to_text, annotate_room_image_with_tile_contents
 
 # The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
 _CANVAS_WIDTH = 418
@@ -36,7 +36,7 @@ class RoomSolverApp(tkinter.Frame):
         self._backend = backend
         self._enlarged_view = False
         self._room_image = None
-        self._tile_contents = None
+        self._room = None
 
         # Create widgets
         self._canvas = tkinter.Canvas(
@@ -73,27 +73,25 @@ class RoomSolverApp(tkinter.Frame):
         )
         self._simulate_move_east_button.pack(side=tkinter.TOP)
 
-    def set_data(self, room_image, tile_contents):
+    def set_data(self, room_image, room):
         """Set the data to show in the app.
 
         Parameters
         ----------
         room_image
             Real image of the current room.
-        tile_contents
-            The simulated contents of the tiles.
+        room
+            The simulated room.
         """
         if room_image is not None:
             self._room_image = room_image
-        if tile_contents is not None:
-            self._tile_contents = tile_contents
+        if room is not None:
+            self._room = room
         self._draw_view()
 
     def _draw_view(self):
         if self._room_image is not None:
-            image = annotate_room_image_with_tile_contents(
-                self._room_image, self._tile_contents
-            )
+            image = annotate_room_image_with_tile_contents(self._room_image, self._room)
 
             pil_image = PIL.Image.fromarray(image)
             resized_image = pil_image.resize(
@@ -142,5 +140,5 @@ class RoomSolverApp(tkinter.Frame):
         else:
             x = event.x // (TILE_SIZE // 2)
             y = event.y // (TILE_SIZE // 2)
-        tile = self._tile_contents[(x, y)]
-        self._tile_content_text.config(text=apparent_tile_to_text(tile))
+        tile = self._room.tile_at((x, y))
+        self._tile_content_text.config(text=tile_to_text(tile))
