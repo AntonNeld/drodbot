@@ -7,8 +7,8 @@ from pydantic import BaseModel, Field, validator
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .room_solver import solve_room, ReachTileObjective, StrikeTileObjective
 from .level_walker import find_path_in_level
-from room_simulator import ElementType, Direction, Element, Tile, Action
-from room import Level, Room, tile_to_dict, room_from_apparent_tiles
+from room_simulator import ElementType, Direction, Element, Action
+from room import Level, Room, room_to_dict, room_from_dict, room_from_apparent_tiles
 from search import NoSolutionError
 
 _ACTION_DELAY = 0.1
@@ -35,7 +35,7 @@ class DrodBotState(BaseModel):
     plan: List[Action] = []
 
     class Config:
-        json_encoders = {Tile: tile_to_dict, Action: lambda a: a.name}
+        json_encoders = {Room: room_to_dict, Action: lambda a: a.name}
         arbitrary_types_allowed = True
 
     @validator("plan", pre=True)
@@ -44,6 +44,10 @@ class DrodBotState(BaseModel):
             action if isinstance(action, Action) else getattr(Action, action)
             for action in v
         ]
+
+    @validator("current_room", pre=True)
+    def parse_room(cls, v):
+        return v if isinstance(v, Room) else room_from_dict(v)
 
 
 class DrodBot:
@@ -211,7 +215,7 @@ class DrodBot:
         tile_contents, orb_effects = await self._interface.get_view()
         room = room_from_apparent_tiles(tile_contents, orb_effects)
         self.state.current_room = room
-        room_in_level = room.copy(deep=True)
+        room_in_level = room.copy()
         player_position, _ = room_in_level.find_player()
         # Remove Beethro from the room, so the saved level doesn't
         # have a bunch of Beethros standing around
@@ -292,7 +296,7 @@ class DrodBot:
         await asyncio.sleep(1)
         self.state.current_room_position = new_room_coords
         if new_room_coords in self.state.level.rooms:
-            room = self.state.level.rooms[new_room_coords].copy(deep=True)
+            room = self.state.level.rooms[new_room_coords].copy()
             room.tile_at(position_after).monster = Element(
                 element_type=ElementType.BEETHRO, direction=player_direction
             )

@@ -1,4 +1,5 @@
 from room_simulator import ElementType, Direction, OrbEffect, Element, Tile
+from .room import Room
 
 
 def element_to_dict(element):
@@ -81,4 +82,39 @@ def tile_from_dict(tile_dict):
         checkpoint=element_from_dict(tile_dict["checkpoint"]),
         item=element_from_dict(tile_dict["item"]),
         monster=element_from_dict(tile_dict["monster"]),
+    )
+
+
+def room_to_dict(room):
+    """Convert a room to a dict, for JSON serialization.
+
+    Parameters
+    ----------
+    room
+        The room.
+
+    Returns
+    -------
+    A dict representation of the room.
+    """
+    return {"tiles": [[tile_to_dict(tile) for tile in column] for column in room.tiles]}
+
+
+def room_from_dict(room_dict):
+    """Get a room from a dict representation, for JSON deserialization.
+
+    Parameters
+    ----------
+    room_dict
+        The dict representation of the room.
+
+    Returns
+    -------
+    A room.
+    """
+    return Room(
+        tiles=[
+            [tile_from_dict(tile_dict) for tile_dict in column]
+            for column in room_dict["tiles"]
+        ]
     )

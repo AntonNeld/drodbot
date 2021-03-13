@@ -38,7 +38,7 @@ class _LevelPathfindingProblem:
             room = self.current_room
             room_position = self.current_room_position
         else:
-            room = self.level.rooms[state.room].copy(deep=True)
+            room = self.level.rooms[state.room].copy()
             # Let's just make up the direction for now.
             room.tile_at(state.tile).monster = Element(
                 element_type=ElementType.BEETHRO, direction=Direction.SE
@@ -67,7 +67,7 @@ class _LevelPathfindingProblem:
             # initial state
             return False
 
-        room = self.level.rooms[state.room].copy(deep=True)
+        room = self.level.rooms[state.room].copy()
         # Let's just make up the direction for now.
         room.tile_at(state.tile).monster = Element(
             element_type=ElementType.BEETHRO, direction=Direction.SE
@@ -149,7 +149,7 @@ def find_path_in_level(goal_tiles, current_room, current_room_position, level):
         detailed_actions.extend(actions)
         detailed_actions.append(high_level_action.action)
         latest_room_position, new_tile_position = high_level_action.result
-        room = level.rooms[latest_room_position].copy(deep=True)
+        room = level.rooms[latest_room_position].copy()
         room.tile_at(new_tile_position).monster = Element(
             element_type=ElementType.BEETHRO, direction=direction
         )

@@ -1,63 +1,54 @@
-from pydantic import BaseModel, Field, validator
-from typing import List
-
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from room_simulator import ElementType, Element, Tile
-from .dict_conversion import tile_to_dict, tile_from_dict
 import room_simulator
 
 
-class Room(BaseModel):
+class Room:
     """A representation of a room.
 
     Parameters
     ----------
     tiles
-        The room tiles as a list of lists containing Tile objects.
+        The room tiles as a list of lists containing Tile objects. Defaults to
+        an empty room with normal floor.
     """
 
-    tiles: List[List[Tile]] = Field(
-        default_factory=lambda: [
-            [
-                Tile(room_piece=Element(element_type=ElementType.FLOOR))
-                for y in range(ROOM_HEIGHT_IN_TILES)
+    def __init__(self, tiles=None):
+        if tiles is None:
+            self.tiles = [
+                [
+                    Tile(room_piece=Element(element_type=ElementType.FLOOR))
+                    for y in range(ROOM_HEIGHT_IN_TILES)
+                ]
+                for x in range(ROOM_WIDTH_IN_TILES)
             ]
-            for x in range(ROOM_WIDTH_IN_TILES)
-        ]
-    )
+        else:
+            self.tiles = tiles
 
-    class Config:
-        json_encoders = {Tile: tile_to_dict}
-        arbitrary_types_allowed = True
-
-    @validator("tiles", pre=True)
-    def parse_tiles(cls, v):
-        return [
-            [
-                (tile if isinstance(tile, Tile) else tile_from_dict(tile))
-                for tile in column
-            ]
-            for column in v
-        ]
-
-    def copy(self, deep=False):
+    def copy(self):
         """Copy the room.
-
-        Override this with a stupid replacement, since we can't pickle types from
-        C++. Since this is temporary, there is no sense making the types pickleable.
-
-        Parameters
-        ----------
-        deep
-            Set to true for deep copy.
 
         Returns
         -------
         A copy of the room.
         """
-        if not deep:
-            return super().copy()
-        return Room.parse_raw(self.json())
+        return Room(
+            tiles=[
+                [
+                    Tile(
+                        # We can just take the elements as-is instead of copying, since
+                        # we never modify an element.
+                        room_piece=tile.room_piece,
+                        floor_control=tile.floor_control,
+                        checkpoint=tile.checkpoint,
+                        item=tile.item,
+                        monster=tile.monster,
+                    )
+                    for tile in column
+                ]
+                for column in self.tiles
+            ]
+        )
 
     def tile_at(self, position):
         """Return the tile at the given position.
@@ -175,7 +166,7 @@ class Room(BaseModel):
         if in_place:
             room = self
         else:
-            room = self.copy(deep=True)
+            room = self.copy()
         for action in actions:
             room._do_action_in_place(action)
         return room
@@ -203,7 +194,7 @@ class Room(BaseModel):
         if in_place:
             room = self
         else:
-            room = self.copy(deep=True)
+            room = self.copy()
         room._do_action_in_place(action)
         return room
 

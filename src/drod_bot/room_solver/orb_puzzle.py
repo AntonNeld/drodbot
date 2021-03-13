@@ -11,7 +11,7 @@ class _OrbPuzzleProblem:
     def __init__(self, start, goals, room):
         self.start_position = start
         self.goals = goals
-        self.room = room.copy(deep=True)
+        self.room = room.copy()
         self.orbs = self.room.find_coordinates(ElementType.ORB)
         self.door_coords_to_index = {}
         self.door_index_to_coords = []
@@ -155,7 +155,7 @@ def find_path_with_orbs(start, start_direction, goals, room, sword_at_goal=False
     solution = a_star_graph(problem, _get_heuristic())
 
     # Initialize the pathfinding room with starting position and direction
-    pathfinding_room = room.copy(deep=True)
+    pathfinding_room = room.copy()
     player_position, _ = pathfinding_room.find_player()
     pathfinding_room.tile_at(player_position).monster = Element()
     pathfinding_room.tile_at(start).monster = Element(

@@ -1,9 +1,10 @@
 from itertools import groupby
 from typing import Dict, Tuple
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from .room import Room
+from .dict_conversion import room_from_dict
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from room_simulator import Action
 
@@ -19,6 +20,16 @@ class Level(BaseModel):
     """
 
     rooms: Dict[Tuple[int, int], Room] = {}
+
+    class Config:
+        arbitrary_types_allowed = True
+
+    @validator("rooms", pre=True)
+    def parse_rooms(cls, v):
+        return {
+            key: v[key] if isinstance(v[key], Room) else room_from_dict(v[key])
+            for key in v
+        }
 
     # Override BaseModel.__init__(), to convert any string keys in 'rooms'
     # to tuples. This is needed to deserialize a JSON level.
