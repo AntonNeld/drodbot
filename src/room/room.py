@@ -204,7 +204,7 @@ class Room:
         self._set_from_simulator_room(room_after)
 
     def _to_simulator_room(self):
-        simulator_room = []
+        simulator_tiles = []
         for column in self.tiles:
             simulator_column = []
             for tile in column:
@@ -215,13 +215,13 @@ class Room:
                 simulator_tile.item = tile.item
                 simulator_tile.monster = tile.monster
                 simulator_column.append(simulator_tile)
-            simulator_room.append(simulator_column)
+            simulator_tiles.append(simulator_column)
 
-        return simulator_room
+        return room_simulator.Room(tiles=simulator_tiles)
 
     def _set_from_simulator_room(self, simulator_room):
         tiles = []
-        for x, simulator_column in enumerate(simulator_room):
+        for x, simulator_column in enumerate(simulator_room.tiles):
             column = []
             for y, simulator_tile in enumerate(simulator_column):
                 room_piece = simulator_tile.room_piece

@@ -3,6 +3,7 @@
 
 #include "typedefs.h"
 #include "RoomPlayer.h"
+#include "Room.h"
 
 RoomPlayer roomPlayer = RoomPlayer();
 
@@ -121,4 +122,8 @@ The room after the action.
         .def_readwrite("checkpoint", &Tile::checkpoint)
         .def_readwrite("item", &Tile::item)
         .def_readwrite("monster", &Tile::monster);
+
+    pybind11::class_<Room>(m, "Room")
+        .def(pybind11::init<Tiles>(), pybind11::arg("tiles"))
+        .def_readwrite("tiles", &Room::tiles);
 }

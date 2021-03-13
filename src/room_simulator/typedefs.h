@@ -102,10 +102,5 @@ struct Tile
     Element item = Element();
     Element monster = Element();
 };
-// A column in a room.
-typedef std::array<Tile, 32> Column;
-
-// A representation of a room that can be imported/exported from/to Python code.
-typedef std::array<Column, 38> Room;
 
 #endif // DRODBOT_TYPEDEFS_H

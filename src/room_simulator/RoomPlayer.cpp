@@ -9,6 +9,7 @@
 
 #include "RoomPlayer.h"
 #include "typedefs.h"
+#include "Room.h"
 
 // Helper function to convert direction from our format to DROD format.
 UINT convertDirection(Direction direction)
@@ -174,9 +175,9 @@ void RoomPlayer::setRoom(
     std::vector<std::pair<int, int>> closedDoors;
     std::vector<std::pair<int, int>> openDoors;
 
-    for (unsigned int x = 0; x < room.size(); x += 1)
+    for (unsigned int x = 0; x < room.tiles.size(); x += 1)
     {
-        Column column = room[x];
+        Column column = room.tiles[x];
         for (unsigned int y = 0; y < column.size(); y += 1)
         {
             Tile &tile = column[y];
@@ -413,7 +414,7 @@ void RoomPlayer::performAction(Action action)
 // Get a representation of the current room state.
 Room RoomPlayer::getRoom()
 {
-    Room room;
+    Tiles tiles;
     for (unsigned int x = 0; x < 38; x += 1)
     {
         for (unsigned int y = 0; y < 32; y += 1)
@@ -571,8 +572,8 @@ Room RoomPlayer::getRoom()
             }
             tile.monster = monster;
 
-            room[x][y] = tile;
+            tiles[x][y] = tile;
         }
     }
-    return room;
+    return Room(tiles);
 }

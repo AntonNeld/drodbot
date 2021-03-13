@@ -3,6 +3,7 @@
 
 #include <DRODLib/Db.h>
 #include "typedefs.h"
+#include "Room.h"
 
 class RoomPlayer
 {
