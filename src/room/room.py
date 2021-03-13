@@ -11,19 +11,26 @@ class Room:
     tiles
         The room tiles as a list of lists containing Tile objects. Defaults to
         an empty room with normal floor.
+    _simulator_room
+        A simulator room with the actual data. Only to be used in copy().
+
     """
 
-    def __init__(self, tiles=None):
-        if tiles is None:
-            self.tiles = [
-                [
-                    Tile(room_piece=Element(element_type=ElementType.FLOOR))
-                    for y in range(ROOM_HEIGHT_IN_TILES)
-                ]
-                for x in range(ROOM_WIDTH_IN_TILES)
-            ]
+    def __init__(self, tiles=None, _simulator_room=None):
+        if _simulator_room is not None:
+            self._room = _simulator_room
+        elif tiles is not None:
+            self._room = room_simulator.Room(tiles=tiles)
         else:
-            self.tiles = tiles
+            self._room = room_simulator.Room(
+                tiles=[
+                    [
+                        Tile(room_piece=Element(element_type=ElementType.FLOOR))
+                        for y in range(ROOM_HEIGHT_IN_TILES)
+                    ]
+                    for x in range(ROOM_WIDTH_IN_TILES)
+                ]
+            )
 
     def copy(self):
         """Copy the room.
@@ -32,23 +39,7 @@ class Room:
         -------
         A copy of the room.
         """
-        return Room(
-            tiles=[
-                [
-                    Tile(
-                        # We can just take the elements as-is instead of copying, since
-                        # we never modify an element.
-                        room_piece=tile.room_piece,
-                        floor_control=tile.floor_control,
-                        checkpoint=tile.checkpoint,
-                        item=tile.item,
-                        monster=tile.monster,
-                    )
-                    for tile in column
-                ]
-                for column in self.tiles
-            ]
-        )
+        return Room(_simulator_room=self._room.copy())
 
     def get_tile(self, position):
         """Return the tile at the given position.
@@ -62,8 +53,7 @@ class Room:
         -------
         The tile at that position.
         """
-        x, y = position
-        return self.tiles[x][y]
+        return self._room.get_tile(position)
 
     def set_tile(self, position, tile):
         """Set the tile at the given position.
@@ -75,8 +65,7 @@ class Room:
         tile
             The tile to set.
         """
-        x, y = position
-        self.tiles[x][y] = tile
+        self._room.set_tile(position, tile)
 
     def _get_element_types(self, x, y):
         """Get the types of all elements in a tile.
@@ -139,8 +128,8 @@ class Room:
         """
         return [
             (x, y)
-            for x, columns in enumerate(self.tiles)
-            for y, tile in enumerate(columns)
+            for x in range(ROOM_WIDTH_IN_TILES)
+            for y in range(ROOM_HEIGHT_IN_TILES)
             if element in self._get_element_types(x, y)
         ]
 
@@ -212,44 +201,4 @@ class Room:
         return room
 
     def _do_action_in_place(self, action):
-        # Do nothing with the result for now
-        room_after = room_simulator.simulate_action(self._to_simulator_room(), action)
-        self._set_from_simulator_room(room_after)
-
-    def _to_simulator_room(self):
-        simulator_tiles = []
-        for column in self.tiles:
-            simulator_column = []
-            for tile in column:
-                simulator_tile = room_simulator.Tile()
-                simulator_tile.room_piece = tile.room_piece
-                simulator_tile.floor_control = tile.floor_control
-                simulator_tile.checkpoint = tile.checkpoint
-                simulator_tile.item = tile.item
-                simulator_tile.monster = tile.monster
-                simulator_column.append(simulator_tile)
-            simulator_tiles.append(simulator_column)
-
-        return room_simulator.Room(tiles=simulator_tiles)
-
-    def _set_from_simulator_room(self, simulator_room):
-        tiles = []
-        for x, simulator_column in enumerate(simulator_room.tiles):
-            column = []
-            for y, simulator_tile in enumerate(simulator_column):
-                room_piece = simulator_tile.room_piece
-                floor_control = simulator_tile.floor_control
-                checkpoint = simulator_tile.checkpoint
-                item = simulator_tile.item
-                monster = simulator_tile.monster
-                column.append(
-                    Tile(
-                        room_piece=room_piece,
-                        floor_control=floor_control,
-                        checkpoint=checkpoint,
-                        item=item,
-                        monster=monster,
-                    )
-                )
-            tiles.append(column)
-        self.tiles = tiles
+        self._room = room_simulator.simulate_action(self._room, action)

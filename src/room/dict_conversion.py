@@ -97,7 +97,13 @@ def room_to_dict(room):
     -------
     A dict representation of the room.
     """
-    return {"tiles": [[tile_to_dict(tile) for tile in column] for column in room.tiles]}
+    # Temporarily access the room's internal _room property, until Room is completely
+    # in C++
+    return {
+        "tiles": [
+            [tile_to_dict(tile) for tile in column] for column in room._room.tiles
+        ]
+    }
 
 
 def room_from_dict(room_dict):
