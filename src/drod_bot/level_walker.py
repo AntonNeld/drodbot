@@ -40,9 +40,11 @@ class _LevelPathfindingProblem:
         else:
             room = self.level.rooms[state.room].copy()
             # Let's just make up the direction for now.
-            room.tile_at(state.tile).monster = Element(
+            tile = room.get_tile(state.tile)
+            tile.monster = Element(
                 element_type=ElementType.BEETHRO, direction=Direction.SE
             )
+            room.set_tile(state.tile, tile)
             room_position = state.room
 
         exits = self.level.get_room_exits(room_position)
@@ -69,9 +71,9 @@ class _LevelPathfindingProblem:
 
         room = self.level.rooms[state.room].copy()
         # Let's just make up the direction for now.
-        room.tile_at(state.tile).monster = Element(
-            element_type=ElementType.BEETHRO, direction=Direction.SE
-        )
+        tile = room.get_tile(state.tile)
+        tile.monster = Element(element_type=ElementType.BEETHRO, direction=Direction.SE)
+        room.set_tile(state.tile, tile)
         room_position = state.room
         goal_tiles_in_room = [
             tile for goal_room, tile in self.goal_tiles if goal_room == room_position
@@ -150,9 +152,9 @@ def find_path_in_level(goal_tiles, current_room, current_room_position, level):
         detailed_actions.append(high_level_action.action)
         latest_room_position, new_tile_position = high_level_action.result
         room = level.rooms[latest_room_position].copy()
-        room.tile_at(new_tile_position).monster = Element(
-            element_type=ElementType.BEETHRO, direction=direction
-        )
+        tile = room.get_tile(new_tile_position)
+        tile.monster = Element(element_type=ElementType.BEETHRO, direction=direction)
+        room.set_tile(new_tile_position, tile)
     # Find the path to the final tile in the last room
     actions = solve_room(
         room,

@@ -162,7 +162,7 @@ class InterpretScreenApp(tkinter.Frame):
             x = event.x // (TILE_SIZE // 2)
             y = event.y // (TILE_SIZE // 2)
         if self._selected_view_step.get() == "Classify tiles":
-            tile = self._room.tile_at((x, y))
+            tile = self._room.get_tile((x, y))
             self._tile_content.config(text=tile_to_text(tile))
         elif self._selected_view_step.get() == "Extract minimap":
             color = next(

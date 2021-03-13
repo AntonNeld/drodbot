@@ -30,7 +30,7 @@ class _OrbPuzzleProblem:
         self.expanded_orb_effects = {}
         for orb_coords in self.orbs:
             self.expanded_orb_effects[orb_coords] = []
-            for effect_x, effect_y, effect in self.room.tile_at(
+            for effect_x, effect_y, effect in self.room.get_tile(
                 orb_coords
             ).item.orb_effects:
                 door_tiles = set([(effect_x, effect_y)])
@@ -42,9 +42,9 @@ class _OrbPuzzleProblem:
                             new_pos not in door_tiles
                             and new_pos not in edge
                             and (
-                                self.room.tile_at(new_pos).room_piece.element_type
+                                self.room.get_tile(new_pos).room_piece.element_type
                                 == ElementType.YELLOW_DOOR
-                                or self.room.tile_at(new_pos).room_piece.element_type
+                                or self.room.get_tile(new_pos).room_piece.element_type
                                 == ElementType.YELLOW_DOOR_OPEN
                             )
                         ):
@@ -64,13 +64,13 @@ class _OrbPuzzleProblem:
         # Set the door state in the room
         for i, coords in enumerate(self.door_index_to_coords):
             if state.door_state[i]:
-                self.room.tile_at(coords).room_piece = Element(
-                    element_type=ElementType.YELLOW_DOOR
-                )
+                tile = self.room.get_tile(coords)
+                tile.room_piece = Element(element_type=ElementType.YELLOW_DOOR)
+                self.room.set_tile(coords, tile)
             else:
-                self.room.tile_at(coords).room_piece = Element(
-                    element_type=ElementType.YELLOW_DOOR_OPEN
-                )
+                tile = self.room.get_tile(coords)
+                tile.room_piece = Element(element_type=ElementType.YELLOW_DOOR_OPEN)
+                self.room.set_tile(coords, tile)
         # See which goals are reachable
         for coords in self.goals:
             try:
@@ -157,10 +157,14 @@ def find_path_with_orbs(start, start_direction, goals, room, sword_at_goal=False
     # Initialize the pathfinding room with starting position and direction
     pathfinding_room = room.copy()
     player_position, _ = pathfinding_room.find_player()
-    pathfinding_room.tile_at(player_position).monster = Element()
-    pathfinding_room.tile_at(start).monster = Element(
+    player_tile = pathfinding_room.get_tile(player_position)
+    player_tile.monster = Element()
+    pathfinding_room.set_tile(player_position, player_tile)
+    start_tile = pathfinding_room.get_tile(start)
+    start_tile.monster = Element(
         element_type=ElementType.BEETHRO, direction=start_direction
     )
+    pathfinding_room.set_tile(start, start_tile)
     # Find the actual paths between the positions
     all_actions = []
     for coords, _ in solution:

@@ -50,7 +50,7 @@ class Room:
             ]
         )
 
-    def tile_at(self, position):
+    def get_tile(self, position):
         """Return the tile at the given position.
 
         Parameters
@@ -65,6 +65,19 @@ class Room:
         x, y = position
         return self.tiles[x][y]
 
+    def set_tile(self, position, tile):
+        """Set the tile at the given position.
+
+        Parameters
+        ----------
+        position
+            A tuple (x, y).
+        tile
+            The tile to set.
+        """
+        x, y = position
+        self.tiles[x][y] = tile
+
     def _get_element_types(self, x, y):
         """Get the types of all elements in a tile.
 
@@ -77,11 +90,11 @@ class Room:
         return [
             e.element_type
             for e in [
-                self.tile_at((x, y)).room_piece,
-                self.tile_at((x, y)).floor_control,
-                self.tile_at((x, y)).checkpoint,
-                self.tile_at((x, y)).item,
-                self.tile_at((x, y)).monster,
+                self.get_tile((x, y)).room_piece,
+                self.get_tile((x, y)).floor_control,
+                self.get_tile((x, y)).checkpoint,
+                self.get_tile((x, y)).item,
+                self.get_tile((x, y)).monster,
             ]
             if e.element_type != ElementType.NOTHING
         ]
@@ -144,7 +157,7 @@ class Room:
         if len(beethros) > 1:
             raise RuntimeError(f"Too many Beethros: {beethros}")
         position = beethros[0]
-        direction = self.tile_at(position).monster.direction
+        direction = self.get_tile(position).monster.direction
         return position, direction
 
     def do_actions(self, actions, in_place=False):

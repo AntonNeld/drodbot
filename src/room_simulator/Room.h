@@ -13,7 +13,8 @@ class Room
 public:
     Room(Tiles tiles);
     Room copy();
-    Tile tileAt(Position position);
+    Tile getTile(Position position);
+    void setTile(Position position, Tile tile);
 
     Tiles tiles;
 };

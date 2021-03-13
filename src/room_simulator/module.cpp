@@ -132,7 +132,7 @@ Returns
 -------
 A copy of the room.
 )docstr")
-        .def("tile_at", &Room::tileAt, pybind11::arg("position"), R"docstr(
+        .def("get_tile", &Room::getTile, pybind11::arg("position"), R"docstr(
 Return the tile at the given position.
 
 Parameters
@@ -143,6 +143,16 @@ position
 Returns
 -------
 The tile at that position.
+)docstr")
+        .def("set_tile", &Room::setTile, pybind11::arg("position"), pybind11::arg("tile"), R"docstr(
+Set the tile at the given position.
+
+Parameters
+----------
+position
+    A tuple (x, y).
+tile
+    The tile to set. 
 )docstr")
         .def_readwrite("tiles", &Room::tiles);
 }

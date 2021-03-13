@@ -120,7 +120,7 @@ def annotate_room_image_with_tile_contents(image, room):
             tile_image = image[
                 y * TILE_SIZE : (y + 1) * TILE_SIZE, x * TILE_SIZE : (x + 1) * TILE_SIZE
             ]
-            tile = room.tile_at((x, y))
+            tile = room.get_tile((x, y))
             # Convert the tile to grayscale to make the text stand out.
             # We're converting it back to RGB so we can add the text, but
             # the tile will still look grayscale since we lose color information.

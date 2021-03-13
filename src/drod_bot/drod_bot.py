@@ -219,7 +219,9 @@ class DrodBot:
         player_position, _ = room_in_level.find_player()
         # Remove Beethro from the room, so the saved level doesn't
         # have a bunch of Beethros standing around
-        room_in_level.tile_at(player_position).monster = Element()
+        tile = room_in_level.get_tile(player_position)
+        tile.monster = Element()
+        room_in_level.set_tile(player_position, tile)
         self.state.level.rooms[self.state.current_room_position] = room_in_level
         self._notify_state_update()
         print(f"Interpreted room in {time.time()-t:.2f}s")
@@ -297,9 +299,11 @@ class DrodBot:
         self.state.current_room_position = new_room_coords
         if new_room_coords in self.state.level.rooms:
             room = self.state.level.rooms[new_room_coords].copy()
-            room.tile_at(position_after).monster = Element(
+            tile = room.get_tile(position_after)
+            tile.monster = Element(
                 element_type=ElementType.BEETHRO, direction=player_direction
             )
+            room.set_tile(position_after, tile)
             self.state.current_room = room
             self._notify_state_update()
         else:

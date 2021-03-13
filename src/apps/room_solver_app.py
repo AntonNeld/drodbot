@@ -140,5 +140,5 @@ class RoomSolverApp(tkinter.Frame):
         else:
             x = event.x // (TILE_SIZE // 2)
             y = event.y // (TILE_SIZE // 2)
-        tile = self._room.tile_at((x, y))
+        tile = self._room.get_tile((x, y))
         self._tile_content_text.config(text=tile_to_text(tile))
