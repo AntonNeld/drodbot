@@ -135,9 +135,8 @@ def room_from_apparent_tiles(apparent_tiles, orb_effects=None):
             )
         tiles.append(column)
 
-    room = Room(tiles=tiles)
-
     if orb_effects is not None:
-        for position, effects in orb_effects.items():
-            room.tile_at(position).item.orb_effects = effects
-    return room
+        for (x, y), effects in orb_effects.items():
+            tiles[x][y].item.orb_effects = effects
+
+    return Room(tiles=tiles)
