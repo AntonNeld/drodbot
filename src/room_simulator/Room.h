@@ -2,19 +2,18 @@
 #define DRODBOT_ROOM_H
 
 #include <array>
+#include <tuple>
 #include "typedefs.h"
 
-// A column in a room.
 typedef std::array<Tile, 32> Column;
-
-// A representation of a room that can be imported/exported from/to Python code.
 typedef std::array<Column, 38> Tiles;
-
+typedef std::tuple<int, int> Position;
 class Room
 {
 public:
     Room(Tiles tiles);
     Room copy();
+    Tile tileAt(Position position);
 
     Tiles tiles;
 };
