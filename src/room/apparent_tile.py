@@ -1,6 +1,7 @@
 from pydantic import BaseModel, validator
 from typing import Tuple
 
+from common import ROOM_WIDTH_IN_TILES, ROOM_HEIGHT_IN_TILES
 from room import Room
 from room_simulator import ElementType, Direction, Element, Tile
 
@@ -118,15 +119,23 @@ def room_from_apparent_tiles(apparent_tiles, orb_effects=None):
     -------
     A new room.
     """
-    room = Room()
-    for (x, y), tile in apparent_tiles.items():
-        room.tiles[x][y] = Tile(
-            room_piece=element_from_apparent(*tile.room_piece),
-            floor_control=element_from_apparent(*tile.floor_control),
-            checkpoint=element_from_apparent(*tile.checkpoint),
-            item=element_from_apparent(*tile.item),
-            monster=element_from_apparent(*tile.monster),
-        )
+    tiles = []
+    for x in range(ROOM_WIDTH_IN_TILES):
+        column = []
+        for y in range(ROOM_HEIGHT_IN_TILES):
+            tile = apparent_tiles[(x, y)]
+            column.append(
+                Tile(
+                    room_piece=element_from_apparent(*tile.room_piece),
+                    floor_control=element_from_apparent(*tile.floor_control),
+                    checkpoint=element_from_apparent(*tile.checkpoint),
+                    item=element_from_apparent(*tile.item),
+                    monster=element_from_apparent(*tile.monster),
+                )
+            )
+        tiles.append(column)
+
+    room = Room(tiles=tiles)
 
     if orb_effects is not None:
         for position, effects in orb_effects.items():
