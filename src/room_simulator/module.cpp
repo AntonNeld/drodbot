@@ -125,5 +125,12 @@ The room after the action.
 
     pybind11::class_<Room>(m, "Room")
         .def(pybind11::init<Tiles>(), pybind11::arg("tiles"))
+        .def("copy", &Room::copy, R"docstr(
+Copy the room.
+
+Returns
+-------
+A copy of the room.
+)docstr")
         .def_readwrite("tiles", &Room::tiles);
 }

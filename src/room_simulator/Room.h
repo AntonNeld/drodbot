@@ -14,6 +14,8 @@ class Room
 {
 public:
     Room(Tiles tiles);
+    Room copy();
+
     Tiles tiles;
 };
 
