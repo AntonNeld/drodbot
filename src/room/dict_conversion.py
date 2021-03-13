@@ -2,6 +2,17 @@ from room_simulator import ElementType, Direction, OrbEffect, Element, Tile
 
 
 def element_to_dict(element):
+    """Convert an element to a dict, for JSON serialization.
+
+    Parameters
+    ----------
+    element
+        The element.
+
+    Returns
+    -------
+    A dict representation of the element.
+    """
     return {
         "element_type": element.element_type.name,
         "direction": element.direction.name,
@@ -10,6 +21,17 @@ def element_to_dict(element):
 
 
 def element_from_dict(element_dict):
+    """Get an element from a dict representation, for JSON deserialization.
+
+    Parameters
+    ----------
+    element_dict
+        The dict representation of the element.
+
+    Returns
+    -------
+    An element.
+    """
     return Element(
         element_type=getattr(ElementType, element_dict["element_type"]),
         direction=getattr(Direction, element_dict["direction"]),
@@ -21,6 +43,17 @@ def element_from_dict(element_dict):
 
 
 def tile_to_dict(tile):
+    """Convert a tile to a dict, for JSON serialization.
+
+    Parameters
+    ----------
+    tile
+        The tile.
+
+    Returns
+    -------
+    A dict representation of the tile.
+    """
     return {
         "room_piece": element_to_dict(tile.room_piece),
         "floor_control": element_to_dict(tile.floor_control),
@@ -31,6 +64,17 @@ def tile_to_dict(tile):
 
 
 def tile_from_dict(tile_dict):
+    """Get a tile from a dict representation, for JSON deserialization.
+
+    Parameters
+    ----------
+    tile_dict
+        The dict representation of the tile.
+
+    Returns
+    -------
+    A tile.
+    """
     return Tile(
         room_piece=element_from_dict(tile_dict["room_piece"]),
         floor_control=element_from_dict(tile_dict["floor_control"]),
