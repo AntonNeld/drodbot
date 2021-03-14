@@ -107,14 +107,7 @@ class Room:
         -------
         A tuple ((x, y), direction).
         """
-        beethros = self.find_coordinates(ElementType.BEETHRO)
-        if len(beethros) < 1:
-            raise RuntimeError("Cannot find Beethro")
-        if len(beethros) > 1:
-            raise RuntimeError(f"Too many Beethros: {beethros}")
-        position = beethros[0]
-        direction = self.get_tile(position).monster.direction
-        return position, direction
+        return self._room.find_player()
 
     def do_actions(self, actions, in_place=False):
         """Do multiple actions, and return a copy of the room after the actions.

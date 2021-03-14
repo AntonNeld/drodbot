@@ -45,6 +45,21 @@ std::vector<Position> Room::findCoordinates(ElementType elementType)
     return coords;
 }
 
+std::tuple<Position, Direction> Room::findPlayer()
+{
+    std::vector<Position> playerCoords = this->findCoordinates(ElementType::BEETHRO);
+    if (playerCoords.size() == 0)
+    {
+        throw std::runtime_error("Cannot find Beethro");
+    }
+    else if (playerCoords.size() > 1)
+    {
+        throw std::runtime_error("Too many Beethros");
+    }
+    Direction direction = this->getTile(playerCoords[0]).monster.direction;
+    return std::make_tuple(playerCoords[0], direction);
+}
+
 bool Room::isPassable(int x, int y)
 {
     Tile tile = this->tiles[x][y];

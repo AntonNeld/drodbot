@@ -166,6 +166,13 @@ Returns
 -------
 The coordinates of all elements of that type, as a list of (x, y) tuples.
 )docstr")
+        .def("find_player", &Room::findPlayer, R"docstr(
+Find the coordinates of the player.
+
+Returns
+-------
+A tuple ((x, y), direction).
+)docstr")
         .def("is_passable", &Room::isPassable, pybind11::arg("x"), pybind11::arg("y"), R"docstr(
 Check whether a tile is passable.
 
