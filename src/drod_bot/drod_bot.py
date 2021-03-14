@@ -12,7 +12,7 @@ from room_simulator import (
     simulate_action,
 )
 from .state import DrodBotState
-from room import room_from_apparent_tiles
+from room_interpreter import room_from_apparent_tiles
 from search import NoSolutionError
 
 _ACTION_DELAY = 0.1

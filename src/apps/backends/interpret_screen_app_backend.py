@@ -1,5 +1,5 @@
 from common import GUIEvent
-from room import room_from_apparent_tiles
+from room_interpreter import room_from_apparent_tiles
 
 
 class InterpretScreenAppBackend:

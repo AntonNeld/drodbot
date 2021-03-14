@@ -9,7 +9,7 @@ from common import (
     TILE_SIZE,
     UserError,
 )
-from room import room_from_apparent_tiles
+from room_interpreter import room_from_apparent_tiles
 from room_simulator import Action, simulate_action
 
 
