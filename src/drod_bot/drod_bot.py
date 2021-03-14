@@ -248,9 +248,7 @@ class DrodBot:
                 raise RuntimeError(f"Tried to move {action} out of the room")
             else:
                 await self._interface.do_action(action)
-                self.state.current_room = self.state.current_room.do_action(
-                    action, in_place=True
-                )
+                self.state.current_room = self.state.current_room.do_action(action)
             self._notify_state_update()
             await asyncio.sleep(_ACTION_DELAY)
 

@@ -182,5 +182,6 @@ def find_path_with_orbs(start, start_direction, goals, room, sword_at_goal=False
                 sword_at_goal=True,
             )
         all_actions.extend(actions)
-        pathfinding_room.do_actions(actions, in_place=True)
+        for action in actions:
+            pathfinding_room = pathfinding_room.do_action(action)
     return all_actions

@@ -10,7 +10,7 @@ class Room:
         The room tiles as a list of lists containing Tile objects. Either this
         or _simulator_room must be set.
     _simulator_room
-        A simulator room with the actual data. Only to be used in copy().
+        A simulator room with the actual data. Only to be used internally.
 
     """
 
@@ -99,31 +99,7 @@ class Room:
         """
         return self._room.find_player()
 
-    def do_actions(self, actions, in_place=False):
-        """Do multiple actions, and return a copy of the room after the actions.
-
-        Parameters
-        ----------
-        actions
-            The actions to perform.
-        in_place
-            Whether to modify the room in place. The room will still be
-            returned. Use this if you will not use the old room and performance
-            is critical.
-
-        Returns
-        -------
-        A copy of the room after having performed the actions.
-        """
-        if in_place:
-            room = self
-        else:
-            room = self.copy()
-        for action in actions:
-            room._do_action_in_place(action)
-        return room
-
-    def do_action(self, action, in_place=False):
+    def do_action(self, action):
         """Do an action, and return a copy of the room after the action.
 
         The room after will match the result of performing an
@@ -133,22 +109,10 @@ class Room:
         ----------
         action
             The action to perform.
-        in_place
-            Whether to modify the room in place. The room will still be
-            returned. Use this if you will not use the old room and performance
-            is critical.
 
         Returns
         -------
         A copy of the room after having performed the action. If `in_place`
         is True, return the same room instance.
         """
-        if in_place:
-            room = self
-        else:
-            room = self.copy()
-        room._do_action_in_place(action)
-        return room
-
-    def _do_action_in_place(self, action):
-        self._room = room_simulator.simulate_action(self._room, action)
+        return Room(_simulator_room=room_simulator.simulate_action(self._room, action))

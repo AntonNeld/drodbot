@@ -71,7 +71,7 @@ class RoomSolverAppBackend:
         """Simulate moving east in the current room."""
         if self._room is None:
             raise UserError("Must get a room before simulating")
-        self._room.do_action(Action.E, in_place=True)
+        self._room = self._room.do_action(Action.E)
         self._queue.put(
             (
                 GUIEvent.SET_ROOM_SOLVER_DATA,
