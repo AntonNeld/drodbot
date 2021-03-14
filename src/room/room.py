@@ -67,52 +67,24 @@ class Room:
         """
         self._room.set_tile(position, tile)
 
-    def _get_element_types(self, x, y):
-        """Get the types of all elements in a tile.
-
-        ElementType.NOTHING is not included.
-
-        Returns
-        -------
-        A list of all element types in the tile.
-        """
-        return [
-            e.element_type
-            for e in [
-                self.get_tile((x, y)).room_piece,
-                self.get_tile((x, y)).floor_control,
-                self.get_tile((x, y)).checkpoint,
-                self.get_tile((x, y)).item,
-                self.get_tile((x, y)).monster,
-            ]
-            if e.element_type != ElementType.NOTHING
-        ]
-
     def is_passable(self, x, y):
         """Check whether a tile is passable.
 
         It currently does not take into account force arrows, or
         whether doors can be opened.
 
+        Parameters
+        ----------
+        x
+            The x coordinate.
+        y
+            The y coordinate.
+
         Returns
         -------
         Whether the tile is passable or not.
         """
-        return (
-            not set(
-                [
-                    ElementType.WALL,
-                    ElementType.MASTER_WALL,
-                    ElementType.OBSTACLE,
-                    ElementType.YELLOW_DOOR,
-                    ElementType.BLUE_DOOR,
-                    ElementType.GREEN_DOOR,
-                    ElementType.ORB,
-                    ElementType.PIT,
-                ]
-            )
-            & set(self._get_element_types(x, y))
-        )
+        return self._room.is_passable(x, y)
 
     def find_coordinates(self, element_type):
         """Find the coordinates of all elements of a type.

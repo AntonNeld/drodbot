@@ -165,5 +165,22 @@ element_type
 Returns
 -------
 The coordinates of all elements of that type, as a list of (x, y) tuples.
+)docstr")
+        .def("is_passable", &Room::isPassable, pybind11::arg("x"), pybind11::arg("y"), R"docstr(
+Check whether a tile is passable.
+
+It currently does not take into account force arrows, or
+whether doors can be opened.
+
+Parameters
+----------
+x
+    The x coordinate.
+y
+    The y coordinate.
+
+Returns
+-------
+Whether the tile is passable or not.
 )docstr");
 }

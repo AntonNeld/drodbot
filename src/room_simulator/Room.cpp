@@ -44,3 +44,29 @@ std::vector<Position> Room::findCoordinates(ElementType elementType)
     }
     return coords;
 }
+
+bool Room::isPassable(int x, int y)
+{
+    Tile tile = this->tiles[x][y];
+    switch (tile.roomPiece.type)
+    {
+    case ElementType::WALL:
+    case ElementType::MASTER_WALL:
+    case ElementType::YELLOW_DOOR:
+    case ElementType::BLUE_DOOR:
+    case ElementType::GREEN_DOOR:
+    case ElementType::PIT:
+        return false;
+    default:
+        break; // Nothing
+    }
+    switch (tile.item.type)
+    {
+    case ElementType::OBSTACLE:
+    case ElementType::ORB:
+        return false;
+    default:
+        break; // Nothing
+    }
+    return true;
+}

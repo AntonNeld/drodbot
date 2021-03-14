@@ -17,6 +17,7 @@ public:
     Tile getTile(Position position);
     void setTile(Position position, Tile tile);
     std::vector<Position> findCoordinates(ElementType elementType);
+    bool isPassable(int x, int y);
 
 private:
     Tiles tiles;
