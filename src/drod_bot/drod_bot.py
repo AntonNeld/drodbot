@@ -1,8 +1,5 @@
 import asyncio
 import time
-from typing import Tuple, List, Optional
-
-from pydantic import BaseModel, Field, validator
 
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .room_solver import solve_room, ReachTileObjective, StrikeTileObjective
@@ -12,50 +9,13 @@ from room_simulator import (
     Direction,
     Element,
     Action,
-    Room,
     simulate_action,
 )
-from .state import Level, room_to_dict, room_from_dict
+from .state import DrodBotState
 from room import room_from_apparent_tiles
 from search import NoSolutionError
 
 _ACTION_DELAY = 0.1
-
-
-class DrodBotState(BaseModel):
-    """The state of DRODbot.
-
-    Parameters
-    ----------
-    level
-        The level it's playing, with the rooms as they are when entering them.
-    current_room
-        The current room being played, as it is now.
-    current_room_position.
-        The position in the level of the current room.
-    plan
-        The current plan to execute.
-    """
-
-    level: Level = Field(default_factory=lambda: Level())
-    current_room: Optional[Room]
-    current_room_position: Tuple[int, int] = (0, 0)
-    plan: List[Action] = []
-
-    class Config:
-        json_encoders = {Room: room_to_dict, Action: lambda a: a.name}
-        arbitrary_types_allowed = True
-
-    @validator("plan", pre=True)
-    def parse_plan(cls, v):
-        return [
-            action if isinstance(action, Action) else getattr(Action, action)
-            for action in v
-        ]
-
-    @validator("current_room", pre=True)
-    def parse_room(cls, v):
-        return v if isinstance(v, Room) else room_from_dict(v)
 
 
 class DrodBot:
