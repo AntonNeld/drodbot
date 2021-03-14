@@ -1,5 +1,3 @@
-from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
-from room_simulator import ElementType, Element, Tile
 import room_simulator
 
 
@@ -9,8 +7,8 @@ class Room:
     Parameters
     ----------
     tiles
-        The room tiles as a list of lists containing Tile objects. Defaults to
-        an empty room with normal floor.
+        The room tiles as a list of lists containing Tile objects. Either this
+        or _simulator_room must be set.
     _simulator_room
         A simulator room with the actual data. Only to be used in copy().
 
@@ -22,15 +20,7 @@ class Room:
         elif tiles is not None:
             self._room = room_simulator.Room(tiles=tiles)
         else:
-            self._room = room_simulator.Room(
-                tiles=[
-                    [
-                        Tile(room_piece=Element(element_type=ElementType.FLOOR))
-                        for y in range(ROOM_HEIGHT_IN_TILES)
-                    ]
-                    for x in range(ROOM_WIDTH_IN_TILES)
-                ]
-            )
+            raise RuntimeError("Either tiles or _simulator_room must be set")
 
     def copy(self):
         """Copy the room.
