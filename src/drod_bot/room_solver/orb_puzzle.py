@@ -1,7 +1,7 @@
 from collections import namedtuple
 
 from .pathfinding import find_path
-from room_simulator import ElementType, Direction, OrbEffect, Element
+from room_simulator import ElementType, Direction, OrbEffect, Element, simulate_action
 from search import a_star_graph, NoSolutionError
 
 _State = namedtuple("_State", "position door_state")
@@ -183,5 +183,5 @@ def find_path_with_orbs(start, start_direction, goals, room, sword_at_goal=False
             )
         all_actions.extend(actions)
         for action in actions:
-            pathfinding_room = pathfinding_room.do_action(action)
+            pathfinding_room = simulate_action(pathfinding_room, action)
     return all_actions

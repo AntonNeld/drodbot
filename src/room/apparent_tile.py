@@ -2,8 +2,7 @@ from pydantic import BaseModel, validator
 from typing import Tuple
 
 from common import ROOM_WIDTH_IN_TILES, ROOM_HEIGHT_IN_TILES
-from room import Room
-from room_simulator import ElementType, Direction, Element, Tile
+from room_simulator import ElementType, Direction, Element, Tile, Room
 
 
 def _parse_pair(v):

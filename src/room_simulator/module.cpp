@@ -35,8 +35,7 @@ Parameters
 room
     The room before taking the action.
 action
-    The action to take, as an integer. The integer for each action is the value
-    of the action in the Action enum in common.py.
+    The action to take.
 
 Returns
 -------

@@ -3,10 +3,9 @@ from typing import Dict, Tuple
 
 from pydantic import BaseModel, validator
 
-from .room import Room
 from .dict_conversion import room_from_dict
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
-from room_simulator import Action
+from room_simulator import Action, Room
 
 
 class Level(BaseModel):

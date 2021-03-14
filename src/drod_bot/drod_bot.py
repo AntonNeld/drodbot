@@ -7,8 +7,15 @@ from pydantic import BaseModel, Field, validator
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .room_solver import solve_room, ReachTileObjective, StrikeTileObjective
 from .level_walker import find_path_in_level
-from room_simulator import ElementType, Direction, Element, Action
-from room import Level, Room, room_to_dict, room_from_dict, room_from_apparent_tiles
+from room_simulator import (
+    ElementType,
+    Direction,
+    Element,
+    Action,
+    Room,
+    simulate_action,
+)
+from room import Level, room_to_dict, room_from_dict, room_from_apparent_tiles
 from search import NoSolutionError
 
 _ACTION_DELAY = 0.1
@@ -248,7 +255,9 @@ class DrodBot:
                 raise RuntimeError(f"Tried to move {action} out of the room")
             else:
                 await self._interface.do_action(action)
-                self.state.current_room = self.state.current_room.do_action(action)
+                self.state.current_room = simulate_action(
+                    self.state.current_room, action
+                )
             self._notify_state_update()
             await asyncio.sleep(_ACTION_DELAY)
 

@@ -1,6 +1,5 @@
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
-from room_simulator import ElementType, Direction, OrbEffect, Element, Tile
-from .room import Room
+from room_simulator import ElementType, Direction, OrbEffect, Element, Tile, Room
 
 
 def element_to_dict(element):
@@ -98,8 +97,6 @@ def room_to_dict(room):
     -------
     A dict representation of the room.
     """
-    # Temporarily access the room's internal _room property, until Room is completely
-    # in C++
     return {
         "tiles": [
             [tile_to_dict(room.get_tile((x, y))) for y in range(ROOM_HEIGHT_IN_TILES)]
