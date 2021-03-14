@@ -175,12 +175,11 @@ void RoomPlayer::setRoom(
     std::vector<std::pair<int, int>> closedDoors;
     std::vector<std::pair<int, int>> openDoors;
 
-    for (unsigned int x = 0; x < room.tiles.size(); x += 1)
+    for (int x = 0; x < 38; x += 1)
     {
-        Column column = room.tiles[x];
-        for (unsigned int y = 0; y < column.size(); y += 1)
+        for (int y = 0; y < 32; y += 1)
         {
-            Tile &tile = column[y];
+            Tile tile = room.getTile(std::make_tuple(x, y));
             switch (tile.roomPiece.type)
             {
             case ElementType::FLOOR:

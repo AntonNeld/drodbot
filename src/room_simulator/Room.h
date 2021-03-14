@@ -16,6 +16,7 @@ public:
     Tile getTile(Position position);
     void setTile(Position position, Tile tile);
 
+private:
     Tiles tiles;
 };
 

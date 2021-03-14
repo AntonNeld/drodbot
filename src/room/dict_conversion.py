@@ -1,3 +1,4 @@
+from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from room_simulator import ElementType, Direction, OrbEffect, Element, Tile
 from .room import Room
 
@@ -101,7 +102,8 @@ def room_to_dict(room):
     # in C++
     return {
         "tiles": [
-            [tile_to_dict(tile) for tile in column] for column in room._room.tiles
+            [tile_to_dict(room.get_tile((x, y))) for y in range(ROOM_HEIGHT_IN_TILES)]
+            for x in range(ROOM_WIDTH_IN_TILES)
         ]
     }
 

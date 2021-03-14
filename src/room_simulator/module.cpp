@@ -153,6 +153,5 @@ position
     A tuple (x, y).
 tile
     The tile to set. 
-)docstr")
-        .def_readwrite("tiles", &Room::tiles);
+)docstr");
 }
