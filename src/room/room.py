@@ -114,24 +114,19 @@ class Room:
             & set(self._get_element_types(x, y))
         )
 
-    def find_coordinates(self, element):
+    def find_coordinates(self, element_type):
         """Find the coordinates of all elements of a type.
 
         Parameters
         ----------
-        element
+        element_type
             The element type to find the coordinates of.
 
         Returns
         -------
         The coordinates of all elements of that type, as a list of (x, y) tuples.
         """
-        return [
-            (x, y)
-            for x in range(ROOM_WIDTH_IN_TILES)
-            for y in range(ROOM_HEIGHT_IN_TILES)
-            if element in self._get_element_types(x, y)
-        ]
+        return self._room.find_coordinates(element_type)
 
     def find_player(self):
         """Find the coordinates of the player.

@@ -153,5 +153,17 @@ position
     A tuple (x, y).
 tile
     The tile to set. 
+)docstr")
+        .def("find_coordinates", &Room::findCoordinates, pybind11::arg("element_type"), R"docstr(
+Find the coordinates of all elements of a type.
+
+Parameters
+----------
+element_type
+    The element type to find the coordinates of.
+
+Returns
+-------
+The coordinates of all elements of that type, as a list of (x, y) tuples.
 )docstr");
 }

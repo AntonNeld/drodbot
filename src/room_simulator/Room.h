@@ -3,6 +3,7 @@
 
 #include <array>
 #include <tuple>
+#include <vector>
 #include "typedefs.h"
 
 typedef std::array<Tile, 32> Column;
@@ -15,6 +16,7 @@ public:
     Room copy();
     Tile getTile(Position position);
     void setTile(Position position, Tile tile);
+    std::vector<Position> findCoordinates(ElementType elementType);
 
 private:
     Tiles tiles;
