@@ -9,7 +9,7 @@ from PIL.PngImagePlugin import PngInfo
 
 from common import GUIEvent
 from room_simulator import ElementType, Direction
-from room import ApparentTile
+from tile_classifier import ApparentTile
 from .editor_utils import (
     place_fully_directional_elements,
     place_nondirectional_edges_elements,

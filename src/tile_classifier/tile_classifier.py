@@ -8,7 +8,7 @@ from common import (
     TILE_SIZE,
 )
 from room_simulator import ElementType, Direction
-from room import ApparentTile
+from .apparent_tile import ApparentTile
 from util import find_color, element_layer
 
 
