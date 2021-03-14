@@ -15,7 +15,8 @@ from room_simulator import (
     Room,
     simulate_action,
 )
-from room import Level, room_to_dict, room_from_dict, room_from_apparent_tiles
+from .state import Level, room_to_dict, room_from_dict
+from room import room_from_apparent_tiles
 from search import NoSolutionError
 
 _ACTION_DELAY = 0.1
