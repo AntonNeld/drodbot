@@ -14,7 +14,7 @@ class RoomInterpreter:
         self._classifier = classifier
         self._interface = play_interface
 
-    def get_initial_room(self, return_debug_images=False):
+    async def get_initial_room(self, return_debug_images=False):
         """Get an initial guess of a room by taking a screenshot.
 
         Parameters
@@ -30,11 +30,11 @@ class RoomInterpreter:
             Only returned if `return_debug_images` is True. A list of (name, image).
         """
         if return_debug_images:
-            tile_contents, orb_effects, debug_images = self._interface.get_view(
+            tile_contents, orb_effects, debug_images = await self._interface.get_view(
                 return_debug_images=True
             )
         else:
-            tile_contents, orb_effects = self._interface.get_view()
+            tile_contents, orb_effects = await self._interface.get_view()
         room = room_from_apparent_tiles(tile_contents, orb_effects)
 
         if return_debug_images:
