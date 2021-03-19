@@ -130,37 +130,6 @@ def extract_minimap(window_image):
     return minimap_room_image
 
 
-def extract_tiles(room_image, minimap_image):
-    """Extract tiles from a room image.
-
-    Parameters
-    ----------
-    room_image
-        The room to extract tiles from.
-    minimap_image
-        The minimap to extract minimap colors from.
-
-    Returns
-    -------
-    tiles
-        A dict with coordinates as keys and tile images as values.
-    colors
-        A dict with coordinates as keys and (r, g, b) tuples as values.
-    """
-    tiles = {}
-    colors = {}
-    for x in range(ROOM_WIDTH_IN_TILES):
-        for y in range(ROOM_HEIGHT_IN_TILES):
-            start_x = x * TILE_SIZE
-            end_x = (x + 1) * TILE_SIZE
-            start_y = y * TILE_SIZE
-            end_y = (y + 1) * TILE_SIZE
-            tiles[(x, y)] = room_image[start_y:end_y, start_x:end_x, :]
-            color = minimap_image[y, x, :]
-            colors[(x, y)] = (int(color[0]), int(color[1]), int(color[2]))
-    return tiles, colors
-
-
 def reconstruct_from_tiles(tiles):
     """Reconstruct a room image given the tiles.
 

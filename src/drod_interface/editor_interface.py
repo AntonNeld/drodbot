@@ -10,7 +10,8 @@ from common import (
 )
 from room_simulator import ElementType, Direction
 from .consts import ROOM_ORIGIN_X, ROOM_ORIGIN_Y
-from .util import get_drod_window, extract_room, extract_minimap, extract_tiles
+from .util import get_drod_window, extract_room, extract_minimap
+from util import extract_tiles
 
 _STYLE_SELECT_SCROLL_UP = (1000, 110)
 _EDIT_ROOM = (670, 740)

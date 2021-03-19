@@ -3,26 +3,18 @@ import pyautogui
 import scipy.ndimage
 from common import TILE_SIZE, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .consts import ROOM_ORIGIN_X, ROOM_ORIGIN_Y
-from room_simulator import ElementType, OrbEffect, Action
+from room_simulator import OrbEffect, Action
 from .util import (
     get_drod_window,
     extract_room,
     extract_minimap,
-    extract_tiles,
 )
 
 
 class PlayInterface:
-    """The interface toward DROD when playing the game.
+    """The interface toward DROD when playing the game."""
 
-    Parameters
-    ----------
-    classifier
-        The tile classifier, to interpret the tiles.
-    """
-
-    def __init__(self, classifier):
-        self._classifier = classifier
+    def __init__(self):
         # Will be set by initialize()
         self._origin_x = None
         self._origin_y = None
@@ -82,65 +74,7 @@ class PlayInterface:
             key = "w"
         pyautogui.press(key)
 
-    async def get_view(self, return_debug_images=False):
-        """Get the room contents and other information from the DROD window.
-
-        Parameters
-        ----------
-        return_debug_images
-            If True, return an additional list of tuples (name, debug_image).
-
-        Returns
-        -------
-        tile_contents
-            A dict mapping all coordinates to apparent tiles.
-        orb_effects
-            A dict mapping some coordinates to orb effects.
-        debug_images
-            Only returned if `return_debug_images` is True. A list of (name, image).
-        """
-        if return_debug_images:
-            room_image, minimap, debug_images = await self._get_room_image(
-                return_debug_images=True
-            )
-        else:
-            room_image, minimap = await self._get_room_image()
-
-        # == Extract and classify tiles in the room ==
-
-        tiles, minimap_colors = extract_tiles(room_image, minimap)
-
-        tile_contents = self._classifier.classify_tiles(tiles, minimap_colors)
-
-        orb_positions = [
-            pos
-            for pos, tile in tile_contents.items()
-            if tile.item[0] == ElementType.ORB
-        ]
-        # A position we can click to get rid of the displayed orb effects
-        # TODO: Handle the case when there is no such position
-        free_position = next(
-            pos
-            for pos, tile in tile_contents.items()
-            if tile.item[0] != ElementType.ORB
-            and tile.room_piece[0]
-            not in [ElementType.YELLOW_DOOR, ElementType.YELLOW_DOOR_OPEN]
-        )
-        if return_debug_images:
-            orb_effects, effects_debug_images = await self._get_orb_effects(
-                orb_positions, room_image, free_position, return_debug_images=True
-            )
-            debug_images.extend(effects_debug_images)
-        else:
-            orb_effects = await self._get_orb_effects(
-                orb_positions, room_image, free_position
-            )
-
-        if return_debug_images:
-            return tile_contents, orb_effects, debug_images
-        return tile_contents, orb_effects
-
-    async def _get_room_image(self, return_debug_images=False):
+    async def get_room_image(self, return_debug_images=False):
         """Get the room and minimap images from the DROD window.
 
         Parameters
@@ -181,7 +115,7 @@ class PlayInterface:
             return room_image, minimap, debug_images
         return room_image, minimap
 
-    async def _get_orb_effects(
+    async def get_orb_effects(
         self, positions, original_room_image, free_position, return_debug_images=False
     ):
         """Get the orb effects for the given positions.

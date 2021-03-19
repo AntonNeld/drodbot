@@ -1,4 +1,6 @@
+from room_simulator import ElementType
 from .room_conversion import room_from_apparent_tiles
+from util import extract_tiles
 
 
 class RoomInterpreter:
@@ -30,11 +32,40 @@ class RoomInterpreter:
             Only returned if `return_debug_images` is True. A list of (name, image).
         """
         if return_debug_images:
-            tile_contents, orb_effects, debug_images = await self._interface.get_view(
+            room_image, minimap, debug_images = await self._interface.get_room_image(
                 return_debug_images=True
             )
         else:
-            tile_contents, orb_effects = await self._interface.get_view()
+            room_image, minimap = await self._interface.get_room_image()
+
+        tiles, minimap_colors = extract_tiles(room_image, minimap)
+
+        tile_contents = self._classifier.classify_tiles(tiles, minimap_colors)
+
+        orb_positions = [
+            pos
+            for pos, tile in tile_contents.items()
+            if tile.item[0] == ElementType.ORB
+        ]
+        # A position we can click to get rid of the displayed orb effects
+        # TODO: Handle the case when there is no such position
+        free_position = next(
+            pos
+            for pos, tile in tile_contents.items()
+            if tile.item[0] != ElementType.ORB
+            and tile.room_piece[0]
+            not in [ElementType.YELLOW_DOOR, ElementType.YELLOW_DOOR_OPEN]
+        )
+        if return_debug_images:
+            orb_effects, effects_debug_images = await self._interface.get_orb_effects(
+                orb_positions, room_image, free_position, return_debug_images=True
+            )
+            debug_images.extend(effects_debug_images)
+        else:
+            orb_effects = await self._interface.get_orb_effects(
+                orb_positions, room_image, free_position
+            )
+
         room = room_from_apparent_tiles(tile_contents, orb_effects)
 
         if return_debug_images:
