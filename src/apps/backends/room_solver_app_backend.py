@@ -9,7 +9,6 @@ from common import (
     TILE_SIZE,
     UserError,
 )
-from room_interpreter import room_from_apparent_tiles
 from room_simulator import Action, simulate_action
 
 
@@ -19,14 +18,17 @@ class RoomSolverAppBackend:
     Parameters
     ----------
     play_interface
-        The interface for playing rooms, used to interpret screenshots.
+        The interface for playing rooms, to initialize it.
+    room_interpreter
+        The room interpreter, to get a room from a screenshot.
     window_queue
         A queue for sending updates to the GUI.
     """
 
-    def __init__(self, play_interface, bot, window_queue):
+    def __init__(self, play_interface, room_interpreter, bot, window_queue):
         self._queue = window_queue
         self._interface = play_interface
+        self._interpreter = room_interpreter
         self._bot = bot
         self._room = None
 
@@ -35,10 +37,10 @@ class RoomSolverAppBackend:
         print("Interpreting room...")
         t = time.time()
         await self._interface.initialize()
-        tile_contents, orb_effects, debug_images = await self._interface.get_view(
+        room, debug_images = await self._interpreter.get_initial_room(
             return_debug_images=True
         )
-        self._room = room_from_apparent_tiles(tile_contents, orb_effects)
+        self._room = room
         self._queue.put(
             (
                 GUIEvent.SET_ROOM_SOLVER_DATA,
