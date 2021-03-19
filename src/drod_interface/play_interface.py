@@ -100,24 +100,11 @@ class PlayInterface:
             Only returned if `return_debug_images` is True. A list of (name, image).
         """
         if return_debug_images:
-            debug_images = []
-
-        if return_debug_images:
-            origin_x, origin_y, image, window_debug_images = await get_drod_window(
+            room_image, minimap, debug_images = await self._get_room_image(
                 return_debug_images=True
             )
-            debug_images.extend(window_debug_images)
-            debug_images.append(("Extract DROD window", image))
         else:
-            origin_x, origin_y, image = await get_drod_window()
-
-        room_image = extract_room(image)
-        if return_debug_images:
-            debug_images.append(("Extract room", room_image))
-
-        minimap = extract_minimap(image)
-        if return_debug_images:
-            debug_images.append(("Extract minimap", minimap))
+            room_image, minimap = await self._get_room_image()
 
         # == Extract and classify tiles in the room ==
 
@@ -152,6 +139,47 @@ class PlayInterface:
         if return_debug_images:
             return tile_contents, orb_effects, debug_images
         return tile_contents, orb_effects
+
+    async def _get_room_image(self, return_debug_images=False):
+        """Get the room and minimap images from the DROD window.
+
+        Parameters
+        ----------
+        return_debug_images
+            If True, return an additional list of tuples (name, debug_image).
+
+        Returns
+        -------
+        room_image
+            The room.
+        minimap
+            The minimap.
+        debug_images
+            Only returned if `return_debug_images` is True. A list of (name, image).
+        """
+        if return_debug_images:
+            debug_images = []
+
+        if return_debug_images:
+            _, _, image, window_debug_images = await get_drod_window(
+                return_debug_images=True
+            )
+            debug_images.extend(window_debug_images)
+            debug_images.append(("Extract DROD window", image))
+        else:
+            _, _, image = await get_drod_window()
+
+        room_image = extract_room(image)
+        if return_debug_images:
+            debug_images.append(("Extract room", room_image))
+
+        minimap = extract_minimap(image)
+        if return_debug_images:
+            debug_images.append(("Extract minimap", minimap))
+
+        if return_debug_images:
+            return room_image, minimap, debug_images
+        return room_image, minimap
 
     async def _get_orb_effects(
         self, positions, original_room_image, free_position, return_debug_images=False
