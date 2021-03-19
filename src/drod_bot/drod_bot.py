@@ -12,7 +12,6 @@ from room_simulator import (
     simulate_action,
 )
 from .state import DrodBotState
-from room_interpreter import room_from_apparent_tiles
 from search import NoSolutionError
 
 _ACTION_DELAY = 0.1
@@ -35,9 +34,10 @@ class DrodBot:
         The current DRODbot state.
     """
 
-    def __init__(self, state_file, drod_interface):
+    def __init__(self, state_file, drod_interface, room_interpreter):
         self._state_file = state_file
         self._interface = drod_interface
+        self._interpreter = room_interpreter
         self._state_subscribers = []
         try:
             self.state = DrodBotState.parse_file(self._state_file)
@@ -180,8 +180,7 @@ class DrodBot:
     async def _interpret_room(self):
         print("Interpreting room...")
         t = time.time()
-        tile_contents, orb_effects = await self._interface.get_view()
-        room = room_from_apparent_tiles(tile_contents, orb_effects)
+        room = await self._interpreter.get_initial_room()
         self.state.current_room = room
         room_in_level = room.copy()
         player_position, _ = room_in_level.find_player()

@@ -31,7 +31,7 @@ def main():
     classifier.load_tile_data("tile_data")
     play_interface = PlayInterface(classifier)
     interpreter = RoomInterpreter(classifier, play_interface)
-    bot = DrodBot("bot_state.json", play_interface)
+    bot = DrodBot("bot_state.json", play_interface, interpreter)
 
     window_queue = queue.Queue()
     classification_app_backend = ClassificationAppBackend(
