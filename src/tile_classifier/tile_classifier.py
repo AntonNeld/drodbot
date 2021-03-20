@@ -63,6 +63,21 @@ class TileClassifier:
                 "You need to generate tile data before you can classify tiles."
             )
 
+    def get_tile_image(self, apparent_tile):
+        """Construct an image of an apparent tile.
+
+        Parameters
+        ----------
+        apparent_tile
+            The apparent tile.
+
+        Returns
+        -------
+        An image that is similar to what the tile would look like.
+        """
+        # Dummy implementation for now
+        return numpy.ones((TILE_SIZE, TILE_SIZE, 3), dtype=numpy.uint8) * 128
+
     def classify_tiles(self, tiles, minimap_colors, return_debug_images=False):
         """Classify the given tiles.
 

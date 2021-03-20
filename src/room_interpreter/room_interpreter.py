@@ -1,5 +1,9 @@
+import numpy
+from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES, TILE_SIZE
+
 from room_simulator import ElementType
-from .room_conversion import room_from_apparent_tiles
+from .room_conversion import room_from_apparent_tiles, element_to_apparent
+from tile_classifier import ApparentTile
 from util import extract_tiles
 
 
@@ -71,3 +75,39 @@ class RoomInterpreter:
         if return_debug_images:
             return room, debug_images
         return room
+
+    def reconstruct_room_image(self, room):
+        """Get a reconstructed image of a room.
+
+        Parameters
+        ----------
+        room
+            The room.
+
+        Returns
+        -------
+        An image of the room.
+        """
+
+        room_image = numpy.zeros(
+            (TILE_SIZE * ROOM_HEIGHT_IN_TILES, TILE_SIZE * ROOM_WIDTH_IN_TILES, 3),
+            dtype=numpy.uint8,
+        )
+        for x in range(ROOM_WIDTH_IN_TILES):
+            for y in range(ROOM_HEIGHT_IN_TILES):
+                tile = room.get_tile((x, y))
+                tile_image = self._classifier.get_tile_image(
+                    ApparentTile(
+                        room_piece=element_to_apparent(tile.room_piece),
+                        floor_control=element_to_apparent(tile.floor_control),
+                        checkpoint=element_to_apparent(tile.checkpoint),
+                        item=element_to_apparent(tile.item),
+                        monster=element_to_apparent(tile.monster),
+                    )
+                )
+                room_image[
+                    y * TILE_SIZE : (y + 1) * TILE_SIZE,
+                    x * TILE_SIZE : (x + 1) * TILE_SIZE,
+                    :,
+                ] = tile_image
+        return room_image
