@@ -5,8 +5,8 @@ from PIL import ImageTk, Image
 import tkinter
 import traceback
 
-from common import TILE_SIZE
-from .util import tile_to_text, annotate_room_image_with_tile_contents
+from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES, TILE_SIZE
+from .util import tile_to_text
 
 # The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
 _CANVAS_WIDTH = 418
@@ -81,7 +81,7 @@ class InterpretScreenApp(tkinter.Frame):
 
     def _set_debug_steps(self):
         debug_steps = (
-            [name for name, image in self._debug_images] + ["Classify tiles"]
+            [name for name, image in self._debug_images]
             if self._debug_images is not None
             else ["Screenshot"]
         )
@@ -106,20 +106,7 @@ class InterpretScreenApp(tkinter.Frame):
     def _draw_view(self):
         if self._debug_images is not None:
             step = self._selected_view_step.get()
-            if step == "Classify tiles":
-                # Let's assume the "Extract room" image exists
-                image = annotate_room_image_with_tile_contents(
-                    next(
-                        image
-                        for name, image in self._debug_images
-                        if name == "Extract room"
-                    ),
-                    self._room,
-                )
-            else:
-                image = next(
-                    image for name, image in self._debug_images if name == step
-                )
+            image = next(image for name, image in self._debug_images if name == step)
             pil_image = PIL.Image.fromarray(image)
             resized_image = pil_image.resize(
                 (int(self._canvas["width"]), int(self._canvas["height"])), Image.NEAREST
@@ -161,10 +148,16 @@ class InterpretScreenApp(tkinter.Frame):
         else:
             x = event.x // (TILE_SIZE // 2)
             y = event.y // (TILE_SIZE // 2)
-        if self._selected_view_step.get() == "Classify tiles":
+        step = self._selected_view_step.get()
+        image = next(image for name, image in self._debug_images if name == step)
+        if image.shape == (
+            ROOM_HEIGHT_IN_TILES * TILE_SIZE,
+            ROOM_WIDTH_IN_TILES * TILE_SIZE,
+            3,
+        ):
             tile = self._room.get_tile((x, y))
             self._tile_content.config(text=tile_to_text(tile))
-        elif self._selected_view_step.get() == "Extract minimap":
+        elif step == "Extract minimap":
             color = next(
                 image for name, image in self._debug_images if name == "Extract minimap"
             )[y, x, :]
