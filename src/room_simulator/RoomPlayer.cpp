@@ -135,6 +135,23 @@ void RoomPlayer::initialize()
 
     // == Restore home dir ==
     setenv("HOME", oldHomeEnv, 1);
+
+    // == Create a dummy required room, to get correct blue door state
+    requiredRoom = db->Rooms.GetNew();
+    requiredRoom->bIsRequired = true;
+    requiredRoom->dwLevelID = level->dwLevelID;
+    requiredRoom->wRoomCols = 38;
+    requiredRoom->wRoomRows = 32;
+    requiredRoom->AllocTileLayers();
+    const UINT dwSquareCount = requiredRoom->CalcRoomArea();
+    memset(requiredRoom->pszOSquares, T_FLOOR, dwSquareCount * sizeof(char));
+    memset(requiredRoom->pszFSquares, T_EMPTY, dwSquareCount * sizeof(char));
+    requiredRoom->ClearTLayer();
+    requiredRoom->coveredOSquares.Init(38, 32);
+    requiredRoom->Update();
+    UINT roomID = requiredRoom->dwRoomID;
+    delete requiredRoom;
+    requiredRoom = db->Rooms.GetByID(roomID);
 }
 
 // Set the room that is being played.

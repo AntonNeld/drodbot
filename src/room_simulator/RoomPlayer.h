@@ -16,6 +16,7 @@ public:
 
 private:
     CDbRoom *drodRoom;
+    CDbRoom *requiredRoom;
     CDbLevel *level;
     CDbHold *hold;
     CDb *db;
