@@ -17,6 +17,7 @@ class TileClassifier:
 
     def __init__(self):
         self._tile_data = None
+        self._tile_examples = None
 
     def load_tile_data(self, tile_data_dir):
         """Load tile reference images.
@@ -35,9 +36,16 @@ class TileClassifier:
         try:
             file_names = sorted(os.listdir(tile_data_dir))
             tile_data = []
+            tile_examples = {}
             for file_name in file_names:
                 image = PIL.Image.open(os.path.join(tile_data_dir, file_name))
                 image_array = numpy.array(image)
+                mask = numpy.logical_not(
+                    numpy.logical_or(
+                        find_color(image_array, (255, 0, 255)),  # Background
+                        find_color(image_array, (192, 0, 192)),  # Shadow
+                    )
+                )
                 element = getattr(ElementType, image.info["element"])
 
                 direction = getattr(Direction, image.info["direction"])
@@ -45,18 +53,19 @@ class TileClassifier:
                     {
                         "file_name": file_name,
                         "image": _preprocess_image(image_array.astype(float)),
-                        "mask": numpy.logical_not(
-                            numpy.logical_or(
-                                find_color(image_array, (255, 0, 255)),  # Background
-                                find_color(image_array, (192, 0, 192)),  # Shadow
-                            )
-                        ),
+                        "mask": mask,
                         "element": element,
                         "direction": direction,
                         "layer": element_layer(element),
                     }
                 )
+                if (element, direction) not in tile_examples:
+                    tile_examples[(element, direction)] = {
+                        "image": image_array,
+                        "mask": mask,
+                    }
             self._tile_data = tile_data
+            self._tile_examples = tile_examples
         except FileNotFoundError:
             print(
                 f"No directory '{tile_data_dir}' found. "
@@ -75,8 +84,20 @@ class TileClassifier:
         -------
         An image that is similar to what the tile would look like.
         """
-        # Dummy implementation for now
-        return numpy.ones((TILE_SIZE, TILE_SIZE, 3), dtype=numpy.uint8) * 128
+        tile_image = numpy.zeros((TILE_SIZE, TILE_SIZE, 3), dtype=numpy.uint8)
+        for element, direction in [
+            apparent_tile.room_piece,
+            apparent_tile.floor_control,
+            apparent_tile.checkpoint,
+            apparent_tile.item,
+            apparent_tile.monster,
+        ]:
+            if element == ElementType.NOTHING:
+                continue
+            image = self._tile_examples[(element, direction)]["image"]
+            mask = self._tile_examples[(element, direction)]["mask"]
+            tile_image[mask] = image[mask]
+        return tile_image
 
     def classify_tiles(self, tiles, minimap_colors, return_debug_images=False):
         """Classify the given tiles.
