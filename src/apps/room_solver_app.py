@@ -6,7 +6,7 @@ import tkinter
 import traceback
 
 from common import TILE_SIZE
-from .util import tile_to_text, annotate_room_image_with_tile_contents
+from .util import tile_to_text
 
 # The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
 _CANVAS_WIDTH = 418
@@ -91,9 +91,7 @@ class RoomSolverApp(tkinter.Frame):
 
     def _draw_view(self):
         if self._room_image is not None:
-            image = annotate_room_image_with_tile_contents(self._room_image, self._room)
-
-            pil_image = PIL.Image.fromarray(image)
+            pil_image = PIL.Image.fromarray(self._room_image)
             resized_image = pil_image.resize(
                 (int(self._canvas["width"]), int(self._canvas["height"])), Image.NEAREST
             )

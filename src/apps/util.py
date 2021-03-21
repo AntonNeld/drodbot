@@ -1,14 +1,6 @@
 import tkinter
 from tkinter import ttk
 
-import cv2
-import numpy
-
-from common import (
-    ROOM_HEIGHT_IN_TILES,
-    ROOM_WIDTH_IN_TILES,
-    TILE_SIZE,
-)
 from room_simulator import ElementType, Direction
 
 # These are overlaid over the room to show tile classifications
@@ -96,56 +88,6 @@ def _format_element(element):
         return element_type.name
     else:
         return f"{element_type.name} {direction.name}"
-
-
-def annotate_room_image_with_tile_contents(image, room):
-    """Get an image of a room, annotated with tile contents.
-
-    Parameters
-    ----------
-    image
-        The original room image.
-    room
-        A Room instance.
-
-    Returns
-    -------
-    A grayscale image of the room, with the elements in each tile
-    overlaid as characters. The character that corresponds to each
-    element is defined in ELEMENT_CHARACTERS.
-    """
-    annotated_image = numpy.zeros(image.shape, dtype=numpy.uint8)
-    for x in range(ROOM_WIDTH_IN_TILES):
-        for y in range(ROOM_HEIGHT_IN_TILES):
-            tile_image = image[
-                y * TILE_SIZE : (y + 1) * TILE_SIZE, x * TILE_SIZE : (x + 1) * TILE_SIZE
-            ]
-            tile = room.get_tile((x, y))
-            # Convert the tile to grayscale to make the text stand out.
-            # We're converting it back to RGB so we can add the text, but
-            # the tile will still look grayscale since we lose color information.
-            modified_tile = cv2.cvtColor(
-                cv2.cvtColor(tile_image, cv2.COLOR_RGB2GRAY), cv2.COLOR_GRAY2RGB
-            )
-            for element in [
-                tile.room_piece,
-                tile.floor_control,
-                tile.checkpoint,
-                tile.item,
-                tile.monster,
-            ]:
-                cv2.putText(
-                    modified_tile,
-                    ELEMENT_CHARACTERS[element.element_type],
-                    (0, tile_image.shape[0]),
-                    cv2.FONT_HERSHEY_PLAIN,
-                    2,
-                    (255, 50, 0),
-                )
-            annotated_image[
-                y * TILE_SIZE : (y + 1) * TILE_SIZE, x * TILE_SIZE : (x + 1) * TILE_SIZE
-            ] = modified_tile
-    return annotated_image
 
 
 class ScrollableFrame(ttk.Frame):
