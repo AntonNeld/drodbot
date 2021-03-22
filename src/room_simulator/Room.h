@@ -8,7 +8,6 @@
 
 typedef std::array<Tile, 32> Column;
 typedef std::array<Column, 38> Tiles;
-typedef std::tuple<int, int> Position;
 class Room
 {
 public:

@@ -5,6 +5,8 @@
 #include <tuple>
 #include <vector>
 
+typedef std::tuple<int, int> Position;
+
 // An action the player can take. The values need to match the ones in common.py.
 enum class Action
 {
@@ -101,6 +103,20 @@ struct Tile
     Element checkpoint = Element();
     Element item = Element();
     Element monster = Element();
+};
+
+// TODO: Make something more extensible
+struct Objective
+{
+    Objective(
+        // If true, objective is reached if the sword is at any of the tiles,
+        // if false, objective is reached if Beethro is at any of the tiles
+        bool swordAtTile,
+        std::vector<Position> tiles) : swordAtTile(swordAtTile), tiles(tiles)
+    {
+    }
+    bool swordAtTile;
+    std::vector<Position> tiles;
 };
 
 #endif // DRODBOT_TYPEDEFS_H

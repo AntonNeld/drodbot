@@ -4,6 +4,7 @@
 #include "typedefs.h"
 #include "RoomPlayer.h"
 #include "Room.h"
+#include "RoomSolver.h"
 
 RoomPlayer roomPlayer = RoomPlayer();
 
@@ -188,5 +189,18 @@ y
 Returns
 -------
 Whether the tile is passable or not.
+)docstr");
+
+    pybind11::class_<Objective>(m, "Objective")
+        .def(pybind11::init<bool, std::vector<Position>>(), pybind11::arg("sword_at_tile"), pybind11::arg("tiles"));
+
+    pybind11::class_<RoomSolver>(m, "RoomSolver")
+        .def(pybind11::init<Room, Objective>(), pybind11::arg("room"), pybind11::arg("objective"))
+        .def("find_solution", &RoomSolver::findSolution, R"docstr(
+Find a sequence of actions to reach the given objective.
+
+Returns
+-------
+A list of actions.
 )docstr");
 }
