@@ -3,6 +3,14 @@
 #include <set>
 #include "Room.h"
 #include "typedefs.h"
+#include "search/Problem.h"
+
+struct PathfindingState
+{
+public:
+    Position position;
+    Direction direction;
+};
 
 std::vector<Action> findPath(Position start, Direction startDirection,
                              std::vector<Position> goals, Room room,
@@ -25,7 +33,9 @@ std::vector<Action> findPath(Position start, Direction startDirection,
             obstacles.insert(coords[j]);
         }
     }
-    // TODO: Implement pre-check
+    // TODO: Implement pre-check?
+    Problem<PathfindingState, Action> pathfindingProblem;
+    pathfindingProblem.initialState = ;
     // TODO: Implement search
     return {Action::E};
 }
