@@ -62,6 +62,11 @@ std::tuple<Position, Direction> Room::findPlayer()
 
 bool Room::isPassable(int x, int y)
 {
+    // Can't go outside the room
+    if (x < 0 || x > 37 || y < 0 || y > 31)
+    {
+        return false;
+    }
     Tile tile = this->tiles[x][y];
     switch (tile.roomPiece.type)
     {
