@@ -593,3 +593,11 @@ Room RoomPlayer::getRoom()
     }
     return Room(tiles);
 }
+
+// Since a lot of things in the DROD code is global, we'll need the interface
+// toward it to be global too
+RoomPlayer globalRoomPlayer = RoomPlayer();
+void initGlobalRoomPlayer()
+{
+    globalRoomPlayer.initialize();
+}

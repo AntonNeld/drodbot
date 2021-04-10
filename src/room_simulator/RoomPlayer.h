@@ -23,4 +23,7 @@ private:
     CCurrentGame *currentGame;
 };
 
+extern RoomPlayer globalRoomPlayer;
+void initGlobalRoomPlayer();
+
 #endif // DRODBOT_ROOMPLAYER_H

@@ -6,18 +6,16 @@
 #include "Room.h"
 #include "RoomSolver.h"
 
-RoomPlayer roomPlayer = RoomPlayer();
-
 void initialize()
 {
-    roomPlayer.initialize();
+    initGlobalRoomPlayer();
 }
 
 Room simulateAction(Room room, Action action)
 {
-    roomPlayer.setRoom(room);
-    roomPlayer.performAction(action);
-    return roomPlayer.getRoom();
+    globalRoomPlayer.setRoom(room);
+    globalRoomPlayer.performAction(action);
+    return globalRoomPlayer.getRoom();
 }
 
 PYBIND11_MODULE(room_simulator, m)

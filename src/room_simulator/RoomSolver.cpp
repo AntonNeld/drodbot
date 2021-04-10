@@ -10,9 +10,8 @@ class RoomProblem : public Problem<Room, Action>
 {
 public:
     RoomProblem(Room room,
-                Objective objective,
-                RoomPlayer *roomPlayer) : room(room),
-                                          objective(objective), roomPlayer(roomPlayer){};
+                Objective objective) : room(room),
+                                       objective(objective){};
 
     Room initialState()
     {
@@ -36,9 +35,9 @@ public:
 
     Room result(Room state, Action action)
     {
-        this->roomPlayer->setRoom(state);
-        this->roomPlayer->performAction(action);
-        return this->roomPlayer->getRoom();
+        globalRoomPlayer.setRoom(state);
+        globalRoomPlayer.performAction(action);
+        return globalRoomPlayer.getRoom();
     }
 
     bool goalTest(Room state)
@@ -83,15 +82,11 @@ public:
 private:
     Room room;
     Objective objective;
-    RoomPlayer *roomPlayer;
 };
 
 RoomSolver::RoomSolver(Room room,
                        Objective objective) : room(room),
-                                              objective(objective)
-{
-    this->roomPlayer = RoomPlayer();
-}
+                                              objective(objective){};
 
 std::vector<Action> RoomSolver::findSolution(bool simplePathfinding)
 {
@@ -101,7 +96,7 @@ std::vector<Action> RoomSolver::findSolution(bool simplePathfinding)
         Position start = std::get<0>(player);
         return findPath(start, this->objective.tiles, this->room);
     }
-    RoomProblem problem = RoomProblem(room, objective, &this->roomPlayer);
+    RoomProblem problem = RoomProblem(room, objective);
     AStarSearcher<Room, Action> searcher = AStarSearcher<Room, Action>(&problem);
     return searcher.findSolution();
 }

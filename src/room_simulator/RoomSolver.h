@@ -13,7 +13,6 @@ public:
     std::vector<Action> findSolution(bool simplePathfinding = false);
 
 private:
-    RoomPlayer roomPlayer;
     Room room;
     Objective objective;
 };
