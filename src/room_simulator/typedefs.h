@@ -82,6 +82,18 @@ struct Element
     ElementType type = ElementType::NOTHING;
     Direction direction = Direction::NONE;
     OrbEffects orbEffects = {}; // Only actually used for orbs
+    bool operator==(const Element otherElement) const
+    {
+        return this->type == otherElement.type &&
+               this->direction == otherElement.direction &&
+               this->orbEffects == otherElement.orbEffects;
+    };
+    bool operator<(const Element otherElement) const
+    {
+        return this->type < otherElement.type ||
+               this->direction < otherElement.direction ||
+               this->orbEffects < otherElement.orbEffects;
+    };
 };
 
 // The contents of a tile. TODO: Enforce correct element types in each layer.
@@ -104,6 +116,22 @@ struct Tile
     Element checkpoint = Element();
     Element item = Element();
     Element monster = Element();
+    bool operator==(const Tile otherTile) const
+    {
+        return this->roomPiece == otherTile.roomPiece &&
+               this->floorControl == otherTile.floorControl &&
+               this->checkpoint == otherTile.checkpoint &&
+               this->item == otherTile.item &&
+               this->monster == otherTile.monster;
+    };
+    bool operator<(const Tile otherTile) const
+    {
+        return this->roomPiece < otherTile.roomPiece ||
+               this->floorControl < otherTile.floorControl ||
+               this->checkpoint < otherTile.checkpoint ||
+               this->item < otherTile.item ||
+               this->monster < otherTile.monster;
+    };
 };
 
 // TODO: Make something more extensible

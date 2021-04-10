@@ -90,3 +90,45 @@ bool Room::isPassable(int x, int y)
     }
     return true;
 }
+
+bool Room::operator==(const Room otherRoom) const
+{
+    // TODO: In some cases the turn number also matters. Possibly only modulo 30.
+    for (int x = 0; x < 38; x++)
+    {
+        for (int y = 0; y < 32; y++)
+        {
+            Tile thisTile = this->tiles[x][y];
+            Tile otherTile = otherRoom.tiles[x][y];
+            if (!(thisTile == otherTile))
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+};
+
+bool Room::operator<(const Room otherRoom) const
+{
+    // We'll order rooms based on the tiles, beginning from the upper left
+    // TODO: In some cases the turn number also matters. Possibly only modulo 30.
+    for (int x = 0; x < 38; x++)
+    {
+        for (int y = 0; y < 32; y++)
+        {
+            Tile thisTile = this->tiles[x][y];
+            Tile otherTile = otherRoom.tiles[x][y];
+            if (thisTile < otherTile)
+            {
+                return true;
+            }
+            if (!(thisTile == otherTile))
+            {
+                return false;
+            }
+            // If the tiles are equal, go on to the next tile
+        }
+    }
+    return false; // Rooms are equal
+};

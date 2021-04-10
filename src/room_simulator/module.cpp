@@ -196,7 +196,7 @@ Whether the tile is passable or not.
 
     pybind11::class_<RoomSolver>(m, "RoomSolver")
         .def(pybind11::init<Room, Objective>(), pybind11::arg("room"), pybind11::arg("objective"))
-        .def("find_solution", &RoomSolver::findSolution, R"docstr(
+        .def("find_solution", &RoomSolver::findSolution, pybind11::arg("simple_pathfinding") = false, R"docstr(
 Find a sequence of actions to reach the given objective.
 
 Returns

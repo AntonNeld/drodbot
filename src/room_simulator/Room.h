@@ -18,6 +18,8 @@ public:
     std::vector<Position> findCoordinates(ElementType elementType);
     std::tuple<Position, Direction> findPlayer();
     bool isPassable(int x, int y);
+    bool operator==(const Room) const;
+    bool operator<(const Room) const;
 
 private:
     Tiles tiles;
