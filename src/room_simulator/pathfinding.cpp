@@ -20,42 +20,42 @@ public:
         return this->startPosition;
     }
 
-    std::vector<Action> actions(Position state)
+    std::set<Action> actions(Position state)
     {
-        std::vector<Action> actions;
+        std::set<Action> actions;
         int x = std::get<0>(state);
         int y = std::get<1>(state);
         if (this->room.isPassable(x + 1, y))
         {
-            actions.push_back(Action::E);
+            actions.insert(Action::E);
         }
         if (this->room.isPassable(x + 1, y + 1))
         {
-            actions.push_back(Action::SE);
+            actions.insert(Action::SE);
         }
         if (this->room.isPassable(x, y + 1))
         {
-            actions.push_back(Action::S);
+            actions.insert(Action::S);
         }
         if (this->room.isPassable(x - 1, y + 1))
         {
-            actions.push_back(Action::SW);
+            actions.insert(Action::SW);
         }
         if (this->room.isPassable(x - 1, y))
         {
-            actions.push_back(Action::W);
+            actions.insert(Action::W);
         }
         if (this->room.isPassable(x - 1, y - 1))
         {
-            actions.push_back(Action::NW);
+            actions.insert(Action::NW);
         }
         if (this->room.isPassable(x, y - 1))
         {
-            actions.push_back(Action::N);
+            actions.insert(Action::N);
         }
         if (this->room.isPassable(x + 1, y - 1))
         {
-            actions.push_back(Action::NE);
+            actions.insert(Action::NE);
         }
         return actions;
     }

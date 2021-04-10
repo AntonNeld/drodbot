@@ -1,14 +1,14 @@
 #ifndef DRODBOT_SEARCH_PROBLEM_H
 #define DRODBOT_SEARCH_PROBLEM_H
 
-#include <vector>
+#include <set>
 
 template <class State, class SearchAction>
 class Problem
 {
 public:
     virtual State initialState();
-    virtual std::vector<SearchAction> actions(State);
+    virtual std::set<SearchAction> actions(State);
     virtual State result(State, SearchAction);
     virtual bool goalTest(State);
     virtual int stepCost(State, SearchAction, State);

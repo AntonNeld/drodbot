@@ -12,7 +12,6 @@ public:
     Node getChild(Problem<State, SearchAction> *problem, SearchAction action);
     std::vector<SearchAction> getSolution();
 
-private:
     State state;
     int pathCost;
     SearchAction action;
