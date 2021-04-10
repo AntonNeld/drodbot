@@ -4,6 +4,7 @@
 #include "Room.h"
 #include "typedefs.h"
 #include "search/Problem.h"
+#include "search/AStarSearcher.h"
 
 class PathfindingProblem : public Problem<Position, Action>
 {
@@ -103,7 +104,7 @@ private:
     std::set<Position> goals;
 };
 
-std::vector<Action> findPath(Position start, std::vector<Position> goals, Room room)
+std::vector<Action> findPath(Position start, std::set<Position> goals, Room room)
 {
     std::set<Position> obstacles = {};
     std::array<ElementType, 8> obstacleTypes = {ElementType::WALL,
@@ -123,6 +124,8 @@ std::vector<Action> findPath(Position start, std::vector<Position> goals, Room r
         }
     }
     // TODO: Implement pre-check?
-    // TODO: Implement search
+    // PathfindingProblem problem = PathfindingProblem(start, room, goals);
+    // AStarSearcher<Position, Action> searcher = AStarSearcher<Position, Action>(&problem);
+    // return searcher.findSolution();
     return {Action::E};
 }

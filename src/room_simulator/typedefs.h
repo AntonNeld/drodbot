@@ -4,6 +4,7 @@
 #include <array>
 #include <tuple>
 #include <vector>
+#include <set>
 
 typedef std::tuple<int, int> Position;
 
@@ -112,11 +113,11 @@ struct Objective
         // If true, objective is reached if the sword is at any of the tiles,
         // if false, objective is reached if Beethro is at any of the tiles
         bool swordAtTile,
-        std::vector<Position> tiles) : swordAtTile(swordAtTile), tiles(tiles)
+        std::set<Position> tiles) : swordAtTile(swordAtTile), tiles(tiles)
     {
     }
     bool swordAtTile;
-    std::vector<Position> tiles;
+    std::set<Position> tiles;
 };
 
 #endif // DRODBOT_TYPEDEFS_H

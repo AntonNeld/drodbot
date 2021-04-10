@@ -192,7 +192,7 @@ Whether the tile is passable or not.
 )docstr");
 
     pybind11::class_<Objective>(m, "Objective")
-        .def(pybind11::init<bool, std::vector<Position>>(), pybind11::arg("sword_at_tile"), pybind11::arg("tiles"));
+        .def(pybind11::init<bool, std::set<Position>>(), pybind11::arg("sword_at_tile"), pybind11::arg("tiles"));
 
     pybind11::class_<RoomSolver>(m, "RoomSolver")
         .def(pybind11::init<Room, Objective>(), pybind11::arg("room"), pybind11::arg("objective"))

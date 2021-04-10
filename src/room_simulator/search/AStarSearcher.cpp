@@ -4,7 +4,7 @@
 #include "Node.h"
 
 template <class State, class SearchAction>
-AStarSearcher<State, SearchAction>::AStarSearcher(Problem<State, SearchAction> *problem) : problem(problem);
+AStarSearcher<State, SearchAction>::AStarSearcher(Problem<State, SearchAction> *problem) : problem(problem){};
 
 template <class State, class SearchAction>
 std::vector<SearchAction> AStarSearcher<State, SearchAction>::findSolution()
@@ -39,12 +39,14 @@ std::vector<SearchAction> AStarSearcher<State, SearchAction>::findSolution()
         }
         explored.insert(node.state);
         std::set<SearchAction> actions = this->problem->actions(node.state);
-        for (std::set<SearchAction>::iterator it = actions.begin(); it != actions.end(), ++it)
+
+        typename std::set<SearchAction>::iterator it;
+        for (it = actions.begin(); it != actions.end(); ++it)
         {
             SearchAction action = *it;
             Node<State, SearchAction> child = node.getChild(this->problem, action);
             // If the frontier has a node with the same state, possibly replace it
-            if (frontierByState.find(child.state) != frontierStates.end())
+            if (frontierByState.find(child.state) != frontierByState.end())
             {
                 Node<State, SearchAction> otherNode = frontierByState.find(child.state);
                 if (child.pathCost < otherNode.pathCost)
@@ -68,5 +70,5 @@ std::vector<SearchAction> AStarSearcher<State, SearchAction>::findSolution()
             throw std::runtime_error("Too many iterations");
         }
     }
-    throw std::runtime_error("No solution")
+    throw std::runtime_error("No solution");
 };

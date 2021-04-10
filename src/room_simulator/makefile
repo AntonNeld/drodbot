@@ -13,7 +13,9 @@ METAKIT_FILES=$(shell find metakit/src -name '*.cpp')
 METAKIT_OBJECT_FILES=$(patsubst metakit/src/%.cpp,build/metakit/%.o,$(METAKIT_FILES))
 OWN_FILES=$(shell find . -maxdepth 1 -name '*.cpp')
 OWN_OBJECT_FILES=$(patsubst %.cpp,build/own/%.o,$(OWN_FILES))
-OBJECT_FILES=$(BACKENDLIB_OBJECT_FILES) $(DRODLIB_OBJECT_FILES) $(METAKIT_OBJECT_FILES) $(OWN_OBJECT_FILES)
+OWN_SEARCH_FILES=$(shell find ./search -maxdepth 1 -name '*.cpp')
+OWN_SEARCH_OBJECT_FILES=$(patsubst %.cpp,build/own/%.o,$(OWN_SEARCH_FILES))
+OBJECT_FILES=$(BACKENDLIB_OBJECT_FILES) $(DRODLIB_OBJECT_FILES) $(METAKIT_OBJECT_FILES) $(OWN_OBJECT_FILES) $(OWN_SEARCH_OBJECT_FILES)
 
 LINK_LIBS=$(shell sdl2-config --libs) -lpython3.8 -ljsoncpp -lcurl
 
@@ -21,6 +23,9 @@ LINK_LIBS=$(shell sdl2-config --libs) -lpython3.8 -ljsoncpp -lcurl
 	g++ -shared -o ../room_simulator$(MODULE_SUFFIX) $(OBJECT_FILES) $(LINK_LIBS)
 
 build/own/%.o: %.cpp
+	g++ -c $(WARNING_ARGS) $(COMMON_COMPILE_ARGS) $< -o $@
+
+build/own/%.o: search/%.cpp
 	g++ -c $(WARNING_ARGS) $(COMMON_COMPILE_ARGS) $< -o $@
 
 # We don't include warnings when compiling source from other projects,
@@ -46,4 +51,5 @@ clean:
 	mkdir build/BackEndLib
 	mkdir build/metakit
 	mkdir build/DRODLibTests
-	mkdur build/own
+	mkdir build/own
+	mkdir build/own/search

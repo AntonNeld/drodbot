@@ -19,11 +19,11 @@ Node<State, SearchAction> Node<State, SearchAction>::getChild(Problem<State, Sea
 }
 
 template <class State, class SearchAction>
-std::vector<SearchAction> getSolution()
+std::vector<SearchAction> Node<State, SearchAction>::getSolution()
 {
     if (this->parent == NULL)
     {
-        return {}
+        return {};
     }
     std::vector<SearchAction> actions = this->parent.getSolution();
     actions.push_back(this->action);
