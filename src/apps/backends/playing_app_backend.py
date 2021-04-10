@@ -30,8 +30,10 @@ class PlayingAppBackend:
         await self._bot.initialize()
         if strategy == Strategy.MOVE_TO_CONQUER_TOKEN:
             await self._bot.go_to_element_in_room(ElementType.CONQUER_TOKEN)
-        if strategy == Strategy.MOVE_TO_CONQUER_TOKEN_CPP:
-            await self._bot.go_to_element_in_room(ElementType.CONQUER_TOKEN, use_cpp_code=True)
+        elif strategy == Strategy.MOVE_TO_CONQUER_TOKEN_CPP:
+            await self._bot.go_to_element_in_room(
+                ElementType.CONQUER_TOKEN, use_cpp_code=True
+            )
         elif strategy == Strategy.MOVE_TO_CONQUER_TOKEN_IN_LEVEL:
             await self._bot.go_to_element_in_level(ElementType.CONQUER_TOKEN)
         elif strategy == Strategy.GO_TO_UNVISITED_ROOM:
