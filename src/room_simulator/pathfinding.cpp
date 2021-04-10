@@ -124,8 +124,7 @@ std::vector<Action> findPath(Position start, std::set<Position> goals, Room room
         }
     }
     // TODO: Implement pre-check?
-    // PathfindingProblem problem = PathfindingProblem(start, room, goals);
-    // AStarSearcher<Position, Action> searcher = AStarSearcher<Position, Action>(&problem);
-    // return searcher.findSolution();
-    return {Action::E};
+    PathfindingProblem problem = PathfindingProblem(start, room, goals);
+    AStarSearcher<Position, Action> searcher = AStarSearcher<Position, Action>(&problem);
+    return searcher.findSolution();
 }
