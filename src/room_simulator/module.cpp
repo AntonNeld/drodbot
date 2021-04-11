@@ -4,7 +4,9 @@
 #include "typedefs.h"
 #include "RoomPlayer.h"
 #include "Room.h"
-#include "RoomSolver.h"
+#include "search/AStarSearcher.h"
+#include "problems/PathfindingProblem.h"
+#include "problems/RoomProblem.h"
 
 void initialize()
 {
@@ -16,6 +18,33 @@ Room simulateAction(Room room, Action action)
     globalRoomPlayer.setRoom(room);
     globalRoomPlayer.performAction(action);
     return globalRoomPlayer.getRoom();
+}
+
+template <class State, class SearchAction>
+void addAStarSearcher(pybind11::module_ &m, const char *name, const char *problemName)
+{
+    // Also add a base Problem of the correct type
+    pybind11::class_<Problem<State, SearchAction>>(m, problemName);
+
+    pybind11::class_<AStarSearcher<State, SearchAction>>(m, name, R"docstr(
+This performs A* search in an inspectable way.
+
+Parameters
+----------
+problem
+    The problem to solve.
+)docstr")
+        .def(pybind11::init<Problem<State, SearchAction> *>(),
+             pybind11::arg("problem"))
+        .def("find_solution", &AStarSearcher<State, SearchAction>::findSolution, R"docstr(
+Find a solution to the problem.
+
+This is all you need when using this for real.
+
+Returns
+-------
+A list of actions solving the problem.
+)docstr");
 }
 
 PYBIND11_MODULE(room_simulator, m)
@@ -190,22 +219,40 @@ Whether the tile is passable or not.
 )docstr");
 
     pybind11::class_<Objective>(m, "Objective")
-        .def(pybind11::init<bool, std::set<Position>>(), pybind11::arg("sword_at_tile"), pybind11::arg("tiles"));
+        .def(pybind11::init<bool, std::set<Position>>(), pybind11::arg("sword_at_tile"), pybind11::arg("tiles"))
+        .def_readwrite("sword_at_tile", &Objective::swordAtTile)
+        .def_readwrite("tiles", &Objective::tiles);
 
-    pybind11::class_<RoomSolver>(m, "RoomSolver")
-        .def(pybind11::init<Room, Objective>(), pybind11::arg("room"), pybind11::arg("objective"))
-        .def("find_solution", &RoomSolver::findSolution, pybind11::arg("simple_pathfinding") = false, R"docstr(
-Find a sequence of actions to reach the given objective.
+    addAStarSearcher<Position, Action>(m, "AStarSearcherPositionAction", "ProblemPositionAction");
+    addAStarSearcher<Room, Action>(m, "AStarSearcherRoomAction", "ProblemRoomAction");
 
-Returns
--------
-A list of actions.
+    pybind11::class_<PathfindingProblem, Problem<Position, Action>>(m, "PathfindingProblem", R"docstr(
+A problem for finding a path in a room.
+
+Parameters
+----------
+start_position
+    The starting position in the room.
+room
+    The room.
+goals
+    The goal positions.
 )docstr")
-        .def("get_iterations", &RoomSolver::getIterations, R"docstr(
-Get the number of iterations.
+        .def(pybind11::init<Position, Room, std::set<Position>>(),
+             pybind11::arg("start_position"),
+             pybind11::arg("room"),
+             pybind11::arg("goals"));
+    pybind11::class_<RoomProblem, Problem<Room, Action>>(m, "RoomProblem", R"docstr(
+A problem for reaching an objective in a room.
 
-Returns
--------
-The number of iterations.
-)docstr");
+Parameters
+----------
+room
+    The room.
+objective
+    The objective.
+)docstr")
+        .def(pybind11::init<Room, Objective>(),
+             pybind11::arg("room"),
+             pybind11::arg("objective"));
 }

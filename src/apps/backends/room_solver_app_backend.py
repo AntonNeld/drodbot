@@ -1,7 +1,8 @@
 import time
 
 from common import GUIEvent, UserError, RoomSolverGoal
-from room_simulator import RoomSolver, Objective, ElementType
+from room_simulator import Objective, ElementType
+from room_solver import RoomSolver
 
 
 class RoomSolverAppBackend:

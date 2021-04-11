@@ -10,9 +10,9 @@ from room_simulator import (
     Element,
     Action,
     simulate_action,
-    RoomSolver,
     Objective,
 )
+from room_solver import RoomSolver
 from .state import DrodBotState
 from search import NoSolutionError
 
