@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-from .room_solver import solve_room, ReachTileObjective
+from .solve_room import solve_room, ReachTileObjective
 from search import NoSolutionError, a_star_graph
 from room_simulator import ElementType, Direction, Element
 from util import direction_after

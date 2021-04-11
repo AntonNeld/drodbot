@@ -2,7 +2,7 @@ import asyncio
 import time
 
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
-from .room_solver import solve_room, ReachTileObjective, StrikeTileObjective
+from .solve_room import solve_room, ReachTileObjective, StrikeTileObjective
 from .level_walker import find_path_in_level
 from room_simulator import (
     ElementType,
