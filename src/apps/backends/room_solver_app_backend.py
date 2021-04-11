@@ -32,12 +32,12 @@ class RoomSolverAppBackend:
         await self._interface.initialize()
         self._room = await self._interpreter.get_initial_room()
         print(f"Interpreted room in {time.time()-t:.2f}s")
-        self._show_room(self._room)
+        self._show_data(self._room)
 
     async def get_room_from_bot(self):
         """Set the current room to the current room from the bot."""
         self._room = self._bot.get_current_room()
-        self._show_room(self._room)
+        self._show_data(self._room)
 
     async def init_search(self, goal):
         """Initialize a search for the selected goal."""
@@ -47,13 +47,16 @@ class RoomSolverAppBackend:
             conquer_tokens = self._room.find_coordinates(ElementType.CONQUER_TOKEN)
             objective = Objective(sword_at_tile=False, tiles=set(conquer_tokens))
         self._room_solver = RoomSolver(self._room, objective)
+        self._show_data(
+            self._room, room_solver_data=_extract_solver_info(self._room_solver)
+        )
 
-    def _show_room(self, room):
+    def _show_data(self, room, room_solver_data=None):
         reconstructed_image = self._interpreter.reconstruct_room_image(room)
         self._queue.put(
-            (
-                GUIEvent.SET_ROOM_SOLVER_DATA,
-                reconstructed_image,
-                room,
-            )
+            (GUIEvent.SET_ROOM_SOLVER_DATA, reconstructed_image, room, room_solver_data)
         )
+
+
+def _extract_solver_info(room_solver):
+    return {"iterations": room_solver.get_iterations()}

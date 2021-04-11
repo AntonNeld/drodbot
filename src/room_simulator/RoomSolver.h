@@ -11,6 +11,7 @@ class RoomSolver
 public:
     RoomSolver(Room room, Objective objective);
     std::vector<Action> findSolution(bool simplePathfinding = false);
+    int getIterations();
 
 private:
     Room room;

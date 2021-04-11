@@ -100,3 +100,8 @@ std::vector<Action> RoomSolver::findSolution(bool simplePathfinding)
     AStarSearcher<Room, Action> searcher = AStarSearcher<Room, Action>(&problem);
     return searcher.findSolution();
 }
+
+int RoomSolver::getIterations()
+{
+    return 0;
+}

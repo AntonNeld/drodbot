@@ -200,5 +200,12 @@ Find a sequence of actions to reach the given objective.
 Returns
 -------
 A list of actions.
+)docstr")
+        .def("get_iterations", &RoomSolver::getIterations, R"docstr(
+Get the number of iterations.
+
+Returns
+-------
+The number of iterations.
 )docstr");
 }

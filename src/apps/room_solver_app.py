@@ -37,6 +37,7 @@ class RoomSolverApp(tkinter.Frame):
         self._enlarged_view = False
         self._room_image = None
         self._room = None
+        self._room_solver_info = None
         self._selected_goal = tkinter.StringVar(self)
         self._selected_goal.set(list(RoomSolverGoal)[0].value)
 
@@ -73,15 +74,17 @@ class RoomSolverApp(tkinter.Frame):
         self._select_goal_dropdown = tkinter.OptionMenu(
             self._init_search_area,
             self._selected_goal,
-            *[o.value for o in RoomSolverGoal]
+            *[o.value for o in RoomSolverGoal],
         )
         self._select_goal_dropdown.pack(side=tkinter.LEFT)
         self._init_search_button = tkinter.Button(
             self._init_search_area, text="Init search", command=self._init_search
         )
         self._init_search_button.pack(side=tkinter.LEFT)
+        self._room_solver_text = tkinter.Label(self._control_panel, text="")
+        self._room_solver_text.pack(side=tkinter.TOP)
 
-    def set_data(self, room_image, room):
+    def set_data(self, room_image, room, room_solver_info):
         """Set the data to show in the app.
 
         Parameters
@@ -95,6 +98,8 @@ class RoomSolverApp(tkinter.Frame):
             self._room_image = room_image
         if room is not None:
             self._room = room
+        if room_solver_info is not None:
+            self._room_solver_info = room_solver_info
         self._draw_view()
 
     def _draw_view(self):
@@ -106,6 +111,10 @@ class RoomSolverApp(tkinter.Frame):
             # Assign to self._view to prevent from being garbage collected
             self._view = ImageTk.PhotoImage(image=resized_image)
             self._canvas.create_image(0, 0, image=self._view, anchor=tkinter.NW)
+        if self._room_solver_info is not None:
+            self._room_solver_text.config(
+                text=_solver_info_to_text(self._room_solver_info)
+            )
 
     def _run_coroutine(self, coroutine):
         async def wrapped_coroutine():
@@ -150,3 +159,7 @@ class RoomSolverApp(tkinter.Frame):
             y = event.y // (TILE_SIZE // 2)
         tile = self._room.get_tile((x, y))
         self._tile_content_text.config(text=tile_to_text(tile))
+
+
+def _solver_info_to_text(room_solver_info):
+    return "\n".join([f"Iterations: {room_solver_info['iterations']}"])
