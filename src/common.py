@@ -32,3 +32,9 @@ class Strategy(str, Enum):
     MOVE_TO_CONQUER_TOKEN_CPP = "Move to a conquer token in the room (C++)"
     MOVE_TO_CONQUER_TOKEN_IN_LEVEL = "Move to a conquer token anywhere in the level"
     STRIKE_ORB = "Strike the nearest orb"
+
+
+class RoomSolverGoal(str, Enum):
+    """A goal to reach in the room solver app."""
+
+    MOVE_TO_CONQUER_TOKEN = "Move to a conquer token in the room"

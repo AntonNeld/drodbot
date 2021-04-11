@@ -1,10 +1,7 @@
 import time
 
-from common import (
-    GUIEvent,
-    UserError,
-)
-from room_simulator import Action, simulate_action
+from common import GUIEvent, UserError, RoomSolverGoal
+from room_simulator import RoomSolver, Objective, ElementType
 
 
 class RoomSolverAppBackend:
@@ -26,6 +23,7 @@ class RoomSolverAppBackend:
         self._interpreter = room_interpreter
         self._bot = bot
         self._room = None
+        self._room_solver = None
 
     async def get_room_from_screenshot(self):
         """Set the current room from a screenshot."""
@@ -41,12 +39,14 @@ class RoomSolverAppBackend:
         self._room = self._bot.get_current_room()
         self._show_room(self._room)
 
-    async def simulate_move_east(self):
-        """Simulate moving east in the current room."""
+    async def init_search(self, goal):
+        """Initialize a search for the selected goal."""
         if self._room is None:
-            raise UserError("Must get a room before simulating")
-        self._room = simulate_action(self._room, Action.E)
-        self._show_room(self._room)
+            raise UserError("Must get a room before searching")
+        if goal == RoomSolverGoal.MOVE_TO_CONQUER_TOKEN:
+            conquer_tokens = self._room.find_coordinates(ElementType.CONQUER_TOKEN)
+            objective = Objective(sword_at_tile=False, tiles=set(conquer_tokens))
+        self._room_solver = RoomSolver(self._room, objective)
 
     def _show_room(self, room):
         reconstructed_image = self._interpreter.reconstruct_room_image(room)
@@ -54,6 +54,6 @@ class RoomSolverAppBackend:
             (
                 GUIEvent.SET_ROOM_SOLVER_DATA,
                 reconstructed_image,
-                self._room,
+                room,
             )
         )

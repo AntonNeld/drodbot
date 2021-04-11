@@ -5,7 +5,7 @@ from PIL import ImageTk, Image
 import tkinter
 import traceback
 
-from common import TILE_SIZE
+from common import TILE_SIZE, RoomSolverGoal
 from .util import tile_to_text
 
 # The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
@@ -37,6 +37,8 @@ class RoomSolverApp(tkinter.Frame):
         self._enlarged_view = False
         self._room_image = None
         self._room = None
+        self._selected_goal = tkinter.StringVar(self)
+        self._selected_goal.set(list(RoomSolverGoal)[0].value)
 
         # Create widgets
         self._canvas = tkinter.Canvas(
@@ -66,12 +68,18 @@ class RoomSolverApp(tkinter.Frame):
             self._control_panel, text="Enlarge view", command=self._toggle_view_size
         )
         self._toggle_view_size_button.pack(side=tkinter.TOP)
-        self._simulate_move_east_button = tkinter.Button(
-            self._control_panel,
-            text="Simulate move east",
-            command=self._simulate_move_east,
+        self._init_search_area = tkinter.Frame(self._control_panel)
+        self._init_search_area.pack(side=tkinter.TOP)
+        self._select_goal_dropdown = tkinter.OptionMenu(
+            self._init_search_area,
+            self._selected_goal,
+            *[o.value for o in RoomSolverGoal]
         )
-        self._simulate_move_east_button.pack(side=tkinter.TOP)
+        self._select_goal_dropdown.pack(side=tkinter.LEFT)
+        self._init_search_button = tkinter.Button(
+            self._init_search_area, text="Init search", command=self._init_search
+        )
+        self._init_search_button.pack(side=tkinter.LEFT)
 
     def set_data(self, room_image, room):
         """Set the data to show in the app.
@@ -114,8 +122,10 @@ class RoomSolverApp(tkinter.Frame):
     def _get_room_from_bot(self):
         self._run_coroutine(self._backend.get_room_from_bot())
 
-    def _simulate_move_east(self):
-        self._run_coroutine(self._backend.simulate_move_east())
+    def _init_search(self):
+        goal_value = self._selected_goal.get()
+        goal = next(e for e in RoomSolverGoal if e.value == goal_value)
+        self._run_coroutine(self._backend.init_search(goal))
 
     def _toggle_view_size(self):
         if self._enlarged_view:
