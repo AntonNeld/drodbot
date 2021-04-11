@@ -14,87 +14,118 @@ public:
     // TODO: Heuristic
     AStarSearcher(Problem<State, SearchAction> *problem);
     std::vector<SearchAction> findSolution();
+    // Below methods are intended for inspecting the algorithm.
+    // findSolution() should be enough for real usage.
+    void expandNextNode();
 
 private:
     Problem<State, SearchAction> *problem;
+    // The frontier is the next nodes that will be executed. It's sorted so the
+    // lowest-cost node is first. Using a multiset as a sorted list here, which
+    // works because we overload < in Node.
+    std::multiset<Node<State, SearchAction>> frontier;
+    // This is so we can easily check whether a node with a certain state is in
+    // the frontier. This is used to replace a node if a lower-cost node with the
+    // same state is found later.
+    std::map<State, Node<State, SearchAction>> frontierByState;
+    // The current node being expanded
+    Node<State, SearchAction> currentNode;
+    // This contains all explored nodes, to avoid exploring them again.
+    std::set<State> explored;
+    // The number of iterations, so we can stop at some reasonable limit if it
+    // turns out the problem is intractable.
+    int iterations;
+    // Whether we have found a solution
+    bool foundSolution;
 };
 
+// We're beginning in the middle of the algorithm, with an empty frontier and
+// the starting node being the currently expanded node.
 template <class State, class SearchAction>
-inline AStarSearcher<State, SearchAction>::AStarSearcher(Problem<State, SearchAction> *problem) : problem(problem){};
+inline AStarSearcher<State, SearchAction>::AStarSearcher(
+    Problem<State, SearchAction> *problem) : problem(problem),
+                                             frontier({}),
+                                             frontierByState({}),
+                                             currentNode(Node<State, SearchAction>(problem->initialState())),
+                                             explored({problem->initialState()}),
+                                             iterations(0),
+                                             // Just in case the initial state is a goal state
+                                             foundSolution(problem->goalTest(problem->initialState())){};
+
+template <class State, class SearchAction>
+inline void AStarSearcher<State, SearchAction>::expandNextNode()
+{
+    // Expand the current node and add its children to the frontier where appropriate
+    std::set<SearchAction> actions = this->problem->actions(this->currentNode.state);
+    typename std::set<SearchAction>::iterator actionIterator;
+    for (actionIterator = actions.begin(); actionIterator != actions.end(); ++actionIterator)
+    {
+        SearchAction action = *actionIterator;
+        Node<State, SearchAction> childNode = this->currentNode.getChild(this->problem, action);
+        // If the frontier has a node with the same state, replace it if its path cost is higher
+        if (this->frontierByState.find(childNode.state) != this->frontierByState.end())
+        {
+            Node<State, SearchAction> otherNode = std::get<1>(*(this->frontierByState.find(childNode.state)));
+            if (childNode.pathCost < otherNode.pathCost)
+            {
+                // Find the actual other node in the frontier and replace it. We
+                // narrow it down to the nodes which the multiset considers to be
+                // equivalent to the one from frontierByState, i.e. all nodes
+                // with the same path cost.
+                std::pair<typename std::multiset<Node<State, SearchAction>>::iterator,
+                          typename std::multiset<Node<State, SearchAction>>::iterator>
+                    range = this->frontier.equal_range(otherNode);
+                typename std::multiset<Node<State, SearchAction>>::iterator it;
+                for (it = std::get<0>(range); it != std::get<1>(range); ++it)
+                {
+                    if (it->state == childNode.state)
+                    {
+                        frontier.erase(it);
+                        break;
+                    }
+                }
+                this->frontier.insert(childNode);
+                this->frontierByState.insert(std::pair<State, Node<State, SearchAction>>(childNode.state, childNode));
+            }
+        }
+        // If it's not already in the frontier, add it if it's not explored
+        else if (explored.find(childNode.state) == this->explored.end())
+        {
+            this->frontier.insert(childNode);
+            this->frontierByState.insert(std::pair<State, Node<State, SearchAction>>(childNode.state, childNode));
+        }
+    }
+
+    // Pop the lowest-cost node from the frontier and make it the current node
+    typename std::multiset<Node<State, SearchAction>>::iterator nodeIterator = this->frontier.begin();
+    this->currentNode = *nodeIterator;
+    this->frontier.erase(nodeIterator);
+    this->frontierByState.erase(this->currentNode.state);
+    this->explored.insert(this->currentNode.state);
+    this->iterations += 1;
+    // Check if we've solved the problem now
+    if (this->problem->goalTest(this->currentNode.state))
+    {
+        this->foundSolution = true;
+    }
+}
 
 template <class State, class SearchAction>
 inline std::vector<SearchAction> AStarSearcher<State, SearchAction>::findSolution()
 {
-    Node<State, SearchAction> startingNode = Node<State, SearchAction>(this->problem->initialState());
-    if (this->problem->goalTest(startingNode.state))
+    while (!this->foundSolution)
     {
-        return startingNode.actions;
-    }
-
-    // Using a multiset as a sorted list here. This works because we overload < in Node.
-    std::multiset<Node<State, SearchAction>> frontier;
-    frontier.insert(startingNode);
-
-    std::map<State, Node<State, SearchAction>> frontierByState;
-    frontierByState.insert(std::pair<State, Node<State, SearchAction>>(startingNode.state, startingNode));
-    std::set<State> explored;
-
-    int iterations = 0;
-    while (frontier.size() != 0)
-    {
-        typename std::multiset<Node<State, SearchAction>>::iterator nodeIterator = frontier.begin();
-        Node<State, SearchAction> node = *nodeIterator;
-        frontier.erase(nodeIterator);
-        frontierByState.erase(node.state);
-        if (this->problem->goalTest(node.state))
-        {
-            return node.actions;
-        }
-        explored.insert(node.state);
-        std::set<SearchAction> actions = this->problem->actions(node.state);
-
-        typename std::set<SearchAction>::iterator actionIterator;
-        for (actionIterator = actions.begin(); actionIterator != actions.end(); ++actionIterator)
-        {
-            SearchAction action = *actionIterator;
-            Node<State, SearchAction> child = node.getChild(this->problem, action);
-            // If the frontier has a node with the same state, possibly replace it
-            if (frontierByState.find(child.state) != frontierByState.end())
-            {
-                Node<State, SearchAction> otherNode = std::get<1>(*frontierByState.find(child.state));
-                if (child.pathCost < otherNode.pathCost)
-                {
-                    // Find the actual other node in the frontier and replace it
-                    std::pair<typename std::multiset<Node<State, SearchAction>>::iterator,
-                              typename std::multiset<Node<State, SearchAction>>::iterator>
-                        range = frontier.equal_range(otherNode);
-                    typename std::multiset<Node<State, SearchAction>>::iterator it;
-                    for (it = std::get<0>(range); it != std::get<1>(range); ++it)
-                    {
-                        if (it->state == otherNode.state)
-                        {
-                            frontier.erase(it);
-                            break;
-                        }
-                    }
-                    frontier.insert(child);
-                    frontierByState.insert(std::pair<State, Node<State, SearchAction>>(child.state, child));
-                }
-            }
-            // Else, add it to the frontier if it's not explored
-            else if (explored.find(child.state) == explored.end())
-            {
-                frontier.insert(child);
-                frontierByState.insert(std::pair<State, Node<State, SearchAction>>(child.state, child));
-            }
-        }
-        iterations += 1;
         // TODO: Define iteration limit somewhere else
-        if (iterations > 10000)
+        if (this->iterations > 10000)
         {
             throw std::runtime_error("Too many iterations");
         }
+        if (this->frontier.size() == 0)
+        {
+            throw std::runtime_error("No solution");
+        }
+        this->expandNextNode();
     }
-    throw std::runtime_error("No solution");
+    return this->currentNode.actions;
 };
 #endif // DRODBOT_SEARCH_ASTARSEARCHER_H
