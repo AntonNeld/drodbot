@@ -51,6 +51,9 @@ Get the number of iterations.
 Returns
 -------
 The number of iterations.
+)docstr")
+        .def("expand_next_node", &AStarSearcher<State, SearchAction>::expandNextNode, R"docstr(
+Expand the next node in the search.
 )docstr");
 }
 

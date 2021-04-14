@@ -23,11 +23,15 @@ class RoomSolver:
     def __init__(self, room, objective, simple_pathfinding=False):
         if simple_pathfinding:
             start, _ = room.find_player()
-            problem = PathfindingProblem(start, room, objective.tiles)
-            self.searcher = AStarSearcherPositionAction(problem)
+            # Assign the problem to self.problem. Since the C++ code gets
+            # a reference to it, we don't want it to be garbage collected.
+            self.problem = PathfindingProblem(start, room, objective.tiles)
+            self.searcher = AStarSearcherPositionAction(self.problem)
         else:
-            problem = RoomProblem(room, objective)
-            self.searcher = AStarSearcherRoomAction(problem)
+            # Assign the problem to self.problem. Since the C++ code gets
+            # a reference to it, we don't want it to be garbage collected.
+            self.problem = RoomProblem(room, objective)
+            self.searcher = AStarSearcherRoomAction(self.problem)
 
     def find_solution(self):
         """Find the solution.
@@ -49,3 +53,7 @@ class RoomSolver:
         The number of iterations.
         """
         return self.searcher.get_iterations()
+
+    def expand_next_node(self):
+        """Expand the next node in the searcher."""
+        self.searcher.expand_next_node()

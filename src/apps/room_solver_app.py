@@ -69,18 +69,22 @@ class RoomSolverApp(tkinter.Frame):
             self._control_panel, text="Enlarge view", command=self._toggle_view_size
         )
         self._toggle_view_size_button.pack(side=tkinter.TOP)
-        self._init_search_area = tkinter.Frame(self._control_panel)
-        self._init_search_area.pack(side=tkinter.TOP)
         self._select_goal_dropdown = tkinter.OptionMenu(
-            self._init_search_area,
+            self._control_panel,
             self._selected_goal,
             *[o.value for o in RoomSolverGoal],
         )
-        self._select_goal_dropdown.pack(side=tkinter.LEFT)
+        self._select_goal_dropdown.pack(side=tkinter.TOP)
+        self._search_area = tkinter.Frame(self._control_panel)
+        self._search_area.pack(side=tkinter.TOP)
         self._init_search_button = tkinter.Button(
-            self._init_search_area, text="Init search", command=self._init_search
+            self._search_area, text="Init search", command=self._init_search
         )
         self._init_search_button.pack(side=tkinter.LEFT)
+        self._expand_node_button = tkinter.Button(
+            self._search_area, text=">", command=self._expand_node
+        )
+        self._expand_node_button.pack(side=tkinter.LEFT)
         self._room_solver_text = tkinter.Label(self._control_panel, text="")
         self._room_solver_text.pack(side=tkinter.TOP)
 
@@ -135,6 +139,9 @@ class RoomSolverApp(tkinter.Frame):
         goal_value = self._selected_goal.get()
         goal = next(e for e in RoomSolverGoal if e.value == goal_value)
         self._run_coroutine(self._backend.init_search(goal))
+
+    def _expand_node(self):
+        self._run_coroutine(self._backend.expand_next_node())
 
     def _toggle_view_size(self):
         if self._enlarged_view:

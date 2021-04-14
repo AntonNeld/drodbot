@@ -47,7 +47,16 @@ class RoomSolverAppBackend:
         if goal == RoomSolverGoal.MOVE_TO_CONQUER_TOKEN:
             conquer_tokens = self._room.find_coordinates(ElementType.CONQUER_TOKEN)
             objective = Objective(sword_at_tile=False, tiles=set(conquer_tokens))
-        self._room_solver = RoomSolver(self._room, objective)
+        self._room_solver = RoomSolver(self._room, objective, simple_pathfinding=True)
+        self._show_data(
+            self._room, room_solver_data=_extract_solver_info(self._room_solver)
+        )
+
+    async def expand_next_node(self):
+        """Expand the next node in the room solver."""
+        if self._room_solver is None:
+            raise UserError("Must initialize search before expanding nodes")
+        self._room_solver.expand_next_node()
         self._show_data(
             self._room, room_solver_data=_extract_solver_info(self._room_solver)
         )
