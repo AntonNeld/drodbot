@@ -7,19 +7,45 @@ from room_simulator import (
 
 
 class RoomSolver:
-    def __init__(self, room, objective):
-        self.room = room
-        self.objective = objective
+    """Solves a room.
 
-    def find_solution(self, simple_pathfinding=False):
+    Parameters
+    ----------
+    room
+        The room to solve.
+    objective
+        The objective to reach in the room.
+    simple_pathfinding
+        Whether to use simple pathfinding instead of trying to solve the room
+        with a more general algorithm.
+    """
+
+    def __init__(self, room, objective, simple_pathfinding=False):
         if simple_pathfinding:
-            start, _ = self.room.find_player()
-            problem = PathfindingProblem(start, self.room, self.objective.tiles)
-            searcher = AStarSearcherPositionAction(problem)
+            start, _ = room.find_player()
+            problem = PathfindingProblem(start, room, objective.tiles)
+            self.searcher = AStarSearcherPositionAction(problem)
         else:
-            problem = RoomProblem(self.room, self.objective)
-            searcher = AStarSearcherRoomAction(problem)
-        return searcher.find_solution()
+            problem = RoomProblem(room, objective)
+            self.searcher = AStarSearcherRoomAction(problem)
+
+    def find_solution(self):
+        """Find the solution.
+
+        This is the only method needed for serious use, the others are only
+        for inspecting the algorithm.
+
+        Returns
+        -------
+        A list of actions.
+        """
+        return self.searcher.find_solution()
 
     def get_iterations(self):
+        """Get the number of iterations we've gone through.
+
+        Returns
+        -------
+        The number of iterations.
+        """
         return 0

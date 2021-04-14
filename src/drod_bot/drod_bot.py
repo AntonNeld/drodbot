@@ -99,8 +99,8 @@ class DrodBot:
         goal_tiles = room.find_coordinates(element)
         if use_cpp_code:
             objective = Objective(tiles=set(goal_tiles), sword_at_tile=False)
-            room_solver = RoomSolver(room, objective)
-            actions = room_solver.find_solution(simple_pathfinding=True)
+            room_solver = RoomSolver(room, objective, simple_pathfinding=True)
+            actions = room_solver.find_solution()
         else:
             actions = solve_room(room, ReachTileObjective(goal_tiles=goal_tiles))
         print(f"Thought in {time.time()-t:.2f}s")
