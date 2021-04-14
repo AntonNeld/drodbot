@@ -48,4 +48,4 @@ class RoomSolver:
         -------
         The number of iterations.
         """
-        return 0
+        return self.searcher.get_iterations()

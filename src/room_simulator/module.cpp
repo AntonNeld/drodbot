@@ -44,6 +44,13 @@ This is all you need when using this for real.
 Returns
 -------
 A list of actions solving the problem.
+)docstr")
+        .def("get_iterations", &AStarSearcher<State, SearchAction>::getIterations, R"docstr(
+Get the number of iterations.
+
+Returns
+-------
+The number of iterations.
 )docstr");
 }
 

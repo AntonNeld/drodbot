@@ -17,6 +17,7 @@ public:
     // Below methods are intended for inspecting the algorithm.
     // findSolution() should be enough for real usage.
     void expandNextNode();
+    int getIterations();
 
 private:
     Problem<State, SearchAction> *problem;
@@ -108,6 +109,12 @@ inline void AStarSearcher<State, SearchAction>::expandNextNode()
     {
         this->foundSolution = true;
     }
+}
+
+template <class State, class SearchAction>
+inline int AStarSearcher<State, SearchAction>::getIterations()
+{
+    return this->iterations;
 }
 
 template <class State, class SearchAction>
