@@ -45,6 +45,10 @@ class RoomSolver:
         """
         return self.searcher.find_solution()
 
+    def expand_next_node(self):
+        """Expand the next node in the searcher."""
+        self.searcher.expand_next_node()
+
     def get_iterations(self):
         """Get the number of iterations we've gone through.
 
@@ -54,6 +58,11 @@ class RoomSolver:
         """
         return self.searcher.get_iterations()
 
-    def expand_next_node(self):
-        """Expand the next node in the searcher."""
-        self.searcher.expand_next_node()
+    def get_current_path(self):
+        """Get the path to the current node.
+
+        Returns
+        -------
+        The actions to reach the current node.
+        """
+        return self.searcher.get_current_path()

@@ -69,4 +69,7 @@ class RoomSolverAppBackend:
 
 
 def _extract_solver_info(room_solver):
-    return {"iterations": room_solver.get_iterations()}
+    return {
+        "iterations": room_solver.get_iterations(),
+        "current_path": room_solver.get_current_path(),
+    }

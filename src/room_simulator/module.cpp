@@ -45,6 +45,9 @@ Returns
 -------
 A list of actions solving the problem.
 )docstr")
+        .def("expand_next_node", &AStarSearcher<State, SearchAction>::expandNextNode, R"docstr(
+Expand the next node in the search.
+)docstr")
         .def("get_iterations", &AStarSearcher<State, SearchAction>::getIterations, R"docstr(
 Get the number of iterations.
 
@@ -52,8 +55,12 @@ Returns
 -------
 The number of iterations.
 )docstr")
-        .def("expand_next_node", &AStarSearcher<State, SearchAction>::expandNextNode, R"docstr(
-Expand the next node in the search.
+        .def("get_current_path", &AStarSearcher<State, SearchAction>::getCurrentPath, R"docstr(
+Get the path to the current node.
+
+Returns
+-------
+The actions resulting in the current node.
 )docstr");
 }
 

@@ -18,6 +18,7 @@ public:
     // findSolution() should be enough for real usage.
     void expandNextNode();
     int getIterations();
+    std::vector<SearchAction> getCurrentPath();
 
 private:
     Problem<State, SearchAction> *problem;
@@ -115,6 +116,12 @@ template <class State, class SearchAction>
 inline int AStarSearcher<State, SearchAction>::getIterations()
 {
     return this->iterations;
+}
+
+template <class State, class SearchAction>
+inline std::vector<SearchAction> AStarSearcher<State, SearchAction>::getCurrentPath()
+{
+    return this->currentNode.actions;
 }
 
 template <class State, class SearchAction>

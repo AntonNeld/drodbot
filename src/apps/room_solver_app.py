@@ -169,4 +169,16 @@ class RoomSolverApp(tkinter.Frame):
 
 
 def _solver_info_to_text(room_solver_info):
-    return "\n".join([f"Iterations: {room_solver_info['iterations']}"])
+    action_names = [e.name for e in room_solver_info["current_path"]]
+    row_length = 20
+    action_rows = [
+        ",".join(action_names[i : i + row_length])
+        for i in range(0, len(action_names), row_length)
+    ]
+    return "\n".join(
+        [
+            f"Iterations: {room_solver_info['iterations']}",
+            "Current path:",
+            ",\n".join(action_rows),
+        ]
+    )
