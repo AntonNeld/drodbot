@@ -6,6 +6,7 @@ import tkinter
 import traceback
 
 from common import TILE_SIZE, RoomSolverGoal
+from room_simulator import Action
 from .util import tile_to_text
 
 # The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
@@ -110,6 +111,11 @@ class RoomSolverApp(tkinter.Frame):
         if self._room_image is not None:
             pil_image = PIL.Image.fromarray(self._room_image)
             if self._room_solver_info is not None:
+                _draw_path(
+                    pil_image,
+                    self._room_solver_info["current_state"],
+                    self._room_solver_info["current_path"],
+                )
                 _draw_position(pil_image, self._room_solver_info["current_state"])
             resized_image = pil_image.resize(
                 (int(self._canvas["width"]), int(self._canvas["height"])), Image.NEAREST
@@ -195,5 +201,34 @@ def _draw_position(pil_image, position):
             ((x + 1) * TILE_SIZE, (y + 1) * TILE_SIZE),
         ],
         outline="blue",
+        width=3,
+    )
+
+
+def _draw_path(pil_image, end_position, actions):
+    # We'll draw the path backwards, since we know the end but not the start
+    positions = [end_position]
+    for action in reversed(actions):
+        x, y = positions[-1]
+        if action == Action.E:
+            positions.append((x - 1, y))
+        elif action == Action.SE:
+            positions.append((x - 1, y - 1))
+        elif action == Action.S:
+            positions.append((x, y - 1))
+        elif action == Action.SW:
+            positions.append((x + 1, y - 1))
+        elif action == Action.W:
+            positions.append((x + 1, y))
+        elif action == Action.NW:
+            positions.append((x + 1, y + 1))
+        elif action == Action.N:
+            positions.append((x, y + 1))
+        elif action == Action.NE:
+            positions.append((x - 1, y + 1))
+    draw = ImageDraw.Draw(pil_image)
+    draw.line(
+        [((p[0] + 0.5) * TILE_SIZE, (p[1] + 0.5) * TILE_SIZE) for p in positions],
+        fill="blue",
         width=3,
     )
