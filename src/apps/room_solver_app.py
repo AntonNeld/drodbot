@@ -41,6 +41,8 @@ class RoomSolverApp(tkinter.Frame):
         self._room_solver_info = None
         self._selected_goal = tkinter.StringVar(self)
         self._selected_goal.set(list(RoomSolverGoal)[0].value)
+        self.focus_set()
+        self.bind("<Right>", lambda x: self._expand_node())
 
         # Create widgets
         self._canvas = tkinter.Canvas(
