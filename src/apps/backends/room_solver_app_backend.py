@@ -72,4 +72,5 @@ def _extract_solver_info(room_solver):
     return {
         "iterations": room_solver.get_iterations(),
         "current_path": room_solver.get_current_path(),
+        "current_state": room_solver.get_current_state(),
     }

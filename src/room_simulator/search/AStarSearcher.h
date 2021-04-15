@@ -19,6 +19,7 @@ public:
     void expandNextNode();
     int getIterations();
     std::vector<SearchAction> getCurrentPath();
+    State getCurrentState();
 
 private:
     Problem<State, SearchAction> *problem;
@@ -122,6 +123,12 @@ template <class State, class SearchAction>
 inline std::vector<SearchAction> AStarSearcher<State, SearchAction>::getCurrentPath()
 {
     return this->currentNode.actions;
+}
+
+template <class State, class SearchAction>
+inline State AStarSearcher<State, SearchAction>::getCurrentState()
+{
+    return this->currentNode.state;
 }
 
 template <class State, class SearchAction>

@@ -1,7 +1,7 @@
 import asyncio
 
 import PIL
-from PIL import ImageTk, Image
+from PIL import ImageTk, Image, ImageDraw
 import tkinter
 import traceback
 
@@ -109,6 +109,8 @@ class RoomSolverApp(tkinter.Frame):
     def _draw_view(self):
         if self._room_image is not None:
             pil_image = PIL.Image.fromarray(self._room_image)
+            if self._room_solver_info is not None:
+                _draw_position(pil_image, self._room_solver_info["current_state"])
             resized_image = pil_image.resize(
                 (int(self._canvas["width"]), int(self._canvas["height"])), Image.NEAREST
             )
@@ -181,4 +183,17 @@ def _solver_info_to_text(room_solver_info):
             "Current path:",
             ",\n".join(action_rows),
         ]
+    )
+
+
+def _draw_position(pil_image, position):
+    x, y = position
+    draw = ImageDraw.Draw(pil_image)
+    draw.ellipse(
+        [
+            (x * TILE_SIZE, y * TILE_SIZE),
+            ((x + 1) * TILE_SIZE, (y + 1) * TILE_SIZE),
+        ],
+        outline="blue",
+        width=3,
     )

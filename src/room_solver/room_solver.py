@@ -66,3 +66,13 @@ class RoomSolver:
         The actions to reach the current node.
         """
         return self.searcher.get_current_path()
+
+    def get_current_state(self):
+        """Get the state of the current node.
+
+        Returns
+        -------
+        The state of the current node. Either a Room or (x, y) coordinates,
+        depending on if simple_pathfinding is True.
+        """
+        return self.searcher.get_current_state()

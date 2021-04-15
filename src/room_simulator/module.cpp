@@ -61,6 +61,13 @@ Get the path to the current node.
 Returns
 -------
 The actions resulting in the current node.
+)docstr")
+        .def("get_current_state", &AStarSearcher<State, SearchAction>::getCurrentState, R"docstr(
+Get the state of the current node.
+
+Returns
+-------
+The state of the current node.
 )docstr");
 }
 
