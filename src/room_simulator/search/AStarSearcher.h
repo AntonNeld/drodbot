@@ -1,6 +1,7 @@
 #ifndef DRODBOT_SEARCH_ASTARSEARCHER_H
 #define DRODBOT_SEARCH_ASTARSEARCHER_H
 
+#include <iostream>
 #include <vector>
 #include <map>
 #include <set>
@@ -96,6 +97,11 @@ inline void AStarSearcher<State, SearchAction>::expandNextNode()
         }
     }
 
+    // If the frontier is empty, we've already tried all states we can reach
+    if (this->frontier.size() == 0)
+    {
+        throw std::runtime_error("No solution");
+    }
     // Pop the lowest-cost node from the frontier and make it the current node
     typename std::multiset<Node<State, SearchAction>>::iterator nodeIterator = this->frontier.begin();
     this->currentNode = *nodeIterator;
@@ -138,10 +144,6 @@ inline std::vector<SearchAction> AStarSearcher<State, SearchAction>::findSolutio
         if (this->iterations > 10000)
         {
             throw std::runtime_error("Too many iterations");
-        }
-        if (this->frontier.size() == 0)
-        {
-            throw std::runtime_error("No solution");
         }
         this->expandNextNode();
     }
