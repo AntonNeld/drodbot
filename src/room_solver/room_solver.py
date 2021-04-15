@@ -91,3 +91,12 @@ class RoomSolver:
         depending on if simple_pathfinding is True.
         """
         return self.searcher.get_current_state()
+
+    def found_solution(self):
+        """Whether we have found a solution.
+
+        Returns
+        -------
+        Whether we have found a solution.
+        """
+        return self.searcher.found_solution()

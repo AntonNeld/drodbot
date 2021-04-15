@@ -122,8 +122,13 @@ class RoomSolverApp(tkinter.Frame):
                     pil_image,
                     self._room_solver_info["current_state"],
                     self._room_solver_info["current_path"],
+                    self._room_solver_info["found_solution"],
                 )
-                _draw_position(pil_image, self._room_solver_info["current_state"])
+                _draw_position(
+                    pil_image,
+                    self._room_solver_info["current_state"],
+                    self._room_solver_info["found_solution"],
+                )
             resized_image = pil_image.resize(
                 (int(self._canvas["width"]), int(self._canvas["height"])), Image.NEAREST
             )
@@ -202,7 +207,7 @@ def _solver_info_to_text(room_solver_info):
     )
 
 
-def _draw_position(pil_image, position):
+def _draw_position(pil_image, position, solved):
     x, y = position
     draw = ImageDraw.Draw(pil_image)
     draw.ellipse(
@@ -210,12 +215,12 @@ def _draw_position(pil_image, position):
             (x * TILE_SIZE, y * TILE_SIZE),
             ((x + 1) * TILE_SIZE, (y + 1) * TILE_SIZE),
         ],
-        outline="blue",
+        outline="green" if solved else "blue",
         width=3,
     )
 
 
-def _draw_path(pil_image, end_position, actions):
+def _draw_path(pil_image, end_position, actions, solved):
     # We'll draw the path backwards, since we know the end but not the start
     positions = [end_position]
     for action in reversed(actions):
@@ -239,6 +244,6 @@ def _draw_path(pil_image, end_position, actions):
     draw = ImageDraw.Draw(pil_image)
     draw.line(
         [((p[0] + 0.5) * TILE_SIZE, (p[1] + 0.5) * TILE_SIZE) for p in positions],
-        fill="blue",
+        fill="green" if solved else "blue",
         width=3,
     )

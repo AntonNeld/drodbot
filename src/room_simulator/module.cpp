@@ -68,6 +68,13 @@ Get the state of the current node.
 Returns
 -------
 The state of the current node.
+)docstr")
+        .def("found_solution", &AStarSearcher<State, SearchAction>::foundSolution, R"docstr(
+Whether we have found the solution.
+
+Returns
+-------
+Whether we have found the solution.
 )docstr");
 }
 

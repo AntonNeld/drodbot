@@ -20,6 +20,7 @@ public:
     int getIterations();
     std::vector<SearchAction> getCurrentPath();
     State getCurrentState();
+    bool foundSolution();
 
 private:
     Problem<State, SearchAction> *problem;
@@ -38,8 +39,6 @@ private:
     // The number of iterations, so we can stop at some reasonable limit if it
     // turns out the problem is intractable.
     int iterations;
-    // Whether we have found a solution
-    bool foundSolution;
 };
 
 // We're beginning in the middle of the algorithm, with an empty frontier and
@@ -51,9 +50,7 @@ inline AStarSearcher<State, SearchAction>::AStarSearcher(
                                              frontierByState({}),
                                              currentNode(Node<State, SearchAction>(problem->initialState())),
                                              explored({problem->initialState()}),
-                                             iterations(0),
-                                             // Just in case the initial state is a goal state
-                                             foundSolution(problem->goalTest(problem->initialState())){};
+                                             iterations(0){};
 
 template <class State, class SearchAction>
 inline void AStarSearcher<State, SearchAction>::expandNextNode()
@@ -106,11 +103,6 @@ inline void AStarSearcher<State, SearchAction>::expandNextNode()
     this->frontierByState.erase(this->currentNode.state);
     this->explored.insert(this->currentNode.state);
     this->iterations += 1;
-    // Check if we've solved the problem now
-    if (this->problem->goalTest(this->currentNode.state))
-    {
-        this->foundSolution = true;
-    }
 }
 
 template <class State, class SearchAction>
@@ -132,9 +124,15 @@ inline State AStarSearcher<State, SearchAction>::getCurrentState()
 }
 
 template <class State, class SearchAction>
+inline bool AStarSearcher<State, SearchAction>::foundSolution()
+{
+    return this->problem->goalTest(this->currentNode.state);
+}
+
+template <class State, class SearchAction>
 inline std::vector<SearchAction> AStarSearcher<State, SearchAction>::findSolution()
 {
-    while (!this->foundSolution)
+    while (!this->foundSolution())
     {
         // TODO: Define iteration limit somewhere else
         if (this->iterations > 10000)
