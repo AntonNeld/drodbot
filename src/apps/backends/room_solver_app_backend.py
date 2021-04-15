@@ -61,6 +61,15 @@ class RoomSolverAppBackend:
             self._room, room_solver_data=_extract_solver_info(self._room_solver)
         )
 
+    async def rewind_expansion(self):
+        """Go back to the previous node in the room solver."""
+        if self._room_solver is None:
+            raise UserError("Must initialize search before expanding nodes")
+        self._room_solver.rewind_expansion()
+        self._show_data(
+            self._room, room_solver_data=_extract_solver_info(self._room_solver)
+        )
+
     def _show_data(self, room, room_solver_data=None):
         reconstructed_image = self._interpreter.reconstruct_room_image(room)
         self._queue.put(

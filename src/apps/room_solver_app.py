@@ -43,6 +43,7 @@ class RoomSolverApp(tkinter.Frame):
         self._selected_goal.set(list(RoomSolverGoal)[0].value)
         self.focus_set()
         self.bind("<Right>", lambda x: self._expand_node())
+        self.bind("<Left>", lambda x: self._rewind_expansion())
 
         # Create widgets
         self._canvas = tkinter.Canvas(
@@ -84,6 +85,10 @@ class RoomSolverApp(tkinter.Frame):
             self._search_area, text="Init search", command=self._init_search
         )
         self._init_search_button.pack(side=tkinter.LEFT)
+        self._rewind_button = tkinter.Button(
+            self._search_area, text="<", command=self._rewind_expansion
+        )
+        self._rewind_button.pack(side=tkinter.LEFT)
         self._expand_node_button = tkinter.Button(
             self._search_area, text=">", command=self._expand_node
         )
@@ -152,6 +157,9 @@ class RoomSolverApp(tkinter.Frame):
 
     def _expand_node(self):
         self._run_coroutine(self._backend.expand_next_node())
+
+    def _rewind_expansion(self):
+        self._run_coroutine(self._backend.rewind_expansion())
 
     def _toggle_view_size(self):
         if self._enlarged_view:

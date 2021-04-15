@@ -21,6 +21,7 @@ class RoomSolver:
     """
 
     def __init__(self, room, objective, simple_pathfinding=False):
+        self.simple_pathfinding = simple_pathfinding
         if simple_pathfinding:
             start, _ = room.find_player()
             # Assign the problem to self.problem. Since the C++ code gets
@@ -48,6 +49,20 @@ class RoomSolver:
     def expand_next_node(self):
         """Expand the next node in the searcher."""
         self.searcher.expand_next_node()
+
+    def rewind_expansion(self):
+        """Go back to the previous node.
+
+        This actually restarts the search and performs one less iteration
+        than we currently have. It may be expensive.
+        """
+        iterations = self.searcher.get_iterations()
+        if self.simple_pathfinding:
+            self.searcher = AStarSearcherPositionAction(self.problem)
+        else:
+            self.searcher = AStarSearcherRoomAction(self.problem)
+        for _ in range(iterations - 1):
+            self.searcher.expand_next_node()
 
     def get_iterations(self):
         """Get the number of iterations we've gone through.
