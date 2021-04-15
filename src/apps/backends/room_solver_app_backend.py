@@ -70,6 +70,15 @@ class RoomSolverAppBackend:
             self._room, room_solver_data=_extract_solver_info(self._room_solver)
         )
 
+    async def find_solution(self):
+        """Search until we find a solution."""
+        if self._room_solver is None:
+            raise UserError("Must initialize search before searching")
+        self._room_solver.find_solution()
+        self._show_data(
+            self._room, room_solver_data=_extract_solver_info(self._room_solver)
+        )
+
     def _show_data(self, room, room_solver_data=None):
         reconstructed_image = self._interpreter.reconstruct_room_image(room)
         self._queue.put(

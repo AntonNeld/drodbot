@@ -93,6 +93,10 @@ class RoomSolverApp(tkinter.Frame):
             self._search_area, text=">", command=self._expand_node
         )
         self._expand_node_button.pack(side=tkinter.LEFT)
+        self._find_solution_button = tkinter.Button(
+            self._search_area, text=">>", command=self._find_solution
+        )
+        self._find_solution_button.pack(side=tkinter.LEFT)
         self._room_solver_text = tkinter.Label(self._control_panel, text="")
         self._room_solver_text.pack(side=tkinter.TOP)
 
@@ -165,6 +169,9 @@ class RoomSolverApp(tkinter.Frame):
 
     def _rewind_expansion(self):
         self._run_coroutine(self._backend.rewind_expansion())
+
+    def _find_solution(self):
+        self._run_coroutine(self._backend.find_solution())
 
     def _toggle_view_size(self):
         if self._enlarged_view:
