@@ -116,7 +116,7 @@ int PathfindingProblem::heuristic(Position state)
         {
             int goalX = std::get<0>(*iterator);
             int goalY = std::get<1>(*iterator);
-            int distance = std::min<int>(std::abs(goalX - x), std::abs(goalY - y));
+            int distance = std::max<int>(std::abs(goalX - x), std::abs(goalY - y));
             if (distance < closestDistance)
             {
                 closestDistance = distance;
