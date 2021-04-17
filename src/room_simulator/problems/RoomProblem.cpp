@@ -73,3 +73,9 @@ int RoomProblem::stepCost(Room state, Action action, Room result)
 {
     return 1;
 }
+
+int RoomProblem::heuristic(Room state)
+{
+    // Dummy heuristic for now
+    return 0;
+}

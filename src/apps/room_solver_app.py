@@ -41,6 +41,8 @@ class RoomSolverApp(tkinter.Frame):
         self._room_solver_info = None
         self._selected_goal = tkinter.StringVar(self)
         self._selected_goal.set(list(RoomSolverGoal)[0].value)
+        self._use_heuristic = tkinter.IntVar(self)
+        self._use_heuristic.set(1)
         self.focus_set()
         self.bind("<Right>", lambda x: self._expand_node())
         self.bind("<Left>", lambda x: self._rewind_expansion())
@@ -97,6 +99,10 @@ class RoomSolverApp(tkinter.Frame):
             self._search_area, text=">>", command=self._find_solution
         )
         self._find_solution_button.pack(side=tkinter.LEFT)
+        self._use_heuristic_checkbox = tkinter.Checkbutton(
+            self._control_panel, text="Use heuristic", variable=self._use_heuristic
+        )
+        self._use_heuristic_checkbox.pack(side=tkinter.TOP)
         self._room_solver_text = tkinter.Label(self._control_panel, text="")
         self._room_solver_text.pack(side=tkinter.TOP)
 
@@ -162,7 +168,9 @@ class RoomSolverApp(tkinter.Frame):
     def _init_search(self):
         goal_value = self._selected_goal.get()
         goal = next(e for e in RoomSolverGoal if e.value == goal_value)
-        self._run_coroutine(self._backend.init_search(goal))
+        self._run_coroutine(
+            self._backend.init_search(goal, self._use_heuristic.get() == 1)
+        )
 
     def _expand_node(self):
         self._run_coroutine(self._backend.expand_next_node())

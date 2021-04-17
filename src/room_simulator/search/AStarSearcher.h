@@ -12,7 +12,6 @@ template <class State, class SearchAction>
 class AStarSearcher
 {
 public:
-    // TODO: Heuristic
     AStarSearcher(Problem<State, SearchAction> *problem);
     std::vector<SearchAction> findSolution();
     // Below methods are intended for inspecting the algorithm.

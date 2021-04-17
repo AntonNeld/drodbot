@@ -10,13 +10,14 @@ class Node
 public:
     Node(Problem<State, SearchAction> *problem, State state, int pathCost, std::vector<SearchAction> actions);
     Node(Problem<State, SearchAction> *problem); // Starting node
-    bool operator<(const Node &otherNode) const { return this->pathCost < otherNode.pathCost; }
+    bool operator<(const Node &otherNode) const { return this->pathCost + this->heuristicValue < otherNode.pathCost + otherNode.heuristicValue; }
     Node getChild(SearchAction action);
     std::vector<SearchAction> getSolution();
     Problem<State, SearchAction> *problem;
     State state;
     int pathCost;
     std::vector<SearchAction> actions;
+    int heuristicValue;
 };
 
 template <class State, class SearchAction>
@@ -26,13 +27,15 @@ inline Node<State, SearchAction>::Node(Problem<State, SearchAction> *problem,
                                        std::vector<SearchAction> actions) : problem(problem),
                                                                             state(state),
                                                                             pathCost(pathCost),
-                                                                            actions(actions){};
+                                                                            actions(actions),
+                                                                            heuristicValue(problem->heuristic(state)){};
 
 template <class State, class SearchAction>
 inline Node<State, SearchAction>::Node(Problem<State, SearchAction> *problem) : problem(problem),
                                                                                 state(problem->initialState()),
                                                                                 pathCost(0),
-                                                                                actions({}){};
+                                                                                actions({}),
+                                                                                heuristicValue(problem->heuristic(state)){};
 
 template <class State, class SearchAction>
 inline Node<State, SearchAction> Node<State, SearchAction>::getChild(SearchAction action)

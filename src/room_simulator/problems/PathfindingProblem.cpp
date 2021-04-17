@@ -1,6 +1,9 @@
+#include <iostream>
+#include <algorithm>
 #include <array>
 #include <vector>
 #include <set>
+#include <stdlib.h>
 #include "../Room.h"
 #include "../typedefs.h"
 #include "../search/Problem.h"
@@ -9,9 +12,11 @@
 
 PathfindingProblem::PathfindingProblem(Position startPosition,
                                        Room room,
-                                       std::set<Position> goals) : startPosition(startPosition),
-                                                                   room(room),
-                                                                   goals(goals)
+                                       std::set<Position> goals,
+                                       bool useHeuristic) : startPosition(startPosition),
+                                                            room(room),
+                                                            goals(goals),
+                                                            useHeuristic(useHeuristic)
 {
 }
 
@@ -95,4 +100,29 @@ bool PathfindingProblem::goalTest(Position state)
 int PathfindingProblem::stepCost(Position state, Action action, Position result)
 {
     return 1;
+}
+
+int PathfindingProblem::heuristic(Position state)
+{
+    if (this->useHeuristic)
+    {
+        // TODO: Something wrong with this
+        // Distance to nearest goal, disregarding obstacles
+        int x = std::get<0>(state);
+        int y = std::get<1>(state);
+        int closestDistance = 37; // Largest possible distance
+        typename std::set<Position>::iterator iterator;
+        for (iterator = this->goals.begin(); iterator != this->goals.end(); ++iterator)
+        {
+            int goalX = std::get<0>(*iterator);
+            int goalY = std::get<1>(*iterator);
+            int distance = std::min<int>(std::abs(goalX - x), std::abs(goalY - y));
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+            }
+        }
+        return closestDistance;
+    }
+    return 0;
 }

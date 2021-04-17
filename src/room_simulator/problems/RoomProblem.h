@@ -12,6 +12,7 @@ public:
     Room result(Room state, Action action);
     bool goalTest(Room state);
     int stepCost(Room state, Action action, Room result);
+    int heuristic(Room state);
 
 private:
     Room room;

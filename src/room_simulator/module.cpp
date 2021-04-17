@@ -268,11 +268,15 @@ room
     The room.
 goals
     The goal positions.
+use_heuristic
+    Whether to use a heuristic function. The heuristic is the shortest distance
+    to the nearest goal, disregarding obstacles.
 )docstr")
-        .def(pybind11::init<Position, Room, std::set<Position>>(),
+        .def(pybind11::init<Position, Room, std::set<Position>, bool>(),
              pybind11::arg("start_position"),
              pybind11::arg("room"),
-             pybind11::arg("goals"));
+             pybind11::arg("goals"),
+             pybind11::arg("use_heuristic") = true);
     pybind11::class_<RoomProblem, Problem<Room, Action>>(m, "RoomProblem", R"docstr(
 A problem for reaching an objective in a room.
 

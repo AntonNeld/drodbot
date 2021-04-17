@@ -18,15 +18,19 @@ class RoomSolver:
     simple_pathfinding
         Whether to use simple pathfinding instead of trying to solve the room
         with a more general algorithm.
+    use_heuristic
+        Whether to use a heuristic. Only supported for simple pathfinding.
     """
 
-    def __init__(self, room, objective, simple_pathfinding=False):
+    def __init__(self, room, objective, simple_pathfinding=False, use_heuristic=True):
         self.simple_pathfinding = simple_pathfinding
         if simple_pathfinding:
             start, _ = room.find_player()
             # Assign the problem to self.problem. Since the C++ code gets
             # a reference to it, we don't want it to be garbage collected.
-            self.problem = PathfindingProblem(start, room, objective.tiles)
+            self.problem = PathfindingProblem(
+                start, room, objective.tiles, use_heuristic=use_heuristic
+            )
             self.searcher = AStarSearcherPositionAction(self.problem)
         else:
             # Assign the problem to self.problem. Since the C++ code gets
