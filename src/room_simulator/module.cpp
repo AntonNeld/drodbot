@@ -69,6 +69,13 @@ Returns
 -------
 The state of the current node.
 )docstr")
+        .def("get_current_state_heuristic", &AStarSearcher<State, SearchAction>::getCurrentStateHeuristic, R"docstr(
+Get the heuristic function value of the state of the current node.
+
+Returns
+-------
+The heuristic function value of the state of the current node.
+)docstr")
         .def("found_solution", &AStarSearcher<State, SearchAction>::foundSolution, R"docstr(
 Whether we have found the solution.
 

@@ -213,9 +213,11 @@ def _solver_info_to_text(room_solver_info):
         ",".join(action_names[i : i + row_length])
         for i in range(0, len(action_names), row_length)
     ]
+    heuristic = room_solver_info["current_state_heuristic"]
     return "\n".join(
         [
             f"Iterations: {room_solver_info['iterations']}",
+            f"Heuristic value of current state: {heuristic}",
             "Current path:",
             ",\n".join(action_rows),
         ]

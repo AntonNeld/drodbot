@@ -102,4 +102,5 @@ def _extract_solver_info(room_solver):
         "current_path": room_solver.get_current_path(),
         "current_state": room_solver.get_current_state(),
         "found_solution": room_solver.found_solution(),
+        "current_state_heuristic": room_solver.get_current_state_heuristic(),
     }

@@ -20,6 +20,7 @@ public:
     int getIterations();
     std::vector<SearchAction> getCurrentPath();
     State getCurrentState();
+    int getCurrentStateHeuristic();
     bool foundSolution();
 
 private:
@@ -126,6 +127,12 @@ template <class State, class SearchAction>
 inline State AStarSearcher<State, SearchAction>::getCurrentState()
 {
     return this->currentNode.state;
+}
+
+template <class State, class SearchAction>
+inline int AStarSearcher<State, SearchAction>::getCurrentStateHeuristic()
+{
+    return this->problem->heuristic(this->currentNode.state);
 }
 
 template <class State, class SearchAction>

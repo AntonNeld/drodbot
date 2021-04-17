@@ -96,6 +96,15 @@ class RoomSolver:
         """
         return self.searcher.get_current_state()
 
+    def get_current_state_heuristic(self):
+        """Get the heuristic function value of the state of the current node.
+
+        Returns
+        -------
+        The heuristic function value of the state of the current node.
+        """
+        return self.searcher.get_current_state_heuristic()
+
     def found_solution(self):
         """Whether we have found a solution.
 
