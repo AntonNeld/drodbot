@@ -49,7 +49,7 @@ inline AStarSearcher<State, SearchAction>::AStarSearcher(
     Problem<State, SearchAction> *problem) : problem(problem),
                                              frontier({}),
                                              frontierByState({}),
-                                             currentNode(Node<State, SearchAction>(problem->initialState())),
+                                             currentNode(Node<State, SearchAction>(problem)),
                                              explored({problem->initialState()}),
                                              iterations(0){};
 
@@ -62,7 +62,7 @@ inline void AStarSearcher<State, SearchAction>::expandNextNode()
     for (actionIterator = actions.begin(); actionIterator != actions.end(); ++actionIterator)
     {
         SearchAction action = *actionIterator;
-        Node<State, SearchAction> childNode = this->currentNode.getChild(this->problem, action);
+        Node<State, SearchAction> childNode = this->currentNode.getChild(action);
         // If the frontier has a node with the same state, replace it if its path cost is higher
         if (this->frontierByState.find(childNode.state) != this->frontierByState.end())
         {

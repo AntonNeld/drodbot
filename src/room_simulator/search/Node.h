@@ -8,37 +8,39 @@ template <class State, class SearchAction>
 class Node
 {
 public:
-    Node(State state, int pathCost, std::vector<SearchAction> actions);
-    Node(State state); // Starting node
+    Node(Problem<State, SearchAction> *problem, State state, int pathCost, std::vector<SearchAction> actions);
+    Node(Problem<State, SearchAction> *problem); // Starting node
     bool operator<(const Node &otherNode) const { return this->pathCost < otherNode.pathCost; }
-    Node getChild(Problem<State, SearchAction> *problem, SearchAction action);
+    Node getChild(SearchAction action);
     std::vector<SearchAction> getSolution();
+    Problem<State, SearchAction> *problem;
     State state;
     int pathCost;
     std::vector<SearchAction> actions;
 };
 
 template <class State, class SearchAction>
-inline Node<State, SearchAction>::Node(State state,
+inline Node<State, SearchAction>::Node(Problem<State, SearchAction> *problem,
+                                       State state,
                                        int pathCost,
-                                       std::vector<SearchAction> actions) : state(state),
+                                       std::vector<SearchAction> actions) : problem(problem),
+                                                                            state(state),
                                                                             pathCost(pathCost),
                                                                             actions(actions){};
 
 template <class State, class SearchAction>
-inline Node<State, SearchAction>::Node(State state) : state(state)
-{
-    this->pathCost = 0;
-    this->actions = {};
-};
+inline Node<State, SearchAction>::Node(Problem<State, SearchAction> *problem) : problem(problem),
+                                                                                state(problem->initialState()),
+                                                                                pathCost(0),
+                                                                                actions({}){};
 
 template <class State, class SearchAction>
-inline Node<State, SearchAction> Node<State, SearchAction>::getChild(Problem<State, SearchAction> *problem, SearchAction action)
+inline Node<State, SearchAction> Node<State, SearchAction>::getChild(SearchAction action)
 {
-    State result = problem->result(this->state, action);
+    State result = this->problem->result(this->state, action);
     std::vector<SearchAction> childActions = this->actions;
     childActions.push_back(action);
-    return Node<State, SearchAction>(result, this->pathCost + 1, childActions);
+    return Node<State, SearchAction>(this->problem, result, this->pathCost + 1, childActions);
 }
 
 #endif // DRODBOT_SEARCH_NODE_H
