@@ -43,6 +43,8 @@ class RoomSolverApp(tkinter.Frame):
         self._selected_goal.set(list(RoomSolverGoal)[0].value)
         self._use_heuristic = tkinter.IntVar(self)
         self._use_heuristic.set(1)
+        self._simple_pathfinding = tkinter.IntVar(self)
+        self._simple_pathfinding.set(1)
         self.focus_set()
         self.bind("<Right>", lambda x: self._expand_node())
         self.bind("<Left>", lambda x: self._rewind_expansion())
@@ -99,10 +101,18 @@ class RoomSolverApp(tkinter.Frame):
             self._search_area, text=">>", command=self._find_solution
         )
         self._find_solution_button.pack(side=tkinter.LEFT)
+        self._checkboxes = tkinter.Frame(self._control_panel)
+        self._checkboxes.pack(side=tkinter.TOP)
         self._use_heuristic_checkbox = tkinter.Checkbutton(
-            self._control_panel, text="Use heuristic", variable=self._use_heuristic
+            self._checkboxes, text="Use heuristic", variable=self._use_heuristic
         )
-        self._use_heuristic_checkbox.pack(side=tkinter.TOP)
+        self._use_heuristic_checkbox.pack(side=tkinter.LEFT)
+        self._simple_pathfinding_checkbox = tkinter.Checkbutton(
+            self._checkboxes,
+            text="Simple pathfinding",
+            variable=self._simple_pathfinding,
+        )
+        self._simple_pathfinding_checkbox.pack(side=tkinter.LEFT)
         self._room_solver_text = tkinter.Label(self._control_panel, text="")
         self._room_solver_text.pack(side=tkinter.TOP)
 
@@ -128,19 +138,26 @@ class RoomSolverApp(tkinter.Frame):
         if self._room_image is not None:
             pil_image = PIL.Image.fromarray(self._room_image)
             if self._room_solver_info is not None:
-                _draw_explored(pil_image, self._room_solver_info["explored_states"])
-                _draw_frontier(pil_image, self._room_solver_info["frontier_states"])
+                if self._room_solver_info["simple_pathfinding"]:
+                    _draw_explored(pil_image, self._room_solver_info["explored_states"])
+                    _draw_frontier(pil_image, self._room_solver_info["frontier_states"])
+                    current_position = self._room_solver_info["current_state"]
+                    _draw_position(
+                        pil_image,
+                        current_position,
+                        self._room_solver_info["found_solution"],
+                    )
+                else:
+                    current_position, _ = self._room_solver_info[
+                        "current_state"
+                    ].find_player()
                 _draw_path(
                     pil_image,
-                    self._room_solver_info["current_state"],
+                    current_position,
                     self._room_solver_info["current_path"],
                     self._room_solver_info["found_solution"],
                 )
-                _draw_position(
-                    pil_image,
-                    self._room_solver_info["current_state"],
-                    self._room_solver_info["found_solution"],
-                )
+
             resized_image = pil_image.resize(
                 (int(self._canvas["width"]), int(self._canvas["height"])), Image.NEAREST
             )
@@ -171,7 +188,11 @@ class RoomSolverApp(tkinter.Frame):
         goal_value = self._selected_goal.get()
         goal = next(e for e in RoomSolverGoal if e.value == goal_value)
         self._run_coroutine(
-            self._backend.init_search(goal, self._use_heuristic.get() == 1)
+            self._backend.init_search(
+                goal,
+                self._simple_pathfinding.get() == 1,
+                self._use_heuristic.get() == 1,
+            )
         )
 
     def _expand_node(self):

@@ -38,6 +38,15 @@ class RoomSolver:
             self.problem = RoomProblem(room, objective)
             self.searcher = AStarSearcherRoomAction(self.problem)
 
+    def uses_simple_pathfinding(self):
+        """Whether the solver uses simple pathfinding.
+
+        Returns
+        -------
+        Whether the solver uses simple pathfinding.
+        """
+        return self.simple_pathfinding
+
     def find_solution(self):
         """Find the solution.
 

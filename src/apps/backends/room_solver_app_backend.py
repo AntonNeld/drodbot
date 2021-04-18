@@ -33,20 +33,22 @@ class RoomSolverAppBackend:
         await self._interface.initialize()
         self._room = await self._interpreter.get_initial_room()
         print(f"Interpreted room in {time.time()-t:.2f}s")
-        self._show_data(self._room)
+        self._show_data()
 
     async def get_room_from_bot(self):
         """Set the current room to the current room from the bot."""
         self._room = self._bot.get_current_room()
-        self._show_data(self._room)
+        self._show_data()
 
-    async def init_search(self, goal, use_heuristic):
+    async def init_search(self, goal, simple_pathfinding, use_heuristic):
         """Initialize a search for the selected goal.
 
         Parameters
         ----------
         goal
             The RoomSolverGoal to reach.
+        simple_pathfinding
+            Whether to use simple pathfinding or a more general solver.
         use_heuristic
             Whether to use a heuristic function.
         """
@@ -56,40 +58,45 @@ class RoomSolverAppBackend:
             conquer_tokens = self._room.find_coordinates(ElementType.CONQUER_TOKEN)
             objective = Objective(sword_at_tile=False, tiles=set(conquer_tokens))
         self._room_solver = RoomSolver(
-            self._room, objective, simple_pathfinding=True, use_heuristic=use_heuristic
+            self._room,
+            objective,
+            simple_pathfinding=simple_pathfinding,
+            use_heuristic=use_heuristic,
         )
-        self._show_data(
-            self._room, room_solver_data=_extract_solver_info(self._room_solver)
-        )
+        self._show_data()
 
     async def expand_next_node(self):
         """Expand the next node in the room solver."""
         if self._room_solver is None:
             raise UserError("Must initialize search before expanding nodes")
         self._room_solver.expand_next_node()
-        self._show_data(
-            self._room, room_solver_data=_extract_solver_info(self._room_solver)
-        )
+        self._show_data()
 
     async def rewind_expansion(self):
         """Go back to the previous node in the room solver."""
         if self._room_solver is None:
             raise UserError("Must initialize search before expanding nodes")
         self._room_solver.rewind_expansion()
-        self._show_data(
-            self._room, room_solver_data=_extract_solver_info(self._room_solver)
-        )
+        self._show_data()
 
     async def find_solution(self):
         """Search until we find a solution."""
         if self._room_solver is None:
             raise UserError("Must initialize search before searching")
         self._room_solver.find_solution()
-        self._show_data(
-            self._room, room_solver_data=_extract_solver_info(self._room_solver)
-        )
+        self._show_data()
 
-    def _show_data(self, room, room_solver_data=None):
+    def _show_data(self):
+        if self._room_solver is None:
+            room_solver_data = None
+            room = self._room
+        else:
+            room_solver_data = _extract_solver_info(self._room_solver)
+            if self._room_solver.uses_simple_pathfinding():
+                room = self._room
+            else:
+                room = self._room_solver.get_current_state()
+
         reconstructed_image = self._interpreter.reconstruct_room_image(room)
         self._queue.put(
             (GUIEvent.SET_ROOM_SOLVER_DATA, reconstructed_image, room, room_solver_data)
@@ -105,4 +112,5 @@ def _extract_solver_info(room_solver):
         "current_state_heuristic": room_solver.get_current_state_heuristic(),
         "frontier_states": room_solver.get_frontier_states(),
         "explored_states": room_solver.get_explored(),
+        "simple_pathfinding": room_solver.uses_simple_pathfinding(),
     }
