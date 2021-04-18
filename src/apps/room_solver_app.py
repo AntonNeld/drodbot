@@ -128,6 +128,8 @@ class RoomSolverApp(tkinter.Frame):
         if self._room_image is not None:
             pil_image = PIL.Image.fromarray(self._room_image)
             if self._room_solver_info is not None:
+                _draw_explored(pil_image, self._room_solver_info["explored_states"])
+                _draw_frontier(pil_image, self._room_solver_info["frontier_states"])
                 _draw_path(
                     pil_image,
                     self._room_solver_info["current_state"],
@@ -218,6 +220,8 @@ def _solver_info_to_text(room_solver_info):
         [
             f"Iterations: {room_solver_info['iterations']}",
             f"Heuristic value of current state: {heuristic}",
+            f"Frontier size {len(room_solver_info['frontier_states'])}",
+            f"Explored size {len(room_solver_info['explored_states'])}",
             "Current path:",
             ",\n".join(action_rows),
         ]
@@ -264,3 +268,31 @@ def _draw_path(pil_image, end_position, actions, solved):
         fill="green" if solved else "blue",
         width=3,
     )
+
+
+def _draw_frontier(pil_image, frontier_states):
+    for position in frontier_states:
+        x, y = position
+        draw = ImageDraw.Draw(pil_image)
+        draw.ellipse(
+            [
+                ((x + 0.25) * TILE_SIZE, (y + 0.25) * TILE_SIZE),
+                ((x + 0.75) * TILE_SIZE, (y + 0.75) * TILE_SIZE),
+            ],
+            outline="yellow",
+            width=3,
+        )
+
+
+def _draw_explored(pil_image, explored_states):
+    for position in explored_states:
+        x, y = position
+        draw = ImageDraw.Draw(pil_image)
+        draw.ellipse(
+            [
+                ((x + 0.25) * TILE_SIZE, (y + 0.25) * TILE_SIZE),
+                ((x + 0.75) * TILE_SIZE, (y + 0.75) * TILE_SIZE),
+            ],
+            outline="red",
+            width=3,
+        )

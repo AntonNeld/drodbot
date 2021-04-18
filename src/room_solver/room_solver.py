@@ -105,6 +105,24 @@ class RoomSolver:
         """
         return self.searcher.get_current_state_heuristic()
 
+    def get_frontier_states(self):
+        """Get the states in the frontier.
+
+        Returns
+        -------
+        The states in the frontier.
+        """
+        return self.searcher.get_frontier_states()
+
+    def get_explored(self):
+        """Get the explored states.
+
+        Returns
+        -------
+        The explored states.
+        """
+        return self.searcher.get_explored()
+
     def found_solution(self):
         """Whether we have found a solution.
 

@@ -76,6 +76,20 @@ Returns
 -------
 The heuristic function value of the state of the current node.
 )docstr")
+        .def("get_frontier_states", &AStarSearcher<State, SearchAction>::getFrontierStates, R"docstr(
+Get the states in the frontier.
+
+Returns
+-------
+The states in the frontier.
+)docstr")
+        .def("get_explored", &AStarSearcher<State, SearchAction>::getExplored, R"docstr(
+Get the explored states.
+
+Returns
+-------
+The explored states.
+)docstr")
         .def("found_solution", &AStarSearcher<State, SearchAction>::foundSolution, R"docstr(
 Whether we have found the solution.
 

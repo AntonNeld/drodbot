@@ -21,6 +21,8 @@ public:
     std::vector<SearchAction> getCurrentPath();
     State getCurrentState();
     int getCurrentStateHeuristic();
+    std::set<State> getFrontierStates();
+    std::set<State> getExplored();
     bool foundSolution();
 
 private:
@@ -133,6 +135,24 @@ template <class State, class SearchAction>
 inline int AStarSearcher<State, SearchAction>::getCurrentStateHeuristic()
 {
     return this->problem->heuristic(this->currentNode.state);
+}
+
+template <class State, class SearchAction>
+inline std::set<State> AStarSearcher<State, SearchAction>::getFrontierStates()
+{
+    std::set<State> frontierStates = {};
+    typename std::multiset<Node<State, SearchAction>>::iterator iterator;
+    for (iterator = this->frontier.begin(); iterator != this->frontier.end(); ++iterator)
+    {
+        frontierStates.insert(iterator->state);
+    }
+    return frontierStates;
+}
+
+template <class State, class SearchAction>
+inline std::set<State> AStarSearcher<State, SearchAction>::getExplored()
+{
+    return this->explored;
 }
 
 template <class State, class SearchAction>
