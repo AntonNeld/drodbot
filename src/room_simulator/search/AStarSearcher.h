@@ -26,6 +26,8 @@ public:
     bool foundSolution();
 
 private:
+    void popNextNode();
+    void expandCurrentNode();
     Problem<State, SearchAction> *problem;
     // The frontier is the next nodes that will be executed. It's sorted so the
     // lowest-cost node is first. Using a multiset as a sorted list here, which
@@ -44,8 +46,6 @@ private:
     int iterations;
 };
 
-// We're beginning in the middle of the algorithm, with an empty frontier and
-// the starting node being the currently expanded node.
 template <class State, class SearchAction>
 inline AStarSearcher<State, SearchAction>::AStarSearcher(
     Problem<State, SearchAction> *problem) : problem(problem),
@@ -53,10 +53,39 @@ inline AStarSearcher<State, SearchAction>::AStarSearcher(
                                              frontierByState({}),
                                              currentNode(Node<State, SearchAction>(problem)),
                                              explored({problem->initialState()}),
-                                             iterations(0){};
+                                             iterations(0)
+{
+    // We've already initialized the member variables as if we've popped the
+    // first node from the frontier.
+    this->expandCurrentNode();
+};
 
 template <class State, class SearchAction>
 inline void AStarSearcher<State, SearchAction>::expandNextNode()
+{
+    this->popNextNode();
+    this->expandCurrentNode();
+};
+
+template <class State, class SearchAction>
+inline void AStarSearcher<State, SearchAction>::popNextNode()
+{
+    // If the frontier is empty, we've already tried all states we can reach
+    if (this->frontier.size() == 0)
+    {
+        throw std::runtime_error("No solution");
+    }
+    // Pop the lowest-cost node from the frontier and make it the current node
+    typename std::multiset<Node<State, SearchAction>>::iterator nodeIterator = this->frontier.begin();
+    this->currentNode = *nodeIterator;
+    this->frontier.erase(nodeIterator);
+    this->frontierByState.erase(this->currentNode.state);
+    this->explored.insert(this->currentNode.state);
+    this->iterations += 1;
+}
+
+template <class State, class SearchAction>
+inline void AStarSearcher<State, SearchAction>::expandCurrentNode()
 {
     // Expand the current node and add its children to the frontier where appropriate
     std::set<SearchAction> actions = this->problem->actions(this->currentNode.state);
@@ -98,19 +127,6 @@ inline void AStarSearcher<State, SearchAction>::expandNextNode()
             this->frontierByState.insert(std::pair<State, Node<State, SearchAction>>(childNode.state, childNode));
         }
     }
-
-    // If the frontier is empty, we've already tried all states we can reach
-    if (this->frontier.size() == 0)
-    {
-        throw std::runtime_error("No solution");
-    }
-    // Pop the lowest-cost node from the frontier and make it the current node
-    typename std::multiset<Node<State, SearchAction>>::iterator nodeIterator = this->frontier.begin();
-    this->currentNode = *nodeIterator;
-    this->frontier.erase(nodeIterator);
-    this->frontierByState.erase(this->currentNode.state);
-    this->explored.insert(this->currentNode.state);
-    this->iterations += 1;
 }
 
 template <class State, class SearchAction>
