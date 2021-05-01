@@ -12,7 +12,7 @@ template <class State, class SearchAction>
 class AStarSearcher
 {
 public:
-    AStarSearcher(Problem<State, SearchAction> *problem);
+    AStarSearcher(Problem<State, SearchAction> *problem, int iterationLimit = 10000);
     std::vector<SearchAction> findSolution();
     // Below methods are intended for inspecting the algorithm.
     // findSolution() should be enough for real usage.
@@ -44,16 +44,20 @@ private:
     // The number of iterations, so we can stop at some reasonable limit if it
     // turns out the problem is intractable.
     int iterations;
+    // The iteration limit, after which we will throw an exception
+    int iterationLimit;
 };
 
 template <class State, class SearchAction>
 inline AStarSearcher<State, SearchAction>::AStarSearcher(
-    Problem<State, SearchAction> *problem) : problem(problem),
-                                             frontier({}),
-                                             frontierByState({}),
-                                             currentNode(Node<State, SearchAction>(problem)),
-                                             explored({problem->initialState()}),
-                                             iterations(0)
+    Problem<State, SearchAction> *problem,
+    int iterationLimit) : problem(problem),
+                          frontier({}),
+                          frontierByState({}),
+                          currentNode(Node<State, SearchAction>(problem)),
+                          explored({problem->initialState()}),
+                          iterations(0),
+                          iterationLimit(iterationLimit)
 {
     // We've already initialized the member variables as if we've popped the
     // first node from the frontier.
@@ -182,8 +186,7 @@ inline std::vector<SearchAction> AStarSearcher<State, SearchAction>::findSolutio
 {
     while (!this->foundSolution())
     {
-        // TODO: Define iteration limit somewhere else
-        if (this->iterations > 10000)
+        if (this->iterations > this->iterationLimit)
         {
             throw std::runtime_error("Too many iterations");
         }

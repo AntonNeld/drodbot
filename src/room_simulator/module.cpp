@@ -33,9 +33,12 @@ Parameters
 ----------
 problem
     The problem to solve.
+iteration_limit
+    If searching for more than this number of iteration produces no result, throw
+    an exception.
 )docstr")
-        .def(pybind11::init<Problem<State, SearchAction> *>(),
-             pybind11::arg("problem"))
+        .def(pybind11::init<Problem<State, SearchAction> *, int>(),
+             pybind11::arg("problem"), pybind11::arg("iteration_limit") = 10000)
         .def("find_solution", &AStarSearcher<State, SearchAction>::findSolution, R"docstr(
 Find a solution to the problem.
 
