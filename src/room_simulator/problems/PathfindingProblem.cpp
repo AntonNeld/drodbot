@@ -106,7 +106,6 @@ int PathfindingProblem::heuristic(Position state)
 {
     if (this->useHeuristic)
     {
-        // TODO: Something wrong with this
         // Distance to nearest goal, disregarding obstacles
         int x = std::get<0>(state);
         int y = std::get<1>(state);
