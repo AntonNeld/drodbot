@@ -6,7 +6,7 @@
 class RoomProblem : public Problem<Room, Action>
 {
 public:
-    RoomProblem(Room room, Objective objective);
+    RoomProblem(Room room, Objective objective, bool useHeuristic = true);
     Room initialState();
     std::set<Action> actions(Room state);
     Room result(Room state, Action action);
@@ -17,4 +17,5 @@ public:
 private:
     Room room;
     Objective objective;
+    bool useHeuristic;
 };

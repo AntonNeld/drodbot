@@ -1,12 +1,42 @@
+#include <tuple>
 #include "../Room.h"
 #include "../typedefs.h"
 #include "../search/Problem.h"
 #include "../RoomPlayer.h"
 #include "RoomProblem.h"
 
+Position swordPosition(Position position, Direction direction)
+{
+    int x = std::get<0>(position);
+    int y = std::get<1>(position);
+    switch (direction)
+    {
+    case Direction::E:
+        return {x + 1, y};
+    case Direction::SE:
+        return {x + 1, y + 1};
+    case Direction::S:
+        return {x, y + 1};
+    case Direction::SW:
+        return {x - 1, y + 1};
+    case Direction::W:
+        return {x - 1, y};
+    case Direction::NW:
+        return {x - 1, y - 1};
+    case Direction::N:
+        return {x, y - 1};
+    case Direction::NE:
+        return {x + 1, y - 1};
+    default:
+        return {x, y};
+    }
+}
+
 RoomProblem::RoomProblem(Room room,
-                         Objective objective) : room(room),
-                                                objective(objective){};
+                         Objective objective,
+                         bool useHeuristic) : room(room),
+                                              objective(objective),
+                                              useHeuristic(useHeuristic){};
 
 Room RoomProblem::initialState()
 {
@@ -37,34 +67,12 @@ Room RoomProblem::result(Room state, Action action)
 
 bool RoomProblem::goalTest(Room state)
 {
-    std::tuple<Position, Direction> pair = this->room.findPlayer();
+    std::tuple<Position, Direction> pair = state.findPlayer();
     Position position = std::get<0>(pair);
     Direction direction = std::get<1>(pair);
     if (this->objective.swordAtTile)
     {
-        int x = std::get<0>(position);
-        int y = std::get<1>(position);
-        switch (direction)
-        {
-        case Direction::E:
-            position = {x + 1, y};
-        case Direction::SE:
-            position = {x + 1, y + 1};
-        case Direction::S:
-            position = {x, y + 1};
-        case Direction::SW:
-            position = {x - 1, y + 1};
-        case Direction::W:
-            position = {x - 1, y};
-        case Direction::NW:
-            position = {x - 1, y - 1};
-        case Direction::N:
-            position = {x, y - 1};
-        case Direction::NE:
-            position = {x + 1, y - 1};
-        default:
-            position = {x, y};
-        }
+        position = swordPosition(position, direction);
     }
     return this->objective.tiles.find(position) != objective.tiles.end();
 }
@@ -76,6 +84,31 @@ int RoomProblem::stepCost(Room state, Action action, Room result)
 
 int RoomProblem::heuristic(Room state)
 {
-    // Dummy heuristic for now
+    if (this->useHeuristic)
+    {
+        // Distance to nearest goal, disregarding obstacles
+        std::tuple<Position, Direction> pair = state.findPlayer();
+        Position position = std::get<0>(pair);
+        Direction direction = std::get<1>(pair);
+        if (this->objective.swordAtTile)
+        {
+            position = swordPosition(position, direction);
+        }
+        int x = std::get<0>(position);
+        int y = std::get<1>(position);
+        int closestDistance = 37; // Largest possible distance
+        typename std::set<Position>::iterator iterator;
+        for (iterator = this->objective.tiles.begin(); iterator != this->objective.tiles.end(); ++iterator)
+        {
+            int goalX = std::get<0>(*iterator);
+            int goalY = std::get<1>(*iterator);
+            int distance = std::max<int>(std::abs(goalX - x), std::abs(goalY - y));
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+            }
+        }
+        return closestDistance;
+    }
     return 0;
 }

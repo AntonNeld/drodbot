@@ -315,8 +315,11 @@ room
     The room.
 objective
     The objective.
+use_heuristic
+    Whether to use a heuristic function. The heuristic depends on the objective.
 )docstr")
-        .def(pybind11::init<Room, Objective>(),
+        .def(pybind11::init<Room, Objective, bool>(),
              pybind11::arg("room"),
-             pybind11::arg("objective"));
+             pybind11::arg("objective"),
+             pybind11::arg("use_heuristic") = true);
 }

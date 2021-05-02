@@ -72,7 +72,9 @@ class RoomSolverAppBackend:
         elif goal == RoomSolverGoal.MOVE_TO_CONQUER_TOKEN_ROOM_SIMULATION:
             conquer_tokens = self._room.find_coordinates(ElementType.CONQUER_TOKEN)
             objective = Objective(sword_at_tile=False, tiles=set(conquer_tokens))
-            self._problem = RoomProblem(self._room, objective)
+            self._problem = RoomProblem(
+                self._room, objective, use_heuristic=use_heuristic
+            )
             self._searcher = SearcherRoomAction(self._problem)
         self._show_data()
 
