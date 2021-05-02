@@ -4,15 +4,7 @@ import time
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .solve_room import solve_room, ReachTileObjective, StrikeTileObjective
 from .level_walker import find_path_in_level
-from room_simulator import (
-    ElementType,
-    Direction,
-    Element,
-    Action,
-    simulate_action,
-    Objective,
-)
-from room_solver import RoomSolver
+from room_simulator import ElementType, Direction, Element, Action, simulate_action
 from .state import DrodBotState
 from search import NoSolutionError
 
@@ -83,7 +75,7 @@ class DrodBot:
             f.write(self.state.json())
         print(f"Saved state to {self._state_file}")
 
-    async def go_to_element_in_room(self, element, use_cpp_code=False):
+    async def go_to_element_in_room(self, element):
         """Go to the nearest tile with the given element.
 
         We will not leave the current room.
@@ -97,12 +89,7 @@ class DrodBot:
         t = time.time()
         room = self.state.current_room
         goal_tiles = room.find_coordinates(element)
-        if use_cpp_code:
-            objective = Objective(tiles=set(goal_tiles), sword_at_tile=False)
-            room_solver = RoomSolver(room, objective, simple_pathfinding=True)
-            actions = room_solver.find_solution()
-        else:
-            actions = solve_room(room, ReachTileObjective(goal_tiles=goal_tiles))
+        actions = solve_room(room, ReachTileObjective(goal_tiles=goal_tiles))
         print(f"Thought in {time.time()-t:.2f}s")
         self.state.plan = actions
         await self._execute_plan()
