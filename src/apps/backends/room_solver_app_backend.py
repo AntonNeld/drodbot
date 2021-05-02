@@ -50,7 +50,7 @@ class RoomSolverAppBackend:
         self._room = self._bot.get_current_room()
         self._show_data()
 
-    async def init_search(self, goal, use_heuristic):
+    async def init_search(self, goal, use_heuristic, avoid_duplicates):
         """Initialize a search for the selected goal.
 
         Parameters
@@ -59,6 +59,8 @@ class RoomSolverAppBackend:
             The RoomSolverGoal to reach.
         use_heuristic
             Whether to use a heuristic function.
+        avoid_duplicates
+            Whether to keep track of and avoid duplicates.
         """
         if self._room is None:
             raise UserError("Must get a room before searching")
@@ -68,14 +70,18 @@ class RoomSolverAppBackend:
             self._problem = PathfindingProblem(
                 start, self._room, set(conquer_tokens), use_heuristic=use_heuristic
             )
-            self._searcher = SearcherPositionAction(self._problem)
+            self._searcher = SearcherPositionAction(
+                self._problem, avoid_duplicates=avoid_duplicates
+            )
         elif goal == RoomSolverGoal.MOVE_TO_CONQUER_TOKEN_ROOM_SIMULATION:
             conquer_tokens = self._room.find_coordinates(ElementType.CONQUER_TOKEN)
             objective = Objective(sword_at_tile=False, tiles=set(conquer_tokens))
             self._problem = RoomProblem(
                 self._room, objective, use_heuristic=use_heuristic
             )
-            self._searcher = SearcherRoomAction(self._problem)
+            self._searcher = SearcherRoomAction(
+                self._problem, avoid_duplicates=avoid_duplicates
+            )
         self._show_data()
 
     async def expand_next_node(self):

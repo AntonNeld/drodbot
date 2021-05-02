@@ -43,6 +43,8 @@ class RoomSolverApp(tkinter.Frame):
         self._selected_goal.set(list(RoomSolverGoal)[0].value)
         self._use_heuristic = tkinter.IntVar(self)
         self._use_heuristic.set(1)
+        self._avoid_duplicates = tkinter.IntVar(self)
+        self._avoid_duplicates.set(1)
         self.focus_set()
         self.bind("<Right>", lambda x: self._expand_node())
         self.bind("<Left>", lambda x: self._rewind_expansion())
@@ -105,6 +107,10 @@ class RoomSolverApp(tkinter.Frame):
             self._checkboxes, text="Use heuristic", variable=self._use_heuristic
         )
         self._use_heuristic_checkbox.pack(side=tkinter.LEFT)
+        self._avoid_duplicates_checkbox = tkinter.Checkbutton(
+            self._checkboxes, text="Avoid duplicates", variable=self._avoid_duplicates
+        )
+        self._avoid_duplicates_checkbox.pack(side=tkinter.LEFT)
         self._room_solver_text = tkinter.Label(self._control_panel, text="")
         self._room_solver_text.pack(side=tkinter.TOP)
 
@@ -181,8 +187,7 @@ class RoomSolverApp(tkinter.Frame):
         goal = next(e for e in RoomSolverGoal if e.value == goal_value)
         self._run_coroutine(
             self._backend.init_search(
-                goal,
-                self._use_heuristic.get() == 1,
+                goal, self._use_heuristic.get() == 1, self._avoid_duplicates.get() == 1
             )
         )
 

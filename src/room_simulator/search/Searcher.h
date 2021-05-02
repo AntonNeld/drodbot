@@ -12,7 +12,7 @@ template <class State, class SearchAction>
 class Searcher
 {
 public:
-    Searcher(Problem<State, SearchAction> *problem, int iterationLimit = 10000);
+    Searcher(Problem<State, SearchAction> *problem, bool avoidDuplicates = true, int iterationLimit = 10000);
     std::vector<SearchAction> findSolution();
     // Below methods are intended for inspecting the algorithm.
     // findSolution() should be enough for real usage.
@@ -45,6 +45,8 @@ private:
     // The number of iterations, so we can stop at some reasonable limit if it
     // turns out the problem is intractable.
     int iterations;
+    // Whether to keep track of states to avoid duplicates
+    bool avoidDuplicates;
     // The iteration limit, after which we will throw an exception
     int iterationLimit;
 };
@@ -52,12 +54,14 @@ private:
 template <class State, class SearchAction>
 inline Searcher<State, SearchAction>::Searcher(
     Problem<State, SearchAction> *problem,
+    bool avoidDuplicates,
     int iterationLimit) : problem(problem),
                           frontier({}),
                           frontierByState({}),
                           currentNode(Node<State, SearchAction>(problem)),
-                          explored({problem->initialState()}),
+                          explored({}),
                           iterations(0),
+                          avoidDuplicates(avoidDuplicates),
                           iterationLimit(iterationLimit)
 {
     // We've already initialized the member variables as if we've popped the
@@ -84,8 +88,11 @@ inline void Searcher<State, SearchAction>::popNextNode()
     typename std::multiset<Node<State, SearchAction>>::iterator nodeIterator = this->frontier.begin();
     this->currentNode = *nodeIterator;
     this->frontier.erase(nodeIterator);
-    this->frontierByState.erase(this->currentNode.state);
-    this->explored.insert(this->currentNode.state);
+    if (this->avoidDuplicates)
+    {
+        this->frontierByState.erase(this->currentNode.state);
+        this->explored.insert(this->currentNode.state);
+    }
     this->iterations += 1;
 }
 
@@ -99,37 +106,45 @@ inline void Searcher<State, SearchAction>::expandCurrentNode()
     {
         SearchAction action = *actionIterator;
         Node<State, SearchAction> childNode = this->currentNode.getChild(action);
-        // If the frontier has a node with the same state, replace it if its path cost is higher
-        if (this->frontierByState.find(childNode.state) != this->frontierByState.end())
+        if (this->avoidDuplicates)
         {
-            Node<State, SearchAction> otherNode = std::get<1>(*(this->frontierByState.find(childNode.state)));
-            if (childNode.pathCost < otherNode.pathCost)
+            // If the frontier has a node with the same state, replace it if its path cost is higher
+            if (this->frontierByState.find(childNode.state) != this->frontierByState.end())
             {
-                // Find the actual other node in the frontier and replace it. We
-                // narrow it down to the nodes which the multiset considers to be
-                // equivalent to the one from frontierByState, i.e. all nodes
-                // with the same path cost.
-                std::pair<typename std::multiset<Node<State, SearchAction>>::iterator,
-                          typename std::multiset<Node<State, SearchAction>>::iterator>
-                    range = this->frontier.equal_range(otherNode);
-                typename std::multiset<Node<State, SearchAction>>::iterator it;
-                for (it = std::get<0>(range); it != std::get<1>(range); ++it)
+                Node<State, SearchAction> otherNode = std::get<1>(*(this->frontierByState.find(childNode.state)));
+                if (childNode.pathCost < otherNode.pathCost)
                 {
-                    if (it->state == childNode.state)
+                    // Find the actual other node in the frontier and replace it. We
+                    // narrow it down to the nodes which the multiset considers to be
+                    // equivalent to the one from frontierByState, i.e. all nodes
+                    // with the same path cost.
+                    std::pair<typename std::multiset<Node<State, SearchAction>>::iterator,
+                              typename std::multiset<Node<State, SearchAction>>::iterator>
+                        range = this->frontier.equal_range(otherNode);
+                    typename std::multiset<Node<State, SearchAction>>::iterator it;
+                    for (it = std::get<0>(range); it != std::get<1>(range); ++it)
                     {
-                        frontier.erase(it);
-                        break;
+                        if (it->state == childNode.state)
+                        {
+                            frontier.erase(it);
+                            break;
+                        }
                     }
+                    this->frontier.insert(childNode);
+                    this->frontierByState.insert(std::pair<State, Node<State, SearchAction>>(childNode.state, childNode));
                 }
+            }
+            // If it's not already in the frontier, add it if it's not explored
+            else if (explored.find(childNode.state) == this->explored.end())
+            {
                 this->frontier.insert(childNode);
                 this->frontierByState.insert(std::pair<State, Node<State, SearchAction>>(childNode.state, childNode));
             }
         }
-        // If it's not already in the frontier, add it if it's not explored
-        else if (explored.find(childNode.state) == this->explored.end())
+        else
         {
+            // If we don't avoid duplicates, things are a lot simpler
             this->frontier.insert(childNode);
-            this->frontierByState.insert(std::pair<State, Node<State, SearchAction>>(childNode.state, childNode));
         }
     }
 }
@@ -140,8 +155,12 @@ inline void Searcher<State, SearchAction>::reset()
     this->iterations = 0;
     this->frontier = {};
     this->frontierByState = {};
-    this->explored = {problem->initialState()};
+    this->explored = {};
     this->currentNode = Node<State, SearchAction>(this->problem);
+    if (this->avoidDuplicates)
+    {
+        this->explored.insert(problem->initialState());
+    }
     this->expandCurrentNode();
 }
 
