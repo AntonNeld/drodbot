@@ -23,7 +23,6 @@ class RoomSolver:
     """
 
     def __init__(self, room, objective, simple_pathfinding=False, use_heuristic=True):
-        self.simple_pathfinding = simple_pathfinding
         if simple_pathfinding:
             start, _ = room.find_player()
             # Assign the problem to self.problem. Since the C++ code gets
@@ -37,15 +36,6 @@ class RoomSolver:
             # a reference to it, we don't want it to be garbage collected.
             self.problem = RoomProblem(room, objective)
             self.searcher = SearcherRoomAction(self.problem)
-
-    def uses_simple_pathfinding(self):
-        """Whether the solver uses simple pathfinding.
-
-        Returns
-        -------
-        Whether the solver uses simple pathfinding.
-        """
-        return self.simple_pathfinding
 
     def find_solution(self):
         """Find the solution.

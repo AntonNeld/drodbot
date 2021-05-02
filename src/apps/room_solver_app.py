@@ -130,7 +130,7 @@ class RoomSolverApp(tkinter.Frame):
         if self._room_image is not None:
             pil_image = PIL.Image.fromarray(self._room_image)
             if self._room_solver_info is not None:
-                if self._room_solver_info["simple_pathfinding"]:
+                if isinstance(self._room_solver_info["current_state"], tuple):
                     _draw_explored(pil_image, self._room_solver_info["explored_states"])
                     _draw_frontier(pil_image, self._room_solver_info["frontier_states"])
                     current_position = self._room_solver_info["current_state"]

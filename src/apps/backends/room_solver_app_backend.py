@@ -1,7 +1,7 @@
 import time
 
 from common import GUIEvent, UserError, RoomSolverGoal
-from room_simulator import Objective, ElementType
+from room_simulator import Objective, ElementType, Room
 from room_solver import RoomSolver
 
 
@@ -95,10 +95,10 @@ class RoomSolverAppBackend:
             room = self._room
         else:
             room_solver_data = _extract_solver_info(self._room_solver)
-            if self._room_solver.uses_simple_pathfinding():
-                room = self._room
+            if isinstance(room_solver_data["current_state"], Room):
+                room = room_solver_data["current_state"]
             else:
-                room = self._room_solver.get_current_state()
+                room = self._room
 
         reconstructed_image = self._interpreter.reconstruct_room_image(room)
         self._queue.put(
@@ -115,5 +115,4 @@ def _extract_solver_info(room_solver):
         "current_state_heuristic": room_solver.get_current_state_heuristic(),
         "frontier_states": room_solver.get_frontier_states(),
         "explored_states": room_solver.get_explored(),
-        "simple_pathfinding": room_solver.uses_simple_pathfinding(),
     }
