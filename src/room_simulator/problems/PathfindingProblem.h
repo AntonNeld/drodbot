@@ -4,7 +4,6 @@
 #include "../Room.h"
 #include "../typedefs.h"
 #include "../search/Problem.h"
-#include "../search/AStarSearcher.h"
 
 class PathfindingProblem : public Problem<Position, Action>
 {

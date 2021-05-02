@@ -1,6 +1,6 @@
 from room_simulator import (
-    AStarSearcherPositionAction,
-    AStarSearcherRoomAction,
+    SearcherPositionAction,
+    SearcherRoomAction,
     PathfindingProblem,
     RoomProblem,
 )
@@ -31,12 +31,12 @@ class RoomSolver:
             self.problem = PathfindingProblem(
                 start, room, objective.tiles, use_heuristic=use_heuristic
             )
-            self.searcher = AStarSearcherPositionAction(self.problem)
+            self.searcher = SearcherPositionAction(self.problem)
         else:
             # Assign the problem to self.problem. Since the C++ code gets
             # a reference to it, we don't want it to be garbage collected.
             self.problem = RoomProblem(room, objective)
-            self.searcher = AStarSearcherRoomAction(self.problem)
+            self.searcher = SearcherRoomAction(self.problem)
 
     def uses_simple_pathfinding(self):
         """Whether the solver uses simple pathfinding.
@@ -71,9 +71,9 @@ class RoomSolver:
         """
         iterations = self.searcher.get_iterations()
         if self.simple_pathfinding:
-            self.searcher = AStarSearcherPositionAction(self.problem)
+            self.searcher = SearcherPositionAction(self.problem)
         else:
-            self.searcher = AStarSearcherRoomAction(self.problem)
+            self.searcher = SearcherRoomAction(self.problem)
         for _ in range(iterations - 1):
             self.searcher.expand_next_node()
 

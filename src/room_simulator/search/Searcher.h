@@ -1,5 +1,5 @@
-#ifndef DRODBOT_SEARCH_ASTARSEARCHER_H
-#define DRODBOT_SEARCH_ASTARSEARCHER_H
+#ifndef DRODBOT_SEARCH_Searcher_H
+#define DRODBOT_SEARCH_Searcher_H
 
 #include <iostream>
 #include <vector>
@@ -9,10 +9,10 @@
 #include "Node.h"
 
 template <class State, class SearchAction>
-class AStarSearcher
+class Searcher
 {
 public:
-    AStarSearcher(Problem<State, SearchAction> *problem, int iterationLimit = 10000);
+    Searcher(Problem<State, SearchAction> *problem, int iterationLimit = 10000);
     std::vector<SearchAction> findSolution();
     // Below methods are intended for inspecting the algorithm.
     // findSolution() should be enough for real usage.
@@ -49,7 +49,7 @@ private:
 };
 
 template <class State, class SearchAction>
-inline AStarSearcher<State, SearchAction>::AStarSearcher(
+inline Searcher<State, SearchAction>::Searcher(
     Problem<State, SearchAction> *problem,
     int iterationLimit) : problem(problem),
                           frontier({}),
@@ -65,14 +65,14 @@ inline AStarSearcher<State, SearchAction>::AStarSearcher(
 };
 
 template <class State, class SearchAction>
-inline void AStarSearcher<State, SearchAction>::expandNextNode()
+inline void Searcher<State, SearchAction>::expandNextNode()
 {
     this->popNextNode();
     this->expandCurrentNode();
 };
 
 template <class State, class SearchAction>
-inline void AStarSearcher<State, SearchAction>::popNextNode()
+inline void Searcher<State, SearchAction>::popNextNode()
 {
     // If the frontier is empty, we've already tried all states we can reach
     if (this->frontier.size() == 0)
@@ -89,7 +89,7 @@ inline void AStarSearcher<State, SearchAction>::popNextNode()
 }
 
 template <class State, class SearchAction>
-inline void AStarSearcher<State, SearchAction>::expandCurrentNode()
+inline void Searcher<State, SearchAction>::expandCurrentNode()
 {
     // Expand the current node and add its children to the frontier where appropriate
     std::set<SearchAction> actions = this->problem->actions(this->currentNode.state);
@@ -134,31 +134,31 @@ inline void AStarSearcher<State, SearchAction>::expandCurrentNode()
 }
 
 template <class State, class SearchAction>
-inline int AStarSearcher<State, SearchAction>::getIterations()
+inline int Searcher<State, SearchAction>::getIterations()
 {
     return this->iterations;
 }
 
 template <class State, class SearchAction>
-inline std::vector<SearchAction> AStarSearcher<State, SearchAction>::getCurrentPath()
+inline std::vector<SearchAction> Searcher<State, SearchAction>::getCurrentPath()
 {
     return this->currentNode.actions;
 }
 
 template <class State, class SearchAction>
-inline State AStarSearcher<State, SearchAction>::getCurrentState()
+inline State Searcher<State, SearchAction>::getCurrentState()
 {
     return this->currentNode.state;
 }
 
 template <class State, class SearchAction>
-inline int AStarSearcher<State, SearchAction>::getCurrentStateHeuristic()
+inline int Searcher<State, SearchAction>::getCurrentStateHeuristic()
 {
     return this->problem->heuristic(this->currentNode.state);
 }
 
 template <class State, class SearchAction>
-inline std::set<State> AStarSearcher<State, SearchAction>::getFrontierStates()
+inline std::set<State> Searcher<State, SearchAction>::getFrontierStates()
 {
     std::set<State> frontierStates = {};
     typename std::multiset<Node<State, SearchAction>>::iterator iterator;
@@ -170,19 +170,19 @@ inline std::set<State> AStarSearcher<State, SearchAction>::getFrontierStates()
 }
 
 template <class State, class SearchAction>
-inline std::set<State> AStarSearcher<State, SearchAction>::getExplored()
+inline std::set<State> Searcher<State, SearchAction>::getExplored()
 {
     return this->explored;
 }
 
 template <class State, class SearchAction>
-inline bool AStarSearcher<State, SearchAction>::foundSolution()
+inline bool Searcher<State, SearchAction>::foundSolution()
 {
     return this->problem->goalTest(this->currentNode.state);
 }
 
 template <class State, class SearchAction>
-inline std::vector<SearchAction> AStarSearcher<State, SearchAction>::findSolution()
+inline std::vector<SearchAction> Searcher<State, SearchAction>::findSolution()
 {
     while (!this->foundSolution())
     {
@@ -194,4 +194,4 @@ inline std::vector<SearchAction> AStarSearcher<State, SearchAction>::findSolutio
     }
     return this->currentNode.actions;
 };
-#endif // DRODBOT_SEARCH_ASTARSEARCHER_H
+#endif // DRODBOT_SEARCH_Searcher_H

@@ -7,7 +7,6 @@
 #include "../Room.h"
 #include "../typedefs.h"
 #include "../search/Problem.h"
-#include "../search/AStarSearcher.h"
 #include "PathfindingProblem.h"
 
 PathfindingProblem::PathfindingProblem(Position startPosition,

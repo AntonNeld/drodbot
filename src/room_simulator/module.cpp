@@ -4,7 +4,7 @@
 #include "typedefs.h"
 #include "RoomPlayer.h"
 #include "Room.h"
-#include "search/AStarSearcher.h"
+#include "search/Searcher.h"
 #include "problems/PathfindingProblem.h"
 #include "problems/RoomProblem.h"
 
@@ -21,13 +21,13 @@ Room simulateAction(Room room, Action action)
 }
 
 template <class State, class SearchAction>
-void addAStarSearcher(pybind11::module_ &m, const char *name, const char *problemName)
+void addSearcher(pybind11::module_ &m, const char *name, const char *problemName)
 {
     // Also add a base Problem of the correct type
     pybind11::class_<Problem<State, SearchAction>>(m, problemName);
 
-    pybind11::class_<AStarSearcher<State, SearchAction>>(m, name, R"docstr(
-This performs A* search in an inspectable way.
+    pybind11::class_<Searcher<State, SearchAction>>(m, name, R"docstr(
+This performs search in an inspectable way.
 
 Parameters
 ----------
@@ -39,7 +39,7 @@ iteration_limit
 )docstr")
         .def(pybind11::init<Problem<State, SearchAction> *, int>(),
              pybind11::arg("problem"), pybind11::arg("iteration_limit") = 10000)
-        .def("find_solution", &AStarSearcher<State, SearchAction>::findSolution, R"docstr(
+        .def("find_solution", &Searcher<State, SearchAction>::findSolution, R"docstr(
 Find a solution to the problem.
 
 This is all you need when using this for real.
@@ -48,52 +48,52 @@ Returns
 -------
 A list of actions solving the problem.
 )docstr")
-        .def("expand_next_node", &AStarSearcher<State, SearchAction>::expandNextNode, R"docstr(
+        .def("expand_next_node", &Searcher<State, SearchAction>::expandNextNode, R"docstr(
 Expand the next node in the search.
 )docstr")
-        .def("get_iterations", &AStarSearcher<State, SearchAction>::getIterations, R"docstr(
+        .def("get_iterations", &Searcher<State, SearchAction>::getIterations, R"docstr(
 Get the number of iterations.
 
 Returns
 -------
 The number of iterations.
 )docstr")
-        .def("get_current_path", &AStarSearcher<State, SearchAction>::getCurrentPath, R"docstr(
+        .def("get_current_path", &Searcher<State, SearchAction>::getCurrentPath, R"docstr(
 Get the path to the current node.
 
 Returns
 -------
 The actions resulting in the current node.
 )docstr")
-        .def("get_current_state", &AStarSearcher<State, SearchAction>::getCurrentState, R"docstr(
+        .def("get_current_state", &Searcher<State, SearchAction>::getCurrentState, R"docstr(
 Get the state of the current node.
 
 Returns
 -------
 The state of the current node.
 )docstr")
-        .def("get_current_state_heuristic", &AStarSearcher<State, SearchAction>::getCurrentStateHeuristic, R"docstr(
+        .def("get_current_state_heuristic", &Searcher<State, SearchAction>::getCurrentStateHeuristic, R"docstr(
 Get the heuristic function value of the state of the current node.
 
 Returns
 -------
 The heuristic function value of the state of the current node.
 )docstr")
-        .def("get_frontier_states", &AStarSearcher<State, SearchAction>::getFrontierStates, R"docstr(
+        .def("get_frontier_states", &Searcher<State, SearchAction>::getFrontierStates, R"docstr(
 Get the states in the frontier.
 
 Returns
 -------
 The states in the frontier.
 )docstr")
-        .def("get_explored", &AStarSearcher<State, SearchAction>::getExplored, R"docstr(
+        .def("get_explored", &Searcher<State, SearchAction>::getExplored, R"docstr(
 Get the explored states.
 
 Returns
 -------
 The explored states.
 )docstr")
-        .def("found_solution", &AStarSearcher<State, SearchAction>::foundSolution, R"docstr(
+        .def("found_solution", &Searcher<State, SearchAction>::foundSolution, R"docstr(
 Whether we have found the solution.
 
 Returns
@@ -278,8 +278,8 @@ Whether the tile is passable or not.
         .def_readwrite("sword_at_tile", &Objective::swordAtTile)
         .def_readwrite("tiles", &Objective::tiles);
 
-    addAStarSearcher<Position, Action>(m, "AStarSearcherPositionAction", "ProblemPositionAction");
-    addAStarSearcher<Room, Action>(m, "AStarSearcherRoomAction", "ProblemRoomAction");
+    addSearcher<Position, Action>(m, "SearcherPositionAction", "ProblemPositionAction");
+    addSearcher<Room, Action>(m, "SearcherRoomAction", "ProblemRoomAction");
 
     pybind11::class_<PathfindingProblem, Problem<Position, Action>>(m, "PathfindingProblem", R"docstr(
 A problem for finding a path in a room.
