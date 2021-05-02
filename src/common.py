@@ -37,4 +37,5 @@ class Strategy(str, Enum):
 class RoomSolverGoal(str, Enum):
     """A goal to reach in the room solver app."""
 
-    MOVE_TO_CONQUER_TOKEN = "Move to a conquer token in the room"
+    MOVE_TO_CONQUER_TOKEN_PATHFINDING = "Move to conquer token (pathfinding)"
+    MOVE_TO_CONQUER_TOKEN_ROOM_SIMULATION = "Move to conquer token (room simulation)"

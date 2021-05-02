@@ -43,8 +43,6 @@ class RoomSolverApp(tkinter.Frame):
         self._selected_goal.set(list(RoomSolverGoal)[0].value)
         self._use_heuristic = tkinter.IntVar(self)
         self._use_heuristic.set(1)
-        self._simple_pathfinding = tkinter.IntVar(self)
-        self._simple_pathfinding.set(1)
         self.focus_set()
         self.bind("<Right>", lambda x: self._expand_node())
         self.bind("<Left>", lambda x: self._rewind_expansion())
@@ -107,12 +105,6 @@ class RoomSolverApp(tkinter.Frame):
             self._checkboxes, text="Use heuristic", variable=self._use_heuristic
         )
         self._use_heuristic_checkbox.pack(side=tkinter.LEFT)
-        self._simple_pathfinding_checkbox = tkinter.Checkbutton(
-            self._checkboxes,
-            text="Simple pathfinding",
-            variable=self._simple_pathfinding,
-        )
-        self._simple_pathfinding_checkbox.pack(side=tkinter.LEFT)
         self._room_solver_text = tkinter.Label(self._control_panel, text="")
         self._room_solver_text.pack(side=tkinter.TOP)
 
@@ -190,7 +182,6 @@ class RoomSolverApp(tkinter.Frame):
         self._run_coroutine(
             self._backend.init_search(
                 goal,
-                self._simple_pathfinding.get() == 1,
                 self._use_heuristic.get() == 1,
             )
         )

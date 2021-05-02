@@ -40,23 +40,26 @@ class RoomSolverAppBackend:
         self._room = self._bot.get_current_room()
         self._show_data()
 
-    async def init_search(self, goal, simple_pathfinding, use_heuristic):
+    async def init_search(self, goal, use_heuristic):
         """Initialize a search for the selected goal.
 
         Parameters
         ----------
         goal
             The RoomSolverGoal to reach.
-        simple_pathfinding
-            Whether to use simple pathfinding or a more general solver.
         use_heuristic
             Whether to use a heuristic function.
         """
         if self._room is None:
             raise UserError("Must get a room before searching")
-        if goal == RoomSolverGoal.MOVE_TO_CONQUER_TOKEN:
+        if goal == RoomSolverGoal.MOVE_TO_CONQUER_TOKEN_PATHFINDING:
             conquer_tokens = self._room.find_coordinates(ElementType.CONQUER_TOKEN)
             objective = Objective(sword_at_tile=False, tiles=set(conquer_tokens))
+            simple_pathfinding = True
+        elif goal == RoomSolverGoal.MOVE_TO_CONQUER_TOKEN_ROOM_SIMULATION:
+            conquer_tokens = self._room.find_coordinates(ElementType.CONQUER_TOKEN)
+            objective = Objective(sword_at_tile=False, tiles=set(conquer_tokens))
+            simple_pathfinding = False
         self._room_solver = RoomSolver(
             self._room,
             objective,
