@@ -237,8 +237,8 @@ def _solver_info_to_text(room_solver_info):
         [
             f"Iterations: {room_solver_info['iterations']}",
             f"Heuristic value of current state: {heuristic}",
-            f"Frontier size {len(room_solver_info['frontier_states'])}",
-            f"Explored size {len(room_solver_info['explored_states'])}",
+            f"Frontier size {room_solver_info['frontier_size']}",
+            f"Explored size {room_solver_info['explored_size']}",
             "Current path:",
             ",\n".join(action_rows),
         ]

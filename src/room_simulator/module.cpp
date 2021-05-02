@@ -94,12 +94,26 @@ Returns
 -------
 The states in the frontier.
 )docstr")
+        .def("get_frontier_size", &Searcher<State, SearchAction>::getFrontierSize, R"docstr(
+Get the size of the frontier.
+
+Returns
+-------
+The size of the frontier.
+)docstr")
         .def("get_explored", &Searcher<State, SearchAction>::getExplored, R"docstr(
 Get the explored states.
 
 Returns
 -------
 The explored states.
+)docstr")
+        .def("get_explored_size", &Searcher<State, SearchAction>::getExploredSize, R"docstr(
+Get the explored size.
+
+Returns
+-------
+The explored size.
 )docstr")
         .def("found_solution", &Searcher<State, SearchAction>::foundSolution, R"docstr(
 Whether we have found the solution.

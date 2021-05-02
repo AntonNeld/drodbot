@@ -23,7 +23,9 @@ public:
     State getCurrentState();
     int getCurrentStateHeuristic();
     std::set<State> getFrontierStates();
+    int getFrontierSize();
     std::set<State> getExplored();
+    int getExploredSize();
     bool foundSolution();
 
 private:
@@ -201,9 +203,21 @@ inline std::set<State> Searcher<State, SearchAction>::getFrontierStates()
 }
 
 template <class State, class SearchAction>
+inline int Searcher<State, SearchAction>::getFrontierSize()
+{
+    return this->frontier.size();
+}
+
+template <class State, class SearchAction>
 inline std::set<State> Searcher<State, SearchAction>::getExplored()
 {
     return this->explored;
+}
+
+template <class State, class SearchAction>
+inline int Searcher<State, SearchAction>::getExploredSize()
+{
+    return this->explored.size();
 }
 
 template <class State, class SearchAction>

@@ -126,12 +126,16 @@ class RoomSolverAppBackend:
 
 
 def _extract_searcher_info(searcher):
-    return {
+    info = {
         "iterations": searcher.get_iterations(),
         "current_path": searcher.get_current_path(),
         "current_state": searcher.get_current_state(),
         "found_solution": searcher.found_solution(),
         "current_state_heuristic": searcher.get_current_state_heuristic(),
-        "frontier_states": searcher.get_frontier_states(),
-        "explored_states": searcher.get_explored(),
+        "frontier_size": searcher.get_frontier_size(),
+        "explored_size": searcher.get_explored_size(),
     }
+    if isinstance(searcher.get_current_state(), tuple):
+        info["frontier_states"] = searcher.get_frontier_states()
+        info["explored_states"] = searcher.get_explored()
+    return info
