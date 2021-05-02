@@ -17,6 +17,7 @@ public:
     // Below methods are intended for inspecting the algorithm.
     // findSolution() should be enough for real usage.
     void expandNextNode();
+    void reset();
     int getIterations();
     std::vector<SearchAction> getCurrentPath();
     State getCurrentState();
@@ -131,6 +132,17 @@ inline void Searcher<State, SearchAction>::expandCurrentNode()
             this->frontierByState.insert(std::pair<State, Node<State, SearchAction>>(childNode.state, childNode));
         }
     }
+}
+
+template <class State, class SearchAction>
+inline void Searcher<State, SearchAction>::reset()
+{
+    this->iterations = 0;
+    this->frontier = {};
+    this->frontierByState = {};
+    this->explored = {problem->initialState()};
+    this->currentNode = Node<State, SearchAction>(this->problem);
+    this->expandCurrentNode();
 }
 
 template <class State, class SearchAction>

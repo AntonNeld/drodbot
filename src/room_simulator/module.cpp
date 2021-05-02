@@ -51,6 +51,11 @@ A list of actions solving the problem.
         .def("expand_next_node", &Searcher<State, SearchAction>::expandNextNode, R"docstr(
 Expand the next node in the search.
 )docstr")
+        .def("reset", &Searcher<State, SearchAction>::reset, R"docstr(
+Reset the search.
+
+This preserves the problem and settings, but resets the search in progress.
+)docstr")
         .def("get_iterations", &Searcher<State, SearchAction>::getIterations, R"docstr(
 Get the number of iterations.
 

@@ -70,10 +70,7 @@ class RoomSolver:
         than we currently have. It may be expensive.
         """
         iterations = self.searcher.get_iterations()
-        if self.simple_pathfinding:
-            self.searcher = SearcherPositionAction(self.problem)
-        else:
-            self.searcher = SearcherRoomAction(self.problem)
+        self.searcher.reset()
         for _ in range(iterations - 1):
             self.searcher.expand_next_node()
 
