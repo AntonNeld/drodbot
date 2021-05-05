@@ -8,34 +8,34 @@ template <class State, class SearchAction>
 class Node
 {
 public:
-    Node(Problem<State, SearchAction> *problem, State state, int pathCost, std::vector<SearchAction> actions);
+    Node(Problem<State, SearchAction> *problem, State state, int pathCost, std::vector<SearchAction> actions, int priority);
     Node(Problem<State, SearchAction> *problem); // Starting node
-    bool operator<(const Node &otherNode) const { return this->pathCost + this->heuristicValue < otherNode.pathCost + otherNode.heuristicValue; }
+    bool operator<(const Node &otherNode) const { return this->priority < otherNode.priority; }
     Node getChild(SearchAction action);
-    std::vector<SearchAction> getSolution();
     Problem<State, SearchAction> *problem;
     State state;
     int pathCost;
     std::vector<SearchAction> actions;
-    int heuristicValue;
+    int priority;
 };
 
 template <class State, class SearchAction>
 inline Node<State, SearchAction>::Node(Problem<State, SearchAction> *problem,
                                        State state,
                                        int pathCost,
-                                       std::vector<SearchAction> actions) : problem(problem),
-                                                                            state(state),
-                                                                            pathCost(pathCost),
-                                                                            actions(actions),
-                                                                            heuristicValue(problem->heuristic(state)){};
+                                       std::vector<SearchAction> actions,
+                                       int priority) : problem(problem),
+                                                       state(state),
+                                                       pathCost(pathCost),
+                                                       actions(actions),
+                                                       priority(priority){};
 
 template <class State, class SearchAction>
 inline Node<State, SearchAction>::Node(Problem<State, SearchAction> *problem) : problem(problem),
                                                                                 state(problem->initialState()),
                                                                                 pathCost(0),
                                                                                 actions({}),
-                                                                                heuristicValue(problem->heuristic(state)){};
+                                                                                priority(problem->heuristic(state)){};
 
 template <class State, class SearchAction>
 inline Node<State, SearchAction> Node<State, SearchAction>::getChild(SearchAction action)
@@ -43,7 +43,8 @@ inline Node<State, SearchAction> Node<State, SearchAction>::getChild(SearchActio
     State result = this->problem->result(this->state, action);
     std::vector<SearchAction> childActions = this->actions;
     childActions.push_back(action);
-    return Node<State, SearchAction>(this->problem, result, this->pathCost + 1, childActions);
+    int priority = this->pathCost + 1 + this->problem->heuristic(result);
+    return Node<State, SearchAction>(this->problem, result, this->pathCost + 1, childActions, priority);
 }
 
 #endif // DRODBOT_SEARCH_NODE_H
