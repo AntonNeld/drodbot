@@ -67,20 +67,20 @@ class RoomSolverAppBackend:
         if goal == RoomSolverGoal.MOVE_TO_CONQUER_TOKEN_PATHFINDING:
             conquer_tokens = self._room.find_coordinates(ElementType.CONQUER_TOKEN)
             start, _ = self._room.find_player()
-            self._problem = PathfindingProblem(
-                start, self._room, set(conquer_tokens), use_heuristic=use_heuristic
-            )
+            self._problem = PathfindingProblem(start, self._room, set(conquer_tokens))
             self._searcher = SearcherPositionAction(
-                self._problem, avoid_duplicates=avoid_duplicates
+                self._problem,
+                avoid_duplicates=avoid_duplicates,
+                heuristic_in_priority=use_heuristic,
             )
         elif goal == RoomSolverGoal.MOVE_TO_CONQUER_TOKEN_ROOM_SIMULATION:
             conquer_tokens = self._room.find_coordinates(ElementType.CONQUER_TOKEN)
             objective = Objective(sword_at_tile=False, tiles=set(conquer_tokens))
-            self._problem = RoomProblem(
-                self._room, objective, use_heuristic=use_heuristic
-            )
+            self._problem = RoomProblem(self._room, objective)
             self._searcher = SearcherRoomAction(
-                self._problem, avoid_duplicates=avoid_duplicates
+                self._problem,
+                avoid_duplicates=avoid_duplicates,
+                heuristic_in_priority=use_heuristic,
             )
         self._show_data()
 

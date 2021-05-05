@@ -35,12 +35,16 @@ problem
     The problem to solve.
 avoid_duplicates
     Whether to keep track of and avoid duplicates.
+heuristic_in_priority
+    Whether to include the heuristic when prioritizing nodes to expand.
 iteration_limit
     If searching for more than this number of iteration produces no result, throw
     an exception.
 )docstr")
-        .def(pybind11::init<Problem<State, SearchAction> *, bool, int>(),
-             pybind11::arg("problem"), pybind11::arg("avoid_duplicates") = true,
+        .def(pybind11::init<Problem<State, SearchAction> *, bool, bool, int>(),
+             pybind11::arg("problem"),
+             pybind11::arg("avoid_duplicates") = true,
+             pybind11::arg("heuristic_in_priority") = true,
              pybind11::arg("iteration_limit") = 10000)
         .def("find_solution", &Searcher<State, SearchAction>::findSolution, R"docstr(
 Find a solution to the problem.
@@ -314,15 +318,11 @@ room
     The room.
 goals
     The goal positions.
-use_heuristic
-    Whether to use a heuristic function. The heuristic is the shortest distance
-    to the nearest goal, disregarding obstacles.
 )docstr")
-        .def(pybind11::init<Position, Room, std::set<Position>, bool>(),
+        .def(pybind11::init<Position, Room, std::set<Position>>(),
              pybind11::arg("start_position"),
              pybind11::arg("room"),
-             pybind11::arg("goals"),
-             pybind11::arg("use_heuristic") = true);
+             pybind11::arg("goals"));
     pybind11::class_<RoomProblem, Problem<Room, Action>>(m, "RoomProblem", R"docstr(
 A problem for reaching an objective in a room.
 
@@ -332,11 +332,8 @@ room
     The room.
 objective
     The objective.
-use_heuristic
-    Whether to use a heuristic function. The heuristic depends on the objective.
 )docstr")
-        .def(pybind11::init<Room, Objective, bool>(),
+        .def(pybind11::init<Room, Objective>(),
              pybind11::arg("room"),
-             pybind11::arg("objective"),
-             pybind11::arg("use_heuristic") = true);
+             pybind11::arg("objective"));
 }

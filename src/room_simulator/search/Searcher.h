@@ -29,7 +29,10 @@ template <class State, class SearchAction>
 class Searcher
 {
 public:
-    Searcher(Problem<State, SearchAction> *problem, bool avoidDuplicates = true, int iterationLimit = 10000);
+    Searcher(Problem<State, SearchAction> *problem,
+             bool avoidDuplicates = true,
+             bool heuristicInPriority = true,
+             int iterationLimit = 10000);
     std::vector<SearchAction> findSolution();
     // Below methods are intended for inspecting the algorithm.
     // findSolution() should be enough for real usage.
@@ -66,6 +69,8 @@ private:
     int iterations;
     // Whether to keep track of states to avoid duplicates
     bool avoidDuplicates;
+    // Whether to include the heuristic when prioritizing nodes to expand
+    bool heuristicInPriority;
     // The iteration limit, after which we will throw an exception
     int iterationLimit;
 };
@@ -74,6 +79,7 @@ template <class State, class SearchAction>
 inline Searcher<State, SearchAction>::Searcher(
     Problem<State, SearchAction> *problem,
     bool avoidDuplicates,
+    bool heuristicInPriority,
     int iterationLimit) : problem(problem),
                           frontier({}),
                           frontierByState({}),
@@ -81,6 +87,7 @@ inline Searcher<State, SearchAction>::Searcher(
                           explored({}),
                           iterations(0),
                           avoidDuplicates(avoidDuplicates),
+                          heuristicInPriority(heuristicInPriority),
                           iterationLimit(iterationLimit)
 {
     if (this->avoidDuplicates)
@@ -133,7 +140,11 @@ inline void Searcher<State, SearchAction>::expandCurrentNode()
         std::vector<SearchAction> childActions = this->currentNode.actions;
         childActions.push_back(action);
         int pathCost = this->currentNode.pathCost + 1;
-        int priority = pathCost + this->problem->heuristic(result);
+        int priority = pathCost;
+        if (this->heuristicInPriority)
+        {
+            priority += this->problem->heuristic(result);
+        }
         Node<State, SearchAction> childNode = Node<State, SearchAction>(result, pathCost, childActions, priority);
 
         if (this->avoidDuplicates)

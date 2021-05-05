@@ -33,10 +33,8 @@ Position swordPosition(Position position, Direction direction)
 }
 
 RoomProblem::RoomProblem(Room room,
-                         Objective objective,
-                         bool useHeuristic) : room(room),
-                                              objective(objective),
-                                              useHeuristic(useHeuristic){};
+                         Objective objective) : room(room),
+                                                objective(objective){};
 
 Room RoomProblem::initialState()
 {
@@ -84,31 +82,27 @@ int RoomProblem::stepCost(Room state, Action action, Room result)
 
 int RoomProblem::heuristic(Room state)
 {
-    if (this->useHeuristic)
+    // Distance to nearest goal, disregarding obstacles
+    std::tuple<Position, Direction> pair = state.findPlayer();
+    Position position = std::get<0>(pair);
+    Direction direction = std::get<1>(pair);
+    if (this->objective.swordAtTile)
     {
-        // Distance to nearest goal, disregarding obstacles
-        std::tuple<Position, Direction> pair = state.findPlayer();
-        Position position = std::get<0>(pair);
-        Direction direction = std::get<1>(pair);
-        if (this->objective.swordAtTile)
-        {
-            position = swordPosition(position, direction);
-        }
-        int x = std::get<0>(position);
-        int y = std::get<1>(position);
-        int closestDistance = 37; // Largest possible distance
-        typename std::set<Position>::iterator iterator;
-        for (iterator = this->objective.tiles.begin(); iterator != this->objective.tiles.end(); ++iterator)
-        {
-            int goalX = std::get<0>(*iterator);
-            int goalY = std::get<1>(*iterator);
-            int distance = std::max<int>(std::abs(goalX - x), std::abs(goalY - y));
-            if (distance < closestDistance)
-            {
-                closestDistance = distance;
-            }
-        }
-        return closestDistance;
+        position = swordPosition(position, direction);
     }
-    return 0;
+    int x = std::get<0>(position);
+    int y = std::get<1>(position);
+    int closestDistance = 37; // Largest possible distance
+    typename std::set<Position>::iterator iterator;
+    for (iterator = this->objective.tiles.begin(); iterator != this->objective.tiles.end(); ++iterator)
+    {
+        int goalX = std::get<0>(*iterator);
+        int goalY = std::get<1>(*iterator);
+        int distance = std::max<int>(std::abs(goalX - x), std::abs(goalY - y));
+        if (distance < closestDistance)
+        {
+            closestDistance = distance;
+        }
+    }
+    return closestDistance;
 }

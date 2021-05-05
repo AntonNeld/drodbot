@@ -8,7 +8,7 @@
 class PathfindingProblem : public Problem<Position, Action>
 {
 public:
-    PathfindingProblem(Position startPosition, Room room, std::set<Position> goals, bool useHeuristic = true);
+    PathfindingProblem(Position startPosition, Room room, std::set<Position> goals);
     Position initialState();
     std::set<Action> actions(Position state);
     Position result(Position state, Action action);
@@ -20,5 +20,4 @@ private:
     Position startPosition;
     Room room;
     std::set<Position> goals;
-    bool useHeuristic;
 };
