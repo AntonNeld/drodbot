@@ -11,7 +11,6 @@ public:
     Node(Problem<State, SearchAction> *problem, State state, int pathCost, std::vector<SearchAction> actions, int priority);
     Node(Problem<State, SearchAction> *problem); // Starting node
     bool operator<(const Node &otherNode) const { return this->priority < otherNode.priority; }
-    Node getChild(SearchAction action);
     Problem<State, SearchAction> *problem;
     State state;
     int pathCost;
@@ -36,15 +35,5 @@ inline Node<State, SearchAction>::Node(Problem<State, SearchAction> *problem) : 
                                                                                 pathCost(0),
                                                                                 actions({}),
                                                                                 priority(problem->heuristic(state)){};
-
-template <class State, class SearchAction>
-inline Node<State, SearchAction> Node<State, SearchAction>::getChild(SearchAction action)
-{
-    State result = this->problem->result(this->state, action);
-    std::vector<SearchAction> childActions = this->actions;
-    childActions.push_back(action);
-    int priority = this->pathCost + 1 + this->problem->heuristic(result);
-    return Node<State, SearchAction>(this->problem, result, this->pathCost + 1, childActions, priority);
-}
 
 #endif // DRODBOT_SEARCH_NODE_H

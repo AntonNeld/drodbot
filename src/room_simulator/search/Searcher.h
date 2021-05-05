@@ -107,7 +107,15 @@ inline void Searcher<State, SearchAction>::expandCurrentNode()
     for (actionIterator = actions.begin(); actionIterator != actions.end(); ++actionIterator)
     {
         SearchAction action = *actionIterator;
-        Node<State, SearchAction> childNode = this->currentNode.getChild(action);
+        // Find the child node
+        State result = this->problem->result(this->currentNode.state, action);
+        std::vector<SearchAction> childActions = this->currentNode.actions;
+        childActions.push_back(action);
+        int pathCost = this->currentNode.pathCost + 1;
+        int priority = pathCost + this->problem->heuristic(result);
+        Node<State, SearchAction> childNode = Node<State, SearchAction>(
+            this->problem, result, pathCost, childActions, priority);
+
         if (this->avoidDuplicates)
         {
             // If the frontier has a node with the same state, replace it if its path cost is higher
