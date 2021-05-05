@@ -6,7 +6,24 @@
 #include <map>
 #include <set>
 #include "Problem.h"
-#include "Node.h"
+
+template <class State, class SearchAction>
+struct Node
+{
+public:
+    Node(State state,
+         int pathCost,
+         std::vector<SearchAction> actions,
+         int priority) : state(state),
+                         pathCost(pathCost),
+                         actions(actions),
+                         priority(priority){};
+    bool operator<(const Node &otherNode) const { return this->priority < otherNode.priority; }
+    State state;
+    int pathCost;
+    std::vector<SearchAction> actions;
+    int priority;
+};
 
 template <class State, class SearchAction>
 class Searcher
@@ -60,12 +77,16 @@ inline Searcher<State, SearchAction>::Searcher(
     int iterationLimit) : problem(problem),
                           frontier({}),
                           frontierByState({}),
-                          currentNode(Node<State, SearchAction>(problem)),
+                          currentNode(Node<State, SearchAction>(problem->initialState(), 0, {}, 0)),
                           explored({}),
                           iterations(0),
                           avoidDuplicates(avoidDuplicates),
                           iterationLimit(iterationLimit)
 {
+    if (this->avoidDuplicates)
+    {
+        this->explored.insert(problem->initialState());
+    }
     // We've already initialized the member variables as if we've popped the
     // first node from the frontier.
     this->expandCurrentNode();
@@ -113,8 +134,7 @@ inline void Searcher<State, SearchAction>::expandCurrentNode()
         childActions.push_back(action);
         int pathCost = this->currentNode.pathCost + 1;
         int priority = pathCost + this->problem->heuristic(result);
-        Node<State, SearchAction> childNode = Node<State, SearchAction>(
-            this->problem, result, pathCost, childActions, priority);
+        Node<State, SearchAction> childNode = Node<State, SearchAction>(result, pathCost, childActions, priority);
 
         if (this->avoidDuplicates)
         {
@@ -166,7 +186,7 @@ inline void Searcher<State, SearchAction>::reset()
     this->frontier = {};
     this->frontierByState = {};
     this->explored = {};
-    this->currentNode = Node<State, SearchAction>(this->problem);
+    this->currentNode = Node<State, SearchAction>(this->problem->initialState(), 0, {}, 0);
     if (this->avoidDuplicates)
     {
         this->explored.insert(problem->initialState());
