@@ -41,8 +41,10 @@ class RoomSolverApp(tkinter.Frame):
         self._room_solver_info = None
         self._selected_goal = tkinter.StringVar(self)
         self._selected_goal.set(list(RoomSolverGoal)[0].value)
-        self._use_heuristic = tkinter.IntVar(self)
-        self._use_heuristic.set(1)
+        self._heuristic_in_priority = tkinter.IntVar(self)
+        self._heuristic_in_priority.set(1)
+        self._path_cost_in_priority = tkinter.IntVar(self)
+        self._path_cost_in_priority.set(1)
         self._avoid_duplicates = tkinter.IntVar(self)
         self._avoid_duplicates.set(1)
         self.focus_set()
@@ -101,14 +103,24 @@ class RoomSolverApp(tkinter.Frame):
             self._search_area, text=">>", command=self._find_solution
         )
         self._find_solution_button.pack(side=tkinter.LEFT)
-        self._checkboxes = tkinter.Frame(self._control_panel)
-        self._checkboxes.pack(side=tkinter.TOP)
-        self._use_heuristic_checkbox = tkinter.Checkbutton(
-            self._checkboxes, text="Use heuristic", variable=self._use_heuristic
+        self._checkboxes_1 = tkinter.Frame(self._control_panel)
+        self._checkboxes_1.pack(side=tkinter.TOP)
+        self._heuristic_checkbox = tkinter.Checkbutton(
+            self._checkboxes_1,
+            text="Heuristic in priority",
+            variable=self._heuristic_in_priority,
         )
-        self._use_heuristic_checkbox.pack(side=tkinter.LEFT)
+        self._heuristic_checkbox.pack(side=tkinter.LEFT)
+        self._path_cost_checkbox = tkinter.Checkbutton(
+            self._checkboxes_1,
+            text="Path cost in priority",
+            variable=self._path_cost_in_priority,
+        )
+        self._path_cost_checkbox.pack(side=tkinter.LEFT)
+        self._checkboxes_2 = tkinter.Frame(self._control_panel)
+        self._checkboxes_2.pack(side=tkinter.TOP)
         self._avoid_duplicates_checkbox = tkinter.Checkbutton(
-            self._checkboxes, text="Avoid duplicates", variable=self._avoid_duplicates
+            self._checkboxes_2, text="Avoid duplicates", variable=self._avoid_duplicates
         )
         self._avoid_duplicates_checkbox.pack(side=tkinter.LEFT)
         self._room_solver_text = tkinter.Label(self._control_panel, text="")
@@ -187,7 +199,10 @@ class RoomSolverApp(tkinter.Frame):
         goal = next(e for e in RoomSolverGoal if e.value == goal_value)
         self._run_coroutine(
             self._backend.init_search(
-                goal, self._use_heuristic.get() == 1, self._avoid_duplicates.get() == 1
+                goal,
+                self._heuristic_in_priority.get() == 1,
+                self._path_cost_in_priority.get() == 1,
+                self._avoid_duplicates.get() == 1,
             )
         )
 

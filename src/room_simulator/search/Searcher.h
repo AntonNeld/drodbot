@@ -32,6 +32,7 @@ public:
     Searcher(Problem<State, SearchAction> *problem,
              bool avoidDuplicates = true,
              bool heuristicInPriority = true,
+             bool pathCostInPriority = true,
              int iterationLimit = 10000);
     std::vector<SearchAction> findSolution();
     // Below methods are intended for inspecting the algorithm.
@@ -71,6 +72,8 @@ private:
     bool avoidDuplicates;
     // Whether to include the heuristic when prioritizing nodes to expand
     bool heuristicInPriority;
+    // Whether to include the path cost when prioritizing nodes to expand
+    bool pathCostInPriority;
     // The iteration limit, after which we will throw an exception
     int iterationLimit;
 };
@@ -80,6 +83,7 @@ inline Searcher<State, SearchAction>::Searcher(
     Problem<State, SearchAction> *problem,
     bool avoidDuplicates,
     bool heuristicInPriority,
+    bool pathCostInPriority,
     int iterationLimit) : problem(problem),
                           frontier({}),
                           frontierByState({}),
@@ -88,6 +92,7 @@ inline Searcher<State, SearchAction>::Searcher(
                           iterations(0),
                           avoidDuplicates(avoidDuplicates),
                           heuristicInPriority(heuristicInPriority),
+                          pathCostInPriority(pathCostInPriority),
                           iterationLimit(iterationLimit)
 {
     if (this->avoidDuplicates)
@@ -140,7 +145,11 @@ inline void Searcher<State, SearchAction>::expandCurrentNode()
         std::vector<SearchAction> childActions = this->currentNode.actions;
         childActions.push_back(action);
         int pathCost = this->currentNode.pathCost + 1;
-        int priority = pathCost;
+        int priority = 0;
+        if (this->pathCostInPriority)
+        {
+            priority += pathCost;
+        }
         if (this->heuristicInPriority)
         {
             priority += this->problem->heuristic(result);

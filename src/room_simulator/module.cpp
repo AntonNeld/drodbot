@@ -37,14 +37,17 @@ avoid_duplicates
     Whether to keep track of and avoid duplicates.
 heuristic_in_priority
     Whether to include the heuristic when prioritizing nodes to expand.
+path_cost_in_priority
+    Whether to include the path cost when prioritizing nodes to expand.
 iteration_limit
     If searching for more than this number of iteration produces no result, throw
     an exception.
 )docstr")
-        .def(pybind11::init<Problem<State, SearchAction> *, bool, bool, int>(),
+        .def(pybind11::init<Problem<State, SearchAction> *, bool, bool, bool, int>(),
              pybind11::arg("problem"),
              pybind11::arg("avoid_duplicates") = true,
              pybind11::arg("heuristic_in_priority") = true,
+             pybind11::arg("path_cost_in_priority") = true,
              pybind11::arg("iteration_limit") = 10000)
         .def("find_solution", &Searcher<State, SearchAction>::findSolution, R"docstr(
 Find a solution to the problem.

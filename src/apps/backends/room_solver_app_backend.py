@@ -50,15 +50,19 @@ class RoomSolverAppBackend:
         self._room = self._bot.get_current_room()
         self._show_data()
 
-    async def init_search(self, goal, use_heuristic, avoid_duplicates):
+    async def init_search(
+        self, goal, heuristic_in_priority, path_cost_in_priority, avoid_duplicates
+    ):
         """Initialize a search for the selected goal.
 
         Parameters
         ----------
         goal
             The RoomSolverGoal to reach.
-        use_heuristic
-            Whether to use a heuristic function.
+        heuristic_in_priority
+            Whether to use a heuristic function when prioritizing nodes to expand.
+        path_cost_in_priority
+            Whether to use the path cost when prioritizing nodes to expand.
         avoid_duplicates
             Whether to keep track of and avoid duplicates.
         """
@@ -71,7 +75,8 @@ class RoomSolverAppBackend:
             self._searcher = SearcherPositionAction(
                 self._problem,
                 avoid_duplicates=avoid_duplicates,
-                heuristic_in_priority=use_heuristic,
+                heuristic_in_priority=heuristic_in_priority,
+                path_cost_in_priority=path_cost_in_priority,
             )
         elif goal == RoomSolverGoal.MOVE_TO_CONQUER_TOKEN_ROOM_SIMULATION:
             conquer_tokens = self._room.find_coordinates(ElementType.CONQUER_TOKEN)
@@ -80,7 +85,8 @@ class RoomSolverAppBackend:
             self._searcher = SearcherRoomAction(
                 self._problem,
                 avoid_duplicates=avoid_duplicates,
-                heuristic_in_priority=use_heuristic,
+                heuristic_in_priority=heuristic_in_priority,
+                path_cost_in_priority=path_cost_in_priority,
             )
         self._show_data()
 
