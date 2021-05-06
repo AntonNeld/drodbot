@@ -111,8 +111,11 @@ class RoomSolverAppBackend:
         """Search until we find a solution."""
         if self._searcher is None:
             raise UserError("Must initialize search before searching")
+        print("Thinking...")
+        t = time.time()
         self._searcher.find_solution()
         self._show_data()
+        print(f"Thought in {time.time()-t:.2f}s")
 
     def _show_data(self):
         if self._searcher is None:
