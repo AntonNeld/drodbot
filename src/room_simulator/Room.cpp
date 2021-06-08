@@ -1,3 +1,5 @@
+#include <stdexcept>
+
 #include "Room.h"
 
 Room::Room(Tiles tiles)

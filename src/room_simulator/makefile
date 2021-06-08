@@ -1,6 +1,6 @@
-MODULE_SUFFIX=$(shell python3.8-config --extension-suffix)
+MODULE_SUFFIX=$(shell python3.9-config --extension-suffix)
 PYBIND11_INCLUDES=$(shell python3 -m pybind11 --includes)
-INCLUDES=$(PYBIND11_INCLUDES) -I/usr/include/python3.8 -Idrod -Imetakit/include -I/usr/include/jsoncpp
+INCLUDES=$(PYBIND11_INCLUDES) -I/usr/include/python3.9 -Idrod -Imetakit/include -I/usr/include/jsoncpp
 # -Wno-parentheses is to suppress a warning from metakit
 WARNING_ARGS=-Wall -Werror -Wno-parentheses
 COMMON_COMPILE_ARGS=-O3 -std=c++11 -fPIC $(INCLUDES) $(shell sdl2-config --cflags)
@@ -19,7 +19,7 @@ OWN_PROBLEMS_FILES=$(shell find ./problems -maxdepth 1 -name '*.cpp')
 OWN_PROBLEMS_OBJECT_FILES=$(patsubst %.cpp,build/own/%.o,$(OWN_PROBLEMS_FILES))
 OBJECT_FILES=$(BACKENDLIB_OBJECT_FILES) $(DRODLIB_OBJECT_FILES) $(METAKIT_OBJECT_FILES) $(OWN_OBJECT_FILES) $(OWN_SEARCH_OBJECT_FILES) $(OWN_PROBLEMS_OBJECT_FILES)
 
-LINK_LIBS=$(shell sdl2-config --libs) -lpython3.8 -ljsoncpp -lcurl
+LINK_LIBS=$(shell sdl2-config --libs) -lpython3.9 -ljsoncpp -lcurl
 
 ../room_simulator$(MODULE_SUFFIX): $(OBJECT_FILES)
 	g++ -shared -o ../room_simulator$(MODULE_SUFFIX) $(OBJECT_FILES) $(LINK_LIBS)
@@ -58,3 +58,4 @@ clean:
 	mkdir build/DRODLibTests
 	mkdir build/own
 	mkdir build/own/search
+	mkdir build/own/problems

@@ -16,9 +16,10 @@ Install the following packages:
 - `libsdl2-dev`
 - `libcurl4-gnutls-dev`
 - `libjsoncpp-dev`
+- `libpython3.9-dev`
 
-(On Ubuntu 20.04, or equivalent on other distros. If you use another distro, make
-sure your Python version is 3.8.)
+(On Ubuntu 21.04, or equivalent on other distros. If you use another distro, make
+sure your Python version is 3.9.)
 
 Then install the Python packages:
 
