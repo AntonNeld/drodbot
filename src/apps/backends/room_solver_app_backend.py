@@ -88,6 +88,16 @@ class RoomSolverAppBackend:
                 heuristic_in_priority=heuristic_in_priority,
                 path_cost_in_priority=path_cost_in_priority,
             )
+        elif goal == RoomSolverGoal.STRIKE_ORB:
+            orbs = self._room.find_coordinates(ElementType.ORB)
+            objective = Objective(sword_at_tile=True, tiles=set(orbs))
+            self._problem = RoomProblem(self._room, objective)
+            self._searcher = SearcherRoomAction(
+                self._problem,
+                avoid_duplicates=avoid_duplicates,
+                heuristic_in_priority=heuristic_in_priority,
+                path_cost_in_priority=path_cost_in_priority,
+            )
         self._show_data()
 
     async def expand_next_node(self):
