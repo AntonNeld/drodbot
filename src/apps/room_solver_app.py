@@ -47,7 +47,6 @@ class RoomSolverApp(tkinter.Frame):
         self._path_cost_in_priority.set(1)
         self._avoid_duplicates = tkinter.IntVar(self)
         self._avoid_duplicates.set(1)
-        self.focus_set()
         self.bind("<Right>", lambda x: self._expand_node())
         self.bind("<Left>", lambda x: self._rewind_expansion())
 

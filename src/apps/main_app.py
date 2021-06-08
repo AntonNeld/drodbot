@@ -104,5 +104,7 @@ class MainApp(tkinter.Frame):
             self._interpret_screen_app.pack(side=tkinter.TOP)
         elif app == "Examine room solver":
             self._room_solver_app.pack(side=tkinter.TOP)
+            # Needed for keybindings to work
+            self._room_solver_app.focus_set()
         elif app == "Manage classifier":
             self._classification_app.pack(side=tkinter.TOP)
