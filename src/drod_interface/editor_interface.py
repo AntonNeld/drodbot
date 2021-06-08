@@ -195,6 +195,7 @@ class EditorInterface:
         pyautogui.dragRel(
             xOffset=(ROOM_WIDTH_IN_TILES - 1) * TILE_SIZE,
             yOffset=(ROOM_HEIGHT_IN_TILES - 1) * TILE_SIZE,
+            duration=0.2,
             button="right",
         )
         pyautogui.keyUp("shift")
@@ -426,6 +427,7 @@ class EditorInterface:
             pyautogui.dragRel(
                 xOffset=(end_position[0] - position[0]) * TILE_SIZE,
                 yOffset=(end_position[1] - position[1]) * TILE_SIZE,
+                duration=0.2,
                 button=button,
             )
         if element == ElementType.STAIRS:
