@@ -6,7 +6,7 @@ import tkinter
 import traceback
 
 from common import TILE_SIZE, RoomSolverGoal
-from room_simulator import Action
+from room_simulator import Action, Room
 from .util import tile_to_text
 
 # The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
@@ -156,16 +156,19 @@ class RoomSolverApp(tkinter.Frame):
                         current_position,
                         self._room_solver_info["found_solution"],
                     )
-                else:
+                elif isinstance(self._room_solver_info["current_state"], Room):
                     current_position, _ = self._room_solver_info[
                         "current_state"
                     ].find_player()
-                _draw_path(
-                    pil_image,
-                    current_position,
-                    self._room_solver_info["current_path"],
-                    self._room_solver_info["found_solution"],
-                )
+                if len(self._room_solver_info["current_path"]) > 0 and isinstance(
+                    self._room_solver_info["current_path"][0], Action
+                ):
+                    _draw_path(
+                        pil_image,
+                        current_position,
+                        self._room_solver_info["current_path"],
+                        self._room_solver_info["found_solution"],
+                    )
 
             resized_image = pil_image.resize(
                 (int(self._canvas["width"]), int(self._canvas["height"])), Image.NEAREST

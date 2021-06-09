@@ -7,8 +7,10 @@ from room_simulator import (
     Room,
     RoomProblem,
     PathfindingProblem,
+    PlanningProblem,
     SearcherRoomAction,
     SearcherPositionAction,
+    SearcherRoomObjective,
 )
 
 
@@ -93,6 +95,16 @@ class RoomSolverAppBackend:
             objective = Objective(sword_at_tile=True, tiles=set(orbs))
             self._problem = RoomProblem(self._room, objective)
             self._searcher = SearcherRoomAction(
+                self._problem,
+                avoid_duplicates=avoid_duplicates,
+                heuristic_in_priority=heuristic_in_priority,
+                path_cost_in_priority=path_cost_in_priority,
+            )
+        elif goal == RoomSolverGoal.MOVE_TO_CONQUER_TOKEN_PLANNING:
+            conquer_tokens = self._room.find_coordinates(ElementType.CONQUER_TOKEN)
+            objective = Objective(sword_at_tile=False, tiles=set(conquer_tokens))
+            self._problem = PlanningProblem(self._room, objective)
+            self._searcher = SearcherRoomObjective(
                 self._problem,
                 avoid_duplicates=avoid_duplicates,
                 heuristic_in_priority=heuristic_in_priority,

@@ -6,6 +6,7 @@
 #include "Room.h"
 #include "search/Searcher.h"
 #include "problems/PathfindingProblem.h"
+#include "problems/PlanningProblem.h"
 #include "problems/RoomProblem.h"
 
 void initialize()
@@ -309,6 +310,7 @@ Whether the tile is passable or not.
 
     addSearcher<Position, Action>(m, "SearcherPositionAction", "ProblemPositionAction");
     addSearcher<Room, Action>(m, "SearcherRoomAction", "ProblemRoomAction");
+    addSearcher<Room, Objective>(m, "SearcherRoomObjective", "ProblemRoomObjective");
 
     pybind11::class_<PathfindingProblem, Problem<Position, Action>>(m, "PathfindingProblem", R"docstr(
 A problem for finding a path in a room.
@@ -335,6 +337,19 @@ room
     The room.
 objective
     The objective.
+)docstr")
+        .def(pybind11::init<Room, Objective>(),
+             pybind11::arg("room"),
+             pybind11::arg("objective"));
+    pybind11::class_<PlanningProblem, Problem<Room, Objective>>(m, "PlanningProblem", R"docstr(
+A problem for reaching an objective in a room, on a high level with intermediate objectives.
+
+Parameters
+----------
+room
+    The room.
+objective
+    The goal objective.
 )docstr")
         .def(pybind11::init<Room, Objective>(),
              pybind11::arg("room"),
