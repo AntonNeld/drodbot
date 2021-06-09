@@ -88,7 +88,7 @@ class RoomSolverAppBackend:
                 heuristic_in_priority=heuristic_in_priority,
                 path_cost_in_priority=path_cost_in_priority,
             )
-        elif goal == RoomSolverGoal.STRIKE_ORB:
+        elif goal == RoomSolverGoal.STRIKE_ORB_ROOM_SIMULATION:
             orbs = self._room.find_coordinates(ElementType.ORB)
             objective = Objective(sword_at_tile=True, tiles=set(orbs))
             self._problem = RoomProblem(self._room, objective)
