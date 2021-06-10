@@ -6,7 +6,7 @@ import tkinter
 import traceback
 
 from common import TILE_SIZE, RoomSolverGoal
-from room_simulator import Action, Room
+from room_simulator import Action, Objective, Room
 from .util import tile_to_text
 
 # The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
@@ -243,11 +243,21 @@ class RoomSolverApp(tkinter.Frame):
 
 
 def _solver_info_to_text(room_solver_info):
-    action_names = [e.name for e in room_solver_info["current_path"]]
+    if len(room_solver_info["current_path"]) == 0:
+        action_strings = []
+    elif isinstance(room_solver_info["current_path"][0], Action):
+        action_strings = [e.name for e in room_solver_info["current_path"]]
+    elif isinstance(room_solver_info["current_path"][0], Objective):
+        action_strings = [
+            "|".join([f"({t[0]},{t[1]})" for t in o.tiles])
+            for o in room_solver_info["current_path"]
+        ]
+    else:
+        action_strings = ["Not displayable"]
     row_length = 20
     action_rows = [
-        ",".join(action_names[i : i + row_length])
-        for i in range(0, len(action_names), row_length)
+        ",".join(action_strings[i : i + row_length])
+        for i in range(0, len(action_strings), row_length)
     ]
     heuristic = room_solver_info["current_state_heuristic"]
     return "\n".join(

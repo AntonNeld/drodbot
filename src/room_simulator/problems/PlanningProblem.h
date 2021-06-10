@@ -5,6 +5,7 @@
 #include "../Objective.h"
 #include "../typedefs.h"
 #include "../search/Problem.h"
+#include "../ObjectiveReacher.h"
 
 class PlanningProblem : public Problem<Room, Objective>
 {
@@ -20,4 +21,6 @@ public:
 private:
     Room room;
     Objective objective;
+    ObjectiveReacher objectiveReacher;
+    std::set<Objective> availableObjectives;
 };
