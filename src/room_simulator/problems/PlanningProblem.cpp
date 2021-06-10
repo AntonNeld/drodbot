@@ -1,6 +1,7 @@
 #include <set>
 #include <stdlib.h>
 #include "../Room.h"
+#include "../Objective.h"
 #include "../typedefs.h"
 #include "PlanningProblem.h"
 

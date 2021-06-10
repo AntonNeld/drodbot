@@ -6,6 +6,7 @@
 #include <map>
 #include "typedefs.h"
 #include "Room.h"
+#include "Objective.h"
 
 class ObjectiveReacher
 {

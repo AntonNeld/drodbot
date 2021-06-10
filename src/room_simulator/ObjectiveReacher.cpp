@@ -2,6 +2,7 @@
 #include <map>
 #include <tuple>
 #include "ObjectiveReacher.h"
+#include "Objective.h"
 #include "typedefs.h"
 #include "search/Searcher.h"
 #include "problems/RoomProblem.h"

@@ -134,43 +134,6 @@ struct Tile
     };
 };
 
-// TODO: Make something more extensible
-struct Objective
-{
-    Objective(
-        // If true, objective is reached if the sword is at any of the tiles,
-        // if false, objective is reached if Beethro is at any of the tiles
-        bool swordAtTile,
-        std::set<Position> tiles) : swordAtTile(swordAtTile), tiles(tiles)
-    {
-    }
-    bool operator<(const Objective &other) const
-    {
-        if (this->swordAtTile != other.swordAtTile)
-        {
-            return this->swordAtTile;
-        }
-        if (this->tiles.size() != other.tiles.size())
-        {
-            return this->tiles.size() < other.tiles.size();
-        }
-        auto thisTilesIterator = this->tiles.begin();
-        auto otherTilesIterator = other.tiles.begin();
-        while (thisTilesIterator != this->tiles.end())
-        {
-            if (*thisTilesIterator != *otherTilesIterator)
-            {
-                return *thisTilesIterator < *otherTilesIterator;
-            }
-            ++thisTilesIterator;
-            ++otherTilesIterator;
-        }
-        return false;
-    };
-    bool swordAtTile;
-    std::set<Position> tiles;
-};
-
 enum class FailureReason
 {
     NO_FAILURE,
