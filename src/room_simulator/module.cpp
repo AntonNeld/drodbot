@@ -21,6 +21,19 @@ Room simulateAction(Room room, Action action)
     return globalRoomPlayer.getRoom();
 }
 
+template <class SearchAction>
+void addSolution(pybind11::module_ &m, const char *name)
+{
+    pybind11::class_<Solution<SearchAction>>(m, name)
+        .def(pybind11::init<bool, std::vector<SearchAction>, FailureReason>(),
+             pybind11::arg("exists"),
+             pybind11::arg("actions"),
+             pybind11::arg("failure_reason"))
+        .def_readwrite("exists", &Solution<SearchAction>::exists)
+        .def_readwrite("actions", &Solution<SearchAction>::actions)
+        .def_readwrite("failure_reason", &Solution<SearchAction>::failureReason);
+}
+
 template <class State, class SearchAction>
 void addSearcher(pybind11::module_ &m, const char *name, const char *problemName)
 {
@@ -57,7 +70,7 @@ This is all you need when using this for real.
 
 Returns
 -------
-A list of actions solving the problem.
+A Solution object.
 )docstr")
         .def("expand_next_node", &Searcher<State, SearchAction>::expandNextNode, R"docstr(
 Expand the next node in the search.
@@ -307,6 +320,14 @@ Whether the tile is passable or not.
         .def(pybind11::init<bool, std::set<Position>>(), pybind11::arg("sword_at_tile"), pybind11::arg("tiles"))
         .def_readwrite("sword_at_tile", &Objective::swordAtTile)
         .def_readwrite("tiles", &Objective::tiles);
+
+    pybind11::enum_<FailureReason>(m, "FailureReason")
+        .value("NO_FAILURE", FailureReason::NO_FAILURE)
+        .value("ITERATION_LIMIT_REACHED", FailureReason::ITERATION_LIMIT_REACHED)
+        .value("EXHAUSTED_FRONTIER", FailureReason::EXHAUSTED_FRONTIER);
+
+    addSolution<Action>(m, "SolutionAction");
+    addSolution<Objective>(m, "SolutionObjective");
 
     addSearcher<Position, Action>(m, "SearcherPositionAction", "ProblemPositionAction");
     addSearcher<Room, Action>(m, "SearcherRoomAction", "ProblemRoomAction");

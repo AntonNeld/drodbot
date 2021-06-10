@@ -148,4 +148,24 @@ struct Objective
     std::set<Position> tiles;
 };
 
+enum class FailureReason
+{
+    NO_FAILURE,
+    ITERATION_LIMIT_REACHED,
+    EXHAUSTED_FRONTIER,
+};
+
+template <class SearchAction>
+struct Solution
+{
+    Solution(bool exists,
+             std::vector<SearchAction> actions,
+             FailureReason failureReason = FailureReason::NO_FAILURE) : exists(exists),
+                                                                        actions(actions),
+                                                                        failureReason(failureReason){};
+    bool exists;
+    std::vector<SearchAction> actions;
+    FailureReason failureReason;
+};
+
 #endif // DRODBOT_TYPEDEFS_H

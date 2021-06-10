@@ -6,6 +6,7 @@
 #include <map>
 #include <set>
 #include "Problem.h"
+#include "../typedefs.h"
 
 template <class State, class SearchAction>
 struct Node
@@ -34,7 +35,7 @@ public:
              bool heuristicInPriority = true,
              bool pathCostInPriority = true,
              int iterationLimit = 10000);
-    std::vector<SearchAction> findSolution();
+    Solution<SearchAction> findSolution();
     // Below methods are intended for inspecting the algorithm.
     // findSolution() should be enough for real usage.
     void expandNextNode();
@@ -117,7 +118,7 @@ inline void Searcher<State, SearchAction>::popNextNode()
     // If the frontier is empty, we've already tried all states we can reach
     if (this->frontier.size() == 0)
     {
-        throw std::runtime_error("No solution");
+        throw std::runtime_error("Tried to pop from empty frontier");
     }
     // Pop the lowest-cost node from the frontier and make it the current node
     typename std::multiset<Node<State, SearchAction>>::iterator nodeIterator = this->frontier.begin();
@@ -275,16 +276,20 @@ inline bool Searcher<State, SearchAction>::foundSolution()
 }
 
 template <class State, class SearchAction>
-inline std::vector<SearchAction> Searcher<State, SearchAction>::findSolution()
+inline Solution<SearchAction> Searcher<State, SearchAction>::findSolution()
 {
     while (!this->foundSolution())
     {
+        if (this->frontier.size() == 0)
+        {
+            return Solution<SearchAction>(false, {}, FailureReason::EXHAUSTED_FRONTIER);
+        }
         if (this->iterations > this->iterationLimit)
         {
-            throw std::runtime_error("Too many iterations");
+            return Solution<SearchAction>(false, {}, FailureReason::ITERATION_LIMIT_REACHED);
         }
         this->expandNextNode();
     }
-    return this->currentNode.actions;
+    return Solution<SearchAction>(true, this->currentNode.actions);
 };
 #endif // DRODBOT_SEARCH_Searcher_H
