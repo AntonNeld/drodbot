@@ -114,6 +114,13 @@ Returns
 -------
 The states in the frontier.
 )docstr")
+        .def("get_frontier_actions", &Searcher<State, SearchAction>::getFrontierActions, R"docstr(
+Get the actions in the frontier.
+
+Returns
+-------
+The actions in the frontier.
+)docstr")
         .def("get_frontier_size", &Searcher<State, SearchAction>::getFrontierSize, R"docstr(
 Get the size of the frontier.
 

@@ -164,6 +164,7 @@ def _extract_searcher_info(searcher):
         "found_solution": searcher.found_solution(),
         "current_state_heuristic": searcher.get_current_state_heuristic(),
         "frontier_size": searcher.get_frontier_size(),
+        "frontier_actions": searcher.get_frontier_actions(),
         "explored_size": searcher.get_explored_size(),
     }
     if isinstance(searcher.get_current_state(), tuple):

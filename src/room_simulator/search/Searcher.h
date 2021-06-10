@@ -45,6 +45,7 @@ public:
     State getCurrentState();
     int getCurrentStateHeuristic();
     std::set<State> getFrontierStates();
+    std::set<SearchAction> getFrontierActions();
     int getFrontierSize();
     std::set<State> getExplored();
     int getExploredSize();
@@ -249,6 +250,17 @@ inline std::set<State> Searcher<State, SearchAction>::getFrontierStates()
         frontierStates.insert(iterator->state);
     }
     return frontierStates;
+}
+
+template <class State, class SearchAction>
+inline std::set<SearchAction> Searcher<State, SearchAction>::getFrontierActions()
+{
+    std::set<SearchAction> frontierActions = {};
+    for (auto iterator = this->frontier.begin(); iterator != this->frontier.end(); ++iterator)
+    {
+        frontierActions.insert(iterator->actions[iterator->actions.size() - 1]);
+    }
+    return frontierActions;
 }
 
 template <class State, class SearchAction>

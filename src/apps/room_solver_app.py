@@ -148,18 +148,30 @@ class RoomSolverApp(tkinter.Frame):
             pil_image = PIL.Image.fromarray(self._room_image)
             if self._room_solver_info is not None:
                 if isinstance(self._room_solver_info["current_state"], tuple):
-                    _draw_explored(pil_image, self._room_solver_info["explored_states"])
-                    _draw_frontier(pil_image, self._room_solver_info["frontier_states"])
+                    _draw_circles(
+                        pil_image, self._room_solver_info["explored_states"], "red"
+                    )
+                    _draw_circles(
+                        pil_image, self._room_solver_info["frontier_states"], "yellow"
+                    )
                     current_position = self._room_solver_info["current_state"]
-                    _draw_position(
+                    _draw_circles(
                         pil_image,
-                        current_position,
-                        self._room_solver_info["found_solution"],
+                        [current_position],
+                        "green" if self._room_solver_info["found_solution"] else "blue",
                     )
                 elif isinstance(self._room_solver_info["current_state"], Room):
                     current_position, _ = self._room_solver_info[
                         "current_state"
                     ].find_player()
+
+                if len(self._room_solver_info["frontier_actions"]) > 0 and isinstance(
+                    list(self._room_solver_info["frontier_actions"])[0], Objective
+                ):
+                    positions = []
+                    for objective in self._room_solver_info["frontier_actions"]:
+                        positions.extend(objective.tiles)
+                    _draw_circles(pil_image, positions, "yellow")
                 if len(self._room_solver_info["current_path"]) > 0 and isinstance(
                     self._room_solver_info["current_path"][0], Action
                 ):
@@ -272,19 +284,6 @@ def _solver_info_to_text(room_solver_info):
     )
 
 
-def _draw_position(pil_image, position, solved):
-    x, y = position
-    draw = ImageDraw.Draw(pil_image)
-    draw.ellipse(
-        [
-            (x * TILE_SIZE, y * TILE_SIZE),
-            ((x + 1) * TILE_SIZE, (y + 1) * TILE_SIZE),
-        ],
-        outline="green" if solved else "blue",
-        width=3,
-    )
-
-
 def _draw_path(pil_image, end_position, actions, solved):
     # We'll draw the path backwards, since we know the end but not the start
     positions = [end_position]
@@ -314,8 +313,8 @@ def _draw_path(pil_image, end_position, actions, solved):
     )
 
 
-def _draw_frontier(pil_image, frontier_states):
-    for position in frontier_states:
+def _draw_circles(pil_image, positions, color):
+    for position in positions:
         x, y = position
         draw = ImageDraw.Draw(pil_image)
         draw.ellipse(
@@ -323,20 +322,6 @@ def _draw_frontier(pil_image, frontier_states):
                 ((x + 0.25) * TILE_SIZE, (y + 0.25) * TILE_SIZE),
                 ((x + 0.75) * TILE_SIZE, (y + 0.75) * TILE_SIZE),
             ],
-            outline="yellow",
-            width=3,
-        )
-
-
-def _draw_explored(pil_image, explored_states):
-    for position in explored_states:
-        x, y = position
-        draw = ImageDraw.Draw(pil_image)
-        draw.ellipse(
-            [
-                ((x + 0.25) * TILE_SIZE, (y + 0.25) * TILE_SIZE),
-                ((x + 0.75) * TILE_SIZE, (y + 0.75) * TILE_SIZE),
-            ],
-            outline="red",
+            outline=color,
             width=3,
         )
