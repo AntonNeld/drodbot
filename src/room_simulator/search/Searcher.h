@@ -35,7 +35,7 @@ public:
              bool heuristicInPriority = true,
              bool pathCostInPriority = true,
              int iterationLimit = 10000);
-    Solution<SearchAction> findSolution();
+    Solution<State, SearchAction> findSolution();
     // Below methods are intended for inspecting the algorithm.
     // findSolution() should be enough for real usage.
     void expandNextNode();
@@ -276,20 +276,20 @@ inline bool Searcher<State, SearchAction>::foundSolution()
 }
 
 template <class State, class SearchAction>
-inline Solution<SearchAction> Searcher<State, SearchAction>::findSolution()
+inline Solution<State, SearchAction> Searcher<State, SearchAction>::findSolution()
 {
     while (!this->foundSolution())
     {
         if (this->frontier.size() == 0)
         {
-            return Solution<SearchAction>(false, {}, FailureReason::EXHAUSTED_FRONTIER);
+            return Solution<State, SearchAction>(false, {}, State(), FailureReason::EXHAUSTED_FRONTIER);
         }
         if (this->iterations > this->iterationLimit)
         {
-            return Solution<SearchAction>(false, {}, FailureReason::ITERATION_LIMIT_REACHED);
+            return Solution<State, SearchAction>(false, {}, State(), FailureReason::ITERATION_LIMIT_REACHED);
         }
         this->expandNextNode();
     }
-    return Solution<SearchAction>(true, this->currentNode.actions);
+    return Solution<State, SearchAction>(true, this->currentNode.actions, this->currentNode.state);
 };
 #endif // DRODBOT_SEARCH_Searcher_H

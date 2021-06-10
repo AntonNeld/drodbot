@@ -21,24 +21,23 @@ Room simulateAction(Room room, Action action)
     return globalRoomPlayer.getRoom();
 }
 
-template <class SearchAction>
-void addSolution(pybind11::module_ &m, const char *name)
-{
-    pybind11::class_<Solution<SearchAction>>(m, name)
-        .def(pybind11::init<bool, std::vector<SearchAction>, FailureReason>(),
-             pybind11::arg("exists"),
-             pybind11::arg("actions"),
-             pybind11::arg("failure_reason"))
-        .def_readwrite("exists", &Solution<SearchAction>::exists)
-        .def_readwrite("actions", &Solution<SearchAction>::actions)
-        .def_readwrite("failure_reason", &Solution<SearchAction>::failureReason);
-}
-
 template <class State, class SearchAction>
-void addSearcher(pybind11::module_ &m, const char *name, const char *problemName)
+void addSearcher(pybind11::module_ &m, const char *name, const char *problemName, const char *solutionName)
 {
     // Also add a base Problem of the correct type
     pybind11::class_<Problem<State, SearchAction>>(m, problemName);
+
+    // Also add a Solution of the correct type
+    pybind11::class_<Solution<State, SearchAction>>(m, solutionName)
+        .def(pybind11::init<bool, std::vector<SearchAction>, State, FailureReason>(),
+             pybind11::arg("exists"),
+             pybind11::arg("actions"),
+             pybind11::arg("final_state"),
+             pybind11::arg("failure_reason"))
+        .def_readwrite("exists", &Solution<State, SearchAction>::exists)
+        .def_readwrite("actions", &Solution<State, SearchAction>::actions)
+        .def_readwrite("final_state", &Solution<State, SearchAction>::finalState)
+        .def_readwrite("failure_reason", &Solution<State, SearchAction>::failureReason);
 
     pybind11::class_<Searcher<State, SearchAction>>(m, name, R"docstr(
 This performs search in an inspectable way.
@@ -326,12 +325,9 @@ Whether the tile is passable or not.
         .value("ITERATION_LIMIT_REACHED", FailureReason::ITERATION_LIMIT_REACHED)
         .value("EXHAUSTED_FRONTIER", FailureReason::EXHAUSTED_FRONTIER);
 
-    addSolution<Action>(m, "SolutionAction");
-    addSolution<Objective>(m, "SolutionObjective");
-
-    addSearcher<Position, Action>(m, "SearcherPositionAction", "ProblemPositionAction");
-    addSearcher<Room, Action>(m, "SearcherRoomAction", "ProblemRoomAction");
-    addSearcher<Room, Objective>(m, "SearcherRoomObjective", "ProblemRoomObjective");
+    addSearcher<Position, Action>(m, "SearcherPositionAction", "ProblemPositionAction", "SolutionPositionAction");
+    addSearcher<Room, Action>(m, "SearcherRoomAction", "ProblemRoomAction", "SolutionRoomAction");
+    addSearcher<Room, Objective>(m, "SearcherRoomObjective", "ProblemRoomObjective", "SolutionRoomObjective");
 
     pybind11::class_<PathfindingProblem, Problem<Position, Action>>(m, "PathfindingProblem", R"docstr(
 A problem for finding a path in a room.

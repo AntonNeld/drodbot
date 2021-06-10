@@ -9,7 +9,7 @@
 
 ObjectiveReacher::ObjectiveReacher() : cachedSolutions({}){};
 
-Solution<Action> ObjectiveReacher::findSolution(Room room, Objective objective)
+Solution<Room, Action> ObjectiveReacher::findSolution(Room room, Objective objective)
 {
     // Return solution from the cache if it exists
     auto foundSolution = this->cachedSolutions.find({room, objective});
@@ -21,7 +21,7 @@ Solution<Action> ObjectiveReacher::findSolution(Room room, Objective objective)
     RoomProblem problem = RoomProblem(room, objective);
     // Low iteration limit for now, to avoid finding the solution indirectly by accident
     Searcher<Room, Action> searcher = Searcher<Room, Action>(&problem, true, true, false, 100);
-    Solution<Action> solution = searcher.findSolution();
+    Solution<Room, Action> solution = searcher.findSolution();
     this->cachedSolutions.insert({{room, objective}, solution});
     return solution;
 };

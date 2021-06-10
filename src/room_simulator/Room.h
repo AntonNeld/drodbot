@@ -11,6 +11,7 @@ typedef std::array<Column, 38> Tiles;
 class Room
 {
 public:
+    Room();
     Room(Tiles tiles);
     Room copy();
     Tile getTile(Position position);

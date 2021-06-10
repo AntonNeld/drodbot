@@ -141,16 +141,19 @@ enum class FailureReason
     EXHAUSTED_FRONTIER,
 };
 
-template <class SearchAction>
+template <class State, class SearchAction>
 struct Solution
 {
     Solution(bool exists,
              std::vector<SearchAction> actions,
+             State finalState,
              FailureReason failureReason = FailureReason::NO_FAILURE) : exists(exists),
                                                                         actions(actions),
+                                                                        finalState(finalState),
                                                                         failureReason(failureReason){};
     bool exists;
     std::vector<SearchAction> actions;
+    State finalState;
     FailureReason failureReason;
 };
 

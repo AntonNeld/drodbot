@@ -2,6 +2,8 @@
 
 #include "Room.h"
 
+Room::Room() : tiles(Tiles()) {}
+
 Room::Room(Tiles tiles)
 {
     this->tiles = tiles;
