@@ -2,8 +2,8 @@ MODULE_SUFFIX=$(shell python3.9-config --extension-suffix)
 PYBIND11_INCLUDES=$(shell python3 -m pybind11 --includes)
 INCLUDES=$(PYBIND11_INCLUDES) -I/usr/include/python3.9 -Idrod -Imetakit/include -I/usr/include/jsoncpp
 # -Wno-parentheses is to suppress a warning from metakit
-WARNING_ARGS=-Wall -Werror -Wno-parentheses
-COMMON_COMPILE_ARGS=-O3 -g -std=c++11 -fPIC $(INCLUDES) $(shell sdl2-config --cflags)
+WARNING_ARGS=-Wall -Werror -Wno-parentheses -Wno-volatile
+COMMON_COMPILE_ARGS=-O3 -g -std=c++20 -fPIC $(INCLUDES) $(shell sdl2-config --cflags)
 
 BACKENDLIB_FILES=$(shell find drod/BackEndLib -name '*.cpp')
 BACKENDLIB_OBJECT_FILES=$(patsubst drod/BackEndLib/%.cpp,build/BackEndLib/%.o,$(BACKENDLIB_FILES))
