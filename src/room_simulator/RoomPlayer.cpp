@@ -167,6 +167,8 @@ void RoomPlayer::setRoom(
     if (drodRoom != NULL)
     {
         db->Rooms.Delete(drodRoom->dwRoomID);
+        delete drodRoom;
+        delete currentGame;
     }
     // Create new room
     drodRoom = db->Rooms.GetNew();
