@@ -1,3 +1,6 @@
+#ifndef DRODBOT_PATHFINDINGPROBLEM_H
+#define DRODBOT_PATHFINDINGPROBLEM_H
+
 #include <array>
 #include <vector>
 #include <set>
@@ -21,3 +24,5 @@ private:
     Room room;
     std::set<Position> goals;
 };
+
+#endif // DRODBOT_PATHFINDINGPROBLEM_H

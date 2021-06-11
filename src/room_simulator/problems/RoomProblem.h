@@ -1,3 +1,6 @@
+#ifndef DRODBOT_ROOMPROBLEM_H
+#define DRODBOT_ROOMPROBLEM_H
+
 #include "../Room.h"
 #include "../Objective.h"
 #include "../typedefs.h"
@@ -19,3 +22,5 @@ private:
     Room room;
     Objective objective;
 };
+
+#endif // DRODBOT_ROOMPROBLEM_H

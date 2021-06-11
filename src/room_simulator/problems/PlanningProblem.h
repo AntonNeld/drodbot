@@ -1,3 +1,6 @@
+#ifndef DRODBOT_PLANNINGPROBLEM_H
+#define DRODBOT_PLANNINGPROBLEM_H
+
 #include <array>
 #include <vector>
 #include <set>
@@ -24,3 +27,5 @@ private:
     ObjectiveReacher objectiveReacher;
     std::set<Objective> availableObjectives;
 };
+
+#endif // DRODBOT_PLANNINGPROBLEM_H
