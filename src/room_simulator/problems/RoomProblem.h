@@ -7,7 +7,7 @@
 #include "../search/Problem.h"
 #include "../RoomPlayer.h"
 
-class RoomProblem : public Problem<Room, Action>
+class RoomProblem final : public Problem<Room, Action>
 {
 public:
     RoomProblem(Room room, Objective objective);

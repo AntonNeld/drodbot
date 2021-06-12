@@ -10,7 +10,7 @@
 #include "../search/Problem.h"
 #include "../ObjectiveReacher.h"
 
-class PlanningProblem : public Problem<Room, Objective>
+class PlanningProblem final : public Problem<Room, Objective>
 {
 public:
     PlanningProblem(Room room, Objective objective);

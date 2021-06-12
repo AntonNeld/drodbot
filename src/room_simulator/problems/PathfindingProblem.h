@@ -8,7 +8,7 @@
 #include "../typedefs.h"
 #include "../search/Problem.h"
 
-class PathfindingProblem : public Problem<Position, Action>
+class PathfindingProblem final : public Problem<Position, Action>
 {
 public:
     PathfindingProblem(Position startPosition, Room room, std::set<Position> goals);
