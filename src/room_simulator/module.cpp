@@ -4,6 +4,7 @@
 #include "typedefs.h"
 #include "RoomPlayer.h"
 #include "Room.h"
+#include "ObjectiveReacher.h"
 #include "search/Searcher.h"
 #include "problems/PathfindingProblem.h"
 #include "problems/PlanningProblem.h"
@@ -378,4 +379,72 @@ objective
         .def(pybind11::init<Room, Objective>(),
              pybind11::arg("room"),
              pybind11::arg("objective"));
+
+    pybind11::enum_<ObjectiveReacherPhase>(m, "ObjectiveReacherPhase")
+        .value("NOTHING", ObjectiveReacherPhase::NOTHING)
+        .value("CHECK_CACHE", ObjectiveReacherPhase::CHECK_CACHE)
+        .value("SIMULATE_ROOM", ObjectiveReacherPhase::SIMULATE_ROOM)
+        .value("FINISHED", ObjectiveReacherPhase::FINISHED)
+        .export_values();
+
+    pybind11::class_<ObjectiveReacher>(m, "ObjectiveReacher", R"docstr(
+Find solutions to directly reach a objectives in rooms.
+
+Finding a solution is done through several phases and sanity checks,
+for efficiency. Also caches found solutions.
+)docstr")
+        .def(pybind11::init<>())
+        .def("find_solution", &ObjectiveReacher::findSolution, pybind11::arg("room"), pybind11::arg("objective"), R"docstr(
+Find a solution to reach the given objective in the given room.
+
+This is all you need when using this class normally. The other methods are for
+inspecting the algorithm.
+
+Parameters
+----------
+room
+    The room.
+objective
+    The objective to reach. 
+)docstr")
+        .def("start", &ObjectiveReacher::start, pybind11::arg("room"), pybind11::arg("objective"), R"docstr(
+Start the process of finding a solution.
+
+Parameters
+----------
+room
+    The room.
+objective
+    The objective to reach. 
+)docstr")
+        .def("next_phase", &ObjectiveReacher::nextPhase, R"docstr(
+Go to the next phase.
+)docstr")
+        .def("get_phase", &ObjectiveReacher::getPhase, R"docstr(
+Get the current phase.
+
+Returns
+-------
+The phase.
+)docstr")
+        .def("get_solution", &ObjectiveReacher::getSolution, R"docstr(
+Get the solution.
+
+This may not exist, depending on the phase. If not, throw an exception.
+
+Returns
+-------
+The solution.
+)docstr")
+        .def("get_room_simulation_searcher",
+             &ObjectiveReacher::getRoomSimulationSearcher,
+             pybind11::return_value_policy::reference, R"docstr(
+Get the room simulation searcher.
+
+This may not exist, depending on the phase. If not, throw an exception.
+
+Returns
+-------
+The room simulation searcher.
+)docstr");
 }

@@ -29,7 +29,7 @@ public:
     void nextPhase();
     ObjectiveReacherPhase getPhase();
     Solution<Room, Action> getSolution();
-    Searcher<Room, Action> getRoomSimulationSearcher();
+    Searcher<Room, Action> *getRoomSimulationSearcher();
 
 private:
     std::map<std::tuple<Room, Objective>, Solution<Room, Action>> cachedSolutions;
@@ -38,7 +38,7 @@ private:
     std::optional<Objective> currentObjective;
     std::optional<Solution<Room, Action>> solution;
     std::optional<RoomProblem *> roomProblem;
-    std::optional<Searcher<Room, Action>> simulationSearcher;
+    std::optional<Searcher<Room, Action> *> simulationSearcher;
 };
 
 #endif // DRODBOT_OBJECTIVEREACHER_H

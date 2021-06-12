@@ -22,6 +22,10 @@ ObjectiveReacher::~ObjectiveReacher()
     {
         delete this->roomProblem.value();
     }
+    if (this->simulationSearcher)
+    {
+        delete this->simulationSearcher.value();
+    }
 };
 
 Solution<Room, Action> ObjectiveReacher::findSolution(Room room, Objective objective)
@@ -37,6 +41,14 @@ Solution<Room, Action> ObjectiveReacher::findSolution(Room room, Objective objec
 
 void ObjectiveReacher::start(Room room, Objective objective)
 {
+    if (this->roomProblem)
+    {
+        delete this->roomProblem.value();
+    }
+    if (this->simulationSearcher)
+    {
+        delete this->simulationSearcher.value();
+    }
     this->currentRoom = room;
     this->currentObjective = objective;
     this->solution = std::nullopt;
@@ -61,20 +73,16 @@ void ObjectiveReacher::nextPhase()
         }
         else
         {
-            if (this->roomProblem)
-            {
-                delete this->roomProblem.value();
-            }
             this->roomProblem = new RoomProblem(this->currentRoom.value(), this->currentObjective.value());
             // Low iteration limit for now, to avoid finding the solution indirectly by accident
-            this->simulationSearcher = Searcher<Room, Action>(this->roomProblem.value(), true, true, false, 100);
+            this->simulationSearcher = new Searcher<Room, Action>(this->roomProblem.value(), true, true, false, 100);
             this->phase = ObjectiveReacherPhase::SIMULATE_ROOM;
         }
         break;
     }
     case ObjectiveReacherPhase::SIMULATE_ROOM:
     {
-        this->solution = this->simulationSearcher.value().findSolution();
+        this->solution = this->simulationSearcher.value()->findSolution();
         this->cachedSolutions.insert({{this->currentRoom.value(), this->currentObjective.value()}, this->solution.value()});
         this->phase = ObjectiveReacherPhase::FINISHED;
         break;
@@ -96,7 +104,7 @@ Solution<Room, Action> ObjectiveReacher::getSolution()
     return this->solution.value();
 }
 
-Searcher<Room, Action> ObjectiveReacher::getRoomSimulationSearcher()
+Searcher<Room, Action> *ObjectiveReacher::getRoomSimulationSearcher()
 {
     return this->simulationSearcher.value();
 }
