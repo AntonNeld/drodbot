@@ -102,6 +102,10 @@ class RoomSolverApp(tkinter.Frame):
             self._search_area, text=">>", command=self._find_solution
         )
         self._find_solution_button.pack(side=tkinter.LEFT)
+        self._next_phase_button = tkinter.Button(
+            self._search_area, text="Next phase", command=self._next_phase
+        )
+        self._next_phase_button.pack(side=tkinter.LEFT)
         self._checkboxes_1 = tkinter.Frame(self._control_panel)
         self._checkboxes_1.pack(side=tkinter.TOP)
         self._heuristic_checkbox = tkinter.Checkbutton(
@@ -122,10 +126,12 @@ class RoomSolverApp(tkinter.Frame):
             self._checkboxes_2, text="Avoid duplicates", variable=self._avoid_duplicates
         )
         self._avoid_duplicates_checkbox.pack(side=tkinter.LEFT)
+        self._objective_reacher_text = tkinter.Label(self._control_panel, text="")
+        self._objective_reacher_text.pack(side=tkinter.TOP)
         self._room_solver_text = tkinter.Label(self._control_panel, text="")
         self._room_solver_text.pack(side=tkinter.TOP)
 
-    def set_data(self, room_image, room, room_solver_info):
+    def set_data(self, room_image, room, room_solver_info, objective_reacher_info):
         """Set the data to show in the app.
 
         Parameters
@@ -134,13 +140,17 @@ class RoomSolverApp(tkinter.Frame):
             Real image of the current room.
         room
             The simulated room.
+        room_solver_info
+            Details about the searcher.
+        objective_reacher_info
+            Details about the objective reacher.
         """
         if room_image is not None:
             self._room_image = room_image
         if room is not None:
             self._room = room
-        if room_solver_info is not None:
-            self._room_solver_info = room_solver_info
+        self._room_solver_info = room_solver_info
+        self._objective_reacher_info = objective_reacher_info
         self._draw_view()
 
     def _draw_view(self):
@@ -188,10 +198,10 @@ class RoomSolverApp(tkinter.Frame):
             # Assign to self._view to prevent from being garbage collected
             self._view = ImageTk.PhotoImage(image=resized_image)
             self._canvas.create_image(0, 0, image=self._view, anchor=tkinter.NW)
-        if self._room_solver_info is not None:
-            self._room_solver_text.config(
-                text=_solver_info_to_text(self._room_solver_info)
-            )
+        self._room_solver_text.config(text=_solver_info_to_text(self._room_solver_info))
+        self._objective_reacher_text.config(
+            text=_objective_reacher_info_to_text(self._objective_reacher_info)
+        )
 
     def _run_coroutine(self, coroutine):
         async def wrapped_coroutine():
@@ -229,6 +239,9 @@ class RoomSolverApp(tkinter.Frame):
     def _find_solution(self):
         self._run_coroutine(self._backend.find_solution())
 
+    def _next_phase(self):
+        self._run_coroutine(self._backend.next_objective_reacher_phase())
+
     def _toggle_view_size(self):
         if self._enlarged_view:
             self._enlarged_view = False
@@ -255,6 +268,8 @@ class RoomSolverApp(tkinter.Frame):
 
 
 def _solver_info_to_text(room_solver_info):
+    if room_solver_info is None:
+        return ""
     if len(room_solver_info["current_path"]) == 0:
         action_strings = []
     elif isinstance(room_solver_info["current_path"][0], Action):
@@ -280,6 +295,16 @@ def _solver_info_to_text(room_solver_info):
             f"Explored size {room_solver_info['explored_size']}",
             "Current path:",
             ",\n".join(action_rows),
+        ]
+    )
+
+
+def _objective_reacher_info_to_text(objective_reacher_info):
+    if objective_reacher_info is None:
+        return ""
+    return "\n".join(
+        [
+            f"Phase: {objective_reacher_info['phase']}",
         ]
     )
 

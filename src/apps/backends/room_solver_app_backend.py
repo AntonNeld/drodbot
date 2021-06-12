@@ -11,6 +11,8 @@ from room_simulator import (
     SearcherRoomAction,
     SearcherPositionAction,
     SearcherRoomObjective,
+    ObjectiveReacher,
+    ObjectiveReacherPhase,
 )
 
 
@@ -33,7 +35,7 @@ class RoomSolverAppBackend:
         self._interpreter = room_interpreter
         self._bot = bot
         self._room = None
-        self._searcher = None
+        self._searcher = None  # May also be an ObjectiveReacher
         # Keep a reference to the problem. Since the C++ code gets
         # a reference to it, we don't want it to be garbage collected.
         self._problem = None
@@ -110,50 +112,96 @@ class RoomSolverAppBackend:
                 heuristic_in_priority=heuristic_in_priority,
                 path_cost_in_priority=path_cost_in_priority,
             )
+        elif goal == RoomSolverGoal.MOVE_TO_CONQUER_TOKEN_OBJECTIVE_REACHER:
+            conquer_tokens = self._room.find_coordinates(ElementType.CONQUER_TOKEN)
+            objective = Objective(sword_at_tile=False, tiles=set(conquer_tokens))
+            self._searcher = ObjectiveReacher()
+            self._searcher.start(self._room, objective)
         self._show_data()
 
     async def expand_next_node(self):
-        """Expand the next node in the room solver."""
-        if self._searcher is None:
-            raise UserError("Must initialize search before expanding nodes")
-        self._searcher.expand_next_node()
+        """Expand the next node in the searcher.
+
+        If inspecting the objective reacher, this method is executed on its
+        internal searcher.
+        """
+        searcher = self._get_current_searcher()
+        searcher.expand_next_node()
         self._show_data()
 
     async def rewind_expansion(self):
-        """Go back to the previous node in the room solver."""
-        if self._searcher is None:
-            raise UserError("Must initialize search before expanding nodes")
-        iterations = self._searcher.get_iterations()
-        self._searcher.reset()
+        """Go back to the previous node in the searcher.
+
+        If inspecting the objective reacher, this method is executed on its
+        internal searcher.
+        """
+        searcher = self._get_current_searcher()
+        iterations = searcher.get_iterations()
+        searcher.reset()
         for _ in range(iterations - 1):
-            self._searcher.expand_next_node()
+            searcher.expand_next_node()
         self._show_data()
 
     async def find_solution(self):
-        """Search until we find a solution."""
-        if self._searcher is None:
-            raise UserError("Must initialize search before searching")
+        """Search until we find a solution.
+
+        If inspecting the objective reacher, this method is executed on its
+        internal searcher.
+        """
+        searcher = self._get_current_searcher()
         print("Thinking...")
         t = time.time()
-        self._searcher.find_solution()
+        searcher.find_solution()
         self._show_data()
         print(f"Thought in {time.time()-t:.2f}s")
 
+    async def next_objective_reacher_phase(self):
+        """Go to the next phase in the objective reacher."""
+        if not isinstance(self._searcher, ObjectiveReacher):
+            raise UserError("Searcher is not an objective reacher")
+        self._searcher.next_phase()
+        self._show_data()
+
     def _show_data(self):
-        if self._searcher is None:
-            searcher_data = None
-            room = self._room
-        else:
-            searcher_data = _extract_searcher_info(self._searcher)
+        try:
+            searcher = self._get_current_searcher()
+            searcher_data = _extract_searcher_info(searcher)
             if isinstance(searcher_data["current_state"], Room):
                 room = searcher_data["current_state"]
             else:
                 room = self._room
+        except UserError:  # No searcher to show data for
+            searcher_data = None
+            room = self._room
+
+        if isinstance(self._searcher, ObjectiveReacher):
+            objective_reacher_data = _extract_objective_reacher_info(self._searcher)
+        else:
+            objective_reacher_data = None
 
         reconstructed_image = self._interpreter.reconstruct_room_image(room)
         self._queue.put(
-            (GUIEvent.SET_ROOM_SOLVER_DATA, reconstructed_image, room, searcher_data)
+            (
+                GUIEvent.SET_ROOM_SOLVER_DATA,
+                reconstructed_image,
+                room,
+                searcher_data,
+                objective_reacher_data,
+            )
         )
+
+    def _get_current_searcher(self):
+        if self._searcher is None:
+            raise UserError("No searcher initialized")
+        if isinstance(self._searcher, ObjectiveReacher):
+            if self._searcher.get_phase() == ObjectiveReacherPhase.SIMULATE_ROOM:
+                return self._searcher.get_room_simulation_searcher()
+            else:
+                raise UserError(
+                    f"Current phase {self._searcher.get_phase().name} has no searcher"
+                )
+        else:
+            return self._searcher
 
 
 def _extract_searcher_info(searcher):
@@ -170,4 +218,12 @@ def _extract_searcher_info(searcher):
     if isinstance(searcher.get_current_state(), tuple):
         info["frontier_states"] = searcher.get_frontier_states()
         info["explored_states"] = searcher.get_explored()
+    return info
+
+
+def _extract_objective_reacher_info(objective_reacher):
+    phase = objective_reacher.get_phase()
+    info = {"phase": phase.name}
+    if phase == ObjectiveReacherPhase.FINISHED:
+        info["solution"] = objective_reacher.get_solution()
     return info
