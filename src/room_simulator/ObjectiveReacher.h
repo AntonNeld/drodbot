@@ -8,6 +8,7 @@
 #include "typedefs.h"
 #include "Room.h"
 #include "Objective.h"
+#include "problems/PathfindingProblem.h"
 #include "problems/RoomProblem.h"
 #include "search/Searcher.h"
 
@@ -15,6 +16,7 @@ enum class ObjectiveReacherPhase
 {
     NOTHING,
     CHECK_CACHE,
+    PATHFIND,
     SIMULATE_ROOM,
     FINISHED,
 };
@@ -29,6 +31,7 @@ public:
     void nextPhase();
     ObjectiveReacherPhase getPhase();
     Solution<Room, Action> getSolution();
+    Searcher<Position, Action> *getPathfindingSearcher();
     Searcher<Room, Action> *getRoomSimulationSearcher();
 
 private:
@@ -37,6 +40,8 @@ private:
     std::optional<Room> currentRoom;
     std::optional<Objective> currentObjective;
     std::optional<Solution<Room, Action>> solution;
+    std::optional<PathfindingProblem *> pathfindingProblem;
+    std::optional<Searcher<Position, Action> *> pathfindingSearcher;
     std::optional<RoomProblem *> roomProblem;
     std::optional<Searcher<Room, Action> *> simulationSearcher;
 };

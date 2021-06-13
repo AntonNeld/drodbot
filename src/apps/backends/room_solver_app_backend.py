@@ -200,8 +200,11 @@ class RoomSolverAppBackend:
         if self._searcher is None:
             raise UserError("No searcher initialized")
         if isinstance(self._searcher, ObjectiveReacher):
-            if self._searcher.get_phase() == ObjectiveReacherPhase.SIMULATE_ROOM:
+            phase = self._searcher.get_phase()
+            if phase == ObjectiveReacherPhase.SIMULATE_ROOM:
                 return self._searcher.get_room_simulation_searcher()
+            elif phase == ObjectiveReacherPhase.PATHFIND:
+                return self._searcher.get_pathfinding_searcher()
             else:
                 raise UserError(
                     f"Current phase {self._searcher.get_phase().name} has no searcher"

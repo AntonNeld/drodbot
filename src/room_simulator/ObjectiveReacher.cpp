@@ -2,6 +2,7 @@
 #include <map>
 #include <tuple>
 #include <optional>
+#include <set>
 #include "ObjectiveReacher.h"
 #include "Objective.h"
 #include "typedefs.h"
@@ -13,11 +14,21 @@ ObjectiveReacher::ObjectiveReacher() : cachedSolutions({}),
                                        currentRoom(std::nullopt),
                                        currentObjective(std::nullopt),
                                        solution(std::nullopt),
+                                       pathfindingProblem(std::nullopt),
+                                       pathfindingSearcher(std::nullopt),
                                        roomProblem(std::nullopt),
                                        simulationSearcher(std::nullopt){};
 
 ObjectiveReacher::~ObjectiveReacher()
 {
+    if (this->pathfindingProblem)
+    {
+        delete this->pathfindingProblem.value();
+    }
+    if (this->pathfindingSearcher)
+    {
+        delete this->pathfindingSearcher.value();
+    }
     if (this->roomProblem)
     {
         delete this->roomProblem.value();
@@ -41,6 +52,14 @@ Solution<Room, Action> ObjectiveReacher::findSolution(Room room, Objective objec
 
 void ObjectiveReacher::start(Room room, Objective objective)
 {
+    if (this->pathfindingProblem)
+    {
+        delete this->pathfindingProblem.value();
+    }
+    if (this->pathfindingSearcher)
+    {
+        delete this->pathfindingSearcher.value();
+    }
     if (this->roomProblem)
     {
         delete this->roomProblem.value();
@@ -52,6 +71,8 @@ void ObjectiveReacher::start(Room room, Objective objective)
     this->currentRoom = room;
     this->currentObjective = objective;
     this->solution = std::nullopt;
+    this->pathfindingProblem = std::nullopt;
+    this->pathfindingSearcher = std::nullopt;
     this->roomProblem = std::nullopt;
     this->simulationSearcher = std::nullopt;
     this->phase = ObjectiveReacherPhase::CHECK_CACHE;
@@ -73,13 +94,44 @@ void ObjectiveReacher::nextPhase()
         }
         else
         {
-            this->roomProblem = new RoomProblem(this->currentRoom.value(), this->currentObjective.value());
-            // Low iteration limit for now, to avoid finding the solution indirectly by accident
-            this->simulationSearcher = new Searcher<Room, Action>(this->roomProblem.value(), true, true, false, 100);
-            this->phase = ObjectiveReacherPhase::SIMULATE_ROOM;
+            Position start = std::get<0>(this->currentRoom.value().findPlayer());
+            std::set<Position> tiles = this->currentObjective.value().tiles;
+            if (this->currentObjective.value().swordAtTile)
+            {
+                std::set<Position> goals = {};
+                for (auto tilePtr = tiles.begin(); tilePtr != tiles.end(); ++tilePtr)
+                {
+                    int x = std::get<0>(*tilePtr);
+                    int y = std::get<1>(*tilePtr);
+                    goals.insert({{x + 1, y},
+                                  {x + 1, y + 1},
+                                  {x, y + 1},
+                                  {x - 1, y + 1},
+                                  {x - 1, y},
+                                  {x - 1, y - 1},
+                                  {x, y - 1},
+                                  {x + 1, y - 1}});
+                }
+                this->pathfindingProblem = new PathfindingProblem(start, this->currentRoom.value(), goals);
+            }
+            else
+            {
+                this->pathfindingProblem = new PathfindingProblem(start, this->currentRoom.value(), tiles);
+            }
+            this->pathfindingSearcher = new Searcher<Position, Action>(this->pathfindingProblem.value());
+            this->phase = ObjectiveReacherPhase::PATHFIND;
         }
         break;
     }
+    case ObjectiveReacherPhase::PATHFIND:
+        // Do nothing with the result for now
+        this->pathfindingSearcher.value()->findSolution();
+
+        this->roomProblem = new RoomProblem(this->currentRoom.value(), this->currentObjective.value());
+        // Low iteration limit for now, to avoid finding the solution indirectly by accident
+        this->simulationSearcher = new Searcher<Room, Action>(this->roomProblem.value(), true, true, false, 100);
+        this->phase = ObjectiveReacherPhase::SIMULATE_ROOM;
+        break;
     case ObjectiveReacherPhase::SIMULATE_ROOM:
     {
         this->solution = this->simulationSearcher.value()->findSolution();
@@ -102,6 +154,11 @@ ObjectiveReacherPhase ObjectiveReacher::getPhase()
 Solution<Room, Action> ObjectiveReacher::getSolution()
 {
     return this->solution.value();
+}
+
+Searcher<Position, Action> *ObjectiveReacher::getPathfindingSearcher()
+{
+    return this->pathfindingSearcher.value();
 }
 
 Searcher<Room, Action> *ObjectiveReacher::getRoomSimulationSearcher()

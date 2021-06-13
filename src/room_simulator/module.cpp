@@ -383,6 +383,7 @@ objective
     pybind11::enum_<ObjectiveReacherPhase>(m, "ObjectiveReacherPhase")
         .value("NOTHING", ObjectiveReacherPhase::NOTHING)
         .value("CHECK_CACHE", ObjectiveReacherPhase::CHECK_CACHE)
+        .value("PATHFIND", ObjectiveReacherPhase::PATHFIND)
         .value("SIMULATE_ROOM", ObjectiveReacherPhase::SIMULATE_ROOM)
         .value("FINISHED", ObjectiveReacherPhase::FINISHED)
         .export_values();
@@ -435,6 +436,17 @@ This may not exist, depending on the phase. If not, throw an exception.
 Returns
 -------
 The solution.
+)docstr")
+        .def("get_pathfinding_searcher",
+             &ObjectiveReacher::getPathfindingSearcher,
+             pybind11::return_value_policy::reference, R"docstr(
+Get the pathfinding searcher.
+
+This may not exist, depending on the phase. If not, throw an exception.
+
+Returns
+-------
+The pathfinding searcher.
 )docstr")
         .def("get_room_simulation_searcher",
              &ObjectiveReacher::getRoomSimulationSearcher,
