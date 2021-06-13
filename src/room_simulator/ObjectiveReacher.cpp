@@ -102,8 +102,17 @@ void ObjectiveReacher::nextPhase()
     case ObjectiveReacherPhase::PATHFIND:
     {
         Solution<Position, Action> solution = this->finishPathfindingPhase();
-        this->prepareSimulationPhase(solution);
-        this->phase = ObjectiveReacherPhase::SIMULATE_ROOM;
+        if (solution.exists)
+        {
+            this->prepareSimulationPhase(solution);
+
+            this->phase = ObjectiveReacherPhase::SIMULATE_ROOM;
+        }
+        else
+        {
+            this->solution = Solution<Room, Action>(false, {}, Room(), FailureReason::FAILED_PRECHECK);
+            this->phase = ObjectiveReacherPhase::FINISHED;
+        }
         break;
     }
     case ObjectiveReacherPhase::SIMULATE_ROOM:

@@ -330,6 +330,7 @@ Whether the tile is passable or not.
 
     pybind11::enum_<FailureReason>(m, "FailureReason")
         .value("NO_FAILURE", FailureReason::NO_FAILURE)
+        .value("FAILED_PRECHECK", FailureReason::FAILED_PRECHECK)
         .value("ITERATION_LIMIT_REACHED", FailureReason::ITERATION_LIMIT_REACHED)
         .value("EXHAUSTED_FRONTIER", FailureReason::EXHAUSTED_FRONTIER);
 

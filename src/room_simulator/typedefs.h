@@ -137,6 +137,7 @@ struct Tile
 enum class FailureReason
 {
     NO_FAILURE,
+    FAILED_PRECHECK,
     ITERATION_LIMIT_REACHED,
     EXHAUSTED_FRONTIER,
 };
