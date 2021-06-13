@@ -180,11 +180,13 @@ class RoomSolverAppBackend:
             objective_reacher_data = None
 
         reconstructed_image = self._interpreter.reconstruct_room_image(room)
+        start_position, _ = self._room.find_player()
         self._queue.put(
             (
                 GUIEvent.SET_ROOM_SOLVER_DATA,
                 reconstructed_image,
                 room,
+                start_position,
                 searcher_data,
                 objective_reacher_data,
             )

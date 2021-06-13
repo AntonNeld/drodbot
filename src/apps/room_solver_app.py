@@ -6,7 +6,7 @@ import tkinter
 import traceback
 
 from common import TILE_SIZE, RoomSolverGoal
-from room_simulator import Action, Objective, Room
+from room_simulator import Action, Objective
 from .util import tile_to_text
 
 # The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
@@ -38,6 +38,7 @@ class RoomSolverApp(tkinter.Frame):
         self._enlarged_view = False
         self._room_image = None
         self._room = None
+        self._start_position = None
         self._room_solver_info = None
         self._selected_goal = tkinter.StringVar(self)
         self._selected_goal.set(list(RoomSolverGoal)[0].value)
@@ -131,7 +132,9 @@ class RoomSolverApp(tkinter.Frame):
         self._room_solver_text = tkinter.Label(self._control_panel, text="")
         self._room_solver_text.pack(side=tkinter.TOP)
 
-    def set_data(self, room_image, room, room_solver_info, objective_reacher_info):
+    def set_data(
+        self, room_image, room, start_position, room_solver_info, objective_reacher_info
+    ):
         """Set the data to show in the app.
 
         Parameters
@@ -140,6 +143,8 @@ class RoomSolverApp(tkinter.Frame):
             Real image of the current room.
         room
             The simulated room.
+        start_position
+            The starting position of the player.
         room_solver_info
             Details about the searcher.
         objective_reacher_info
@@ -149,6 +154,7 @@ class RoomSolverApp(tkinter.Frame):
             self._room_image = room_image
         if room is not None:
             self._room = room
+        self._start_position = start_position
         self._room_solver_info = room_solver_info
         self._objective_reacher_info = objective_reacher_info
         self._draw_view()
@@ -170,10 +176,6 @@ class RoomSolverApp(tkinter.Frame):
                         [current_position],
                         "green" if self._room_solver_info["found_solution"] else "blue",
                     )
-                elif isinstance(self._room_solver_info["current_state"], Room):
-                    current_position, _ = self._room_solver_info[
-                        "current_state"
-                    ].find_player()
 
                 if len(self._room_solver_info["frontier_actions"]) > 0 and isinstance(
                     list(self._room_solver_info["frontier_actions"])[0], Objective
@@ -187,9 +189,9 @@ class RoomSolverApp(tkinter.Frame):
                 ):
                     _draw_path(
                         pil_image,
-                        current_position,
+                        self._start_position,
                         self._room_solver_info["current_path"],
-                        self._room_solver_info["found_solution"],
+                        "green" if self._room_solver_info["found_solution"] else "blue",
                     )
 
             resized_image = pil_image.resize(
@@ -309,31 +311,30 @@ def _objective_reacher_info_to_text(objective_reacher_info):
     )
 
 
-def _draw_path(pil_image, end_position, actions, solved):
-    # We'll draw the path backwards, since we know the end but not the start
-    positions = [end_position]
-    for action in reversed(actions):
+def _draw_path(pil_image, start_position, actions, color):
+    positions = [start_position]
+    for action in actions:
         x, y = positions[-1]
         if action == Action.E:
-            positions.append((x - 1, y))
-        elif action == Action.SE:
-            positions.append((x - 1, y - 1))
-        elif action == Action.S:
-            positions.append((x, y - 1))
-        elif action == Action.SW:
-            positions.append((x + 1, y - 1))
-        elif action == Action.W:
             positions.append((x + 1, y))
-        elif action == Action.NW:
+        elif action == Action.SE:
             positions.append((x + 1, y + 1))
-        elif action == Action.N:
+        elif action == Action.S:
             positions.append((x, y + 1))
-        elif action == Action.NE:
+        elif action == Action.SW:
             positions.append((x - 1, y + 1))
+        elif action == Action.W:
+            positions.append((x - 1, y))
+        elif action == Action.NW:
+            positions.append((x - 1, y - 1))
+        elif action == Action.N:
+            positions.append((x, y - 1))
+        elif action == Action.NE:
+            positions.append((x + 1, y - 1))
     draw = ImageDraw.Draw(pil_image)
     draw.line(
         [((p[0] + 0.5) * TILE_SIZE, (p[1] + 0.5) * TILE_SIZE) for p in positions],
-        fill="green" if solved else "blue",
+        fill=color,
         width=3,
     )
 
