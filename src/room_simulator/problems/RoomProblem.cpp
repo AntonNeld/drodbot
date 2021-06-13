@@ -1,4 +1,5 @@
 #include <tuple>
+#include <map>
 #include "../Room.h"
 #include "../Objective.h"
 #include "../typedefs.h"
@@ -8,8 +9,10 @@
 #include "../utils.h"
 
 RoomProblem::RoomProblem(Room room,
-                         Objective objective) : room(room),
-                                                objective(objective){};
+                         Objective objective,
+                         std::map<Position, int> heuristicTiles) : room(room),
+                                                                   objective(objective),
+                                                                   heuristicTiles(heuristicTiles){};
 
 Room RoomProblem::initialState()
 {
@@ -50,27 +53,14 @@ int RoomProblem::stepCost(Room state, Action action, Room result)
 
 int RoomProblem::heuristic(Room state)
 {
-    // Distance to nearest goal, disregarding obstacles
-    std::tuple<Position, Direction> pair = state.findPlayer();
-    Position position = std::get<0>(pair);
-    Direction direction = std::get<1>(pair);
-    if (this->objective.swordAtTile)
+    Position playerPosition = std::get<0>(state.findPlayer());
+    auto iterator = this->heuristicTiles.find(playerPosition);
+    if (iterator != this->heuristicTiles.end())
     {
-        position = swordPosition(position, direction);
+        return std::get<1>(*iterator);
     }
-    int x = std::get<0>(position);
-    int y = std::get<1>(position);
-    int closestDistance = 37; // Largest possible distance
-    typename std::set<Position>::iterator iterator;
-    for (iterator = this->objective.tiles.begin(); iterator != this->objective.tiles.end(); ++iterator)
-    {
-        int goalX = std::get<0>(*iterator);
-        int goalY = std::get<1>(*iterator);
-        int distance = std::max<int>(std::abs(goalX - x), std::abs(goalY - y));
-        if (distance < closestDistance)
-        {
-            closestDistance = distance;
-        }
-    }
-    return closestDistance;
+    // Let's assume all tiles not included are equally bad.
+    // Note that this makes the heuristic non-admissable,
+    // so the solution may not be optimal.
+    return 10000;
 }

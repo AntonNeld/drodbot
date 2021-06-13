@@ -28,3 +28,30 @@ Position swordPosition(Position position, Direction direction)
         return {x, y};
     }
 }
+
+Position movePosition(Position start, Action action)
+{
+    int x = std::get<0>(start);
+    int y = std::get<1>(start);
+    switch (action)
+    {
+    case Action::E:
+        return {x + 1, y};
+    case Action::SE:
+        return {x + 1, y + 1};
+    case Action::S:
+        return {x, y + 1};
+    case Action::SW:
+        return {x - 1, y + 1};
+    case Action::W:
+        return {x - 1, y};
+    case Action::NW:
+        return {x - 1, y - 1};
+    case Action::N:
+        return {x, y - 1};
+    case Action::NE:
+        return {x + 1, y - 1};
+    default:
+        return {x, y};
+    }
+}

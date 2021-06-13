@@ -8,6 +8,7 @@
 #include "typedefs.h"
 #include "search/Searcher.h"
 #include "problems/RoomProblem.h"
+#include "utils.h"
 
 ObjectiveReacher::ObjectiveReacher() : cachedSolutions({}),
                                        phase(ObjectiveReacherPhase::NOTHING),
@@ -187,9 +188,21 @@ Solution<Position, Action> ObjectiveReacher::finishPathfindingPhase()
 
 void ObjectiveReacher::prepareSimulationPhase(Solution<Position, Action> pathfindingSolution)
 {
-    // Do nothing with the pathfinding solution for now
-    this->roomProblem = new RoomProblem(this->currentRoom.value(), this->currentObjective.value());
+    // We should only be here if a pathfinding solution exists,
+    // let's prioritize tiles on the found path.
+    int currentHeuristicValue = pathfindingSolution.actions.size();
+    Position currentPosition = std::get<0>(this->currentRoom.value().findPlayer());
+    std::map<Position, int> heuristicTiles = {{currentPosition, currentHeuristicValue}};
+    for (auto it = pathfindingSolution.actions.begin(); it != pathfindingSolution.actions.end(); ++it)
+    {
+        currentPosition = movePosition(currentPosition, *it);
+        currentHeuristicValue = currentHeuristicValue - 1;
+        heuristicTiles.insert({currentPosition, currentHeuristicValue});
+    }
+
+    this->roomProblem = new RoomProblem(this->currentRoom.value(), this->currentObjective.value(), heuristicTiles);
     // Low iteration limit for now, to avoid finding the solution indirectly by accident
+    // Set pathCostInPriority=false, to use greedy best-first search for performance
     this->simulationSearcher = new Searcher<Room, Action>(this->roomProblem.value(), true, true, false, 100);
 }
 
