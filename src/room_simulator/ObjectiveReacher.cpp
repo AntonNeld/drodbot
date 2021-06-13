@@ -94,47 +94,21 @@ void ObjectiveReacher::nextPhase()
         }
         else
         {
-            Position start = std::get<0>(this->currentRoom.value().findPlayer());
-            std::set<Position> tiles = this->currentObjective.value().tiles;
-            if (this->currentObjective.value().swordAtTile)
-            {
-                std::set<Position> goals = {};
-                for (auto tilePtr = tiles.begin(); tilePtr != tiles.end(); ++tilePtr)
-                {
-                    int x = std::get<0>(*tilePtr);
-                    int y = std::get<1>(*tilePtr);
-                    goals.insert({{x + 1, y},
-                                  {x + 1, y + 1},
-                                  {x, y + 1},
-                                  {x - 1, y + 1},
-                                  {x - 1, y},
-                                  {x - 1, y - 1},
-                                  {x, y - 1},
-                                  {x + 1, y - 1}});
-                }
-                this->pathfindingProblem = new PathfindingProblem(start, this->currentRoom.value(), goals);
-            }
-            else
-            {
-                this->pathfindingProblem = new PathfindingProblem(start, this->currentRoom.value(), tiles);
-            }
-            this->pathfindingSearcher = new Searcher<Position, Action>(this->pathfindingProblem.value());
+            this->preparePathfindingPhase();
             this->phase = ObjectiveReacherPhase::PATHFIND;
         }
         break;
     }
     case ObjectiveReacherPhase::PATHFIND:
-        // Do nothing with the result for now
-        this->pathfindingSearcher.value()->findSolution();
-
-        this->roomProblem = new RoomProblem(this->currentRoom.value(), this->currentObjective.value());
-        // Low iteration limit for now, to avoid finding the solution indirectly by accident
-        this->simulationSearcher = new Searcher<Room, Action>(this->roomProblem.value(), true, true, false, 100);
+    {
+        Solution<Position, Action> solution = this->finishPathfindingPhase();
+        this->prepareSimulationPhase(solution);
         this->phase = ObjectiveReacherPhase::SIMULATE_ROOM;
         break;
+    }
     case ObjectiveReacherPhase::SIMULATE_ROOM:
     {
-        this->solution = this->simulationSearcher.value()->findSolution();
+        this->solution = this->finishSimulationPhase();
         this->cachedSolutions.insert({{this->currentRoom.value(), this->currentObjective.value()}, this->solution.value()});
         this->phase = ObjectiveReacherPhase::FINISHED;
         break;
@@ -164,4 +138,53 @@ Searcher<Position, Action> *ObjectiveReacher::getPathfindingSearcher()
 Searcher<Room, Action> *ObjectiveReacher::getRoomSimulationSearcher()
 {
     return this->simulationSearcher.value();
+}
+
+// Private methods
+
+void ObjectiveReacher::preparePathfindingPhase()
+{
+    Position start = std::get<0>(this->currentRoom.value().findPlayer());
+    std::set<Position> tiles = this->currentObjective.value().tiles;
+    if (this->currentObjective.value().swordAtTile)
+    {
+        std::set<Position> goals = {};
+        for (auto tilePtr = tiles.begin(); tilePtr != tiles.end(); ++tilePtr)
+        {
+            int x = std::get<0>(*tilePtr);
+            int y = std::get<1>(*tilePtr);
+            goals.insert({{x + 1, y},
+                          {x + 1, y + 1},
+                          {x, y + 1},
+                          {x - 1, y + 1},
+                          {x - 1, y},
+                          {x - 1, y - 1},
+                          {x, y - 1},
+                          {x + 1, y - 1}});
+        }
+        this->pathfindingProblem = new PathfindingProblem(start, this->currentRoom.value(), goals);
+    }
+    else
+    {
+        this->pathfindingProblem = new PathfindingProblem(start, this->currentRoom.value(), tiles);
+    }
+    this->pathfindingSearcher = new Searcher<Position, Action>(this->pathfindingProblem.value());
+}
+
+Solution<Position, Action> ObjectiveReacher::finishPathfindingPhase()
+{
+    return this->pathfindingSearcher.value()->findSolution();
+}
+
+void ObjectiveReacher::prepareSimulationPhase(Solution<Position, Action> pathfindingSolution)
+{
+    // Do nothing with the pathfinding solution for now
+    this->roomProblem = new RoomProblem(this->currentRoom.value(), this->currentObjective.value());
+    // Low iteration limit for now, to avoid finding the solution indirectly by accident
+    this->simulationSearcher = new Searcher<Room, Action>(this->roomProblem.value(), true, true, false, 100);
+}
+
+Solution<Room, Action> ObjectiveReacher::finishSimulationPhase()
+{
+    return this->simulationSearcher.value()->findSolution();
 }

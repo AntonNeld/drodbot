@@ -35,6 +35,11 @@ public:
     Searcher<Room, Action> *getRoomSimulationSearcher();
 
 private:
+    void preparePathfindingPhase();
+    Solution<Position, Action> finishPathfindingPhase();
+    void prepareSimulationPhase(Solution<Position, Action> pathfindingSolution);
+    Solution<Room, Action> finishSimulationPhase();
+
     std::map<std::tuple<Room, Objective>, Solution<Room, Action>> cachedSolutions;
     ObjectiveReacherPhase phase;
     std::optional<Room> currentRoom;
