@@ -117,6 +117,11 @@ class RoomSolverAppBackend:
             objective = Objective(sword_at_tile=False, tiles=set(conquer_tokens))
             self._searcher = ObjectiveReacher()
             self._searcher.start(self._room, objective)
+        elif goal == RoomSolverGoal.STRIKE_ORB_OBJECTIVE_REACHER:
+            orbs = self._room.find_coordinates(ElementType.ORB)
+            objective = Objective(sword_at_tile=True, tiles=set(orbs))
+            self._searcher = ObjectiveReacher()
+            self._searcher.start(self._room, objective)
         self._show_data()
 
     async def expand_next_node(self):
