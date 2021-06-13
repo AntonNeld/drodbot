@@ -176,6 +176,10 @@ class RoomSolverAppBackend:
 
         if isinstance(self._searcher, ObjectiveReacher):
             objective_reacher_data = _extract_objective_reacher_info(self._searcher)
+            if "solution" in objective_reacher_data:
+                solution = objective_reacher_data["solution"]
+                if solution.exists:
+                    room = solution.final_state
         else:
             objective_reacher_data = None
 

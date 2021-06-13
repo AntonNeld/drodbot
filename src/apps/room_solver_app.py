@@ -194,6 +194,16 @@ class RoomSolverApp(tkinter.Frame):
                         "green" if self._room_solver_info["found_solution"] else "blue",
                     )
 
+            if (
+                self._objective_reacher_info is not None
+                and "solution" in self._objective_reacher_info
+            ):
+                solution = self._objective_reacher_info["solution"]
+                if solution.exists:
+                    _draw_path(
+                        pil_image, self._start_position, solution.actions, "green"
+                    )
+
             resized_image = pil_image.resize(
                 (int(self._canvas["width"]), int(self._canvas["height"])), Image.NEAREST
             )
@@ -304,11 +314,14 @@ def _solver_info_to_text(room_solver_info):
 def _objective_reacher_info_to_text(objective_reacher_info):
     if objective_reacher_info is None:
         return ""
-    return "\n".join(
-        [
-            f"Phase: {objective_reacher_info['phase']}",
-        ]
-    )
+    lines = [
+        f"Phase: {objective_reacher_info['phase']}",
+    ]
+
+    if objective_reacher_info["phase"] == "FINISHED":
+        solved = objective_reacher_info["solution"].exists
+        lines.append("Solved!" if solved else "No solution found...")
+    return "\n".join(lines)
 
 
 def _draw_path(pil_image, start_position, actions, color):
