@@ -10,6 +10,7 @@
 #include "problems/PathfindingProblem.h"
 #include "problems/PlanningProblem.h"
 #include "problems/RoomProblem.h"
+#include "problems/DerivedRoomProblem.h"
 
 void initialize()
 {
@@ -367,6 +368,7 @@ The full room.
     addSearcher<Position, Action>(m, "SearcherPositionAction", "ProblemPositionAction", "SolutionPositionAction");
     addSearcher<Room, Action>(m, "SearcherRoomAction", "ProblemRoomAction", "SolutionRoomAction");
     addSearcher<Room, Objective>(m, "SearcherRoomObjective", "ProblemRoomObjective", "SolutionRoomObjective");
+    addSearcher<DerivedRoom, Action>(m, "SearcherDerivedRoomAction", "ProblemDerivedRoomAction", "SolutionDerivedRoomAction");
 
     pybind11::class_<PathfindingProblem, Problem<Position, Action>>(m, "PathfindingProblem", R"docstr(
 A problem for finding a path in a room.
@@ -406,6 +408,21 @@ room
     The room.
 objective
     The goal objective.
+)docstr")
+        .def(pybind11::init<Room, Objective>(),
+             pybind11::arg("room"),
+             pybind11::arg("objective"));
+    pybind11::class_<DerivedRoomProblem, Problem<DerivedRoom, Action>>(m, "DerivedRoomProblem", R"docstr(
+A problem for reaching an objective in a room.
+
+Hopefully more efficient than RoomProblem.
+
+Parameters
+----------
+room
+    The room.
+objective
+    The objective.
 )docstr")
         .def(pybind11::init<Room, Objective>(),
              pybind11::arg("room"),

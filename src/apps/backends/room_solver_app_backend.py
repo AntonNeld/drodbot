@@ -5,12 +5,15 @@ from room_simulator import (
     Objective,
     ElementType,
     Room,
+    DerivedRoom,
     RoomProblem,
+    DerivedRoomProblem,
     PathfindingProblem,
     PlanningProblem,
     SearcherRoomAction,
     SearcherPositionAction,
     SearcherRoomObjective,
+    SearcherDerivedRoomAction,
     ObjectiveReacher,
     ObjectiveReacherPhase,
 )
@@ -102,6 +105,16 @@ class RoomSolverAppBackend:
                 heuristic_in_priority=heuristic_in_priority,
                 path_cost_in_priority=path_cost_in_priority,
             )
+        elif goal == RoomSolverGoal.STRIKE_ORB_EFFICIENT_ROOM_SIMULATION:
+            orbs = self._room.find_coordinates(ElementType.ORB)
+            objective = Objective(sword_at_tile=True, tiles=set(orbs))
+            self._problem = DerivedRoomProblem(self._room, objective)
+            self._searcher = SearcherDerivedRoomAction(
+                self._problem,
+                avoid_duplicates=avoid_duplicates,
+                heuristic_in_priority=heuristic_in_priority,
+                path_cost_in_priority=path_cost_in_priority,
+            )
         elif goal == RoomSolverGoal.MOVE_TO_CONQUER_TOKEN_PLANNING:
             conquer_tokens = self._room.find_coordinates(ElementType.CONQUER_TOKEN)
             objective = Objective(sword_at_tile=False, tiles=set(conquer_tokens))
@@ -173,6 +186,8 @@ class RoomSolverAppBackend:
             searcher_data = _extract_searcher_info(searcher)
             if isinstance(searcher_data["current_state"], Room):
                 room = searcher_data["current_state"]
+            elif isinstance(searcher_data["current_state"], DerivedRoom):
+                room = searcher_data["current_state"].get_full_room()
             else:
                 room = self._room
         except UserError:  # No searcher to show data for
