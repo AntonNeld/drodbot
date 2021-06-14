@@ -648,6 +648,12 @@ Room RoomPlayer::getRoom()
     return Room(tiles);
 }
 
+std::tuple<Position, Direction> RoomPlayer::findPlayer()
+{
+    return {{this->currentGame->swordsman.wX, this->currentGame->swordsman.wY},
+            convertDirectionBack(this->currentGame->swordsman.wO)};
+}
+
 // Since a lot of things in the DROD code is global, we'll need the interface
 // toward it to be global too
 RoomPlayer globalRoomPlayer = RoomPlayer();

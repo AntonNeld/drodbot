@@ -17,6 +17,7 @@ public:
     void undo();
     void setActions(std::vector<Action> actions);
     Room getRoom();
+    std::tuple<Position, Direction> findPlayer();
 
 private:
     CDbRoom *drodRoom;
