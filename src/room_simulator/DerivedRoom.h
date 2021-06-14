@@ -2,6 +2,7 @@
 #define DRODBOT_DERIVEDROOM_H
 
 #include <vector>
+#include <set>
 #include "typedefs.h"
 #include "Room.h"
 
@@ -19,7 +20,8 @@ public:
 private:
     Room *baseRoom;
     std::vector<Action> actions;
-    std::tuple<Position, Direction> player;
+    // Things that may differentiate this room from the base:
+    std::tuple<Position, Direction> player; // Player position and direction
 };
 
 #endif // DRODBOT_DERIVEDROOM_H

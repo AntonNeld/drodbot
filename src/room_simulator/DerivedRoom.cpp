@@ -43,20 +43,19 @@ Room DerivedRoom::getFullRoom()
 
 bool DerivedRoom::operator==(const DerivedRoom otherRoom) const
 {
-    // This (and <) ignores the fact that you can reach the same room state through
-    // different sequences of actions. Will be fixed later if needed.
     bool sameBase = otherRoom.baseRoom == this->baseRoom || *otherRoom.baseRoom == *this->baseRoom;
-    return sameBase && otherRoom.actions == this->actions;
+    return sameBase && otherRoom.player == this->player;
 };
 
 bool DerivedRoom::operator<(const DerivedRoom otherRoom) const
 {
-    // Difference in base rooms take precedence. This should be rare.
+    // Difference in base rooms take precedence. In most (all?) cases, the pointers point
+    // to the same room and we don't need to compare the rooms.
     bool sameBase = otherRoom.baseRoom == this->baseRoom || *otherRoom.baseRoom == *this->baseRoom;
     if (!sameBase)
     {
         return *otherRoom.baseRoom < *this->baseRoom;
     }
-    // Otherwise, check the actions
-    return otherRoom.actions < this->actions;
+    // Otherwise, check the player position and direction
+    return otherRoom.player < this->player;
 };
