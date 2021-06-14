@@ -4,6 +4,7 @@
 #include "typedefs.h"
 #include "RoomPlayer.h"
 #include "Room.h"
+#include "DerivedRoom.h"
 #include "ObjectiveReacher.h"
 #include "search/Searcher.h"
 #include "problems/PathfindingProblem.h"
@@ -321,6 +322,35 @@ y
 Returns
 -------
 Whether the tile is passable or not.
+)docstr");
+
+    pybind11::class_<DerivedRoom>(m, "DerivedRoom")
+        .def(pybind11::init<Room *>(), pybind11::arg("base_room"))
+        .def("get_successor", &DerivedRoom::getSuccessor, pybind11::arg("action"), R"docstr(
+Get the resulting room from performing an action.
+
+Parameters
+----------
+action
+    The action to perform.
+
+Returns
+-------
+The resulting derived room.
+)docstr")
+        .def("find_player", &DerivedRoom::findPlayer, R"docstr(
+Find the coordinates of the player.
+
+Returns
+-------
+A tuple ((x, y), direction).
+)docstr")
+        .def("get_full_room", &DerivedRoom::getFullRoom, R"docstr(
+Get a Room instance corresponding to the derived room.
+
+Returns
+-------
+The full room.
 )docstr");
 
     pybind11::class_<Objective>(m, "Objective")
