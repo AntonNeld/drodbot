@@ -429,6 +429,13 @@ void RoomPlayer::performAction(Action action)
     currentGame->ProcessCommand(drodAction, cueEvents);
 }
 
+// Rewind an action
+void RoomPlayer::undo()
+{
+    CCueEvents cueEvents;
+    currentGame->UndoCommand(cueEvents);
+}
+
 // Get a representation of the current room state.
 Room RoomPlayer::getRoom()
 {

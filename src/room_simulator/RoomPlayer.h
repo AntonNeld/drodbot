@@ -12,6 +12,7 @@ public:
     void initialize();
     void setRoom(Room room, bool firstEntrance = false);
     void performAction(Action action);
+    void undo();
     Room getRoom();
 
 private:
