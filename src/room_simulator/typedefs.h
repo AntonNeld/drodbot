@@ -5,6 +5,7 @@
 #include <tuple>
 #include <vector>
 #include <set>
+#include <optional>
 
 typedef std::tuple<int, int> Position;
 
@@ -146,15 +147,15 @@ template <class State, class SearchAction>
 struct Solution
 {
     Solution(bool exists,
-             std::vector<SearchAction> actions,
-             State finalState,
+             std::optional<std::vector<SearchAction>> actions,
+             std::optional<State> finalState,
              FailureReason failureReason = FailureReason::NO_FAILURE) : exists(exists),
                                                                         actions(actions),
                                                                         finalState(finalState),
                                                                         failureReason(failureReason){};
     bool exists;
-    std::vector<SearchAction> actions;
-    State finalState;
+    std::optional<std::vector<SearchAction>> actions;
+    std::optional<State> finalState;
     FailureReason failureReason;
 };
 

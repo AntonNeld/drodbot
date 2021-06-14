@@ -294,11 +294,11 @@ inline Solution<State, SearchAction> Searcher<State, SearchAction>::findSolution
     {
         if (this->frontier.size() == 0)
         {
-            return Solution<State, SearchAction>(false, {}, State(), FailureReason::EXHAUSTED_FRONTIER);
+            return Solution<State, SearchAction>(false, std::nullopt, std::nullopt, FailureReason::EXHAUSTED_FRONTIER);
         }
         if (this->iterations > this->iterationLimit)
         {
-            return Solution<State, SearchAction>(false, {}, State(), FailureReason::ITERATION_LIMIT_REACHED);
+            return Solution<State, SearchAction>(false, std::nullopt, std::nullopt, FailureReason::ITERATION_LIMIT_REACHED);
         }
         this->expandNextNode();
     }

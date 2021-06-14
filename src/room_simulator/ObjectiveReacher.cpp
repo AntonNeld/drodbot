@@ -190,10 +190,10 @@ void ObjectiveReacher::prepareSimulationPhase(Solution<Position, Action> pathfin
 {
     // We should only be here if a pathfinding solution exists,
     // let's prioritize tiles on the found path.
-    int currentHeuristicValue = pathfindingSolution.actions.size();
+    int currentHeuristicValue = pathfindingSolution.actions.value().size();
     Position currentPosition = std::get<0>(this->currentRoom.value().findPlayer());
     std::map<Position, int> heuristicTiles = {{currentPosition, currentHeuristicValue}};
-    for (auto it = pathfindingSolution.actions.begin(); it != pathfindingSolution.actions.end(); ++it)
+    for (auto it = pathfindingSolution.actions.value().begin(); it != pathfindingSolution.actions.value().end(); ++it)
     {
         currentPosition = movePosition(currentPosition, *it);
         currentHeuristicValue = currentHeuristicValue - 1;
