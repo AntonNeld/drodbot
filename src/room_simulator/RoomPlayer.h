@@ -1,6 +1,7 @@
 #ifndef DRODBOT_ROOMPLAYER_H
 #define DRODBOT_ROOMPLAYER_H
 
+#include <optional>
 #include <DRODLib/Db.h>
 #include "typedefs.h"
 #include "Room.h"
@@ -11,8 +12,10 @@ public:
     RoomPlayer();
     void initialize();
     void setRoom(Room room, bool firstEntrance = false);
+    void setRoom(Room *room, bool firstEntrance = false);
     void performAction(Action action);
     void undo();
+    void setActions(std::vector<Action> actions);
     Room getRoom();
 
 private:
@@ -22,6 +25,11 @@ private:
     CDbHold *hold;
     CDb *db;
     CCurrentGame *currentGame;
+    // Keeping track of things for interacting with DerivedRoom
+    std::optional<Room> baseRoom;
+    std::vector<Action> actions;
+    // Not to be dereferenced, only used to verify which room we are in.
+    std::optional<Room *> baseRoomPointer;
 };
 
 extern RoomPlayer globalRoomPlayer;

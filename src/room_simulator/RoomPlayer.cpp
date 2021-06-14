@@ -381,6 +381,17 @@ void RoomPlayer::setRoom(
             currentGame->pRoom->Plot(x, y, T_DOOR_YO);
         }
     }
+    this->baseRoom = room;
+    this->actions = {};
+}
+
+void RoomPlayer::setRoom(Room *room, bool firstEntrance)
+{
+    if (!this->baseRoomPointer || this->baseRoomPointer.value() != room)
+    {
+        this->baseRoomPointer = room;
+        this->setRoom(*room, firstEntrance);
+    }
 }
 
 // Perform an action in the room.
@@ -427,6 +438,7 @@ void RoomPlayer::performAction(Action action)
         throw std::invalid_argument("Unknown action");
     }
     currentGame->ProcessCommand(drodAction, cueEvents);
+    this->actions.push_back(action);
 }
 
 // Rewind an action
@@ -434,6 +446,39 @@ void RoomPlayer::undo()
 {
     CCueEvents cueEvents;
     currentGame->UndoCommand(cueEvents);
+    this->actions.pop_back();
+}
+
+// Set the actions performed from the base room, undoing if necessary
+void RoomPlayer::setActions(std::vector<Action> actions)
+{
+    long unsigned int divergingIndex = this->actions.size();
+    for (long unsigned int i = 0; i < this->actions.size(); i++)
+    {
+        if (
+            // If this is true, all the new actions are part of the old actions since
+            // we haven't stopped yet. But the rest of the old actions
+            // (including this) should be undone.
+            i == actions.size() ||
+            // If this is true, we have reached the first diverging action. Undo this
+            // and everything after.
+            this->actions[i] != actions[i])
+        {
+            divergingIndex = i;
+            break;
+        }
+    }
+    // Undo all old actions that are not part of the new actions
+    long unsigned int timesToUndo = this->actions.size() - divergingIndex;
+    for (long unsigned int i = 0; i < timesToUndo; i++)
+    {
+        this->undo();
+    }
+    // Perform the new actions after the point of divergence
+    for (long unsigned int i = divergingIndex; i < actions.size(); i++)
+    {
+        this->performAction(actions[i]);
+    }
 }
 
 // Get a representation of the current room state.

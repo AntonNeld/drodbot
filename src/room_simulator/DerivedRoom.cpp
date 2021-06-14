@@ -15,12 +15,8 @@ DerivedRoom DerivedRoom::getSuccessor(Action action)
 {
     std::vector<Action> successorActions = this->actions;
     successorActions.push_back(action);
-    // TODO: Make this more efficient
-    globalRoomPlayer.setRoom(*this->baseRoom);
-    for (auto it = successorActions.begin(); it != successorActions.end(); ++it)
-    {
-        globalRoomPlayer.performAction(*it);
-    }
+    globalRoomPlayer.setRoom(this->baseRoom);
+    globalRoomPlayer.setActions(successorActions);
     std::tuple<Position, Direction> player = globalRoomPlayer.getRoom().findPlayer();
     return DerivedRoom(this->baseRoom, successorActions, player);
 }
@@ -32,12 +28,8 @@ std::tuple<Position, Direction> DerivedRoom::findPlayer()
 
 Room DerivedRoom::getFullRoom()
 {
-    // TODO: Make this more efficient, but it's not as important as getSuccessor()
-    globalRoomPlayer.setRoom(*this->baseRoom);
-    for (auto it = this->actions.begin(); it != this->actions.end(); ++it)
-    {
-        globalRoomPlayer.performAction(*it);
-    }
+    globalRoomPlayer.setRoom(this->baseRoom);
+    globalRoomPlayer.setActions(this->actions);
     return globalRoomPlayer.getRoom();
 }
 
