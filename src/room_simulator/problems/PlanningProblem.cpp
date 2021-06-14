@@ -50,7 +50,7 @@ std::set<Objective> PlanningProblem::actions(Room state)
 Room PlanningProblem::result(Room state, Objective action)
 {
     Solution<Room, Action> solution = this->objectiveReacher.findSolution(state, action);
-    return solution.finalState;
+    return solution.finalState.value();
 }
 
 bool PlanningProblem::goalTest(Room state)
@@ -61,7 +61,7 @@ bool PlanningProblem::goalTest(Room state)
 int PlanningProblem::stepCost(Room state, Objective action, Room result)
 {
     Solution<Room, Action> solution = this->objectiveReacher.findSolution(state, action);
-    return solution.actions.size();
+    return solution.actions.value().size();
 }
 
 int PlanningProblem::heuristic(Room state)
