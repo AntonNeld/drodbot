@@ -1,4 +1,5 @@
 import asyncio
+import statistics
 
 import PIL
 from PIL import ImageTk, Image, ImageDraw
@@ -193,6 +194,19 @@ class RoomSolverApp(tkinter.Frame):
                         self._room_solver_info["current_path"],
                         "green" if self._room_solver_info["found_solution"] else "blue",
                     )
+                elif len(self._room_solver_info["current_path"]) > 0 and isinstance(
+                    self._room_solver_info["current_path"][0], Objective
+                ):
+                    positions = [self._start_position]
+                    for objective in self._room_solver_info["current_path"]:
+                        x = statistics.mean([coords[0] for coords in objective.tiles])
+                        y = statistics.mean([coords[1] for coords in objective.tiles])
+                        positions.append((x, y))
+                    _draw_lines(
+                        pil_image,
+                        positions,
+                        "green" if self._room_solver_info["found_solution"] else "blue",
+                    )
 
             if (
                 self._objective_reacher_info is not None
@@ -344,6 +358,10 @@ def _draw_path(pil_image, start_position, actions, color):
             positions.append((x, y - 1))
         elif action == Action.NE:
             positions.append((x + 1, y - 1))
+    _draw_lines(pil_image, positions, color)
+
+
+def _draw_lines(pil_image, positions, color):
     draw = ImageDraw.Draw(pil_image)
     draw.line(
         [((p[0] + 0.5) * TILE_SIZE, (p[1] + 0.5) * TILE_SIZE) for p in positions],
