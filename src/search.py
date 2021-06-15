@@ -6,17 +6,12 @@ class NoSolutionError(Exception):
 
     Attributes
     ----------
-    iterations
-        The number of iterations the search went through.
     iteration_limited
         Whether the search failed because the maximum number
         of iterations was reached.
-    precheck_failed
-        Whether the problem was deemed unsolvable by some precheck.
     """
 
-    def __init__(self, iterations, iteration_limited=False, precheck_failed=False):
-        self.iterations = iterations
+    def __init__(self, iteration_limited=False):
         self.iteration_limited = iteration_limited
 
 
@@ -100,5 +95,5 @@ def a_star_graph(problem, heuristic, iteration_limit=10000):
 
         iterations += 1
         if iterations > iteration_limit:
-            raise NoSolutionError(iterations=iterations, iteration_limited=True)
-    raise NoSolutionError(iterations=iterations)
+            raise NoSolutionError(iteration_limited=True)
+    raise NoSolutionError()

@@ -1,4 +1,10 @@
-from room_simulator import ObjectiveReacher, PlanningProblem, SearcherRoomObjective
+from room_simulator import (
+    ObjectiveReacher,
+    PlanningProblem,
+    SearcherRoomObjective,
+    FailureReason,
+)
+from search import NoSolutionError
 
 
 def solve_room(room, objective):
@@ -16,7 +22,10 @@ def solve_room(room, objective):
     searcher = SearcherRoomObjective(problem)
     solution = searcher.find_solution()
     if not solution.exists:
-        raise RuntimeError("No solution found")
+        raise NoSolutionError(
+            iteration_limited=solution.failure_reason
+            == FailureReason.ITERATION_LIMIT_REACHED
+        )
     sub_objectives = solution.actions
     actions = []
     latest_room = room
