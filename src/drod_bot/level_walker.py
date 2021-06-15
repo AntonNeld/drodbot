@@ -1,8 +1,8 @@
 from collections import namedtuple
 
-from .solve_room import solve_room, ReachTileObjective
+from .solve_room import solve_room
 from search import NoSolutionError, a_star_graph
-from room_simulator import ElementType, Direction, Element
+from room_simulator import ElementType, Direction, Element, Objective
 from util import direction_after
 
 
@@ -51,7 +51,7 @@ class _LevelPathfindingProblem:
         possible_actions = []
         for (tile_from, action, result) in exits:
             try:
-                solve_room(room, ReachTileObjective(goal_tiles=[tile_from]))
+                solve_room(room, Objective(sword_at_tile=False, tiles=set([tile_from])))
                 possible_actions.append(
                     _Action(tile_from=tile_from, action=action, result=result)
                 )
@@ -81,7 +81,9 @@ class _LevelPathfindingProblem:
         if not goal_tiles_in_room:
             return False
         try:
-            solve_room(room, ReachTileObjective(goal_tiles=goal_tiles_in_room))
+            solve_room(
+                room, Objective(sword_at_tile=False, tiles=set(goal_tiles_in_room))
+            )
             return True
         except NoSolutionError:
             return False
@@ -122,12 +124,15 @@ def find_path_in_level(goal_tiles, current_room, current_room_position, level):
     try:
         return solve_room(
             current_room,
-            ReachTileObjective(
-                goal_tiles=[
-                    tile
-                    for room_position, tile in goal_tiles
-                    if room_position == current_room_position
-                ]
+            Objective(
+                sword_at_tile=False,
+                tiles=set(
+                    [
+                        tile
+                        for room_position, tile in goal_tiles
+                        if room_position == current_room_position
+                    ]
+                ),
             ),
         )
     except NoSolutionError:
@@ -145,7 +150,8 @@ def find_path_in_level(goal_tiles, current_room, current_room_position, level):
     # Find the actual paths between the room edges
     for high_level_action in solution:
         actions = solve_room(
-            room, ReachTileObjective(goal_tiles=[high_level_action.tile_from])
+            room,
+            Objective(sword_at_tile=False, tiles=set([high_level_action.tile_from])),
         )
         direction = direction_after(actions, direction)
         detailed_actions.extend(actions)
@@ -158,12 +164,15 @@ def find_path_in_level(goal_tiles, current_room, current_room_position, level):
     # Find the path to the final tile in the last room
     actions = solve_room(
         room,
-        ReachTileObjective(
-            goal_tiles=[
-                tile
-                for room_position, tile in goal_tiles
-                if room_position == latest_room_position
-            ]
+        Objective(
+            sword_at_tile=False,
+            tiles=set(
+                [
+                    tile
+                    for room_position, tile in goal_tiles
+                    if room_position == latest_room_position
+                ]
+            ),
         ),
     )
     detailed_actions.extend(actions)

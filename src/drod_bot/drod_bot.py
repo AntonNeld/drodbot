@@ -2,9 +2,16 @@ import asyncio
 import time
 
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
-from .solve_room import solve_room, ReachTileObjective, StrikeTileObjective
+from .solve_room import solve_room
 from .level_walker import find_path_in_level
-from room_simulator import ElementType, Direction, Element, Action, simulate_action
+from room_simulator import (
+    ElementType,
+    Direction,
+    Element,
+    Action,
+    simulate_action,
+    Objective,
+)
 from .state import DrodBotState
 from search import NoSolutionError
 
@@ -89,7 +96,9 @@ class DrodBot:
         t = time.time()
         room = self.state.current_room
         goal_tiles = room.find_coordinates(element)
-        actions = solve_room(room, ReachTileObjective(goal_tiles=goal_tiles))
+        actions = solve_room(
+            room, Objective(sword_at_tile=False, tiles=set(goal_tiles))
+        )
         print(f"Thought in {time.time()-t:.2f}s")
         self.state.plan = actions
         await self._execute_plan()
@@ -162,7 +171,7 @@ class DrodBot:
         """
         room = self.state.current_room
         goal_tiles = room.find_coordinates(element)
-        actions = solve_room(room, StrikeTileObjective(goal_tiles=goal_tiles))
+        actions = solve_room(room, Objective(sword_at_tile=True, tiles=set(goal_tiles)))
         self.state.plan = actions
         await self._execute_plan()
 
