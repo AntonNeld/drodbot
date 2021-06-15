@@ -1,4 +1,3 @@
-
 #include <fstream>
 #include <sys/stat.h>
 #include <string>
@@ -364,7 +363,7 @@ void RoomPlayer::setRoom(
 
     // Start current game
     CCueEvents cueEvents;
-    currentGame = db->GetNewCurrentGame(hold->dwHoldID, cueEvents);
+    this->currentGame = db->GetNewCurrentGame(hold->dwHoldID, cueEvents);
 
     if (!firstEntrance)
     {
@@ -372,14 +371,15 @@ void RoomPlayer::setRoom(
         {
             int x = closedDoors[i].first;
             int y = closedDoors[i].second;
-            currentGame->pRoom->Plot(x, y, T_DOOR_Y);
+            this->currentGame->pRoom->Plot(x, y, T_DOOR_Y);
         }
         for (unsigned int i = 0; i < openDoors.size(); i += 1)
         {
             int x = openDoors[i].first;
             int y = openDoors[i].second;
-            currentGame->pRoom->Plot(x, y, T_DOOR_YO);
+            this->currentGame->pRoom->Plot(x, y, T_DOOR_YO);
         }
+        this->currentGame->pRoom->Update();
     }
     this->baseRoom = room;
     this->actions = {};
@@ -445,7 +445,7 @@ void RoomPlayer::performAction(Action action)
 void RoomPlayer::undo()
 {
     CCueEvents cueEvents;
-    currentGame->UndoCommand(cueEvents);
+    this->currentGame->UndoCommand(cueEvents);
     this->actions.pop_back();
 }
 
