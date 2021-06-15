@@ -61,7 +61,12 @@ class RoomSolverAppBackend:
         self._show_data()
 
     async def init_search(
-        self, goal, heuristic_in_priority, path_cost_in_priority, avoid_duplicates
+        self,
+        goal,
+        heuristic_in_priority,
+        path_cost_in_priority,
+        avoid_duplicates,
+        target,
     ):
         """Initialize a search for the selected goal.
 
@@ -75,6 +80,8 @@ class RoomSolverAppBackend:
             Whether to use the path cost when prioritizing nodes to expand.
         avoid_duplicates
             Whether to keep track of and avoid duplicates.
+        target
+            Which square to reach/strike, if applicable.
         """
         if self._room is None:
             raise UserError("Must get a room before searching")
@@ -139,6 +146,22 @@ class RoomSolverAppBackend:
         elif goal == RoomSolverGoal.STRIKE_ORB_OBJECTIVE_REACHER:
             orbs = self._room.find_coordinates(ElementType.ORB)
             objective = Objective(sword_at_tile=True, tiles=set(orbs))
+            self._searcher = ObjectiveReacher()
+            self._searcher.start(self._room, objective)
+        elif goal == RoomSolverGoal.MOVE_TO_TARGET_PLANNING:
+            objective = Objective(sword_at_tile=False, tiles=set([target]))
+            self._objective_reacher_ref = ObjectiveReacher()
+            self._problem = PlanningProblem(
+                self._room, objective, self._objective_reacher_ref
+            )
+            self._searcher = SearcherRoomObjective(
+                self._problem,
+                avoid_duplicates=avoid_duplicates,
+                heuristic_in_priority=heuristic_in_priority,
+                path_cost_in_priority=path_cost_in_priority,
+            )
+        elif goal == RoomSolverGoal.MOVE_TO_TARGET_OBJECTIVE_REACHER:
+            objective = Objective(sword_at_tile=False, tiles=set([target]))
             self._searcher = ObjectiveReacher()
             self._searcher.start(self._room, objective)
         self._show_data()

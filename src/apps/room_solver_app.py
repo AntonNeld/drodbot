@@ -41,6 +41,7 @@ class RoomSolverApp(tkinter.Frame):
         self._room = None
         self._start_position = None
         self._room_solver_info = None
+        self._target = None
         self._selected_goal = tkinter.StringVar(self)
         self._selected_goal.set(list(RoomSolverGoal)[0].value)
         self._heuristic_in_priority = tkinter.IntVar(self)
@@ -86,6 +87,8 @@ class RoomSolverApp(tkinter.Frame):
             *[o.value for o in RoomSolverGoal],
         )
         self._select_goal_dropdown.pack(side=tkinter.TOP)
+        self._target_text = tkinter.Label(self._control_panel, text="Target: None")
+        self._target_text.pack(side=tkinter.TOP)
         self._search_area = tkinter.Frame(self._control_panel)
         self._search_area.pack(side=tkinter.TOP)
         self._init_search_button = tkinter.Button(
@@ -253,6 +256,7 @@ class RoomSolverApp(tkinter.Frame):
                 self._heuristic_in_priority.get() == 1,
                 self._path_cost_in_priority.get() == 1,
                 self._avoid_duplicates.get() == 1,
+                self._target,
             )
         )
 
@@ -290,7 +294,9 @@ class RoomSolverApp(tkinter.Frame):
             x = event.x // (TILE_SIZE // 2)
             y = event.y // (TILE_SIZE // 2)
         tile = self._room.get_tile((x, y))
+        self._target = (x, y)
         self._tile_content_text.config(text=tile_to_text(tile))
+        self._target_text.config(text=f"Target: {self._target}")
 
 
 def _solver_info_to_text(room_solver_info):
