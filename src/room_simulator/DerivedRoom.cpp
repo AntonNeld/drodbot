@@ -3,13 +3,16 @@
 
 DerivedRoom::DerivedRoom(Room *baseRoom) : baseRoom(baseRoom),
                                            actions({}),
-                                           player(baseRoom->findPlayer()){};
+                                           player(baseRoom->findPlayer()),
+                                           toggledDoors({}){};
 
 DerivedRoom::DerivedRoom(Room *baseRoom,
                          std::vector<Action> actions,
-                         std::tuple<Position, Direction> player) : baseRoom(baseRoom),
-                                                                   actions(actions),
-                                                                   player(player) {}
+                         std::tuple<Position, Direction> player,
+                         std::set<Position> toggledDoors) : baseRoom(baseRoom),
+                                                            actions(actions),
+                                                            player(player),
+                                                            toggledDoors(toggledDoors) {}
 
 DerivedRoom DerivedRoom::getSuccessor(Action action)
 {
@@ -18,7 +21,8 @@ DerivedRoom DerivedRoom::getSuccessor(Action action)
     globalRoomPlayer.setRoom(this->baseRoom);
     globalRoomPlayer.setActions(successorActions);
     std::tuple<Position, Direction> player = globalRoomPlayer.findPlayer();
-    return DerivedRoom(this->baseRoom, successorActions, player);
+    std::set<Position> toggledDoors = globalRoomPlayer.getToggledDoors();
+    return DerivedRoom(this->baseRoom, successorActions, player, toggledDoors);
 }
 
 std::tuple<Position, Direction> DerivedRoom::findPlayer()
@@ -36,7 +40,9 @@ Room DerivedRoom::getFullRoom()
 bool DerivedRoom::operator==(const DerivedRoom otherRoom) const
 {
     bool sameBase = otherRoom.baseRoom == this->baseRoom || *otherRoom.baseRoom == *this->baseRoom;
-    return sameBase && otherRoom.player == this->player;
+    return sameBase &&
+           otherRoom.player == this->player &&
+           otherRoom.toggledDoors == this->toggledDoors;
 };
 
 bool DerivedRoom::operator<(const DerivedRoom otherRoom) const
@@ -48,6 +54,9 @@ bool DerivedRoom::operator<(const DerivedRoom otherRoom) const
     {
         return *otherRoom.baseRoom < *this->baseRoom;
     }
-    // Otherwise, check the player position and direction
-    return otherRoom.player < this->player;
+    if (otherRoom.player != this->player)
+    {
+        return otherRoom.player < this->player;
+    }
+    return otherRoom.toggledDoors < this->toggledDoors;
 };

@@ -162,6 +162,7 @@ void RoomPlayer::setRoom(
                        // happen when entering a room.
 )
 {
+    this->closedDoors = {};
     // Clear any existing room
     if (drodRoom != NULL)
     {
@@ -186,13 +187,6 @@ void RoomPlayer::setRoom(
     drodRoom = db->Rooms.GetByID(roomID);
 
     // Place things in room
-
-    // Optionally wait with placing the doors until after starting playing. This
-    // is because Beethro strikes orbs when first entering a room, which is
-    // undesirable if we're actually in the middle of playing the given room.
-    std::vector<std::pair<int, int>> closedDoors;
-    std::vector<std::pair<int, int>> openDoors;
-
     for (int x = 0; x < 38; x += 1)
     {
         for (int y = 0; y < 32; y += 1)
@@ -212,13 +206,16 @@ void RoomPlayer::setRoom(
                 drodRoom->Plot(x, y, T_WALL_M);
                 break;
             case ElementType::YELLOW_DOOR:
+                // Optionally wait with placing the doors until after starting playing. This
+                // is because Beethro strikes orbs when first entering a room, which is
+                // undesirable if we're actually in the middle of playing the given room.
                 if (firstEntrance)
                 {
                     drodRoom->Plot(x, y, T_DOOR_Y);
                 }
                 else
                 {
-                    closedDoors.push_back({x, y});
+                    this->closedDoors[{x, y}] = true;
                 }
                 break;
             case ElementType::YELLOW_DOOR_OPEN:
@@ -228,7 +225,7 @@ void RoomPlayer::setRoom(
                 }
                 else
                 {
-                    openDoors.push_back({x, y});
+                    this->closedDoors[{x, y}] = false;
                 }
                 break;
             // TODO: These may be switched depending on whether the room is
@@ -367,17 +364,20 @@ void RoomPlayer::setRoom(
 
     if (!firstEntrance)
     {
-        for (unsigned int i = 0; i < closedDoors.size(); i += 1)
+        for (auto it = this->closedDoors.begin(); it != this->closedDoors.end(); ++it)
         {
-            int x = closedDoors[i].first;
-            int y = closedDoors[i].second;
-            this->currentGame->pRoom->Plot(x, y, T_DOOR_Y);
-        }
-        for (unsigned int i = 0; i < openDoors.size(); i += 1)
-        {
-            int x = openDoors[i].first;
-            int y = openDoors[i].second;
-            this->currentGame->pRoom->Plot(x, y, T_DOOR_YO);
+            Position position = std::get<0>(*it);
+            unsigned int x = (unsigned int)std::get<0>(position);
+            unsigned int y = (unsigned int)std::get<1>(position);
+            bool closed = std::get<1>(*it);
+            if (closed)
+            {
+                this->currentGame->pRoom->Plot(x, y, T_DOOR_Y);
+            }
+            else
+            {
+                this->currentGame->pRoom->Plot(x, y, T_DOOR_YO);
+            }
         }
         this->currentGame->pRoom->Update();
     }
@@ -437,8 +437,27 @@ void RoomPlayer::performAction(Action action)
     default:
         throw std::invalid_argument("Unknown action");
     }
-    currentGame->ProcessCommand(drodAction, cueEvents);
+    this->currentGame->ProcessCommand(drodAction, cueEvents);
     this->actions.push_back(action);
+    for (auto it = this->closedDoors.begin(); it != this->closedDoors.end(); ++it)
+    {
+        Position key = std::get<0>(*it);
+        int x = std::get<0>(key);
+        int y = std::get<1>(key);
+        UINT content = this->currentGame->pRoom->GetOSquare(x, y);
+        if (content == T_DOOR_Y)
+        {
+            this->closedDoors[key] = true;
+        }
+        else if (content == T_DOOR_YO)
+        {
+            this->closedDoors[key] = false;
+        }
+        else
+        {
+            throw std::invalid_argument("Something has stopped being a door");
+        }
+    }
 }
 
 // Rewind an action
@@ -652,6 +671,35 @@ std::tuple<Position, Direction> RoomPlayer::findPlayer()
 {
     return {{this->currentGame->swordsman.wX, this->currentGame->swordsman.wY},
             convertDirectionBack(this->currentGame->swordsman.wO)};
+}
+
+std::set<Position> RoomPlayer::getToggledDoors()
+{
+    std::set<Position> toggledDoors = {};
+    for (auto it = this->closedDoors.begin(); it != this->closedDoors.end(); ++it)
+    {
+        Position position = std::get<0>(*it);
+        bool closed = std::get<1>(*it);
+        Element element = this->baseRoom.value().getTile(position).roomPiece;
+        switch (element.type)
+        {
+        case ElementType::YELLOW_DOOR:
+            if (!closed)
+            {
+                toggledDoors.insert(position);
+            }
+            break;
+        case ElementType::YELLOW_DOOR_OPEN:
+            if (closed)
+            {
+                toggledDoors.insert(position);
+            }
+            break;
+        default:
+            throw std::invalid_argument("Tile not a door in the base room");
+        }
+    }
+    return toggledDoors;
 }
 
 // Since a lot of things in the DROD code is global, we'll need the interface

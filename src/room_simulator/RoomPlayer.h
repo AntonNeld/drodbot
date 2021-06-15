@@ -18,6 +18,7 @@ public:
     void setActions(std::vector<Action> actions);
     Room getRoom();
     std::tuple<Position, Direction> findPlayer();
+    std::set<Position> getToggledDoors();
 
 private:
     CDbRoom *drodRoom;
@@ -29,6 +30,7 @@ private:
     // Keeping track of things for interacting with DerivedRoom
     std::optional<Room> baseRoom;
     std::vector<Action> actions;
+    std::map<Position, bool> closedDoors;
     // Not to be dereferenced, only used to verify which room we are in.
     std::optional<Room *> baseRoomPointer;
 };
