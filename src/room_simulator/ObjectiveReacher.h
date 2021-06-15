@@ -9,7 +9,7 @@
 #include "Room.h"
 #include "Objective.h"
 #include "problems/PathfindingProblem.h"
-#include "problems/RoomProblem.h"
+#include "problems/DerivedRoomProblem.h"
 #include "search/Searcher.h"
 
 enum class ObjectiveReacherPhase
@@ -32,13 +32,13 @@ public:
     ObjectiveReacherPhase getPhase();
     Solution<Room, Action> getSolution();
     Searcher<Position, Action> *getPathfindingSearcher();
-    Searcher<Room, Action> *getRoomSimulationSearcher();
+    Searcher<DerivedRoom, Action> *getRoomSimulationSearcher();
 
 private:
     void preparePathfindingPhase();
     Solution<Position, Action> finishPathfindingPhase();
     void prepareSimulationPhase(Solution<Position, Action> pathfindingSolution);
-    Solution<Room, Action> finishSimulationPhase();
+    Solution<DerivedRoom, Action> finishSimulationPhase();
 
     std::map<std::tuple<Room, Objective>, Solution<Room, Action>> cachedSolutions;
     ObjectiveReacherPhase phase;
@@ -47,8 +47,8 @@ private:
     std::optional<Solution<Room, Action>> solution;
     std::optional<PathfindingProblem *> pathfindingProblem;
     std::optional<Searcher<Position, Action> *> pathfindingSearcher;
-    std::optional<RoomProblem *> roomProblem;
-    std::optional<Searcher<Room, Action> *> simulationSearcher;
+    std::optional<DerivedRoomProblem *> roomProblem;
+    std::optional<Searcher<DerivedRoom, Action> *> simulationSearcher;
 };
 
 #endif // DRODBOT_OBJECTIVEREACHER_H

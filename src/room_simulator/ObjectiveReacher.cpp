@@ -7,7 +7,7 @@
 #include "Objective.h"
 #include "typedefs.h"
 #include "search/Searcher.h"
-#include "problems/RoomProblem.h"
+#include "problems/DerivedRoomProblem.h"
 #include "utils.h"
 
 ObjectiveReacher::ObjectiveReacher() : cachedSolutions({}),
@@ -118,7 +118,17 @@ void ObjectiveReacher::nextPhase()
     }
     case ObjectiveReacherPhase::SIMULATE_ROOM:
     {
-        this->solution = this->finishSimulationPhase();
+        Solution<DerivedRoom, Action> derivedRoomSolution = this->finishSimulationPhase();
+        if (derivedRoomSolution.exists)
+        {
+            this->solution = Solution<Room, Action>(true,
+                                                    derivedRoomSolution.actions,
+                                                    derivedRoomSolution.finalState.value().getFullRoom());
+        }
+        else
+        {
+            this->solution = Solution<Room, Action>(false, std::nullopt, std::nullopt, derivedRoomSolution.failureReason);
+        }
         this->cachedSolutions.insert({{this->currentRoom.value(), this->currentObjective.value()}, this->solution.value()});
         this->phase = ObjectiveReacherPhase::FINISHED;
         break;
@@ -145,7 +155,7 @@ Searcher<Position, Action> *ObjectiveReacher::getPathfindingSearcher()
     return this->pathfindingSearcher.value();
 }
 
-Searcher<Room, Action> *ObjectiveReacher::getRoomSimulationSearcher()
+Searcher<DerivedRoom, Action> *ObjectiveReacher::getRoomSimulationSearcher()
 {
     return this->simulationSearcher.value();
 }
@@ -200,13 +210,13 @@ void ObjectiveReacher::prepareSimulationPhase(Solution<Position, Action> pathfin
         heuristicTiles.insert({currentPosition, currentHeuristicValue});
     }
 
-    this->roomProblem = new RoomProblem(this->currentRoom.value(), this->currentObjective.value(), heuristicTiles);
+    this->roomProblem = new DerivedRoomProblem(this->currentRoom.value(), this->currentObjective.value(), heuristicTiles);
     // Low iteration limit for now, to avoid finding the solution indirectly by accident
     // Set pathCostInPriority=false, to use greedy best-first search for performance
-    this->simulationSearcher = new Searcher<Room, Action>(this->roomProblem.value(), true, true, false, 100);
+    this->simulationSearcher = new Searcher<DerivedRoom, Action>(this->roomProblem.value(), true, true, false, 100);
 }
 
-Solution<Room, Action> ObjectiveReacher::finishSimulationPhase()
+Solution<DerivedRoom, Action> ObjectiveReacher::finishSimulationPhase()
 {
     return this->simulationSearcher.value()->findSolution();
 }
