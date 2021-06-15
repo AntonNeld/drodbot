@@ -9,6 +9,7 @@
 #include "RoomPlayer.h"
 #include "typedefs.h"
 #include "Room.h"
+#include "utils.h"
 
 // Helper function to convert direction from our format to DROD format.
 UINT convertDirection(Direction direction)
@@ -163,6 +164,41 @@ void RoomPlayer::setRoom(
 )
 {
     this->closedDoors = {};
+    // If the player starts with their sword on an orb and we are not
+    // entering the room, the orb will have already been struck. Since
+    // DRODLib will strike the orb again, we invert the status of the
+    // doors that will be toggled by the orb. This makes the DROD room
+    // match the function input. We don't need to care about the orb
+    // opening and closing doors, since those actions are idempotent.
+    std::set<Position> preToggledDoors = {};
+    if (!firstEntrance)
+    {
+        std::tuple<Position, Direction> player = room.findPlayer();
+        Position position = std::get<0>(player);
+        Direction direction = std::get<1>(player);
+        Position swordPos = swordPosition(position, direction);
+        int x = std::get<0>(swordPos);
+        int y = std::get<1>(swordPos);
+        if (x >= 0 && x < 38 && y >= 0 && y < 32)
+        {
+            Tile swordedTile = room.getTile(swordPos);
+            if (swordedTile.item.type == ElementType::ORB)
+            {
+                OrbEffects effects = swordedTile.item.orbEffects;
+                for (auto it = effects.begin(); it != effects.end(); ++it)
+                {
+                    OrbEffect effectType = std::get<2>(*it);
+                    if (effectType == OrbEffect::TOGGLE)
+                    {
+                        int x = std::get<0>(*it);
+                        int y = std::get<1>(*it);
+                        std::set<Position> tiles = affectedDoorTiles({x, y}, room);
+                        preToggledDoors.insert(tiles.begin(), tiles.end());
+                    }
+                }
+            }
+        }
+    }
     // Clear any existing room
     if (drodRoom != NULL)
     {
@@ -206,27 +242,26 @@ void RoomPlayer::setRoom(
                 drodRoom->Plot(x, y, T_WALL_M);
                 break;
             case ElementType::YELLOW_DOOR:
-                // Optionally wait with placing the doors until after starting playing. This
-                // is because Beethro strikes orbs when first entering a room, which is
-                // undesirable if we're actually in the middle of playing the given room.
-                if (firstEntrance)
-                {
-                    drodRoom->Plot(x, y, T_DOOR_Y);
-                }
-                else
-                {
-                    this->closedDoors[{x, y}] = true;
-                }
-                break;
-            case ElementType::YELLOW_DOOR_OPEN:
-                if (firstEntrance)
+                if (preToggledDoors.find({x, y}) != preToggledDoors.end())
                 {
                     drodRoom->Plot(x, y, T_DOOR_YO);
                 }
                 else
                 {
-                    this->closedDoors[{x, y}] = false;
+                    drodRoom->Plot(x, y, T_DOOR_Y);
                 }
+                this->closedDoors[{x, y}] = true;
+                break;
+            case ElementType::YELLOW_DOOR_OPEN:
+                if (preToggledDoors.find({x, y}) != preToggledDoors.end())
+                {
+                    drodRoom->Plot(x, y, T_DOOR_Y);
+                }
+                else
+                {
+                    drodRoom->Plot(x, y, T_DOOR_YO);
+                }
+                this->closedDoors[{x, y}] = false;
                 break;
             // TODO: These may be switched depending on whether the room is
             // conquered. Investigate.
@@ -362,25 +397,6 @@ void RoomPlayer::setRoom(
     CCueEvents cueEvents;
     this->currentGame = db->GetNewCurrentGame(hold->dwHoldID, cueEvents);
 
-    if (!firstEntrance)
-    {
-        for (auto it = this->closedDoors.begin(); it != this->closedDoors.end(); ++it)
-        {
-            Position position = std::get<0>(*it);
-            unsigned int x = (unsigned int)std::get<0>(position);
-            unsigned int y = (unsigned int)std::get<1>(position);
-            bool closed = std::get<1>(*it);
-            if (closed)
-            {
-                this->currentGame->pRoom->Plot(x, y, T_DOOR_Y);
-            }
-            else
-            {
-                this->currentGame->pRoom->Plot(x, y, T_DOOR_YO);
-            }
-        }
-        this->currentGame->pRoom->Update();
-    }
     this->baseRoom = room;
     this->actions = {};
 }

@@ -1,4 +1,7 @@
 #include <tuple>
+#include <set>
+#include <vector>
+#include <array>
 #include "typedefs.h"
 #include "utils.h"
 
@@ -54,4 +57,32 @@ Position movePosition(Position start, Action action)
     default:
         return {x, y};
     }
+}
+
+std::set<Position> affectedDoorTiles(Position position, Room room)
+{
+    std::set<Position> affectedTiles = {};
+    std::vector<Position> toCheck = {position};
+    ElementType doorType = room.getTile(position).roomPiece.type;
+    while (!toCheck.empty())
+    {
+        Position checking = toCheck.back();
+        toCheck.pop_back();
+        affectedTiles.insert(checking);
+        int x = std::get<0>(checking);
+        int y = std::get<1>(checking);
+        std::array<Position, 4> newPositions{{{x + 1, y}, {x, y + 1}, {x - 1, y}, {x, y - 1}}};
+        for (auto it = newPositions.begin(); it != newPositions.end(); ++it)
+        {
+            int newX = std::get<0>(*it);
+            int newY = std::get<1>(*it);
+            if (newX >= 0 && newX < 38 && newY >= 0 && newY < 32 &&
+                affectedTiles.find(*it) == affectedTiles.end() &&
+                room.getTile(*it).roomPiece.type == doorType)
+            {
+                toCheck.push_back(*it);
+            }
+        }
+    }
+    return affectedTiles;
 }
