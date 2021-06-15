@@ -42,7 +42,9 @@ Room RoomProblem::result(Room state, Action action)
 {
     globalRoomPlayer.setRoom(state);
     globalRoomPlayer.performAction(action);
-    return globalRoomPlayer.getRoom();
+    Room resultingRoom = globalRoomPlayer.getRoom();
+    globalRoomPlayer.release();
+    return resultingRoom;
 }
 
 bool RoomProblem::goalTest(Room state)

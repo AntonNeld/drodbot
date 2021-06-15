@@ -8,15 +8,13 @@
 #include "DerivedRoomProblem.h"
 #include "../utils.h"
 
-DerivedRoomProblem::DerivedRoomProblem(Room room,
-                                       Objective objective,
-                                       std::map<Position, int> heuristicTiles) : room(room),
-                                                                                 objective(objective),
+DerivedRoomProblem::DerivedRoomProblem(Objective objective,
+                                       std::map<Position, int> heuristicTiles) : objective(objective),
                                                                                  heuristicTiles(heuristicTiles){};
 
 DerivedRoom DerivedRoomProblem::initialState()
 {
-    return DerivedRoom(&this->room);
+    return DerivedRoom();
 };
 
 std::set<Action> DerivedRoomProblem::actions(DerivedRoom state)

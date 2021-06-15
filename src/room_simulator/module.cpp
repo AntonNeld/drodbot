@@ -21,7 +21,9 @@ Room simulateAction(Room room, Action action)
 {
     globalRoomPlayer.setRoom(room);
     globalRoomPlayer.performAction(action);
-    return globalRoomPlayer.getRoom();
+    Room resultingRoom = globalRoomPlayer.getRoom();
+    globalRoomPlayer.release();
+    return resultingRoom;
 }
 
 template <class State, class SearchAction>
@@ -325,8 +327,13 @@ Returns
 Whether the tile is passable or not.
 )docstr");
 
-    pybind11::class_<DerivedRoom>(m, "DerivedRoom")
-        .def(pybind11::init<Room *>(), pybind11::arg("base_room"))
+    pybind11::class_<DerivedRoom>(m, "DerivedRoom", R"docstr(
+An efficient representation of a room, but which is only valid in a specific context.
+
+This is only valid as long as the global RoomPlayer is playing the same room.
+Using an instance of this after that will produce strange results.
+    )docstr")
+        .def(pybind11::init<>())
         .def("get_successor", &DerivedRoom::getSuccessor, pybind11::arg("action"), R"docstr(
 Get the resulting room from performing an action.
 
@@ -420,17 +427,15 @@ objective_reacher
     pybind11::class_<DerivedRoomProblem, Problem<DerivedRoom, Action>>(m, "DerivedRoomProblem", R"docstr(
 A problem for reaching an objective in a room.
 
-Hopefully more efficient than RoomProblem.
+This uses the more efficient DerivedRoom room representation, but is only
+valid as long as the global RoomPlayer is playing the same room.
 
 Parameters
 ----------
-room
-    The room.
 objective
     The objective.
 )docstr")
-        .def(pybind11::init<Room, Objective>(),
-             pybind11::arg("room"),
+        .def(pybind11::init<Objective>(),
              pybind11::arg("objective"));
 
     pybind11::enum_<ObjectiveReacherPhase>(m, "ObjectiveReacherPhase")

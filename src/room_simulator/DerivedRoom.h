@@ -6,12 +6,15 @@
 #include "typedefs.h"
 #include "Room.h"
 
+// This class only makes sense in the context of one search,
+// when the room played in globalRoomPlayer does not change.
+// Working with an instance of this after the globally played
+// room has changed will break.
 class DerivedRoom
 {
 public:
-    DerivedRoom(Room *baseRoom);
-    DerivedRoom(Room *baseRoom,
-                std::vector<Action> actions,
+    DerivedRoom();
+    DerivedRoom(std::vector<Action> actions,
                 std::tuple<Position, Direction> player,
                 std::set<Position> toggledDoors,
                 bool deadPlayer);
@@ -23,7 +26,6 @@ public:
     bool operator<(const DerivedRoom) const;
 
 private:
-    Room *baseRoom;
     std::vector<Action> actions;
     // Things that may differentiate this room from the base:
     std::tuple<Position, Direction> player; // Player position and direction

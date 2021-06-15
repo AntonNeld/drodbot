@@ -163,6 +163,11 @@ void RoomPlayer::setRoom(
                        // happen when entering a room.
 )
 {
+    if (this->claimed)
+    {
+        throw std::invalid_argument("Trying to use already claimed RoomPlayer");
+    }
+    this->claimed = true;
     this->closedDoors = {};
     // If the player starts with their sword on an orb and we are not
     // entering the room, the orb will have already been struck. Since
@@ -399,15 +404,6 @@ void RoomPlayer::setRoom(
 
     this->baseRoom = room;
     this->actions = {};
-}
-
-void RoomPlayer::setRoom(Room *room, bool firstEntrance)
-{
-    if (!this->baseRoomPointer || this->baseRoomPointer.value() != room)
-    {
-        this->baseRoomPointer = room;
-        this->setRoom(*room, firstEntrance);
-    }
 }
 
 // Perform an action in the room.
@@ -721,6 +717,15 @@ std::set<Position> RoomPlayer::getToggledDoors()
         }
     }
     return toggledDoors;
+}
+
+void RoomPlayer::release()
+{
+    if (!this->claimed)
+    {
+        throw std::invalid_argument("Trying to release unclaimed RoomPlayer");
+    }
+    this->claimed = false;
 }
 
 // Since a lot of things in the DROD code is global, we'll need the interface

@@ -12,11 +12,11 @@ public:
     RoomPlayer();
     void initialize();
     void setRoom(Room room, bool firstEntrance = false);
-    void setRoom(Room *room, bool firstEntrance = false);
     void performAction(Action action);
     void undo();
     void setActions(std::vector<Action> newActions);
     Room getRoom();
+    void release();
     std::tuple<Position, Direction> findPlayer();
     bool playerIsDead();
     std::set<Position> getToggledDoors();
@@ -28,12 +28,13 @@ private:
     CDbHold *hold;
     CDb *db;
     CCurrentGame *currentGame;
+    // Only one caller can use a room player at a time.
+    // A room player is claimed by setRoom() and released by release()
+    bool claimed;
     // Keeping track of things for interacting with DerivedRoom
     std::optional<Room> baseRoom;
     std::vector<Action> actions;
     std::map<Position, bool> closedDoors;
-    // Not to be dereferenced, only used to verify which room we are in.
-    std::optional<Room *> baseRoomPointer;
 };
 
 extern RoomPlayer globalRoomPlayer;
