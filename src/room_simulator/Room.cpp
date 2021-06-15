@@ -93,7 +93,7 @@ bool Room::isPassable(int x, int y)
     return true;
 }
 
-bool Room::isPassable(Position position, Direction fromDirection)
+bool Room::isPassableInDirection(Position position, Direction fromDirection)
 {
     if (!isPassable(std::get<0>(position), std::get<1>(position)))
     {

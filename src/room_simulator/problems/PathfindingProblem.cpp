@@ -27,35 +27,35 @@ std::set<Action> PathfindingProblem::actions(Position state)
     std::set<Action> actions;
     int x = std::get<0>(state);
     int y = std::get<1>(state);
-    if (this->room.isPassable({x + 1, y}, Direction::E))
+    if (this->room.isPassableInDirection({x + 1, y}, Direction::E))
     {
         actions.insert(Action::E);
     }
-    if (this->room.isPassable({x + 1, y + 1}, Direction::SE))
+    if (this->room.isPassableInDirection({x + 1, y + 1}, Direction::SE))
     {
         actions.insert(Action::SE);
     }
-    if (this->room.isPassable({x, y + 1}, Direction::S))
+    if (this->room.isPassableInDirection({x, y + 1}, Direction::S))
     {
         actions.insert(Action::S);
     }
-    if (this->room.isPassable({x - 1, y + 1}, Direction::SW))
+    if (this->room.isPassableInDirection({x - 1, y + 1}, Direction::SW))
     {
         actions.insert(Action::SW);
     }
-    if (this->room.isPassable({x - 1, y}, Direction::W))
+    if (this->room.isPassableInDirection({x - 1, y}, Direction::W))
     {
         actions.insert(Action::W);
     }
-    if (this->room.isPassable({x - 1, y - 1}, Direction::NW))
+    if (this->room.isPassableInDirection({x - 1, y - 1}, Direction::NW))
     {
         actions.insert(Action::NW);
     }
-    if (this->room.isPassable({x, y - 1}, Direction::N))
+    if (this->room.isPassableInDirection({x, y - 1}, Direction::N))
     {
         actions.insert(Action::N);
     }
-    if (this->room.isPassable({x + 1, y - 1}, Direction::NE))
+    if (this->room.isPassableInDirection({x + 1, y - 1}, Direction::NE))
     {
         actions.insert(Action::NE);
     }
