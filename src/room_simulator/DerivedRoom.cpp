@@ -21,8 +21,8 @@ DerivedRoom DerivedRoom::getSuccessor(Action action)
     globalRoomPlayer.setRoom(this->baseRoom);
     globalRoomPlayer.setActions(successorActions);
     std::tuple<Position, Direction> player = globalRoomPlayer.findPlayer();
-    std::set<Position> toggledDoors = globalRoomPlayer.getToggledDoors();
-    return DerivedRoom(this->baseRoom, successorActions, player, toggledDoors);
+    std::set<Position> successorToggledDoors = globalRoomPlayer.getToggledDoors();
+    return DerivedRoom(this->baseRoom, successorActions, player, successorToggledDoors);
 }
 
 std::tuple<Position, Direction> DerivedRoom::findPlayer()

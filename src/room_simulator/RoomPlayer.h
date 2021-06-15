@@ -15,7 +15,7 @@ public:
     void setRoom(Room *room, bool firstEntrance = false);
     void performAction(Action action);
     void undo();
-    void setActions(std::vector<Action> actions);
+    void setActions(std::vector<Action> newActions);
     Room getRoom();
     std::tuple<Position, Direction> findPlayer();
     std::set<Position> getToggledDoors();

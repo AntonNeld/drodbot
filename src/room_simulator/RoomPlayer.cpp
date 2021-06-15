@@ -469,7 +469,7 @@ void RoomPlayer::undo()
 }
 
 // Set the actions performed from the base room, undoing if necessary
-void RoomPlayer::setActions(std::vector<Action> actions)
+void RoomPlayer::setActions(std::vector<Action> newActions)
 {
     long unsigned int divergingIndex = this->actions.size();
     for (long unsigned int i = 0; i < this->actions.size(); i++)
@@ -478,10 +478,10 @@ void RoomPlayer::setActions(std::vector<Action> actions)
             // If this is true, all the new actions are part of the old actions since
             // we haven't stopped yet. But the rest of the old actions
             // (including this) should be undone.
-            i == actions.size() ||
+            i == newActions.size() ||
             // If this is true, we have reached the first diverging action. Undo this
             // and everything after.
-            this->actions[i] != actions[i])
+            this->actions[i] != newActions[i])
         {
             divergingIndex = i;
             break;
@@ -494,9 +494,9 @@ void RoomPlayer::setActions(std::vector<Action> actions)
         this->undo();
     }
     // Perform the new actions after the point of divergence
-    for (long unsigned int i = divergingIndex; i < actions.size(); i++)
+    for (long unsigned int i = divergingIndex; i < newActions.size(); i++)
     {
-        this->performAction(actions[i]);
+        this->performAction(newActions[i]);
     }
 }
 
