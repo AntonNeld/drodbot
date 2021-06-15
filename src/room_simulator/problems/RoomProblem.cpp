@@ -21,6 +21,10 @@ Room RoomProblem::initialState()
 
 std::set<Action> RoomProblem::actions(Room state)
 {
+    if (state.playerIsDead())
+    {
+        return {};
+    }
     return {Action::E,
             Action::SE,
             Action::S,
@@ -43,7 +47,7 @@ Room RoomProblem::result(Room state, Action action)
 
 bool RoomProblem::goalTest(Room state)
 {
-    return this->objective.goalTest(state);
+    return !state.playerIsDead() && this->objective.goalTest(state);
 }
 
 int RoomProblem::stepCost(Room state, Action action, Room result)

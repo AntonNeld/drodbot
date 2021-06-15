@@ -4,15 +4,18 @@
 DerivedRoom::DerivedRoom(Room *baseRoom) : baseRoom(baseRoom),
                                            actions({}),
                                            player(baseRoom->findPlayer()),
-                                           toggledDoors({}){};
+                                           toggledDoors({}),
+                                           deadPlayer(false){};
 
 DerivedRoom::DerivedRoom(Room *baseRoom,
                          std::vector<Action> actions,
                          std::tuple<Position, Direction> player,
-                         std::set<Position> toggledDoors) : baseRoom(baseRoom),
-                                                            actions(actions),
-                                                            player(player),
-                                                            toggledDoors(toggledDoors) {}
+                         std::set<Position> toggledDoors,
+                         bool deadPlayer) : baseRoom(baseRoom),
+                                            actions(actions),
+                                            player(player),
+                                            toggledDoors(toggledDoors),
+                                            deadPlayer(deadPlayer) {}
 
 DerivedRoom DerivedRoom::getSuccessor(Action action)
 {
@@ -20,14 +23,24 @@ DerivedRoom DerivedRoom::getSuccessor(Action action)
     successorActions.push_back(action);
     globalRoomPlayer.setRoom(this->baseRoom);
     globalRoomPlayer.setActions(successorActions);
-    std::tuple<Position, Direction> player = globalRoomPlayer.findPlayer();
+    std::tuple<Position, Direction> successorPlayer = globalRoomPlayer.findPlayer();
     std::set<Position> successorToggledDoors = globalRoomPlayer.getToggledDoors();
-    return DerivedRoom(this->baseRoom, successorActions, player, successorToggledDoors);
+    bool successorDeadPlayer = globalRoomPlayer.playerIsDead();
+    return DerivedRoom(this->baseRoom,
+                       successorActions,
+                       successorPlayer,
+                       successorToggledDoors,
+                       successorDeadPlayer);
 }
 
 std::tuple<Position, Direction> DerivedRoom::findPlayer()
 {
     return this->player;
+}
+
+bool DerivedRoom::playerIsDead()
+{
+    return this->deadPlayer;
 }
 
 Room DerivedRoom::getFullRoom()
@@ -42,7 +55,8 @@ bool DerivedRoom::operator==(const DerivedRoom otherRoom) const
     bool sameBase = otherRoom.baseRoom == this->baseRoom || *otherRoom.baseRoom == *this->baseRoom;
     return sameBase &&
            otherRoom.player == this->player &&
-           otherRoom.toggledDoors == this->toggledDoors;
+           otherRoom.toggledDoors == this->toggledDoors &&
+           otherRoom.deadPlayer == this->deadPlayer;
 };
 
 bool DerivedRoom::operator<(const DerivedRoom otherRoom) const
@@ -57,6 +71,10 @@ bool DerivedRoom::operator<(const DerivedRoom otherRoom) const
     if (otherRoom.player != this->player)
     {
         return otherRoom.player < this->player;
+    }
+    if (otherRoom.deadPlayer != this->deadPlayer)
+    {
+        return otherRoom.deadPlayer < this->deadPlayer;
     }
     return otherRoom.toggledDoors < this->toggledDoors;
 };

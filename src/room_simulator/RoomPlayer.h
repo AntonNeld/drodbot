@@ -18,6 +18,7 @@ public:
     void setActions(std::vector<Action> newActions);
     Room getRoom();
     std::tuple<Position, Direction> findPlayer();
+    bool playerIsDead();
     std::set<Position> getToggledDoors();
 
 private:

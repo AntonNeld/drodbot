@@ -13,9 +13,11 @@ public:
     DerivedRoom(Room *baseRoom,
                 std::vector<Action> actions,
                 std::tuple<Position, Direction> player,
-                std::set<Position> toggledDoors);
+                std::set<Position> toggledDoors,
+                bool deadPlayer);
     DerivedRoom getSuccessor(Action action);
     std::tuple<Position, Direction> findPlayer();
+    bool playerIsDead();
     Room getFullRoom();
     bool operator==(const DerivedRoom) const;
     bool operator<(const DerivedRoom) const;
@@ -26,6 +28,7 @@ private:
     // Things that may differentiate this room from the base:
     std::tuple<Position, Direction> player; // Player position and direction
     std::set<Position> toggledDoors;        // Doors that are not the same as in the base room
+    bool deadPlayer;
 };
 
 #endif // DRODBOT_DERIVEDROOM_H

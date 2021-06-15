@@ -21,6 +21,10 @@ DerivedRoom DerivedRoomProblem::initialState()
 
 std::set<Action> DerivedRoomProblem::actions(DerivedRoom state)
 {
+    if (state.playerIsDead())
+    {
+        return {};
+    }
     return {Action::E,
             Action::SE,
             Action::S,
@@ -41,7 +45,7 @@ DerivedRoom DerivedRoomProblem::result(DerivedRoom state, Action action)
 
 bool DerivedRoomProblem::goalTest(DerivedRoom state)
 {
-    return this->objective.goalTest(state);
+    return !state.playerIsDead() && this->objective.goalTest(state);
 }
 
 int DerivedRoomProblem::stepCost(DerivedRoom state, Action action, DerivedRoom result)

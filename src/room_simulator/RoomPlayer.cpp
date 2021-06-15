@@ -680,13 +680,18 @@ Room RoomPlayer::getRoom()
             tiles[x][y] = tile;
         }
     }
-    return Room(tiles);
+    return Room(tiles, this->playerIsDead());
 }
 
 std::tuple<Position, Direction> RoomPlayer::findPlayer()
 {
     return {{this->currentGame->swordsman.wX, this->currentGame->swordsman.wY},
             convertDirectionBack(this->currentGame->swordsman.wO)};
+}
+
+bool RoomPlayer::playerIsDead()
+{
+    return this->currentGame->IsPlayerDying();
 }
 
 std::set<Position> RoomPlayer::getToggledDoors()

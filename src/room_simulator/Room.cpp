@@ -2,16 +2,13 @@
 
 #include "Room.h"
 
-Room::Room() : tiles(Tiles()) {}
+Room::Room() : tiles(Tiles()), deadPlayer(false) {}
 
-Room::Room(Tiles tiles)
-{
-    this->tiles = tiles;
-}
+Room::Room(Tiles tiles, bool deadPlayer) : tiles(tiles), deadPlayer(deadPlayer){};
 
 Room Room::copy()
 {
-    return Room(this->tiles);
+    return Room(this->tiles, this->deadPlayer);
 }
 
 Tile Room::getTile(Position position)
@@ -95,9 +92,18 @@ bool Room::isPassable(int x, int y)
     return true;
 }
 
+bool Room::playerIsDead()
+{
+    return this->deadPlayer;
+}
+
 bool Room::operator==(const Room otherRoom) const
 {
     // TODO: In some cases the turn number also matters. Possibly only modulo 30.
+    if (otherRoom.deadPlayer != this->deadPlayer)
+    {
+        return false;
+    }
     for (int x = 0; x < 38; x++)
     {
         for (int y = 0; y < 32; y++)
@@ -117,6 +123,10 @@ bool Room::operator<(const Room otherRoom) const
 {
     // We'll order rooms based on the tiles, beginning from the upper left
     // TODO: In some cases the turn number also matters. Possibly only modulo 30.
+    if (otherRoom.deadPlayer != this->deadPlayer)
+    {
+        return otherRoom.deadPlayer < this->deadPlayer;
+    }
     for (int x = 0; x < 38; x++)
     {
         for (int y = 0; y < 32; y++)

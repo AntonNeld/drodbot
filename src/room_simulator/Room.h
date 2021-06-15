@@ -12,18 +12,20 @@ class Room
 {
 public:
     Room();
-    Room(Tiles tiles);
+    Room(Tiles tiles, bool deadPlayer = false);
     Room copy();
     Tile getTile(Position position);
     void setTile(Position position, Tile tile);
     std::vector<Position> findCoordinates(ElementType elementType);
     std::tuple<Position, Direction> findPlayer();
     bool isPassable(int x, int y);
+    bool playerIsDead();
     bool operator==(const Room) const;
     bool operator<(const Room) const;
 
 private:
     Tiles tiles;
+    bool deadPlayer;
 };
 
 #endif // DRODBOT_ROOM_H
