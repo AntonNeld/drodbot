@@ -181,7 +181,7 @@ void RoomPlayer::setRoom(
         std::tuple<Position, Direction> player = room.findPlayer();
         Position position = std::get<0>(player);
         Direction direction = std::get<1>(player);
-        Position swordPos = swordPosition(position, direction);
+        Position swordPos = positionInDirection(position, direction);
         int x = std::get<0>(swordPos);
         int y = std::get<1>(swordPos);
         if (x >= 0 && x < 38 && y >= 0 && y < 32)

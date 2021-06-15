@@ -1,6 +1,7 @@
 #include <stdexcept>
 
 #include "Room.h"
+#include "utils.h"
 
 Room::Room() : tiles(Tiles()), deadPlayer(false) {}
 
@@ -88,6 +89,37 @@ bool Room::isPassable(int x, int y)
         return false;
     default:
         break; // Nothing
+    }
+    return true;
+}
+
+bool Room::isPassable(Position position, Direction fromDirection)
+{
+    if (!isPassable(std::get<0>(position), std::get<1>(position)))
+    {
+        return false;
+    }
+    Tile thisTile = this->getTile(position);
+    if (thisTile.floorControl.type == ElementType::FORCE_ARROW)
+    {
+        Direction direction = thisTile.floorControl.direction;
+        if (direction == oppositeDirection(fromDirection) ||
+            direction == clockwiseDirection(oppositeDirection(fromDirection)) ||
+            direction == counterClockwiseDirection(oppositeDirection(fromDirection)))
+        {
+            return false;
+        }
+    }
+    Tile fromTile = this->getTile(positionInDirection(position, oppositeDirection(fromDirection)));
+    if (fromTile.floorControl.type == ElementType::FORCE_ARROW)
+    {
+        Direction direction = fromTile.floorControl.direction;
+        if (direction == oppositeDirection(fromDirection) ||
+            direction == clockwiseDirection(oppositeDirection(fromDirection)) ||
+            direction == counterClockwiseDirection(oppositeDirection(fromDirection)))
+        {
+            return false;
+        }
     }
     return true;
 }

@@ -40,7 +40,7 @@ bool Objective::goalTest(Room room)
     Direction direction = std::get<1>(pair);
     if (this->swordAtTile)
     {
-        position = swordPosition(position, direction);
+        position = positionInDirection(position, direction);
     }
     return this->tiles.find(position) != this->tiles.end();
 }
@@ -52,7 +52,7 @@ bool Objective::goalTest(DerivedRoom room)
     Direction direction = std::get<1>(pair);
     if (this->swordAtTile)
     {
-        position = swordPosition(position, direction);
+        position = positionInDirection(position, direction);
     }
     return this->tiles.find(position) != this->tiles.end();
 }

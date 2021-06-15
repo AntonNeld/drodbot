@@ -5,7 +5,7 @@
 #include "typedefs.h"
 #include "utils.h"
 
-Position swordPosition(Position position, Direction direction)
+Position positionInDirection(Position position, Direction direction)
 {
     int x = std::get<0>(position);
     int y = std::get<1>(position);
@@ -29,6 +29,79 @@ Position swordPosition(Position position, Direction direction)
         return {x + 1, y - 1};
     default:
         return {x, y};
+    }
+}
+
+Direction oppositeDirection(Direction direction)
+{
+    switch (direction)
+    {
+    case Direction::N:
+        return Direction::S;
+    case Direction::NE:
+        return Direction::SW;
+    case Direction::E:
+        return Direction::W;
+    case Direction::SE:
+        return Direction::NW;
+    case Direction::S:
+        return Direction::N;
+    case Direction::SW:
+        return Direction::NE;
+    case Direction::W:
+        return Direction::E;
+    case Direction::NW:
+        return Direction::SE;
+    default:
+        return Direction::NONE;
+    }
+}
+Direction clockwiseDirection(Direction direction)
+{
+    switch (direction)
+    {
+    case Direction::N:
+        return Direction::NE;
+    case Direction::NE:
+        return Direction::E;
+    case Direction::E:
+        return Direction::SE;
+    case Direction::SE:
+        return Direction::S;
+    case Direction::S:
+        return Direction::SW;
+    case Direction::SW:
+        return Direction::W;
+    case Direction::W:
+        return Direction::NW;
+    case Direction::NW:
+        return Direction::N;
+    default:
+        return Direction::NONE;
+    }
+}
+Direction counterClockwiseDirection(Direction direction)
+{
+    switch (direction)
+    {
+    case Direction::N:
+        return Direction::NW;
+    case Direction::NE:
+        return Direction::N;
+    case Direction::E:
+        return Direction::NE;
+    case Direction::SE:
+        return Direction::E;
+    case Direction::S:
+        return Direction::SE;
+    case Direction::SW:
+        return Direction::S;
+    case Direction::W:
+        return Direction::SW;
+    case Direction::NW:
+        return Direction::W;
+    default:
+        return Direction::NONE;
     }
 }
 

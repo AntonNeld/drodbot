@@ -19,6 +19,7 @@ public:
     std::vector<Position> findCoordinates(ElementType elementType);
     std::tuple<Position, Direction> findPlayer();
     bool isPassable(int x, int y);
+    bool isPassable(Position position, Direction fromDirection);
     bool playerIsDead();
     bool operator==(const Room) const;
     bool operator<(const Room) const;
