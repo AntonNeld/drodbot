@@ -37,10 +37,8 @@ class RoomSolverGoal(str, Enum):
     """A goal to reach in the room solver app."""
 
     MOVE_TO_CONQUER_TOKEN_PATHFINDING = "Move to conquer token (pathfinding)"
-    MOVE_TO_CONQUER_TOKEN_ROOM_SIMULATION = "Move to conquer token (room simulation)"
     MOVE_TO_CONQUER_TOKEN_PLANNING = "Move to conquer token (planning)"
-    STRIKE_ORB_ROOM_SIMULATION = "Strike orb (room simulation)"
-    STRIKE_ORB_EFFICIENT_ROOM_SIMULATION = "Strike orb (efficient room simulation)"
+    STRIKE_ORB_EFFICIENT_ROOM_SIMULATION = "Strike orb (room simulation)"
     MOVE_TO_CONQUER_TOKEN_OBJECTIVE_REACHER = (
         "Move to conquer token (objective reacher)"
     )

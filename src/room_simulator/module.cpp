@@ -9,7 +9,6 @@
 #include "search/Searcher.h"
 #include "problems/PathfindingProblem.h"
 #include "problems/PlanningProblem.h"
-#include "problems/RoomProblem.h"
 #include "problems/DerivedRoomProblem.h"
 
 void initialize()
@@ -393,19 +392,6 @@ goals
              pybind11::arg("start_position"),
              pybind11::arg("room"),
              pybind11::arg("goals"));
-    pybind11::class_<RoomProblem, Problem<Room, Action>>(m, "RoomProblem", R"docstr(
-A problem for reaching an objective in a room.
-
-Parameters
-----------
-room
-    The room.
-objective
-    The objective.
-)docstr")
-        .def(pybind11::init<Room, Objective>(),
-             pybind11::arg("room"),
-             pybind11::arg("objective"));
     pybind11::class_<PlanningProblem, Problem<Room, Objective>>(m, "PlanningProblem", R"docstr(
 A problem for reaching an objective in a room, on a high level with intermediate objectives.
 

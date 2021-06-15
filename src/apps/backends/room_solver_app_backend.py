@@ -6,11 +6,9 @@ from room_simulator import (
     ElementType,
     Room,
     DerivedRoom,
-    RoomProblem,
     DerivedRoomProblem,
     PathfindingProblem,
     PlanningProblem,
-    SearcherRoomAction,
     SearcherPositionAction,
     SearcherRoomObjective,
     SearcherDerivedRoomAction,
@@ -90,26 +88,6 @@ class RoomSolverAppBackend:
             start, _ = self._room.find_player()
             self._problem = PathfindingProblem(start, self._room, set(conquer_tokens))
             self._searcher = SearcherPositionAction(
-                self._problem,
-                avoid_duplicates=avoid_duplicates,
-                heuristic_in_priority=heuristic_in_priority,
-                path_cost_in_priority=path_cost_in_priority,
-            )
-        elif goal == RoomSolverGoal.MOVE_TO_CONQUER_TOKEN_ROOM_SIMULATION:
-            conquer_tokens = self._room.find_coordinates(ElementType.CONQUER_TOKEN)
-            objective = Objective(sword_at_tile=False, tiles=set(conquer_tokens))
-            self._problem = RoomProblem(self._room, objective)
-            self._searcher = SearcherRoomAction(
-                self._problem,
-                avoid_duplicates=avoid_duplicates,
-                heuristic_in_priority=heuristic_in_priority,
-                path_cost_in_priority=path_cost_in_priority,
-            )
-        elif goal == RoomSolverGoal.STRIKE_ORB_ROOM_SIMULATION:
-            orbs = self._room.find_coordinates(ElementType.ORB)
-            objective = Objective(sword_at_tile=True, tiles=set(orbs))
-            self._problem = RoomProblem(self._room, objective)
-            self._searcher = SearcherRoomAction(
                 self._problem,
                 avoid_duplicates=avoid_duplicates,
                 heuristic_in_priority=heuristic_in_priority,
