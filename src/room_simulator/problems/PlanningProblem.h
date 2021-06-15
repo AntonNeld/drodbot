@@ -13,7 +13,7 @@
 class PlanningProblem final : public Problem<Room, Objective>
 {
 public:
-    PlanningProblem(Room room, Objective objective);
+    PlanningProblem(Room room, Objective objective, ObjectiveReacher *objectiveReacher);
     Room initialState();
     std::set<Objective> actions(Room state);
     Room result(Room state, Objective action);
@@ -24,7 +24,7 @@ public:
 private:
     Room room;
     Objective objective;
-    ObjectiveReacher objectiveReacher;
+    ObjectiveReacher *objectiveReacher;
     std::set<Objective> availableObjectives;
 };
 

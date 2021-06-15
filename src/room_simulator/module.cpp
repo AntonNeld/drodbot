@@ -408,10 +408,15 @@ room
     The room.
 objective
     The goal objective.
+objective_reacher
+    An objective reacher to keep track of the direct solutions.
+    Can be used to put together a complete solution from the
+    high-level steps.
 )docstr")
-        .def(pybind11::init<Room, Objective>(),
+        .def(pybind11::init<Room, Objective, ObjectiveReacher *>(),
              pybind11::arg("room"),
-             pybind11::arg("objective"));
+             pybind11::arg("objective"),
+             pybind11::arg("objective_reacher"));
     pybind11::class_<DerivedRoomProblem, Problem<DerivedRoom, Action>>(m, "DerivedRoomProblem", R"docstr(
 A problem for reaching an objective in a room.
 

@@ -21,10 +21,11 @@ std::set<Objective> findAllObjectives(Room room, Objective finalObjective)
 }
 
 PlanningProblem::PlanningProblem(Room room,
-                                 Objective objective) : room(room),
-                                                        objective(objective),
-                                                        objectiveReacher(ObjectiveReacher()),
-                                                        availableObjectives(findAllObjectives(room, objective))
+                                 Objective objective,
+                                 ObjectiveReacher *objectiveReacher) : room(room),
+                                                                       objective(objective),
+                                                                       objectiveReacher(objectiveReacher),
+                                                                       availableObjectives(findAllObjectives(room, objective))
 {
 }
 
@@ -38,7 +39,7 @@ std::set<Objective> PlanningProblem::actions(Room state)
     std::set<Objective> objectives = {};
     for (auto obj = this->availableObjectives.begin(); obj != this->availableObjectives.end(); ++obj)
     {
-        Solution<Room, Action> solution = this->objectiveReacher.findSolution(state, *obj);
+        Solution<Room, Action> solution = this->objectiveReacher->findSolution(state, *obj);
         if (solution.exists)
         {
             objectives.insert(*obj);
@@ -49,7 +50,7 @@ std::set<Objective> PlanningProblem::actions(Room state)
 
 Room PlanningProblem::result(Room state, Objective action)
 {
-    Solution<Room, Action> solution = this->objectiveReacher.findSolution(state, action);
+    Solution<Room, Action> solution = this->objectiveReacher->findSolution(state, action);
     return solution.finalState.value();
 }
 
@@ -60,7 +61,7 @@ bool PlanningProblem::goalTest(Room state)
 
 int PlanningProblem::stepCost(Room state, Objective action, Room result)
 {
-    Solution<Room, Action> solution = this->objectiveReacher.findSolution(state, action);
+    Solution<Room, Action> solution = this->objectiveReacher->findSolution(state, action);
     return solution.actions.value().size();
 }
 

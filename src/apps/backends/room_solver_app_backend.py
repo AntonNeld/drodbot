@@ -42,6 +42,9 @@ class RoomSolverAppBackend:
         # Keep a reference to the problem. Since the C++ code gets
         # a reference to it, we don't want it to be garbage collected.
         self._problem = None
+        # Same here. Note that this is for the objective reacher passed to the
+        # planning problem.
+        self._objective_reacher_ref = None
 
     async def get_room_from_screenshot(self):
         """Set the current room from a screenshot."""
@@ -118,7 +121,10 @@ class RoomSolverAppBackend:
         elif goal == RoomSolverGoal.MOVE_TO_CONQUER_TOKEN_PLANNING:
             conquer_tokens = self._room.find_coordinates(ElementType.CONQUER_TOKEN)
             objective = Objective(sword_at_tile=False, tiles=set(conquer_tokens))
-            self._problem = PlanningProblem(self._room, objective)
+            self._objective_reacher_ref = ObjectiveReacher()
+            self._problem = PlanningProblem(
+                self._room, objective, self._objective_reacher_ref
+            )
             self._searcher = SearcherRoomObjective(
                 self._problem,
                 avoid_duplicates=avoid_duplicates,
