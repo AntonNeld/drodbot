@@ -35,6 +35,7 @@ private:
     std::optional<Room> baseRoom;
     std::vector<Action> actions;
     std::map<Position, bool> closedDoors;
+    std::map<int, std::tuple<ElementType, Position, Direction>> monsters;
 };
 
 extern RoomPlayer globalRoomPlayer;

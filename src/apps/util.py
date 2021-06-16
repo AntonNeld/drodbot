@@ -84,10 +84,12 @@ def tile_to_text(tile):
 def _format_element(element):
     element_type = element.element_type
     direction = element.direction
-    if direction == Direction.NONE:
-        return element_type.name
-    else:
-        return f"{element_type.name} {direction.name}"
+    return_str = element_type.name
+    if direction != Direction.NONE:
+        return_str = f"{return_str} {direction.name}"
+    if element.monster_id is not None:
+        return_str = f"{return_str} ({element.monster_id})"
+    return return_str
 
 
 class ScrollableFrame(ttk.Frame):

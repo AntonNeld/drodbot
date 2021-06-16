@@ -79,10 +79,18 @@ typedef std::vector<std::tuple<int, int, OrbEffect>> OrbEffects; // x, y, effect
 // An element in a room.
 struct Element
 {
-    Element(ElementType type = ElementType::NOTHING, Direction direction = Direction::NONE, OrbEffects orbEffects = {}) : type(type), direction(direction), orbEffects(orbEffects) {}
+    Element(ElementType type = ElementType::NOTHING,
+            Direction direction = Direction::NONE,
+            OrbEffects orbEffects = {},
+            std::optional<int> monsterId = std::nullopt) : type(type),
+                                                           direction(direction),
+                                                           orbEffects(orbEffects),
+                                                           monsterId(monsterId){};
     ElementType type = ElementType::NOTHING;
     Direction direction = Direction::NONE;
-    OrbEffects orbEffects = {}; // Only actually used for orbs
+    OrbEffects orbEffects = {};   // Only actually used for orbs
+    std::optional<int> monsterId; // Unique ID for a monster, lower IDs come earlier in
+                                  // the movement order. IDs can be skipped.
     bool operator==(const Element otherElement) const
     {
         return this->type == otherElement.type &&
