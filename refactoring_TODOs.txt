@@ -1,0 +1,4 @@
+- Use asserts instead of exceptions in C++
+- Look into std::variant instead of having optional properties in Objective
+- Check if RoomPlayer really needs to be global, or if it's possible to have
+  one per room
