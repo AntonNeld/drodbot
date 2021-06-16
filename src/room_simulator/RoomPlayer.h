@@ -20,6 +20,7 @@ public:
     std::tuple<Position, Direction> findPlayer();
     bool playerIsDead();
     std::set<Position> getToggledDoors();
+    std::map<int, std::tuple<ElementType, Position, Direction>> getMonsters();
 
 private:
     CDbRoom *drodRoom;

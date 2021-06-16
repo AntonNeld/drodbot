@@ -780,6 +780,11 @@ std::set<Position> RoomPlayer::getToggledDoors()
     return toggledDoors;
 }
 
+std::map<int, std::tuple<ElementType, Position, Direction>> RoomPlayer::getMonsters()
+{
+    return this->monsters;
+}
+
 void RoomPlayer::release()
 {
     if (!this->claimed)

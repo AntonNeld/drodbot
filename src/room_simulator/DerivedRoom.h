@@ -3,8 +3,11 @@
 
 #include <vector>
 #include <set>
+#include <map>
 #include "typedefs.h"
 #include "Room.h"
+
+typedef std::map<int, std::tuple<ElementType, Position, Direction>> Monsters;
 
 // This class only makes sense in the context of one search,
 // when the room played in globalRoomPlayer does not change.
@@ -17,7 +20,8 @@ public:
     DerivedRoom(std::vector<Action> actions,
                 std::tuple<Position, Direction> player,
                 std::set<Position> toggledDoors,
-                bool deadPlayer);
+                bool deadPlayer,
+                Monsters monsters);
     DerivedRoom getSuccessor(Action action);
     std::tuple<Position, Direction> findPlayer();
     bool playerIsDead();
@@ -31,6 +35,7 @@ private:
     std::tuple<Position, Direction> player; // Player position and direction
     std::set<Position> toggledDoors;        // Doors that are not the same as in the base room
     bool deadPlayer;
+    Monsters monsters;
 };
 
 #endif // DRODBOT_DERIVEDROOM_H
