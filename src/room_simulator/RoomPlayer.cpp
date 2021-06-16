@@ -168,7 +168,7 @@ void RoomPlayer::setRoom(
         throw std::invalid_argument("Trying to use already claimed RoomPlayer");
     }
     this->claimed = true;
-    this->closedDoors = {};
+    this->doors = {};
     this->monsters = {};
     // If the player starts with their sword on an orb and we are not
     // entering the room, the orb will have already been struck. Since
@@ -256,7 +256,7 @@ void RoomPlayer::setRoom(
                 {
                     drodRoom->Plot(x, y, T_DOOR_Y);
                 }
-                this->closedDoors[{x, y}] = true;
+                this->doors.insert({x, y});
                 break;
             case ElementType::YELLOW_DOOR_OPEN:
                 if (preToggledDoors.find({x, y}) != preToggledDoors.end())
@@ -267,7 +267,7 @@ void RoomPlayer::setRoom(
                 {
                     drodRoom->Plot(x, y, T_DOOR_YO);
                 }
-                this->closedDoors[{x, y}] = false;
+                this->doors.insert({x, y});
                 break;
             // TODO: These may be switched depending on whether the room is
             // conquered. Investigate.
@@ -484,25 +484,6 @@ void RoomPlayer::performAction(Action action)
     }
     this->currentGame->ProcessCommand(drodAction, cueEvents);
     this->actions.push_back(action);
-    for (auto it = this->closedDoors.begin(); it != this->closedDoors.end(); ++it)
-    {
-        Position key = std::get<0>(*it);
-        int x = std::get<0>(key);
-        int y = std::get<1>(key);
-        UINT content = this->currentGame->pRoom->GetOSquare(x, y);
-        if (content == T_DOOR_Y)
-        {
-            this->closedDoors[key] = true;
-        }
-        else if (content == T_DOOR_YO)
-        {
-            this->closedDoors[key] = false;
-        }
-        else
-        {
-            throw std::invalid_argument("Something has stopped being a door");
-        }
-    }
     // Update this->monsters to match the room again
     for (auto it = monsterPointers.begin(); it != monsterPointers.end(); ++it)
     {
@@ -754,27 +735,17 @@ bool RoomPlayer::playerIsDead()
 std::set<Position> RoomPlayer::getToggledDoors()
 {
     std::set<Position> toggledDoors = {};
-    for (auto it = this->closedDoors.begin(); it != this->closedDoors.end(); ++it)
+    for (auto it = this->doors.begin(); it != this->doors.end(); ++it)
     {
-        Position position = std::get<0>(*it);
-        bool closed = std::get<1>(*it);
-        Element element = this->baseRoom.value().getTile(position).roomPiece;
-        switch (element.type)
+        Position position = *it;
+        int x = std::get<0>(position);
+        int y = std::get<1>(position);
+        UINT content = this->currentGame->pRoom->GetOSquare(x, y);
+        ElementType baseDoorType = this->baseRoom.value().getTile(position).roomPiece.type;
+        if ((content == T_DOOR_Y && baseDoorType == ElementType::YELLOW_DOOR_OPEN) ||
+            (content == T_DOOR_YO && baseDoorType == ElementType::YELLOW_DOOR))
         {
-        case ElementType::YELLOW_DOOR:
-            if (!closed)
-            {
-                toggledDoors.insert(position);
-            }
-            break;
-        case ElementType::YELLOW_DOOR_OPEN:
-            if (closed)
-            {
-                toggledDoors.insert(position);
-            }
-            break;
-        default:
-            throw std::invalid_argument("Tile not a door in the base room");
+            toggledDoors.insert(position);
         }
     }
     return toggledDoors;

@@ -35,7 +35,7 @@ private:
     // Keeping track of things for interacting with DerivedRoom
     std::optional<Room> baseRoom;
     std::vector<Action> actions;
-    std::map<Position, bool> closedDoors;
+    std::set<Position> doors;
     std::map<int, std::tuple<ElementType, Position, Direction>> monsters;
 };
 
