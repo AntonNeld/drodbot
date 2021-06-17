@@ -18,6 +18,7 @@ def element_to_dict(element):
         "element_type": element.element_type.name,
         "direction": element.direction.name,
         "orb_effects": [(x, y, effect.name) for (x, y, effect) in element.orb_effects],
+        "turn_order": element.turn_order,
     }
 
 
@@ -40,6 +41,7 @@ def element_from_dict(element_dict):
             (x, y, getattr(OrbEffect, effect))
             for (x, y, effect) in element_dict["orb_effects"]
         ],
+        turn_order=element_dict["turn_order"],
     )
 
 
