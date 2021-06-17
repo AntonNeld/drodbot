@@ -18,20 +18,23 @@ OWN_SEARCH_OBJECT_FILES=$(patsubst %.cpp,build/own/%.o,$(OWN_SEARCH_FILES))
 OWN_PROBLEMS_FILES=$(shell find ./problems -maxdepth 1 -name '*.cpp')
 OWN_PROBLEMS_OBJECT_FILES=$(patsubst %.cpp,build/own/%.o,$(OWN_PROBLEMS_FILES))
 OBJECT_FILES=$(BACKENDLIB_OBJECT_FILES) $(DRODLIB_OBJECT_FILES) $(METAKIT_OBJECT_FILES) $(OWN_OBJECT_FILES) $(OWN_SEARCH_OBJECT_FILES) $(OWN_PROBLEMS_OBJECT_FILES)
+DEPENDENCY_FILES= $(OBJECT_FILES:%.o=%.d)
 
 LINK_LIBS=$(shell sdl2-config --libs) -lpython3.9 -ljsoncpp -lcurl
 
 ../room_simulator$(MODULE_SUFFIX): $(OBJECT_FILES)
 	g++ -shared -o ../room_simulator$(MODULE_SUFFIX) $(OBJECT_FILES) $(LINK_LIBS)
 
+-include $(DEPENDENCY_FILES)
+
 build/own/%.o: %.cpp
-	g++ -c $(WARNING_ARGS) $(COMMON_COMPILE_ARGS) $< -o $@
+	g++ -c $(WARNING_ARGS) $(COMMON_COMPILE_ARGS) $< -o $@ -MMD -MP
 
 build/own/search/%.o: search/%.cpp
-	g++ -c $(WARNING_ARGS) $(COMMON_COMPILE_ARGS) $< -o $@
+	g++ -c $(WARNING_ARGS) $(COMMON_COMPILE_ARGS) $< -o $@ -MMD -MP
 
 build/own/problems/%.o: problems/%.cpp
-	g++ -c $(WARNING_ARGS) $(COMMON_COMPILE_ARGS) $< -o $@
+	g++ -c $(WARNING_ARGS) $(COMMON_COMPILE_ARGS) $< -o $@ -MMD -MP
 
 # We don't include warnings when compiling source from other projects,
 # since we won't change it anyway
