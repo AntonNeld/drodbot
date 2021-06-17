@@ -17,10 +17,12 @@ public:
     Tile getTile(Position position);
     void setTile(Position position, Tile tile);
     std::vector<Position> findCoordinates(ElementType elementType);
+    std::vector<Position> findMonsterCoordinates();
     std::tuple<Position, Direction> findPlayer();
     bool isPassable(int x, int y);
     bool isPassableInDirection(Position position, Direction fromDirection);
     bool playerIsDead();
+    int monsterCount();
     bool operator==(const Room) const;
     bool operator<(const Room) const;
 

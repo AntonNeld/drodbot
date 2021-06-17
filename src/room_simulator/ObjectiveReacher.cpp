@@ -197,6 +197,14 @@ void ObjectiveReacher::preparePathfindingPhase()
         }
         this->pathfindingProblem = new PathfindingProblem(start, this->currentRoom.value(), goals);
     }
+    else if (std::holds_alternative<MonsterCountObjective>(this->currentObjective.value()))
+    {
+        std::set<Position> goals = {};
+        // Let's try going to the nearest monster for now.
+        std::vector<Position> monsterCoords = this->currentRoom.value().findMonsterCoordinates();
+        goals.insert(monsterCoords.begin(), monsterCoords.end());
+        this->pathfindingProblem = new PathfindingProblem(start, this->currentRoom.value(), goals);
+    }
     this->pathfindingSearcher = new Searcher<Position, Action>(this->pathfindingProblem.value());
 }
 

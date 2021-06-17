@@ -44,3 +44,4 @@ class RoomSolverGoal(str, Enum):
     STRIKE_ORB_OBJECTIVE_REACHER = "Strike orb (objective reacher)"
     MOVE_TO_TARGET_PLANNING = "Move to target (planning)"
     MOVE_TO_TARGET_OBJECTIVE_REACHER = "Move to target (objective reacher)"
+    DECREASE_MONSTERS_OBJECTIVE_REACHER = "Decrease monsters (objective reacher)"

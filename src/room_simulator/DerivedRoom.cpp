@@ -43,6 +43,11 @@ bool DerivedRoom::playerIsDead()
     return this->deadPlayer;
 }
 
+int DerivedRoom::monsterCount()
+{
+    return this->monsters.size();
+}
+
 Room DerivedRoom::getFullRoom()
 {
     globalRoomPlayer.setActions(this->actions);

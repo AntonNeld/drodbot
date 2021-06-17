@@ -326,6 +326,13 @@ y
 Returns
 -------
 Whether the tile is passable or not.
+)docstr")
+        .def("monster_count", &Room::monsterCount, R"docstr(
+Count the number of monsters.
+
+Returns
+-------
+The number of monsters.
 )docstr");
 
     pybind11::class_<DerivedRoom>(m, "DerivedRoom", R"docstr(
@@ -369,6 +376,11 @@ The full room.
     pybind11::class_<StabObjective>(m, "StabObjective")
         .def(pybind11::init<std::set<Position>>(), pybind11::arg("tiles"))
         .def_readwrite("tiles", &StabObjective::tiles);
+
+    pybind11::class_<MonsterCountObjective>(m, "MonsterCountObjective")
+        .def(pybind11::init<int, bool>(), pybind11::arg("monsters"), pybind11::arg("allow_less") = true)
+        .def_readwrite("monsters", &MonsterCountObjective::monsters)
+        .def_readwrite("allow_less", &MonsterCountObjective::allowLess);
 
     pybind11::enum_<FailureReason>(m, "FailureReason")
         .value("NO_FAILURE", FailureReason::NO_FAILURE)

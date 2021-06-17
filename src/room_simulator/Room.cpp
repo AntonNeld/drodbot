@@ -47,6 +47,27 @@ std::vector<Position> Room::findCoordinates(ElementType elementType)
     return coords;
 }
 
+std::vector<Position> Room::findMonsterCoordinates()
+{
+    std::vector<Position> coords;
+    for (int x = 0; x < 38; x += 1)
+    {
+        for (int y = 0; y < 32; y += 1)
+        {
+            Tile tile = this->tiles[x][y];
+            switch (tile.monster.type)
+            {
+            case ElementType::BEETHRO:
+            case ElementType::NOTHING:
+                break; // Don't count these as monsters
+            default:
+                coords.push_back({x, y});
+            }
+        }
+    }
+    return coords;
+}
+
 std::tuple<Position, Direction> Room::findPlayer()
 {
     std::vector<Position> playerCoords = this->findCoordinates(ElementType::BEETHRO);
@@ -127,6 +148,27 @@ bool Room::isPassableInDirection(Position position, Direction fromDirection)
 bool Room::playerIsDead()
 {
     return this->deadPlayer;
+}
+
+int Room::monsterCount()
+{
+    int monsters = 0;
+    for (int x = 0; x < 38; x += 1)
+    {
+        for (int y = 0; y < 32; y += 1)
+        {
+            Tile tile = this->tiles[x][y];
+            switch (tile.monster.type)
+            {
+            case ElementType::BEETHRO:
+            case ElementType::NOTHING:
+                break; // Don't count these as monsters
+            default:
+                monsters++;
+            }
+        }
+    }
+    return monsters;
 }
 
 bool Room::operator==(const Room otherRoom) const

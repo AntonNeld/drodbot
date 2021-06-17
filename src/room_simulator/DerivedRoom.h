@@ -25,6 +25,7 @@ public:
     DerivedRoom getSuccessor(Action action);
     std::tuple<Position, Direction> findPlayer();
     bool playerIsDead();
+    int monsterCount();
     Room getFullRoom();
     bool operator==(const DerivedRoom) const;
     bool operator<(const DerivedRoom) const;

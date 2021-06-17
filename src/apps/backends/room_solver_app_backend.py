@@ -4,6 +4,7 @@ from common import GUIEvent, UserError, RoomSolverGoal
 from room_simulator import (
     ReachObjective,
     StabObjective,
+    MonsterCountObjective,
     ElementType,
     Room,
     DerivedRoom,
@@ -113,6 +114,11 @@ class RoomSolverAppBackend:
         elif goal == RoomSolverGoal.STRIKE_ORB_OBJECTIVE_REACHER:
             orbs = self._room.find_coordinates(ElementType.ORB)
             objective = StabObjective(tiles=set(orbs))
+            self._searcher = ObjectiveReacher()
+            self._searcher.start(self._room, objective)
+        elif goal == RoomSolverGoal.DECREASE_MONSTERS_OBJECTIVE_REACHER:
+            monsters = self._room.monster_count()
+            objective = MonsterCountObjective(monsters=monsters - 1)
             self._searcher = ObjectiveReacher()
             self._searcher.start(self._room, objective)
         elif goal == RoomSolverGoal.MOVE_TO_TARGET_PLANNING:
