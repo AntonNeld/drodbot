@@ -362,10 +362,13 @@ Returns
 The full room.
 )docstr");
 
-    pybind11::class_<Objective>(m, "Objective")
-        .def(pybind11::init<bool, std::set<Position>>(), pybind11::arg("sword_at_tile"), pybind11::arg("tiles"))
-        .def_readwrite("sword_at_tile", &Objective::swordAtTile)
-        .def_readwrite("tiles", &Objective::tiles);
+    pybind11::class_<ReachObjective>(m, "ReachObjective")
+        .def(pybind11::init<std::set<Position>>(), pybind11::arg("tiles"))
+        .def_readwrite("tiles", &ReachObjective::tiles);
+
+    pybind11::class_<StabObjective>(m, "StabObjective")
+        .def(pybind11::init<std::set<Position>>(), pybind11::arg("tiles"))
+        .def_readwrite("tiles", &StabObjective::tiles);
 
     pybind11::enum_<FailureReason>(m, "FailureReason")
         .value("NO_FAILURE", FailureReason::NO_FAILURE)

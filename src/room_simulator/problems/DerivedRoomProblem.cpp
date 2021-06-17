@@ -43,7 +43,7 @@ DerivedRoom DerivedRoomProblem::result(DerivedRoom state, Action action)
 
 bool DerivedRoomProblem::goalTest(DerivedRoom state)
 {
-    return !state.playerIsDead() && this->objective.goalTest(state);
+    return !state.playerIsDead() && objectiveFulfilled(this->objective, state);
 }
 
 int DerivedRoomProblem::stepCost(DerivedRoom state, Action action, DerivedRoom result)

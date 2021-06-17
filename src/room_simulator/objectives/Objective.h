@@ -1,26 +1,16 @@
 #ifndef DRODBOT_OBJECTIVE_H
 #define DRODBOT_OBJECTIVE_H
 
-#include <set>
+#include <variant>
+
 #include "../Room.h"
 #include "../DerivedRoom.h"
-#include "../typedefs.h"
+#include "ReachObjective.h"
+#include "StabObjective.h"
 
-// TODO: Make something more extensible
-class Objective
-{
-public:
-    Objective(
-        bool swordAtTile,
-        std::set<Position> tiles);
-    bool operator<(const Objective) const;
-    bool goalTest(Room room);
-    bool goalTest(DerivedRoom room);
+typedef std::variant<ReachObjective, StabObjective> Objective;
 
-    // If true, objective is reached if the sword is at any of the tiles,
-    // if false, objective is reached if Beethro is at any of the tiles
-    bool swordAtTile;
-    std::set<Position> tiles;
-};
+bool objectiveFulfilled(Objective objective, Room room);
+bool objectiveFulfilled(Objective objective, DerivedRoom room);
 
 #endif // DRODBOT_OBJECTIVE_H

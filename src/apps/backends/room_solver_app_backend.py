@@ -2,7 +2,8 @@ import time
 
 from common import GUIEvent, UserError, RoomSolverGoal
 from room_simulator import (
-    Objective,
+    ReachObjective,
+    StabObjective,
     ElementType,
     Room,
     DerivedRoom,
@@ -93,7 +94,7 @@ class RoomSolverAppBackend:
             )
         elif goal == RoomSolverGoal.MOVE_TO_CONQUER_TOKEN_PLANNING:
             conquer_tokens = self._room.find_coordinates(ElementType.CONQUER_TOKEN)
-            objective = Objective(sword_at_tile=False, tiles=set(conquer_tokens))
+            objective = ReachObjective(tiles=set(conquer_tokens))
             self._objective_reacher_ref = ObjectiveReacher()
             self._problem = PlanningProblem(
                 self._room, objective, self._objective_reacher_ref
@@ -106,16 +107,16 @@ class RoomSolverAppBackend:
             )
         elif goal == RoomSolverGoal.MOVE_TO_CONQUER_TOKEN_OBJECTIVE_REACHER:
             conquer_tokens = self._room.find_coordinates(ElementType.CONQUER_TOKEN)
-            objective = Objective(sword_at_tile=False, tiles=set(conquer_tokens))
+            objective = ReachObjective(tiles=set(conquer_tokens))
             self._searcher = ObjectiveReacher()
             self._searcher.start(self._room, objective)
         elif goal == RoomSolverGoal.STRIKE_ORB_OBJECTIVE_REACHER:
             orbs = self._room.find_coordinates(ElementType.ORB)
-            objective = Objective(sword_at_tile=True, tiles=set(orbs))
+            objective = StabObjective(tiles=set(orbs))
             self._searcher = ObjectiveReacher()
             self._searcher.start(self._room, objective)
         elif goal == RoomSolverGoal.MOVE_TO_TARGET_PLANNING:
-            objective = Objective(sword_at_tile=False, tiles=set([target]))
+            objective = ReachObjective(tiles=set([target]))
             self._objective_reacher_ref = ObjectiveReacher()
             self._problem = PlanningProblem(
                 self._room, objective, self._objective_reacher_ref
@@ -127,7 +128,7 @@ class RoomSolverAppBackend:
                 path_cost_in_priority=path_cost_in_priority,
             )
         elif goal == RoomSolverGoal.MOVE_TO_TARGET_OBJECTIVE_REACHER:
-            objective = Objective(sword_at_tile=False, tiles=set([target]))
+            objective = ReachObjective(tiles=set([target]))
             self._searcher = ObjectiveReacher()
             self._searcher.start(self._room, objective)
         self._show_data()

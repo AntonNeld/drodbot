@@ -175,11 +175,14 @@ Searcher<DerivedRoom, Action> *ObjectiveReacher::getRoomSimulationSearcher()
 void ObjectiveReacher::preparePathfindingPhase()
 {
     Position start = std::get<0>(this->currentRoom.value().findPlayer());
-    std::set<Position> tiles = this->currentObjective.value().tiles;
-    if (this->currentObjective.value().swordAtTile)
+    if (ReachObjective *obj = std::get_if<ReachObjective>(&this->currentObjective.value()))
+    {
+        this->pathfindingProblem = new PathfindingProblem(start, this->currentRoom.value(), obj->tiles);
+    }
+    else if (StabObjective *obj = std::get_if<StabObjective>(&this->currentObjective.value()))
     {
         std::set<Position> goals = {};
-        for (auto tilePtr = tiles.begin(); tilePtr != tiles.end(); ++tilePtr)
+        for (auto tilePtr = obj->tiles.begin(); tilePtr != obj->tiles.end(); ++tilePtr)
         {
             int x = std::get<0>(*tilePtr);
             int y = std::get<1>(*tilePtr);
@@ -193,10 +196,6 @@ void ObjectiveReacher::preparePathfindingPhase()
                           {x + 1, y - 1}});
         }
         this->pathfindingProblem = new PathfindingProblem(start, this->currentRoom.value(), goals);
-    }
-    else
-    {
-        this->pathfindingProblem = new PathfindingProblem(start, this->currentRoom.value(), tiles);
     }
     this->pathfindingSearcher = new Searcher<Position, Action>(this->pathfindingProblem.value());
 }

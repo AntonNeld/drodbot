@@ -7,7 +7,7 @@ import tkinter
 import traceback
 
 from common import TILE_SIZE, RoomSolverGoal
-from room_simulator import Action, Objective
+from room_simulator import Action, ReachObjective, StabObjective
 from .util import tile_to_text
 
 # The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
@@ -181,13 +181,12 @@ class RoomSolverApp(tkinter.Frame):
                         "green" if self._room_solver_info["found_solution"] else "blue",
                     )
 
-                if len(self._room_solver_info["frontier_actions"]) > 0 and isinstance(
-                    list(self._room_solver_info["frontier_actions"])[0], Objective
-                ):
-                    positions = []
-                    for objective in self._room_solver_info["frontier_actions"]:
-                        positions.extend(objective.tiles)
-                    _draw_circles(pil_image, positions, "yellow")
+                objective_positions = []
+                for action in self._room_solver_info["frontier_actions"]:
+                    # Draw frontier actions if they are objectives with positions
+                    if hasattr(action, "tiles"):
+                        objective_positions.extend(action.tiles)
+                _draw_circles(pil_image, objective_positions, "yellow")
                 if len(self._room_solver_info["current_path"]) > 0 and isinstance(
                     self._room_solver_info["current_path"][0], Action
                 ):
@@ -197,19 +196,21 @@ class RoomSolverApp(tkinter.Frame):
                         self._room_solver_info["current_path"],
                         "green" if self._room_solver_info["found_solution"] else "blue",
                     )
-                elif len(self._room_solver_info["current_path"]) > 0 and isinstance(
-                    self._room_solver_info["current_path"][0], Objective
-                ):
-                    positions = [self._start_position]
-                    for objective in self._room_solver_info["current_path"]:
-                        x = statistics.mean([coords[0] for coords in objective.tiles])
-                        y = statistics.mean([coords[1] for coords in objective.tiles])
-                        positions.append((x, y))
-                    _draw_lines(
-                        pil_image,
-                        positions,
-                        "green" if self._room_solver_info["found_solution"] else "blue",
-                    )
+                else:
+                    objective_positions = []
+                    for action in self._room_solver_info["current_path"]:
+                        if hasattr(action, "tiles"):
+                            x = statistics.mean([coords[0] for coords in action.tiles])
+                            y = statistics.mean([coords[1] for coords in action.tiles])
+                            objective_positions.append((x, y))
+                    if objective_positions:
+                        _draw_lines(
+                            pil_image,
+                            [self._start_position, *objective_positions],
+                            "green"
+                            if self._room_solver_info["found_solution"]
+                            else "blue",
+                        )
 
             if (
                 self._objective_reacher_info is not None
@@ -302,17 +303,18 @@ class RoomSolverApp(tkinter.Frame):
 def _solver_info_to_text(room_solver_info):
     if room_solver_info is None:
         return ""
-    if len(room_solver_info["current_path"]) == 0:
-        action_strings = []
-    elif isinstance(room_solver_info["current_path"][0], Action):
-        action_strings = [e.name for e in room_solver_info["current_path"]]
-    elif isinstance(room_solver_info["current_path"][0], Objective):
-        action_strings = [
-            "|".join([f"({t[0]},{t[1]})" for t in o.tiles])
-            for o in room_solver_info["current_path"]
-        ]
-    else:
-        action_strings = ["Not displayable"]
+    action_strings = []
+    for action in room_solver_info["current_path"]:
+        if isinstance(action, Action):
+            action_strings.append(action.name)
+        elif isinstance(action, ReachObjective):
+            coords = [f"({t[0]},{t[1]})" for t in action.tiles]
+            action_strings.append(f"Reach {'|'.join(coords)}")
+        elif isinstance(action, StabObjective):
+            coords = [f"({t[0]},{t[1]})" for t in action.tiles]
+            action_strings.append(f"Stab {'|'.join(coords)}")
+        else:
+            action_strings.append("?")
     row_length = 20
     action_rows = [
         ",".join(action_strings[i : i + row_length])

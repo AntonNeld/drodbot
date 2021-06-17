@@ -10,7 +10,8 @@ from room_simulator import (
     Element,
     Action,
     simulate_action,
-    Objective,
+    ReachObjective,
+    StabObjective,
 )
 from .state import DrodBotState
 from search import NoSolutionError
@@ -96,9 +97,7 @@ class DrodBot:
         t = time.time()
         room = self.state.current_room
         goal_tiles = room.find_coordinates(element)
-        actions = solve_room(
-            room, Objective(sword_at_tile=False, tiles=set(goal_tiles))
-        )
+        actions = solve_room(room, ReachObjective(tiles=set(goal_tiles)))
         print(f"Thought in {time.time()-t:.2f}s")
         self.state.plan = actions
         await self._execute_plan()
@@ -171,7 +170,7 @@ class DrodBot:
         """
         room = self.state.current_room
         goal_tiles = room.find_coordinates(element)
-        actions = solve_room(room, Objective(sword_at_tile=True, tiles=set(goal_tiles)))
+        actions = solve_room(room, StabObjective(tiles=set(goal_tiles)))
         self.state.plan = actions
         await self._execute_plan()
 

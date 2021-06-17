@@ -5,6 +5,7 @@
 #include "../ObjectiveReacher.h"
 #include "../typedefs.h"
 #include "PlanningProblem.h"
+#include "../objectives/StabObjective.h"
 
 // Helper
 std::set<Objective> findAllObjectives(Room room, Objective finalObjective)
@@ -15,7 +16,7 @@ std::set<Objective> findAllObjectives(Room room, Objective finalObjective)
     std::vector<Position> orbs = room.findCoordinates(ElementType::ORB);
     for (auto it = orbs.begin(); it != orbs.end(); ++it)
     {
-        objectives.insert(Objective(true, {*it}));
+        objectives.insert(StabObjective({*it}));
     }
     return objectives;
 }
@@ -56,7 +57,7 @@ Room PlanningProblem::result(Room state, Objective action)
 
 bool PlanningProblem::goalTest(Room state)
 {
-    return this->objective.goalTest(state);
+    return objectiveFulfilled(this->objective, state);
 }
 
 int PlanningProblem::stepCost(Room state, Objective action, Room result)

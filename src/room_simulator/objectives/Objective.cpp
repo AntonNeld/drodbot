@@ -1,58 +1,33 @@
+#include <stdexcept>
+
 #include "Objective.h"
 #include "../Room.h"
-#include "../utils.h"
+#include "../DerivedRoom.h"
+#include "ReachObjective.h"
+#include "StabObjective.h"
 
-Objective::Objective(
-    bool swordAtTile,
-    std::set<Position> tiles) : swordAtTile(swordAtTile),
-                                tiles(tiles)
+bool objectiveFulfilled(Objective objective, Room room)
 {
+    if (ReachObjective *reachObj = std::get_if<ReachObjective>(&objective))
+    {
+        return reachObj->goalTest(room);
+    }
+    else if (StabObjective *stabObj = std::get_if<StabObjective>(&objective))
+    {
+        return stabObj->goalTest(room);
+    }
+    throw std::invalid_argument("Unknown objective type");
 }
 
-bool Objective::operator<(const Objective other) const
+bool objectiveFulfilled(Objective objective, DerivedRoom room)
 {
-    if (this->swordAtTile != other.swordAtTile)
+    if (ReachObjective *reachObj = std::get_if<ReachObjective>(&objective))
     {
-        return this->swordAtTile;
+        return reachObj->goalTest(room);
     }
-    if (this->tiles.size() != other.tiles.size())
+    else if (StabObjective *stabObj = std::get_if<StabObjective>(&objective))
     {
-        return this->tiles.size() < other.tiles.size();
+        return stabObj->goalTest(room);
     }
-    auto thisTilesIterator = this->tiles.begin();
-    auto otherTilesIterator = other.tiles.begin();
-    while (thisTilesIterator != this->tiles.end())
-    {
-        if (*thisTilesIterator != *otherTilesIterator)
-        {
-            return *thisTilesIterator < *otherTilesIterator;
-        }
-        ++thisTilesIterator;
-        ++otherTilesIterator;
-    }
-    return false;
-};
-
-bool Objective::goalTest(Room room)
-{
-    std::tuple<Position, Direction> pair = room.findPlayer();
-    Position position = std::get<0>(pair);
-    Direction direction = std::get<1>(pair);
-    if (this->swordAtTile)
-    {
-        position = positionInDirection(position, direction);
-    }
-    return this->tiles.find(position) != this->tiles.end();
-}
-
-bool Objective::goalTest(DerivedRoom room)
-{
-    std::tuple<Position, Direction> pair = room.findPlayer();
-    Position position = std::get<0>(pair);
-    Direction direction = std::get<1>(pair);
-    if (this->swordAtTile)
-    {
-        position = positionInDirection(position, direction);
-    }
-    return this->tiles.find(position) != this->tiles.end();
+    throw std::invalid_argument("Unknown objective type");
 }
