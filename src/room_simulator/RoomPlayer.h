@@ -18,7 +18,7 @@ public:
     std::tuple<Position, Direction> findPlayer();
     bool playerIsDead();
     std::set<Position> getToggledDoors();
-    std::map<int, std::tuple<ElementType, Position, Direction>> getMonsters();
+    std::vector<std::tuple<ElementType, Position, Direction>> getMonsters();
 
 private:
     void performAction(Action action);
@@ -36,7 +36,6 @@ private:
     std::optional<Room> baseRoom;
     std::vector<Action> actions;
     std::set<Position> doors;
-    std::map<int, std::tuple<ElementType, Position, Direction>> monsters;
 };
 
 extern RoomPlayer globalRoomPlayer;

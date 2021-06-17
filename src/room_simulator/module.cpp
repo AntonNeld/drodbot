@@ -241,11 +241,11 @@ The room after the action.
              pybind11::arg("element_type") = ElementType::NOTHING,
              pybind11::arg("direction") = Direction::NONE,
              pybind11::arg("orb_effects") = OrbEffects(),
-             pybind11::arg("monster_id") = std::nullopt)
+             pybind11::arg("turn_order") = std::nullopt)
         .def_readwrite("element_type", &Element::type)
         .def_readwrite("direction", &Element::direction)
         .def_readwrite("orb_effects", &Element::orbEffects)
-        .def_readwrite("monster_id", &Element::monsterId);
+        .def_readwrite("turn_order", &Element::turnOrder);
 
     pybind11::class_<Tile>(m, "Tile")
         .def(pybind11::init<Element, Element, Element, Element, Element>(),

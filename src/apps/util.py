@@ -87,8 +87,8 @@ def _format_element(element):
     return_str = element_type.name
     if direction != Direction.NONE:
         return_str = f"{return_str} {direction.name}"
-    if element.monster_id is not None:
-        return_str = f"{return_str} ({element.monster_id})"
+    if element.turn_order is not None:
+        return_str = f"{return_str} ({element.turn_order})"
     return return_str
 
 

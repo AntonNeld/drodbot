@@ -169,7 +169,8 @@ void RoomPlayer::setRoom(
     }
     this->claimed = true;
     this->doors = {};
-    this->monsters = {};
+    // Map from turnorder to monster
+    std::map<int, std::tuple<ElementType, Position, Direction>> monsters = {};
     // If the player starts with their sword on an orb and we are not
     // entering the room, the orb will have already been struck. Since
     // DRODLib will strike the orb again, we invert the status of the
@@ -390,14 +391,14 @@ void RoomPlayer::setRoom(
                 break;
             }
             default:
-                this->monsters[tile.monster.monsterId.value()] = {tile.monster.type,
-                                                                  {x, y},
-                                                                  tile.monster.direction};
+                monsters[tile.monster.turnOrder.value()] = {tile.monster.type,
+                                                            {x, y},
+                                                            tile.monster.direction};
             }
         }
     }
-    // This relies on the monster IDs being numbers loop over the monsters in the right order
-    for (auto it = this->monsters.begin(); it != this->monsters.end(); ++it)
+    // This relies on monsters being sorted by turn order
+    for (auto it = monsters.begin(); it != monsters.end(); ++it)
     {
         ElementType type = std::get<0>(std::get<1>(*it));
         Position position = std::get<1>(std::get<1>(*it));
@@ -427,22 +428,6 @@ void RoomPlayer::setRoom(
 void RoomPlayer::performAction(Action action)
 {
     CCueEvents cueEvents;
-    // Get the pointers to monsters in the room. this->monsters should be in sync with the room,
-    // so looping over it should be a way to translate the movement order back into IDs.
-    // This relies on the monster IDs being numbers loop over the monsters in the right order.
-    std::map<int, CMonster *> monsterPointers = {};
-    CMonster *currentPointer = this->currentGame->pRoom->pFirstMonster;
-    for (auto it = this->monsters.begin(); it != this->monsters.end(); ++it)
-    {
-        int key = std::get<0>(*it);
-        monsterPointers[key] = currentPointer;
-        currentPointer = currentPointer->pNext;
-    }
-    if (currentPointer != NULL)
-    {
-        throw std::invalid_argument("More monsters in room than we thought");
-    }
-
     int drodAction;
     switch (action)
     {
@@ -484,21 +469,6 @@ void RoomPlayer::performAction(Action action)
     }
     this->currentGame->ProcessCommand(drodAction, cueEvents);
     this->actions.push_back(action);
-    // Update this->monsters to match the room again
-    for (auto it = monsterPointers.begin(); it != monsterPointers.end(); ++it)
-    {
-        int key = std::get<0>(*it);
-        CMonster *monster = std::get<1>(*it);
-        if (!monster->bAlive)
-        {
-            this->monsters.erase(key);
-        }
-        else
-        {
-            ElementType typeBefore = std::get<0>(this->monsters[key]);
-            this->monsters[key] = {typeBefore, {monster->wX, monster->wY}, convertDirectionBack(monster->wO)};
-        }
-    }
 }
 
 // Rewind an action
@@ -676,47 +646,27 @@ Room RoomPlayer::getRoom()
             }
             tile.item = item;
 
-            Element monster;
-            if (currentGame->swordsman.wX == x && currentGame->swordsman.wY == y)
-            {
-                monster = Element(ElementType::BEETHRO, convertDirectionBack(currentGame->swordsman.wO));
-            }
-            else
-            {
-                CMonster *pMonster = currentGame->pRoom->GetMonsterAtSquare(x, y);
-                if (pMonster == NULL)
-                {
-                    monster = Element();
-                }
-                else
-                {
-                    switch (pMonster->wType)
-                    {
-                    case M_ROACH:
-                        monster = Element(ElementType::ROACH, convertDirectionBack(pMonster->wO));
-                        break;
-                    default:
-                        throw std::invalid_argument("Wrong type in monster layer");
-                    }
-                }
-            }
-            tile.monster = Element();
-
             tiles[x][y] = tile;
         }
     }
     // Add monsters
-    Element player = Element(ElementType::BEETHRO, convertDirectionBack(currentGame->swordsman.wO));
+    Element player = Element(ElementType::BEETHRO, convertDirectionBack(this->currentGame->swordsman.wO));
     tiles[currentGame->swordsman.wX][currentGame->swordsman.wY].monster = player;
-    for (auto it = this->monsters.begin(); it != this->monsters.end(); ++it)
+    int turnOrder = 0;
+    for (auto it = this->currentGame->pRoom->pFirstMonster; it != NULL; it = it->pNext)
     {
-        int monsterId = std::get<0>(*it);
-        ElementType type = std::get<0>(std::get<1>(*it));
-        Position position = std::get<1>(std::get<1>(*it));
-        Direction direction = std::get<2>(std::get<1>(*it));
-        int x = std::get<0>(position);
-        int y = std::get<1>(position);
-        tiles[x][y].monster = Element(type, direction, {}, monsterId);
+        ElementType type;
+        switch (it->wType)
+        {
+        case M_ROACH:
+            type = ElementType::ROACH;
+            break;
+        default:
+            throw std::invalid_argument("Unknown monster type");
+        }
+        Direction direction = convertDirectionBack(it->wO);
+        tiles[it->wX][it->wY].monster = Element(type, direction, {}, turnOrder);
+        turnOrder++;
     }
     return Room(tiles, this->playerIsDead());
 }
@@ -751,9 +701,25 @@ std::set<Position> RoomPlayer::getToggledDoors()
     return toggledDoors;
 }
 
-std::map<int, std::tuple<ElementType, Position, Direction>> RoomPlayer::getMonsters()
+std::vector<std::tuple<ElementType, Position, Direction>> RoomPlayer::getMonsters()
 {
-    return this->monsters;
+    std::vector<std::tuple<ElementType, Position, Direction>> monsters = {};
+    for (auto it = this->currentGame->pRoom->pFirstMonster; it != NULL; it = it->pNext)
+    {
+        ElementType type;
+        switch (it->wType)
+        {
+        case M_ROACH:
+            type = ElementType::ROACH;
+            break;
+        default:
+            throw std::invalid_argument("Unknown monster type");
+        }
+        Position position = {it->wX, it->wY};
+        Direction direction = convertDirectionBack(it->wO);
+        monsters.push_back({type, position, direction});
+    }
+    return monsters;
 }
 
 void RoomPlayer::release()

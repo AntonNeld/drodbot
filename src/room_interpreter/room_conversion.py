@@ -58,7 +58,7 @@ def room_from_apparent_tiles(apparent_tiles, orb_effects=None):
     -------
     A new room.
     """
-    monster_id = 0
+    turn_order = 0
     tiles = []
     for x in range(ROOM_WIDTH_IN_TILES):
         column = []
@@ -66,8 +66,8 @@ def room_from_apparent_tiles(apparent_tiles, orb_effects=None):
             tile = apparent_tiles[(x, y)]
             monster = element_from_apparent(*tile.monster)
             if monster.element_type not in [ElementType.NOTHING, ElementType.BEETHRO]:
-                monster.monster_id = monster_id
-                monster_id = monster_id + 1
+                monster.turn_order = turn_order
+                turn_order = turn_order + 1
             column.append(
                 Tile(
                     room_piece=element_from_apparent(*tile.room_piece),

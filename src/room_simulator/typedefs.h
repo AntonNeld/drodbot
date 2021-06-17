@@ -82,15 +82,14 @@ struct Element
     Element(ElementType type = ElementType::NOTHING,
             Direction direction = Direction::NONE,
             OrbEffects orbEffects = {},
-            std::optional<int> monsterId = std::nullopt) : type(type),
+            std::optional<int> turnOrder = std::nullopt) : type(type),
                                                            direction(direction),
                                                            orbEffects(orbEffects),
-                                                           monsterId(monsterId){};
+                                                           turnOrder(turnOrder){};
     ElementType type = ElementType::NOTHING;
     Direction direction = Direction::NONE;
     OrbEffects orbEffects = {};   // Only actually used for orbs
-    std::optional<int> monsterId; // Unique ID for a monster, lower IDs come earlier in
-                                  // the movement order. IDs can be skipped.
+    std::optional<int> turnOrder; // Where a monster is in the turn order, 0-indexed.
     bool operator==(const Element otherElement) const
     {
         return this->type == otherElement.type &&

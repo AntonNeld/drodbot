@@ -7,7 +7,7 @@
 #include "typedefs.h"
 #include "Room.h"
 
-typedef std::map<int, std::tuple<ElementType, Position, Direction>> Monsters;
+typedef std::vector<std::tuple<ElementType, Position, Direction>> Monsters;
 
 // This class only makes sense in the context of one search,
 // when the room played in globalRoomPlayer does not change.
