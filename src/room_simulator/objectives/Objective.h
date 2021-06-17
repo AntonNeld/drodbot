@@ -2,9 +2,9 @@
 #define DRODBOT_OBJECTIVE_H
 
 #include <set>
-#include "Room.h"
-#include "DerivedRoom.h"
-#include "typedefs.h"
+#include "../Room.h"
+#include "../DerivedRoom.h"
+#include "../typedefs.h"
 
 // TODO: Make something more extensible
 class Objective

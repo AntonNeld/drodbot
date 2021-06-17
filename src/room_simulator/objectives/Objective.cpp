@@ -1,6 +1,6 @@
 #include "Objective.h"
-#include "Room.h"
-#include "utils.h"
+#include "../Room.h"
+#include "../utils.h"
 
 Objective::Objective(
     bool swordAtTile,

@@ -7,7 +7,7 @@
 #include <optional>
 #include "typedefs.h"
 #include "Room.h"
-#include "Objective.h"
+#include "objectives/Objective.h"
 #include "problems/PathfindingProblem.h"
 #include "problems/DerivedRoomProblem.h"
 #include "search/Searcher.h"

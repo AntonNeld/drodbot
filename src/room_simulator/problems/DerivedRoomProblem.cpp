@@ -1,7 +1,7 @@
 #include <tuple>
 #include <map>
 #include "../Room.h"
-#include "../Objective.h"
+#include "../objectives/Objective.h"
 #include "../typedefs.h"
 #include "../search/Problem.h"
 #include "../RoomPlayer.h"

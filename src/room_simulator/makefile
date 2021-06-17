@@ -17,7 +17,9 @@ OWN_SEARCH_FILES=$(shell find ./search -maxdepth 1 -name '*.cpp')
 OWN_SEARCH_OBJECT_FILES=$(patsubst %.cpp,build/own/%.o,$(OWN_SEARCH_FILES))
 OWN_PROBLEMS_FILES=$(shell find ./problems -maxdepth 1 -name '*.cpp')
 OWN_PROBLEMS_OBJECT_FILES=$(patsubst %.cpp,build/own/%.o,$(OWN_PROBLEMS_FILES))
-OBJECT_FILES=$(BACKENDLIB_OBJECT_FILES) $(DRODLIB_OBJECT_FILES) $(METAKIT_OBJECT_FILES) $(OWN_OBJECT_FILES) $(OWN_SEARCH_OBJECT_FILES) $(OWN_PROBLEMS_OBJECT_FILES)
+OWN_OBJECTIVES_FILES=$(shell find ./objectives -maxdepth 1 -name '*.cpp')
+OWN_OBJECTIVES_OBJECT_FILES=$(patsubst %.cpp,build/own/%.o,$(OWN_OBJECTIVES_FILES))
+OBJECT_FILES=$(BACKENDLIB_OBJECT_FILES) $(DRODLIB_OBJECT_FILES) $(METAKIT_OBJECT_FILES) $(OWN_OBJECT_FILES) $(OWN_SEARCH_OBJECT_FILES) $(OWN_PROBLEMS_OBJECT_FILES) $(OWN_OBJECTIVES_OBJECT_FILES)
 DEPENDENCY_FILES= $(OBJECT_FILES:%.o=%.d)
 
 LINK_LIBS=$(shell sdl2-config --libs) -lpython3.9 -ljsoncpp -lcurl
@@ -34,6 +36,9 @@ build/own/search/%.o: search/%.cpp
 	g++ -c $(WARNING_ARGS) $(COMMON_COMPILE_ARGS) $< -o $@ -MMD -MP
 
 build/own/problems/%.o: problems/%.cpp
+	g++ -c $(WARNING_ARGS) $(COMMON_COMPILE_ARGS) $< -o $@ -MMD -MP
+
+build/own/objectives/%.o: objectives/%.cpp
 	g++ -c $(WARNING_ARGS) $(COMMON_COMPILE_ARGS) $< -o $@ -MMD -MP
 
 # We don't include warnings when compiling source from other projects,
@@ -62,3 +67,4 @@ clean:
 	mkdir build/own
 	mkdir build/own/search
 	mkdir build/own/problems
+	mkdir build/own/objectives

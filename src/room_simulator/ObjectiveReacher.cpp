@@ -4,7 +4,7 @@
 #include <optional>
 #include <set>
 #include "ObjectiveReacher.h"
-#include "Objective.h"
+#include "objectives/Objective.h"
 #include "typedefs.h"
 #include "search/Searcher.h"
 #include "problems/DerivedRoomProblem.h"
