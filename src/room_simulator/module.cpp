@@ -19,7 +19,7 @@ void initialize()
 Room simulateAction(Room room, Action action)
 {
     globalRoomPlayer.setRoom(room);
-    globalRoomPlayer.performAction(action);
+    globalRoomPlayer.setActions({action});
     Room resultingRoom = globalRoomPlayer.getRoom();
     globalRoomPlayer.release();
     return resultingRoom;

@@ -12,8 +12,6 @@ public:
     RoomPlayer();
     void initialize();
     void setRoom(Room room, bool firstEntrance = false);
-    void performAction(Action action);
-    void undo();
     void setActions(std::vector<Action> newActions);
     Room getRoom();
     void release();
@@ -23,6 +21,8 @@ public:
     std::map<int, std::tuple<ElementType, Position, Direction>> getMonsters();
 
 private:
+    void performAction(Action action);
+    void undo();
     CDbRoom *drodRoom;
     CDbRoom *requiredRoom;
     CDbLevel *level;
