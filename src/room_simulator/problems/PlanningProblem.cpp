@@ -6,6 +6,7 @@
 #include "../typedefs.h"
 #include "PlanningProblem.h"
 #include "../objectives/StabObjective.h"
+#include "../objectives/MonsterCountObjective.h"
 
 // Helper
 std::set<Objective> findAllObjectives(Room room, Objective finalObjective)
@@ -18,6 +19,7 @@ std::set<Objective> findAllObjectives(Room room, Objective finalObjective)
     {
         objectives.insert(StabObjective({*it}));
     }
+    // Other objectives that depend on the room state may be added in actions()
     return objectives;
 }
 
@@ -45,6 +47,14 @@ std::set<Objective> PlanningProblem::actions(Room state)
         {
             objectives.insert(*obj);
         }
+    }
+    // Kill a monster
+    int monsters = state.monsterCount();
+    MonsterCountObjective killSomething = MonsterCountObjective(monsters - 1);
+    Solution<Room, Action> killSolution = this->objectiveReacher->findSolution(state, killSomething);
+    if (killSolution.exists)
+    {
+        objectives.insert(killSomething);
     }
     return objectives;
 }
