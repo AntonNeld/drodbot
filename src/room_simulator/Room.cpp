@@ -171,6 +171,11 @@ int Room::monsterCount()
     return monsters;
 }
 
+bool Room::isConquered()
+{
+    return this->monsterCount() == 0;
+}
+
 bool Room::operator==(const Room otherRoom) const
 {
     // TODO: In some cases the turn number also matters. Possibly only modulo 30.

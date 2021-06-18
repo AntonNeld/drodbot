@@ -273,10 +273,24 @@ void RoomPlayer::setRoom(
             // TODO: These may be switched depending on whether the room is
             // conquered. Investigate.
             case ElementType::GREEN_DOOR:
-                drodRoom->Plot(x, y, T_DOOR_M);
+                if (room.isConquered())
+                {
+                    drodRoom->Plot(x, y, T_DOOR_GO);
+                }
+                else
+                {
+                    drodRoom->Plot(x, y, T_DOOR_M);
+                }
                 break;
             case ElementType::GREEN_DOOR_OPEN:
-                drodRoom->Plot(x, y, T_DOOR_GO);
+                if (room.isConquered())
+                {
+                    drodRoom->Plot(x, y, T_DOOR_M);
+                }
+                else
+                {
+                    drodRoom->Plot(x, y, T_DOOR_GO);
+                }
                 break;
             case ElementType::BLUE_DOOR:
                 drodRoom->Plot(x, y, T_DOOR_C);

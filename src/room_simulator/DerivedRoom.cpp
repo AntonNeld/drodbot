@@ -48,6 +48,11 @@ int DerivedRoom::monsterCount()
     return this->monsters.size();
 }
 
+bool DerivedRoom::isConquered()
+{
+    return this->monsterCount() == 0;
+}
+
 Room DerivedRoom::getFullRoom()
 {
     globalRoomPlayer.setActions(this->actions);

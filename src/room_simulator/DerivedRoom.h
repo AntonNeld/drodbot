@@ -26,6 +26,7 @@ public:
     std::tuple<Position, Direction> findPlayer();
     bool playerIsDead();
     int monsterCount();
+    bool isConquered();
     Room getFullRoom();
     bool operator==(const DerivedRoom) const;
     bool operator<(const DerivedRoom) const;

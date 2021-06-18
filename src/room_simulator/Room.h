@@ -23,6 +23,7 @@ public:
     bool isPassableInDirection(Position position, Direction fromDirection);
     bool playerIsDead();
     int monsterCount();
+    bool isConquered();
     bool operator==(const Room) const;
     bool operator<(const Room) const;
 
