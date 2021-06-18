@@ -333,6 +333,13 @@ Count the number of monsters.
 Returns
 -------
 The number of monsters.
+)docstr")
+        .def("is_conquered", &Room::isConquered, R"docstr(
+Check whether the room is conquered.
+
+Returns
+-------
+Whether the room is conquered.
 )docstr");
 
     pybind11::class_<DerivedRoom>(m, "DerivedRoom", R"docstr(

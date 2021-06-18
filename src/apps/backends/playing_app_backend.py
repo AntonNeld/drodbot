@@ -36,6 +36,8 @@ class PlayingAppBackend:
             await self._bot.go_to_unvisited_room()
         elif strategy == Strategy.EXPLORE:
             await self._bot.explore_level_continuously()
+        elif strategy == Strategy.EXPLORE_AND_CONQUER:
+            await self._bot.explore_level_continuously(conquer_rooms=True)
         elif strategy == Strategy.STRIKE_ORB:
             await self._bot.strike_element(ElementType.ORB)
         else:

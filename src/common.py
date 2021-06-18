@@ -26,6 +26,7 @@ class GUIEvent(str, Enum):
 class Strategy(str, Enum):
     """A strategy for what Beethro should do."""
 
+    EXPLORE_AND_CONQUER = "Explore while conquering rooms"
     EXPLORE = "Explore the current level"
     GO_TO_UNVISITED_ROOM = "Go to the nearest unvisited room"
     MOVE_TO_CONQUER_TOKEN = "Move to a conquer token in the room"
@@ -45,3 +46,4 @@ class RoomSolverGoal(str, Enum):
     MOVE_TO_TARGET_PLANNING = "Move to target (planning)"
     MOVE_TO_TARGET_OBJECTIVE_REACHER = "Move to target (objective reacher)"
     DECREASE_MONSTERS_OBJECTIVE_REACHER = "Decrease monsters (objective reacher)"
+    KILL_EVERYTHING_PLANNING = "Kill everything (planning)"

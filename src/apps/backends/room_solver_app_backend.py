@@ -137,6 +137,18 @@ class RoomSolverAppBackend:
             objective = ReachObjective(tiles=set([target]))
             self._searcher = ObjectiveReacher()
             self._searcher.start(self._room, objective)
+        elif goal == RoomSolverGoal.KILL_EVERYTHING_PLANNING:
+            objective = MonsterCountObjective(monsters=0)
+            self._objective_reacher_ref = ObjectiveReacher()
+            self._problem = PlanningProblem(
+                self._room, objective, self._objective_reacher_ref
+            )
+            self._searcher = SearcherRoomObjective(
+                self._problem,
+                avoid_duplicates=avoid_duplicates,
+                heuristic_in_priority=heuristic_in_priority,
+                path_cost_in_priority=path_cost_in_priority,
+            )
         self._show_data()
 
     async def expand_next_node(self):

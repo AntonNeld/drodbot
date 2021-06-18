@@ -12,6 +12,7 @@ from room_simulator import (
     simulate_action,
     ReachObjective,
     StabObjective,
+    MonsterCountObjective,
 )
 from .state import DrodBotState
 from search import NoSolutionError
@@ -152,10 +153,22 @@ class DrodBot:
             self.state.plan = [Action.S]
         await self._execute_plan()
 
-    async def explore_level_continuously(self):
-        """Explore the level while there are unvisited rooms."""
+    async def explore_level_continuously(self, conquer_rooms=False):
+        """Explore the level while there are unvisited rooms.
+
+        Parameters
+        ----------
+        conquer_rooms
+            Whether to conquer the current room if possible.
+        """
         try:
             while True:
+                if not self.state.current_room.is_conquered():
+                    try:
+                        await self.conquer_room()
+                    except NoSolutionError:
+                        print("Can't conquer current room yet")
+                        pass  # Can't conquer this yet, maybe we'll come back to it
                 await self.go_to_unvisited_room()
         except NoSolutionError:
             print("Done exploring")
@@ -171,6 +184,16 @@ class DrodBot:
         room = self.state.current_room
         goal_tiles = room.find_coordinates(element)
         actions = solve_room(room, StabObjective(tiles=set(goal_tiles)))
+        self.state.plan = actions
+        await self._execute_plan()
+
+    async def conquer_room(self):
+        """Conquer the current room."""
+        print("Thinking...")
+        t = time.time()
+        room = self.state.current_room
+        actions = solve_room(room, MonsterCountObjective(monsters=0))
+        print(f"Thought in {time.time()-t:.2f}s")
         self.state.plan = actions
         await self._execute_plan()
 
