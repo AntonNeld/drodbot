@@ -14,6 +14,7 @@ ObjectiveReacher::ObjectiveReacher() : cachedSolutions({}),
                                        phase(ObjectiveReacherPhase::NOTHING),
                                        currentRoom(std::nullopt),
                                        currentObjective(std::nullopt),
+                                       pathfindingSolution(std::nullopt),
                                        solution(std::nullopt),
                                        pathfindingProblem(std::nullopt),
                                        pathfindingSearcher(std::nullopt),
@@ -80,6 +81,7 @@ void ObjectiveReacher::start(Room room, Objective objective)
     }
     this->currentRoom = room;
     this->currentObjective = objective;
+    this->pathfindingSolution = std::nullopt;
     this->solution = std::nullopt;
     this->pathfindingProblem = std::nullopt;
     this->pathfindingSearcher = std::nullopt;
@@ -97,25 +99,32 @@ void ObjectiveReacher::nextPhase()
         break; // Do nothing
     case ObjectiveReacherPhase::CHECK_CACHE:
     {
+        Objective objective = this->currentObjective.value();
         auto foundSolutionPtr = this->cachedSolutions.find({this->currentRoom.value(), this->currentObjective.value()});
         if (foundSolutionPtr != this->cachedSolutions.end())
         {
             this->solution = std::get<1>(*foundSolutionPtr);
             this->phase = ObjectiveReacherPhase::FINISHED;
         }
-        else
+        else if (std::holds_alternative<ReachObjective>(objective) ||
+                 std::holds_alternative<StabObjective>(objective))
         {
             this->preparePathfindingPhase();
             this->phase = ObjectiveReacherPhase::PATHFIND;
+        }
+        else
+        {
+            this->prepareSimulationPhase();
+            this->phase = ObjectiveReacherPhase::SIMULATE_ROOM;
         }
         break;
     }
     case ObjectiveReacherPhase::PATHFIND:
     {
-        Solution<Position, Action> solution = this->finishPathfindingPhase();
-        if (solution.exists)
+        this->pathfindingSolution = this->finishPathfindingPhase();
+        if (this->pathfindingSolution.value().exists)
         {
-            this->prepareSimulationPhase(solution);
+            this->prepareSimulationPhase();
 
             this->phase = ObjectiveReacherPhase::SIMULATE_ROOM;
         }
@@ -197,13 +206,9 @@ void ObjectiveReacher::preparePathfindingPhase()
         }
         this->pathfindingProblem = new PathfindingProblem(start, this->currentRoom.value(), goals);
     }
-    else if (std::holds_alternative<MonsterCountObjective>(this->currentObjective.value()))
+    else
     {
-        std::set<Position> goals = {};
-        // Let's try going to the nearest monster for now.
-        std::vector<Position> monsterCoords = this->currentRoom.value().findMonsterCoordinates();
-        goals.insert(monsterCoords.begin(), monsterCoords.end());
-        this->pathfindingProblem = new PathfindingProblem(start, this->currentRoom.value(), goals);
+        throw std::invalid_argument("Unknown objective type");
     }
     this->pathfindingSearcher = new Searcher<Position, Action>(this->pathfindingProblem.value());
 }
@@ -213,18 +218,22 @@ Solution<Position, Action> ObjectiveReacher::finishPathfindingPhase()
     return this->pathfindingSearcher.value()->findSolution();
 }
 
-void ObjectiveReacher::prepareSimulationPhase(Solution<Position, Action> pathfindingSolution)
+void ObjectiveReacher::prepareSimulationPhase()
 {
-    // We should only be here if a pathfinding solution exists,
-    // let's prioritize tiles on the found path.
-    int currentHeuristicValue = pathfindingSolution.actions.value().size();
-    Position currentPosition = std::get<0>(this->currentRoom.value().findPlayer());
-    std::map<Position, int> heuristicTiles = {{currentPosition, currentHeuristicValue}};
-    for (auto it = pathfindingSolution.actions.value().begin(); it != pathfindingSolution.actions.value().end(); ++it)
+    std::map<Position, int> heuristicTiles = {};
+    // If a pathfinding solution exists, prioritize tiles on the found path.
+    if (this->pathfindingSolution.has_value())
     {
-        currentPosition = movePosition(currentPosition, *it);
-        currentHeuristicValue = currentHeuristicValue - 1;
-        heuristicTiles.insert({currentPosition, currentHeuristicValue});
+        std::vector<Action> actions = this->pathfindingSolution.value().actions.value();
+        int currentHeuristicValue = actions.size();
+        Position currentPosition = std::get<0>(this->currentRoom.value().findPlayer());
+        heuristicTiles[currentPosition] = currentHeuristicValue;
+        for (auto it = actions.begin(); it != actions.end(); ++it)
+        {
+            currentPosition = movePosition(currentPosition, *it);
+            currentHeuristicValue = currentHeuristicValue - 1;
+            heuristicTiles.insert({currentPosition, currentHeuristicValue});
+        }
     }
     globalRoomPlayer.setRoom(this->currentRoom.value());
     this->claimedRoomPlayer = true;

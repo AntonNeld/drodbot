@@ -9,7 +9,7 @@
 #include "../objectives/MonsterCountObjective.h"
 
 // Helper
-std::set<Objective> findAllObjectives(Room room, Objective finalObjective)
+std::set<Objective> findStaticObjectives(Room room, Objective finalObjective)
 {
     // The final objective is included
     std::set<Objective> objectives = {finalObjective};
@@ -28,7 +28,7 @@ PlanningProblem::PlanningProblem(Room room,
                                  ObjectiveReacher *objectiveReacher) : room(room),
                                                                        objective(objective),
                                                                        objectiveReacher(objectiveReacher),
-                                                                       availableObjectives(findAllObjectives(room, objective))
+                                                                       staticObjectives(findStaticObjectives(room, objective))
 {
 }
 
@@ -40,7 +40,7 @@ Room PlanningProblem::initialState()
 std::set<Objective> PlanningProblem::actions(Room state)
 {
     std::set<Objective> objectives = {};
-    for (auto obj = this->availableObjectives.begin(); obj != this->availableObjectives.end(); ++obj)
+    for (auto obj = this->staticObjectives.begin(); obj != this->staticObjectives.end(); ++obj)
     {
         Solution<Room, Action> solution = this->objectiveReacher->findSolution(state, *obj);
         if (solution.exists)
@@ -48,9 +48,19 @@ std::set<Objective> PlanningProblem::actions(Room state)
             objectives.insert(*obj);
         }
     }
+    // Go to the location of a monster
+    std::vector<Position> monsters = state.findMonsterCoordinates();
+    for (auto it = monsters.begin(); it != monsters.end(); ++it)
+    {
+        ReachObjective objective = ReachObjective({*it});
+        Solution<Room, Action> solution = this->objectiveReacher->findSolution(state, objective);
+        if (solution.exists)
+        {
+            objectives.insert(objective);
+        }
+    }
     // Kill a monster
-    int monsters = state.monsterCount();
-    MonsterCountObjective killSomething = MonsterCountObjective(monsters - 1);
+    MonsterCountObjective killSomething = MonsterCountObjective(monsters.size() - 1);
     Solution<Room, Action> killSolution = this->objectiveReacher->findSolution(state, killSomething);
     if (killSolution.exists)
     {

@@ -37,13 +37,14 @@ public:
 private:
     void preparePathfindingPhase();
     Solution<Position, Action> finishPathfindingPhase();
-    void prepareSimulationPhase(Solution<Position, Action> pathfindingSolution);
+    void prepareSimulationPhase();
     Solution<DerivedRoom, Action> finishSimulationPhase();
 
     std::map<std::tuple<Room, Objective>, Solution<Room, Action>> cachedSolutions;
     ObjectiveReacherPhase phase;
     std::optional<Room> currentRoom;
     std::optional<Objective> currentObjective;
+    std::optional<Solution<Position, Action>> pathfindingSolution;
     std::optional<Solution<Room, Action>> solution;
     std::optional<PathfindingProblem *> pathfindingProblem;
     std::optional<Searcher<Position, Action> *> pathfindingSearcher;
