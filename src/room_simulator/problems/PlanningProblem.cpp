@@ -8,27 +8,12 @@
 #include "../objectives/StabObjective.h"
 #include "../objectives/MonsterCountObjective.h"
 
-// Helper
-std::set<Objective> findStaticObjectives(Room room, Objective finalObjective)
-{
-    // The final objective is included
-    std::set<Objective> objectives = {finalObjective};
-    // All orbs can be struck
-    std::vector<Position> orbs = room.findCoordinates(ElementType::ORB);
-    for (auto it = orbs.begin(); it != orbs.end(); ++it)
-    {
-        objectives.insert(StabObjective({*it}));
-    }
-    // Other objectives that depend on the room state may be added in actions()
-    return objectives;
-}
-
 PlanningProblem::PlanningProblem(Room room,
                                  Objective objective,
                                  ObjectiveReacher *objectiveReacher) : room(room),
                                                                        objective(objective),
                                                                        objectiveReacher(objectiveReacher),
-                                                                       staticObjectives(findStaticObjectives(room, objective))
+                                                                       orbs(room.findCoordinates(ElementType::ORB))
 {
 }
 
@@ -40,33 +25,35 @@ Room PlanningProblem::initialState()
 std::set<Objective> PlanningProblem::actions(Room state)
 {
     std::set<Objective> objectives = {};
-    for (auto obj = this->staticObjectives.begin(); obj != this->staticObjectives.end(); ++obj)
+    // Always try reaching the final objective
+    // TODO: May not make sense if it's something like clearing the room
+    objectives.insert(this->objective);
+    // Try to strike each orb
+    for (auto it = this->orbs.begin(); it != this->orbs.end(); ++it)
     {
-        Solution<Room, Action> solution = this->objectiveReacher->findSolution(state, *obj);
-        if (solution.exists)
-        {
-            objectives.insert(*obj);
-        }
+        objectives.insert(StabObjective({*it}));
     }
     // Go to the location of a monster
     std::vector<Position> monsters = state.findMonsterCoordinates();
     for (auto it = monsters.begin(); it != monsters.end(); ++it)
     {
         ReachObjective objective = ReachObjective({*it});
-        Solution<Room, Action> solution = this->objectiveReacher->findSolution(state, objective);
-        if (solution.exists)
-        {
-            objectives.insert(objective);
-        }
+        objectives.insert(objective);
     }
     // Kill a monster
     MonsterCountObjective killSomething = MonsterCountObjective(monsters.size() - 1);
-    Solution<Room, Action> killSolution = this->objectiveReacher->findSolution(state, killSomething);
-    if (killSolution.exists)
+    objectives.insert(killSomething);
+    // Only return objectives we can actually reach
+    std::set<Objective> reachableObjectives = {};
+    for (auto it = objectives.begin(); it != objectives.end(); ++it)
     {
-        objectives.insert(killSomething);
+        Solution<Room, Action> solution = this->objectiveReacher->findSolution(state, *it);
+        if (solution.exists)
+        {
+            reachableObjectives.insert(*it);
+        }
     }
-    return objectives;
+    return reachableObjectives;
 }
 
 Room PlanningProblem::result(Room state, Objective action)

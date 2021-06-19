@@ -25,7 +25,7 @@ private:
     Room room;
     Objective objective;
     ObjectiveReacher *objectiveReacher;
-    std::set<Objective> staticObjectives;
+    std::vector<Position> orbs;
 };
 
 #endif // DRODBOT_PLANNINGPROBLEM_H
