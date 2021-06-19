@@ -199,7 +199,7 @@ void RoomPlayer::setRoom(
                     {
                         int x = std::get<0>(*it);
                         int y = std::get<1>(*it);
-                        std::set<Position> tiles = affectedDoorTiles({x, y}, room);
+                        std::set<Position> tiles = floodFill({x, y}, room);
                         preToggledDoors.insert(tiles.begin(), tiles.end());
                     }
                 }

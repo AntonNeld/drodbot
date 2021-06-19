@@ -132,11 +132,15 @@ Position movePosition(Position start, Action action)
     }
 }
 
-std::set<Position> affectedDoorTiles(Position position, Room room)
+std::set<Position> floodFill(Position position, Room room,
+                             bool roomPiece,
+                             bool floorControl,
+                             bool checkpoint,
+                             bool item,
+                             bool monster)
 {
     std::set<Position> affectedTiles = {};
     std::vector<Position> toCheck = {position};
-    ElementType doorType = room.getTile(position).roomPiece.type;
     while (!toCheck.empty())
     {
         Position checking = toCheck.back();
@@ -151,7 +155,11 @@ std::set<Position> affectedDoorTiles(Position position, Room room)
             int newY = std::get<1>(*it);
             if (newX >= 0 && newX < 38 && newY >= 0 && newY < 32 &&
                 affectedTiles.find(*it) == affectedTiles.end() &&
-                room.getTile(*it).roomPiece.type == doorType)
+                (!roomPiece || room.getTile(*it).roomPiece.type == room.getTile(position).roomPiece.type) &&
+                (!floorControl || room.getTile(*it).floorControl.type == room.getTile(position).floorControl.type) &&
+                (!checkpoint || room.getTile(*it).checkpoint.type == room.getTile(position).checkpoint.type) &&
+                (!item || room.getTile(*it).item.type == room.getTile(position).item.type) &&
+                (!monster || room.getTile(*it).monster.type == room.getTile(position).monster.type))
             {
                 toCheck.push_back(*it);
             }

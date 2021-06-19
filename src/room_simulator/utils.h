@@ -11,6 +11,11 @@ Direction oppositeDirection(Direction direction);
 Direction clockwiseDirection(Direction direction);
 Direction counterClockwiseDirection(Direction direction);
 Position movePosition(Position start, Action action);
-std::set<Position> affectedDoorTiles(Position position, Room room);
+std::set<Position> floodFill(Position position, Room room,
+                             bool roomPiece = true,
+                             bool floorControl = false,
+                             bool checkpoint = false,
+                             bool item = false,
+                             bool monster = false);
 
 #endif // DRODBOT_UTILS_H
