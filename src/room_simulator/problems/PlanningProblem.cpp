@@ -7,13 +7,33 @@
 #include "PlanningProblem.h"
 #include "../objectives/StabObjective.h"
 #include "../objectives/MonsterCountObjective.h"
+#include "../utils.h"
+
+std::vector<std::set<Position>> findAreas(Room room)
+{
+    std::vector<std::set<Position>> areas = {};
+    std::vector<Position> floors = room.findCoordinates(ElementType::FLOOR);
+    std::set<Position> toCheck = {};
+    toCheck.insert(floors.begin(), floors.end());
+    while (!toCheck.empty())
+    {
+        std::set<Position> area = floodFill(*toCheck.begin(), room, true, true, false, true, false);
+        areas.push_back(area);
+        for (auto it = area.begin(); it != area.end(); ++it)
+        {
+            toCheck.erase(*it);
+        }
+    }
+    return areas;
+}
 
 PlanningProblem::PlanningProblem(Room room,
                                  Objective objective,
                                  ObjectiveReacher *objectiveReacher) : room(room),
                                                                        objective(objective),
                                                                        objectiveReacher(objectiveReacher),
-                                                                       orbs(room.findCoordinates(ElementType::ORB))
+                                                                       orbs(room.findCoordinates(ElementType::ORB)),
+                                                                       areas(findAreas(room))
 {
 }
 
@@ -33,15 +53,14 @@ std::set<Objective> PlanningProblem::actions(Room state)
     {
         objectives.insert(StabObjective({*it}));
     }
-    // Go to the location of a monster
-    std::vector<Position> monsters = state.findMonsterCoordinates();
-    for (auto it = monsters.begin(); it != monsters.end(); ++it)
+    // Go to an area
+    for (auto it = areas.begin(); it != areas.end(); ++it)
     {
-        ReachObjective objective = ReachObjective({*it});
+        ReachObjective objective = ReachObjective(*it);
         objectives.insert(objective);
     }
     // Kill a monster
-    MonsterCountObjective killSomething = MonsterCountObjective(monsters.size() - 1);
+    MonsterCountObjective killSomething = MonsterCountObjective(room.monsterCount() - 1);
     objectives.insert(killSomething);
     // Only return objectives we can actually reach
     std::set<Objective> reachableObjectives = {};
