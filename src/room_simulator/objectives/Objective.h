@@ -14,4 +14,6 @@ typedef std::variant<ReachObjective, StabObjective, MonsterCountObjective> Objec
 bool objectiveFulfilled(Objective objective, Room room);
 bool objectiveFulfilled(Objective objective, DerivedRoom room);
 
+int objectiveHeuristic(Objective objective, DerivedRoom room);
+
 #endif // DRODBOT_OBJECTIVE_H

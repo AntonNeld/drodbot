@@ -59,8 +59,7 @@ int DerivedRoomProblem::heuristic(DerivedRoom state)
     {
         return std::get<1>(*iterator);
     }
-    // Let's assume all tiles not included are equally bad.
-    // Note that this makes the heuristic non-admissable,
-    // so the solution may not be optimal.
-    return 10000;
+    // If we're not in a heuristicTile, use the objective's heuristic.
+    // Add a penalty to make it prefer the heuristicTiles.
+    return objectiveHeuristic(this->objective, state) + 50;
 }

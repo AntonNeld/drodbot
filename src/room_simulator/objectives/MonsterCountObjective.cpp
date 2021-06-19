@@ -42,3 +42,9 @@ bool MonsterCountObjective::goalTest(DerivedRoom room)
         return monsterCount == this->monsters;
     }
 }
+
+int MonsterCountObjective::heuristic(DerivedRoom room)
+{
+    // We're assuming we want to bring the monster count down, not up
+    return room.monsterCount() - this->monsters;
+}
