@@ -8,7 +8,7 @@
 class MonsterCountObjective
 {
 public:
-    MonsterCountObjective(int monsters, bool allowLess = true);
+    MonsterCountObjective(int monsters, bool allowLess = true, std::optional<std::set<Position>> area = std::nullopt);
     bool operator<(const MonsterCountObjective) const;
     bool goalTest(Room room);
     bool goalTest(DerivedRoom room);
@@ -16,6 +16,7 @@ public:
 
     int monsters;
     bool allowLess;
+    std::optional<std::set<Position>> area;
 };
 
 #endif // DRODBOT_MONSTERCOUNTOBJECTIVE_H

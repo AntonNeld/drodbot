@@ -22,7 +22,7 @@ public:
     bool isPassable(int x, int y);
     bool isPassableInDirection(Position position, Direction fromDirection);
     bool playerIsDead();
-    int monsterCount();
+    int monsterCount(std::optional<std::set<Position>> area = std::nullopt);
     bool isConquered();
     bool operator==(const Room) const;
     bool operator<(const Room) const;

@@ -150,21 +150,24 @@ bool Room::playerIsDead()
     return this->deadPlayer;
 }
 
-int Room::monsterCount()
+int Room::monsterCount(std::optional<std::set<Position>> area)
 {
     int monsters = 0;
     for (int x = 0; x < 38; x += 1)
     {
         for (int y = 0; y < 32; y += 1)
         {
-            Tile tile = this->tiles[x][y];
-            switch (tile.monster.type)
+            if (!area || area.value().contains({x, y}))
             {
-            case ElementType::BEETHRO:
-            case ElementType::NOTHING:
-                break; // Don't count these as monsters
-            default:
-                monsters++;
+                Tile tile = this->tiles[x][y];
+                switch (tile.monster.type)
+                {
+                case ElementType::BEETHRO:
+                case ElementType::NOTHING:
+                    break; // Don't count these as monsters
+                default:
+                    monsters++;
+                }
             }
         }
     }

@@ -53,23 +53,30 @@ std::set<Objective> PlanningProblem::actions(Room state)
     {
         objectives.insert(StabObjective({*it}));
     }
-    // Go to an area
     for (auto it = areas.begin(); it != areas.end(); ++it)
     {
-        ReachObjective objective = ReachObjective(*it);
-        objectives.insert(objective);
+        // We are only interested in areas with monsters for now
+        if (room.monsterCount(*it) > 0)
+        {
+            // Go to an area
+            ReachObjective goObjective = ReachObjective(*it);
+            objectives.insert(goObjective);
+            // Clear an area
+            MonsterCountObjective killObjective = MonsterCountObjective(0, false, *it);
+            objectives.insert(killObjective);
+        }
     }
-    // Kill a monster
-    MonsterCountObjective killSomething = MonsterCountObjective(room.monsterCount() - 1);
-    objectives.insert(killSomething);
-    // Only return objectives we can actually reach
+    // Only return objectives we can actually reach, but haven't reached already
     std::set<Objective> reachableObjectives = {};
     for (auto it = objectives.begin(); it != objectives.end(); ++it)
     {
-        Solution<Room, Action> solution = this->objectiveReacher->findSolution(state, *it);
-        if (solution.exists)
+        if (!objectiveFulfilled(*it, state))
         {
-            reachableObjectives.insert(*it);
+            Solution<Room, Action> solution = this->objectiveReacher->findSolution(state, *it);
+            if (solution.exists)
+            {
+                reachableObjectives.insert(*it);
+            }
         }
     }
     return reachableObjectives;

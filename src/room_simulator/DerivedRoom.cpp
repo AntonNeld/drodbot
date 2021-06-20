@@ -43,9 +43,21 @@ bool DerivedRoom::playerIsDead()
     return this->deadPlayer;
 }
 
-int DerivedRoom::monsterCount()
+int DerivedRoom::monsterCount(std::optional<std::set<Position>> area)
 {
-    return this->monsters.size();
+    if (!area)
+    {
+        return this->monsters.size();
+    }
+    int monsterCount = 0;
+    for (auto it = this->monsters.begin(); it != this->monsters.end(); ++it)
+    {
+        if (area.value().contains(std::get<1>(*it)))
+        {
+            monsterCount++;
+        }
+    }
+    return monsterCount;
 }
 
 bool DerivedRoom::isConquered()

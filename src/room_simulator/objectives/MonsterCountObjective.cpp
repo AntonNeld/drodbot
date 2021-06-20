@@ -5,8 +5,10 @@
 
 MonsterCountObjective::MonsterCountObjective(
     int monsters,
-    bool allowLess) : monsters(monsters),
-                      allowLess(allowLess){};
+    bool allowLess,
+    std::optional<std::set<Position>> area) : monsters(monsters),
+                                              allowLess(allowLess),
+                                              area(area){};
 
 bool MonsterCountObjective::operator<(const MonsterCountObjective other) const
 {
@@ -14,12 +16,20 @@ bool MonsterCountObjective::operator<(const MonsterCountObjective other) const
     {
         return this->monsters < other.monsters;
     }
-    return this->allowLess < other.allowLess;
+    if (this->allowLess != other.allowLess)
+    {
+        return this->allowLess < other.allowLess;
+    }
+    if (this->area != other.area)
+    {
+        return this->area < other.area;
+    }
+    return false; // Equal
 };
 
 bool MonsterCountObjective::goalTest(Room room)
 {
-    int monsterCount = room.monsterCount();
+    int monsterCount = room.monsterCount(this->area);
     if (this->allowLess)
     {
         return monsterCount <= this->monsters;
@@ -32,7 +42,7 @@ bool MonsterCountObjective::goalTest(Room room)
 
 bool MonsterCountObjective::goalTest(DerivedRoom room)
 {
-    int monsterCount = room.monsterCount();
+    int monsterCount = room.monsterCount(this->area);
     if (this->allowLess)
     {
         return monsterCount <= this->monsters;
@@ -45,6 +55,7 @@ bool MonsterCountObjective::goalTest(DerivedRoom room)
 
 int MonsterCountObjective::heuristic(DerivedRoom room)
 {
+    int monsterCount = room.monsterCount(this->area);
     // We're assuming we want to bring the monster count down, not up
-    return room.monsterCount() - this->monsters;
+    return monsterCount - this->monsters;
 }
