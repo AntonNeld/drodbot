@@ -35,6 +35,11 @@ bool OrObjective::goalTest(DerivedRoom room)
     return false;
 }
 
+int OrObjective::heuristic(Room room)
+{
+    return objectiveHeuristic(this->objectives.front(), room);
+}
+
 int OrObjective::heuristic(DerivedRoom room)
 {
     return objectiveHeuristic(this->objectives.front(), room);

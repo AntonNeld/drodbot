@@ -21,6 +21,7 @@ public:
     bool operator<(const OrObjective) const;
     bool goalTest(Room room);
     bool goalTest(DerivedRoom room);
+    int heuristic(Room room);
     int heuristic(DerivedRoom room);
 
     std::vector<Objective> objectives;

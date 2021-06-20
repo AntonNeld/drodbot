@@ -109,5 +109,5 @@ int PlanningProblem::stepCost(Room state, Objective action, Room result)
 
 int PlanningProblem::heuristic(Room state)
 {
-    return 0;
+    return objectiveHeuristic(this->objective, state);
 }

@@ -17,7 +17,7 @@ public:
     Tile getTile(Position position);
     void setTile(Position position, Tile tile);
     std::vector<Position> findCoordinates(ElementType elementType);
-    std::vector<Position> findMonsterCoordinates();
+    std::vector<Position> findMonsterCoordinates(std::optional<std::set<Position>> area = std::nullopt);
     std::tuple<Position, Direction> findPlayer();
     bool isPassable(int x, int y);
     bool isPassableInDirection(Position position, Direction fromDirection);

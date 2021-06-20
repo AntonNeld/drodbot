@@ -47,21 +47,24 @@ std::vector<Position> Room::findCoordinates(ElementType elementType)
     return coords;
 }
 
-std::vector<Position> Room::findMonsterCoordinates()
+std::vector<Position> Room::findMonsterCoordinates(std::optional<std::set<Position>> area)
 {
     std::vector<Position> coords;
     for (int x = 0; x < 38; x += 1)
     {
         for (int y = 0; y < 32; y += 1)
         {
-            Tile tile = this->tiles[x][y];
-            switch (tile.monster.type)
+            if (!area || area.value().contains({x, y}))
             {
-            case ElementType::BEETHRO:
-            case ElementType::NOTHING:
-                break; // Don't count these as monsters
-            default:
-                coords.push_back({x, y});
+                Tile tile = this->tiles[x][y];
+                switch (tile.monster.type)
+                {
+                case ElementType::BEETHRO:
+                case ElementType::NOTHING:
+                    break; // Don't count these as monsters
+                default:
+                    coords.push_back({x, y});
+                }
             }
         }
     }
