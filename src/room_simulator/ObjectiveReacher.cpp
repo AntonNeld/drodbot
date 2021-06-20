@@ -112,6 +112,29 @@ void ObjectiveReacher::nextPhase()
             this->preparePathfindingPhase();
             this->phase = ObjectiveReacherPhase::PATHFIND;
         }
+        else if (OrObjective *orObjective = std::get_if<OrObjective>(&objective))
+        {
+            bool hasReachOrStab = false;
+            for (auto subObjective : orObjective->objectives)
+            {
+                if (std::holds_alternative<ReachObjective>(subObjective) ||
+                    std::holds_alternative<StabObjective>(subObjective))
+                {
+                    hasReachOrStab = true;
+                    break;
+                }
+            }
+            if (hasReachOrStab)
+            {
+                this->preparePathfindingPhase();
+                this->phase = ObjectiveReacherPhase::PATHFIND;
+            }
+            else
+            {
+                this->prepareSimulationPhase();
+                this->phase = ObjectiveReacherPhase::SIMULATE_ROOM;
+            }
+        }
         else
         {
             this->prepareSimulationPhase();
@@ -184,11 +207,24 @@ Searcher<DerivedRoom, Action> *ObjectiveReacher::getRoomSimulationSearcher()
 void ObjectiveReacher::preparePathfindingPhase()
 {
     Position start = std::get<0>(this->currentRoom.value().findPlayer());
-    if (ReachObjective *obj = std::get_if<ReachObjective>(&this->currentObjective.value()))
+    Objective objective = this->currentObjective.value();
+    if (OrObjective *obj = std::get_if<OrObjective>(&objective))
+    {
+        for (auto subObj : obj->objectives)
+        {
+            if (std::holds_alternative<ReachObjective>(subObj) ||
+                std::holds_alternative<StabObjective>(subObj))
+            {
+                objective = subObj;
+                break;
+            }
+        }
+    }
+    if (ReachObjective *obj = std::get_if<ReachObjective>(&objective))
     {
         this->pathfindingProblem = new PathfindingProblem(start, this->currentRoom.value(), obj->tiles);
     }
-    else if (StabObjective *obj = std::get_if<StabObjective>(&this->currentObjective.value()))
+    else if (StabObjective *obj = std::get_if<StabObjective>(&objective))
     {
         std::set<Position> goals = {};
         for (auto tilePtr = obj->tiles.begin(); tilePtr != obj->tiles.end(); ++tilePtr)
