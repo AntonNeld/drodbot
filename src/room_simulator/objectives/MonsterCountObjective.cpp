@@ -55,7 +55,30 @@ bool MonsterCountObjective::goalTest(DerivedRoom room)
 
 int MonsterCountObjective::heuristic(DerivedRoom room)
 {
-    int monsterCount = room.monsterCount(this->area);
     // We're assuming we want to bring the monster count down, not up
-    return monsterCount - this->monsters;
+    std::tuple<Position, Direction> player = room.findPlayer();
+    Position swordPosition = positionInDirection(std::get<0>(player), std::get<1>(player));
+    int x = std::get<0>(swordPosition);
+    int y = std::get<1>(swordPosition);
+    std::vector<Position> monsterCoords = room.findMonsterCoordinates(this->area);
+    int closestDistance = 37;
+    for (auto it = monsterCoords.begin(); it != monsterCoords.end(); ++it)
+    {
+        int monsterX = std::get<0>(*it);
+        int monsterY = std::get<1>(*it);
+        int distance = std::max<int>(std::abs(monsterX - x), std::abs(monsterY - y));
+        if (distance < closestDistance)
+        {
+            closestDistance = distance;
+        }
+    }
+    int monsterCount = monsterCoords.size();
+    if (monsterCount == 0)
+    {
+        // If there are no monsters, we don't care about the distance
+        closestDistance = 0;
+    }
+    // Let's prioritize being closer to monsters, and having killed
+    // some (with a larger weight)
+    return closestDistance + 10 * (monsterCount - this->monsters);
 }

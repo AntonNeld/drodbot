@@ -327,8 +327,13 @@ Returns
 -------
 Whether the tile is passable or not.
 )docstr")
-        .def("monster_count", &Room::monsterCount, R"docstr(
+        .def("monster_count", &Room::monsterCount, pybind11::arg("area") = std::nullopt, R"docstr(
 Count the number of monsters.
+
+Parameters
+----------
+area
+    Limit the count to this set of positions. Can be None.
 
 Returns
 -------

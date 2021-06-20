@@ -43,6 +43,19 @@ bool DerivedRoom::playerIsDead()
     return this->deadPlayer;
 }
 
+std::vector<Position> DerivedRoom::findMonsterCoordinates(std::optional<std::set<Position>> area)
+{
+    std::vector<Position> monsterCoords = {};
+    for (auto it = this->monsters.begin(); it != this->monsters.end(); ++it)
+    {
+        if (!area || area.value().contains(std::get<1>(*it)))
+        {
+            monsterCoords.push_back(std::get<1>(*it));
+        }
+    }
+    return monsterCoords;
+}
+
 int DerivedRoom::monsterCount(std::optional<std::set<Position>> area)
 {
     if (!area)

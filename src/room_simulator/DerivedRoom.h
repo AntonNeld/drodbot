@@ -25,6 +25,7 @@ public:
     DerivedRoom getSuccessor(Action action);
     std::tuple<Position, Direction> findPlayer();
     bool playerIsDead();
+    std::vector<Position> findMonsterCoordinates(std::optional<std::set<Position>> area = std::nullopt);
     int monsterCount(std::optional<std::set<Position>> area = std::nullopt);
     bool isConquered();
     Room getFullRoom();
