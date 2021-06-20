@@ -8,8 +8,9 @@
 #include "ReachObjective.h"
 #include "StabObjective.h"
 #include "MonsterCountObjective.h"
+#include "OrObjective.h"
 
-typedef std::variant<ReachObjective, StabObjective, MonsterCountObjective> Objective;
+typedef std::variant<ReachObjective, StabObjective, MonsterCountObjective, OrObjective> Objective;
 
 bool objectiveFulfilled(Objective objective, Room room);
 bool objectiveFulfilled(Objective objective, DerivedRoom room);

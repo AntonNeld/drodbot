@@ -303,6 +303,13 @@ Returns
 -------
 The coordinates of all elements of that type, as a list of (x, y) tuples.
 )docstr")
+        .def("find_monster_coordinates", &Room::findMonsterCoordinates, R"docstr(
+Find coordinates of all monsters.
+
+Returns
+-------
+Coordinates of all monsters.
+)docstr")
         .def("find_player", &Room::findPlayer, R"docstr(
 Find the coordinates of the player.
 
@@ -384,15 +391,16 @@ The full room.
     pybind11::class_<ReachObjective>(m, "ReachObjective")
         .def(pybind11::init<std::set<Position>>(), pybind11::arg("tiles"))
         .def_readwrite("tiles", &ReachObjective::tiles);
-
     pybind11::class_<StabObjective>(m, "StabObjective")
         .def(pybind11::init<std::set<Position>>(), pybind11::arg("tiles"))
         .def_readwrite("tiles", &StabObjective::tiles);
-
     pybind11::class_<MonsterCountObjective>(m, "MonsterCountObjective")
         .def(pybind11::init<int, bool>(), pybind11::arg("monsters"), pybind11::arg("allow_less") = true)
         .def_readwrite("monsters", &MonsterCountObjective::monsters)
         .def_readwrite("allow_less", &MonsterCountObjective::allowLess);
+    pybind11::class_<OrObjective>(m, "OrObjective")
+        .def(pybind11::init<std::vector<Objective>>(), pybind11::arg("objectives"))
+        .def_readwrite("objectives", &OrObjective::objectives);
 
     pybind11::enum_<FailureReason>(m, "FailureReason")
         .value("NO_FAILURE", FailureReason::NO_FAILURE)

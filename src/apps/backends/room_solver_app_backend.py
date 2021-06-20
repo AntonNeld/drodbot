@@ -5,6 +5,7 @@ from room_simulator import (
     ReachObjective,
     StabObjective,
     MonsterCountObjective,
+    OrObjective,
     ElementType,
     Room,
     DerivedRoom,
@@ -149,6 +150,17 @@ class RoomSolverAppBackend:
                 heuristic_in_priority=heuristic_in_priority,
                 path_cost_in_priority=path_cost_in_priority,
             )
+        elif goal == RoomSolverGoal.MOVE_TO_MONSTER_OR_KILL_SOMETHING:
+            monsters = self._room.find_monster_coordinates()
+            objective = OrObjective(
+                [
+                    ReachObjective(set(monsters)),
+                    MonsterCountObjective(self._room.monster_count() - 1),
+                ]
+            )
+            self._searcher = ObjectiveReacher()
+            self._searcher.start(self._room, objective)
+
         self._show_data()
 
     async def expand_next_node(self):
