@@ -163,12 +163,12 @@ class DrodBot:
         """
         try:
             while True:
-                if not self.state.current_room.is_conquered():
+                if conquer_rooms and not self.state.current_room.is_conquered():
                     try:
                         await self.conquer_room()
                     except NoSolutionError:
                         print("Can't conquer current room yet")
-                        pass  # Can't conquer this yet, maybe we'll come back to it
+                        pass
                 await self.go_to_unvisited_room()
         except NoSolutionError:
             print("Done exploring")
