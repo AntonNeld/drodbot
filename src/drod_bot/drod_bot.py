@@ -249,6 +249,8 @@ class DrodBot:
             for r in self.state.room_backlog
             if r[0] != self.state.current_room_position
         ]
+        # Remove monsters from the room in the level
+        self.state.level.rooms[self.state.current_room_position].make_conquered()
 
     async def reinterpret_room(self):
         """Reinterpret the current room, and replace its state."""
@@ -311,12 +313,6 @@ class DrodBot:
         """
         print(f"Entering new room in direction {direction.name}")
         room_x, room_y = self.state.current_room_position
-        if (
-            self.state.current_room.is_conquered()
-            and not self.state.level.rooms[(room_x, room_y)].is_conquered()
-        ):
-            # We just conquered the room we're leaving, update it in the level
-            self.state.level.rooms[(room_x, room_y)].make_conquered()
         (player_x, player_y), player_direction = self.state.current_room.find_player()
         if direction == Direction.N:
             if player_y != 0:
