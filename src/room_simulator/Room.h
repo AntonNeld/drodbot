@@ -24,6 +24,7 @@ public:
     bool playerIsDead();
     int monsterCount(std::optional<std::set<Position>> area = std::nullopt);
     bool isConquered();
+    void makeConquered();
     bool operator==(const Room) const;
     bool operator<(const Room) const;
 

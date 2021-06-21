@@ -352,6 +352,11 @@ Check whether the room is conquered.
 Returns
 -------
 Whether the room is conquered.
+)docstr")
+        .def("make_conquered", &Room::makeConquered, R"docstr(
+Set the room to a conquered state, to match when Beethro re-enters it.
+
+Basically, remove all monsters.
 )docstr");
 
     pybind11::class_<DerivedRoom>(m, "DerivedRoom", R"docstr(

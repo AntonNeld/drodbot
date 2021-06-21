@@ -182,6 +182,20 @@ bool Room::isConquered()
     return this->monsterCount() == 0;
 }
 
+void Room::makeConquered()
+{
+    // Remove all monsters
+    for (int x = 0; x < 38; x += 1)
+    {
+        for (int y = 0; y < 32; y += 1)
+        {
+            Tile tile = this->tiles[x][y];
+            tile.monster = Element();
+            this->tiles[x][y] = tile;
+        }
+    }
+}
+
 bool Room::operator==(const Room otherRoom) const
 {
     // TODO: In some cases the turn number also matters. Possibly only modulo 30.
