@@ -130,28 +130,32 @@ class DrodBot:
     async def go_to_unvisited_room(self):
         """Enter the nearest unvisited room."""
         goal_tiles = self.state.level.find_uncrossed_edges()
-        print("Thinking...")
+        print("Trying to go to an unvisited room...")
         t = time.time()
-        actions = find_path_in_level(
-            goal_tiles,
-            self.state.current_room,
-            self.state.current_room_position,
-            self.state.level,
-        )
-        print(f"Thought in {time.time()-t:.2f}s")
-        self.state.plan = actions
-        await self._execute_plan()
-        # Actually cross into the room
-        (x, y), _ = self.state.current_room.find_player()
-        if x == 0:
-            self.state.plan = [Action.W]
-        elif x == ROOM_WIDTH_IN_TILES - 1:
-            self.state.plan = [Action.E]
-        elif y == 0:
-            self.state.plan = [Action.N]
-        elif y == ROOM_HEIGHT_IN_TILES - 1:
-            self.state.plan = [Action.S]
-        await self._execute_plan()
+        try:
+            actions = find_path_in_level(
+                goal_tiles,
+                self.state.current_room,
+                self.state.current_room_position,
+                self.state.level,
+            )
+            print(f"Thought in {time.time()-t:.2f}s, found a solution")
+            self.state.plan = actions
+            await self._execute_plan()
+            # Actually cross into the room
+            (x, y), _ = self.state.current_room.find_player()
+            if x == 0:
+                self.state.plan = [Action.W]
+            elif x == ROOM_WIDTH_IN_TILES - 1:
+                self.state.plan = [Action.E]
+            elif y == 0:
+                self.state.plan = [Action.N]
+            elif y == ROOM_HEIGHT_IN_TILES - 1:
+                self.state.plan = [Action.S]
+            await self._execute_plan()
+        except NoSolutionError as e:
+            print(f"Thought in {time.time()-t:.2f}s, did not find a solution")
+            raise e
 
     async def explore_level_continuously(self, conquer_rooms=False):
         """Explore the level while there are unvisited rooms.
@@ -169,7 +173,7 @@ class DrodBot:
                     except NoSolutionError:
                         print(
                             "Can't conquer current room from here, "
-                            "checking other directions"
+                            "checking other entrances"
                         )
                         exits = self.state.level.get_room_exits(
                             self.state.current_room_position,
@@ -178,12 +182,14 @@ class DrodBot:
                         possible_entrances = []
                         for exit in exits:
                             position, _, _ = exit
-                            room = self.state.level.rooms[
-                                self.state.current_room_position
-                            ].copy()
                             if position == self.state.current_room.find_player()[0]:
                                 # We already tried this one
                                 continue
+                            print(f"Trying {position}...")
+                            t = time.time()
+                            room = self.state.level.rooms[
+                                self.state.current_room_position
+                            ].copy()
                             tile = room.get_tile(position)
                             tile.monster = Element(
                                 # Make up a direction
@@ -193,10 +199,15 @@ class DrodBot:
                             room.set_tile(position, tile)
                             try:
                                 solve_room(room, MonsterCountObjective(monsters=0))
-                                print(f"Found a solution from {position}")
+                                print(
+                                    f"Thought in {time.time()-t:.2f}s, found a solution"
+                                )
                                 possible_entrances.append(position)
                             except NoSolutionError:
-                                pass  # Continue the loop
+                                print(
+                                    f"Thought in {time.time()-t:.2f}s, "
+                                    "did not find a solution"
+                                )
                         self.state.room_backlog.extend(
                             [
                                 (self.state.current_room_position, pos)
@@ -205,15 +216,21 @@ class DrodBot:
                         )
                 if self.state.room_backlog:
                     try:
+                        print("Trying to reach a room entrance from the backlog...")
+                        t = time.time()
                         actions = find_path_in_level(
                             self.state.room_backlog,
                             self.state.current_room,
                             self.state.current_room_position,
                             self.state.level,
                         )
+                        print(f"Thought in {time.time()-t:.2f}s, found a solution")
                         self.state.plan = actions
                         await self._execute_plan()
                     except NoSolutionError:
+                        print(
+                            f"Thought in {time.time()-t:.2f}s, did not find a solution"
+                        )
                         await self.go_to_unvisited_room()
                 else:
                     await self.go_to_unvisited_room()
@@ -236,21 +253,25 @@ class DrodBot:
 
     async def conquer_room(self):
         """Conquer the current room."""
-        print("Thinking...")
+        print("Trying to conquer current room...")
         t = time.time()
-        room = self.state.current_room
-        actions = solve_room(room, MonsterCountObjective(monsters=0))
-        print(f"Thought in {time.time()-t:.2f}s")
-        self.state.plan = actions
-        await self._execute_plan()
-        # Remove the conquered room from the backlog
-        self.state.room_backlog = [
-            r
-            for r in self.state.room_backlog
-            if r[0] != self.state.current_room_position
-        ]
-        # Remove monsters from the room in the level
-        self.state.level.rooms[self.state.current_room_position].make_conquered()
+        try:
+            room = self.state.current_room
+            actions = solve_room(room, MonsterCountObjective(monsters=0))
+            print(f"Thought in {time.time()-t:.2f}s, found a solution")
+            self.state.plan = actions
+            await self._execute_plan()
+            # Remove the conquered room from the backlog
+            self.state.room_backlog = [
+                r
+                for r in self.state.room_backlog
+                if r[0] != self.state.current_room_position
+            ]
+            # Remove monsters from the room in the level
+            self.state.level.rooms[self.state.current_room_position].make_conquered()
+        except NoSolutionError as e:
+            print(f"Thought in {time.time()-t:.2f}s, did not find a solution")
+            raise e
 
     async def reinterpret_room(self):
         """Reinterpret the current room, and replace its state."""
