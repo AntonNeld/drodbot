@@ -25,6 +25,13 @@ class DrodBotState(BaseModel):
     level: Level = Field(default_factory=lambda: Level())
     current_room: Optional[Room]
     current_room_position: Tuple[int, int] = (0, 0)
+    room_backlog: List[
+        Tuple[
+            # (room coord, tile coord)
+            Tuple[int, int],
+            Tuple[int, int],
+        ]
+    ] = []
     plan: List[Action] = []
 
     class Config:

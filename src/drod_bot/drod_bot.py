@@ -167,9 +167,56 @@ class DrodBot:
                     try:
                         await self.conquer_room()
                     except NoSolutionError:
-                        print("Can't conquer current room yet")
-                        pass
-                await self.go_to_unvisited_room()
+                        print(
+                            "Can't conquer current room from here, "
+                            "checking other directions"
+                        )
+                        exits = self.state.level.get_room_exits(
+                            self.state.current_room_position,
+                            allow_unexplored_target=True,
+                        )
+                        possible_entrances = []
+                        for exit in exits:
+                            position, _, _ = exit
+                            room = self.state.level.rooms[
+                                self.state.current_room_position
+                            ].copy()
+                            if position == self.state.current_room.find_player()[0]:
+                                # We already tried this one
+                                continue
+                            tile = room.get_tile(position)
+                            tile.monster = Element(
+                                # Make up a direction
+                                element_type=ElementType.BEETHRO,
+                                direction=Direction.SW,
+                            )
+                            room.set_tile(position, tile)
+                            try:
+                                solve_room(room, MonsterCountObjective(monsters=0))
+                                print(f"Found a solution from {position}")
+                                possible_entrances.append(position)
+                            except NoSolutionError:
+                                pass  # Continue the loop
+                        self.state.room_backlog.extend(
+                            [
+                                (self.state.current_room_position, pos)
+                                for pos in possible_entrances
+                            ]
+                        )
+                if self.state.room_backlog:
+                    try:
+                        actions = find_path_in_level(
+                            self.state.room_backlog,
+                            self.state.current_room,
+                            self.state.current_room_position,
+                            self.state.level,
+                        )
+                        self.state.plan = actions
+                        await self._execute_plan()
+                    except NoSolutionError:
+                        await self.go_to_unvisited_room()
+                else:
+                    await self.go_to_unvisited_room()
         except NoSolutionError:
             print("Done exploring")
 
@@ -196,6 +243,12 @@ class DrodBot:
         print(f"Thought in {time.time()-t:.2f}s")
         self.state.plan = actions
         await self._execute_plan()
+        # Remove the conquered room from the backlog
+        self.state.room_backlog = [
+            r
+            for r in self.state.room_backlog
+            if r[0] != self.state.current_room_position
+        ]
 
     async def reinterpret_room(self):
         """Reinterpret the current room, and replace its state."""

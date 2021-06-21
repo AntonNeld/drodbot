@@ -122,16 +122,17 @@ class Level(BaseModel):
                 )
         return uncrossed_edge_tiles
 
-    def get_room_exits(self, room_position):
+    def get_room_exits(self, room_position, allow_unexplored_target=False):
         """Get all valid exits from a room.
 
-        If the room on the other side is not known, it is not a valid exit.
         If an entrance/exit is wider than one tile, only return one tile from it.
 
         Parameters
         ----------
         room_position
             The room to exit.
+        allow_unexplored_target
+            Whether to allow entrances/exits that lead to unexplored rooms.
 
         Returns
         -------
@@ -190,6 +191,8 @@ class Level(BaseModel):
                 None,
             ),
         ]:
+            if target_room not in self.rooms and not allow_unexplored_target:
+                continue
             if target_room in self.rooms:
                 free_coords = [
                     n
@@ -203,33 +206,34 @@ class Level(BaseModel):
                         n if y_next_room is None else y_next_room,
                     )
                 ]
-                # Find continuous regions
-                groups = groupby(enumerate(free_coords), lambda x: x[0] - x[1])
-                for _, group in groups:
-                    group_as_list = list(group)
-                    middle_coord = group_as_list[len(group_as_list) // 2][1]
-                    exits.append(
-                        (
-                            (
-                                middle_coord
-                                if x_current_room is None
-                                else x_current_room,
-                                middle_coord
-                                if y_current_room is None
-                                else y_current_room,
-                            ),
-                            movement_action,
-                            (
-                                target_room,
-                                (
-                                    middle_coord
-                                    if x_next_room is None
-                                    else x_next_room,
-                                    middle_coord
-                                    if y_next_room is None
-                                    else y_next_room,
-                                ),
-                            ),
-                        )
+            else:
+                free_coords = [
+                    n
+                    for n in range(edge_length)
+                    if self.rooms[room_position].is_passable(
+                        n if x_current_room is None else x_current_room,
+                        n if y_current_room is None else y_current_room,
                     )
+                ]
+            # Find continuous regions
+            groups = groupby(enumerate(free_coords), lambda x: x[0] - x[1])
+            for _, group in groups:
+                group_as_list = list(group)
+                middle_coord = group_as_list[len(group_as_list) // 2][1]
+                exits.append(
+                    (
+                        (
+                            middle_coord if x_current_room is None else x_current_room,
+                            middle_coord if y_current_room is None else y_current_room,
+                        ),
+                        movement_action,
+                        (
+                            target_room,
+                            (
+                                middle_coord if x_next_room is None else x_next_room,
+                                middle_coord if y_next_room is None else y_next_room,
+                            ),
+                        ),
+                    )
+                )
         return exits
