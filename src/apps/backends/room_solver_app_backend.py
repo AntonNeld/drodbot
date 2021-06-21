@@ -138,6 +138,10 @@ class RoomSolverAppBackend:
             objective = ReachObjective(tiles=set([target]))
             self._searcher = ObjectiveReacher()
             self._searcher.start(self._room, objective)
+        elif goal == RoomSolverGoal.STRIKE_TARGET_OBJECTIVE_REACHER:
+            objective = StabObjective(tiles=set([target]))
+            self._searcher = ObjectiveReacher()
+            self._searcher.start(self._room, objective)
         elif goal == RoomSolverGoal.KILL_EVERYTHING_PLANNING:
             objective = MonsterCountObjective(monsters=0)
             self._objective_reacher_ref = ObjectiveReacher()
