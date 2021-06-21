@@ -42,6 +42,7 @@ class RoomSolverApp(tkinter.Frame):
         self._start_position = None
         self._room_solver_info = None
         self._target = None
+        self._inspect_solution_mode = False
         self._selected_goal = tkinter.StringVar(self)
         self._selected_goal.set(list(RoomSolverGoal)[0].value)
         self._heuristic_in_priority = tkinter.IntVar(self)
@@ -111,6 +112,10 @@ class RoomSolverApp(tkinter.Frame):
             self._search_area, text="Next phase", command=self._next_phase
         )
         self._next_phase_button.pack(side=tkinter.LEFT)
+        self._inspect_solution_button = tkinter.Button(
+            self._control_panel, text="Inspect solution", command=self._inspect_solution
+        )
+        self._inspect_solution_button.pack(side=tkinter.TOP)
         self._checkboxes_1 = tkinter.Frame(self._control_panel)
         self._checkboxes_1.pack(side=tkinter.TOP)
         self._heuristic_checkbox = tkinter.Checkbutton(
@@ -180,13 +185,13 @@ class RoomSolverApp(tkinter.Frame):
                         [current_position],
                         "green" if self._room_solver_info["found_solution"] else "blue",
                     )
-
-                objective_positions = []
-                for action in self._room_solver_info["frontier_actions"]:
-                    # Draw frontier actions if they are objectives with positions
-                    if hasattr(action, "tiles"):
-                        objective_positions.extend(action.tiles)
-                _draw_circles(pil_image, objective_positions, "yellow")
+                if "frontier_actions" in self._room_solver_info:
+                    objective_positions = []
+                    for action in self._room_solver_info["frontier_actions"]:
+                        # Draw frontier actions if they are objectives with positions
+                        if hasattr(action, "tiles"):
+                            objective_positions.extend(action.tiles)
+                    _draw_circles(pil_image, objective_positions, "yellow")
                 if len(self._room_solver_info["current_path"]) > 0 and isinstance(
                     self._room_solver_info["current_path"][0], Action
                 ):
@@ -228,6 +233,11 @@ class RoomSolverApp(tkinter.Frame):
             # Assign to self._view to prevent from being garbage collected
             self._view = ImageTk.PhotoImage(image=resized_image)
             self._canvas.create_image(0, 0, image=self._view, anchor=tkinter.NW)
+        self._inspect_solution_button.config(
+            text="Continue searching"
+            if self._inspect_solution_mode
+            else "Inspect solution"
+        )
         self._room_solver_text.config(text=_solver_info_to_text(self._room_solver_info))
         self._objective_reacher_text.config(
             text=_objective_reacher_info_to_text(self._objective_reacher_info)
@@ -272,6 +282,12 @@ class RoomSolverApp(tkinter.Frame):
 
     def _next_phase(self):
         self._run_coroutine(self._backend.next_objective_reacher_phase())
+
+    def _inspect_solution(self):
+        self._inspect_solution_mode = not self._inspect_solution_mode
+        self._run_coroutine(
+            self._backend.set_inspect_solution_mode(self._inspect_solution_mode)
+        )
 
     def _toggle_view_size(self):
         if self._enlarged_view:
@@ -320,17 +336,19 @@ def _solver_info_to_text(room_solver_info):
         ",".join(action_strings[i : i + row_length])
         for i in range(0, len(action_strings), row_length)
     ]
-    heuristic = room_solver_info["current_state_heuristic"]
-    return "\n".join(
-        [
-            f"Iterations: {room_solver_info['iterations']}",
-            f"Heuristic value of current state: {heuristic}",
-            f"Frontier size {room_solver_info['frontier_size']}",
-            f"Explored size {room_solver_info['explored_size']}",
-            "Current path:",
-            ",\n".join(action_rows),
-        ]
-    )
+    lines = []
+    if "iterations" in room_solver_info:
+        lines.append(f"Iterations: {room_solver_info['iterations']}")
+    if "current_state_heuristic" in room_solver_info:
+        heuristic = room_solver_info["current_state_heuristic"]
+        lines.append(f"Heuristic value of current state: {heuristic}")
+    if "frontier_size" in room_solver_info:
+        lines.append(f"Frontier size {room_solver_info['frontier_size']}")
+    if "explored_size" in room_solver_info:
+        lines.append(f"Explored size {room_solver_info['explored_size']}")
+    lines.append("Current path:")
+    lines.append(",\n".join(action_rows))
+    return "\n".join(lines)
 
 
 def _objective_reacher_info_to_text(objective_reacher_info):

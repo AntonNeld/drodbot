@@ -15,7 +15,9 @@ from room_simulator import (
     SearcherRoomObjective,
     ObjectiveReacher,
     ObjectiveReacherPhase,
+    simulate_action,
 )
+from util import expand_planning_solution
 
 
 class RoomSolverAppBackend:
@@ -44,6 +46,10 @@ class RoomSolverAppBackend:
         # Same here. Note that this is for the objective reacher passed to the
         # planning problem.
         self._objective_reacher_ref = None
+        # Inspect solution mode inspects the current solution instead of searching.
+        # Due to the global RoomPlayer, this does not work with ObjectiveReacher
+        self._inspect_solution_mode = False
+        self._inspected_actions_index = 0
 
     async def get_room_from_screenshot(self):
         """Set the current room from a screenshot."""
@@ -173,8 +179,11 @@ class RoomSolverAppBackend:
         If inspecting the objective reacher, this method is executed on its
         internal searcher.
         """
-        searcher = self._get_current_searcher()
-        searcher.expand_next_node()
+        if self._inspect_solution_mode:
+            self._inspected_actions_index += 1
+        else:
+            searcher = self._get_current_searcher()
+            searcher.expand_next_node()
         self._show_data()
 
     async def rewind_expansion(self):
@@ -183,11 +192,14 @@ class RoomSolverAppBackend:
         If inspecting the objective reacher, this method is executed on its
         internal searcher.
         """
-        searcher = self._get_current_searcher()
-        iterations = searcher.get_iterations()
-        searcher.reset()
-        for _ in range(iterations - 1):
-            searcher.expand_next_node()
+        if self._inspect_solution_mode:
+            self._inspected_actions_index -= 1
+        else:
+            searcher = self._get_current_searcher()
+            iterations = searcher.get_iterations()
+            searcher.reset()
+            for _ in range(iterations - 1):
+                searcher.expand_next_node()
         self._show_data()
 
     async def find_solution(self):
@@ -196,24 +208,49 @@ class RoomSolverAppBackend:
         If inspecting the objective reacher, this method is executed on its
         internal searcher.
         """
-        searcher = self._get_current_searcher()
-        print("Thinking...")
-        t = time.time()
-        searcher.find_solution()
+        if self._inspect_solution_mode:
+            self._inspected_actions_index = -1
+        else:
+            searcher = self._get_current_searcher()
+            print("Thinking...")
+            t = time.time()
+            searcher.find_solution()
+            print(f"Thought in {time.time()-t:.2f}s")
         self._show_data()
-        print(f"Thought in {time.time()-t:.2f}s")
 
     async def next_objective_reacher_phase(self):
         """Go to the next phase in the objective reacher."""
+        if self._inspect_solution_mode:
+            raise UserError("No phases in inspect solution mode")
         if not isinstance(self._searcher, ObjectiveReacher):
             raise UserError("Searcher is not an objective reacher")
         self._searcher.next_phase()
         self._show_data()
 
+    async def set_inspect_solution_mode(self, mode):
+        """Turn on or off inspect solution mode.
+
+        Parameters
+        ----------
+        mode
+            Whether it should be on or off.
+        """
+        self._inspect_solution_mode = mode
+        self._inspected_actions_index = 0
+        self._show_data()
+
     def _show_data(self):
         try:
             searcher = self._get_current_searcher()
-            searcher_data = _extract_searcher_info(searcher)
+            if self._inspect_solution_mode:
+                searcher_data = _make_solution_inspect_info(
+                    searcher,
+                    self._inspected_actions_index,
+                    self._room,
+                    self._objective_reacher_ref,
+                )
+            else:
+                searcher_data = _extract_searcher_info(searcher)
             if isinstance(searcher_data["current_state"], Room):
                 room = searcher_data["current_state"]
             elif isinstance(searcher_data["current_state"], DerivedRoom):
@@ -224,7 +261,10 @@ class RoomSolverAppBackend:
             searcher_data = None
             room = self._room
 
-        if isinstance(self._searcher, ObjectiveReacher):
+        if (
+            isinstance(self._searcher, ObjectiveReacher)
+            and not self._inspect_solution_mode
+        ):
             objective_reacher_data = _extract_objective_reacher_info(self._searcher)
             if "solution" in objective_reacher_data:
                 solution = objective_reacher_data["solution"]
@@ -285,4 +325,22 @@ def _extract_objective_reacher_info(objective_reacher):
     info = {"phase": phase.name}
     if phase == ObjectiveReacherPhase.FINISHED:
         info["solution"] = objective_reacher.get_solution()
+    return info
+
+
+def _make_solution_inspect_info(
+    searcher, inspected_actions_index, room, objective_reacher
+):
+    full_solution = searcher.get_current_path()
+    if isinstance(searcher, SearcherRoomObjective):
+        full_solution = expand_planning_solution(room, full_solution, objective_reacher)
+    solution = full_solution[: inspected_actions_index + 1]
+    for action in solution:
+        room = simulate_action(room, action)
+    info = {
+        "current_path": solution,
+        "current_state": room,
+        "found_solution": len(solution) == len(full_solution)
+        and searcher.found_solution(),
+    }
     return info
