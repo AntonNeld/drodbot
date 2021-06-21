@@ -202,3 +202,30 @@ def element_layer(element_type):
     if element_type in [ElementType.BEETHRO_SWORD]:
         return "swords"
     raise RuntimeError(f"{element_type} has no defined layer")
+
+
+def expand_planning_solution(room, sub_objectives, objective_reacher):
+    """Get a sequence of actions from a solution to a planning problem.
+
+    Parameters
+    ----------
+    room
+        The room.
+    sub_objectives
+        A list of objectives solving a planning problem.
+    objective_reacher
+        The objective reacher used when finding the solution,
+        so we don't need to find the solutions to the sub-objectives
+        again.
+
+    Returns
+    -------
+    A list of actions reaching all sub-objectives in order.
+    """
+    actions = []
+    latest_room = room
+    for sub_objective in sub_objectives:
+        sub_solution = objective_reacher.find_solution(latest_room, sub_objective)
+        actions.extend(sub_solution.actions)
+        latest_room = sub_solution.final_state
+    return actions
