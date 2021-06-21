@@ -9,33 +9,12 @@
 #include "../objectives/MonsterCountObjective.h"
 #include "../utils.h"
 
-std::vector<std::set<Position>> findAreas(Room room)
-{
-    std::vector<std::set<Position>> areas = {};
-    std::vector<Position> floors = room.findCoordinates(ElementType::FLOOR);
-    std::set<Position> toCheck = {};
-    toCheck.insert(floors.begin(), floors.end());
-    while (!toCheck.empty())
-    {
-        std::set<Position> area = floodFill(*toCheck.begin(), room, true, true, false, true, false);
-        areas.push_back(area);
-        for (auto it = area.begin(); it != area.end(); ++it)
-        {
-            toCheck.erase(*it);
-        }
-    }
-    return areas;
-}
-
 PlanningProblem::PlanningProblem(Room room,
                                  Objective objective,
                                  ObjectiveReacher *objectiveReacher) : room(room),
                                                                        objective(objective),
                                                                        objectiveReacher(objectiveReacher),
-                                                                       orbs(room.findCoordinates(ElementType::ORB)),
-                                                                       areas(findAreas(room))
-{
-}
+                                                                       orbs(room.findCoordinates(ElementType::ORB)){};
 
 Room PlanningProblem::initialState()
 {
@@ -52,19 +31,6 @@ std::set<Objective> PlanningProblem::actions(Room state)
     for (auto it = this->orbs.begin(); it != this->orbs.end(); ++it)
     {
         objectives.insert(StabObjective({*it}));
-    }
-    for (auto it = areas.begin(); it != areas.end(); ++it)
-    {
-        // We are only interested in areas with monsters for now
-        if (room.monsterCount(*it) > 0)
-        {
-            // Go to an area
-            ReachObjective goObjective = ReachObjective(*it);
-            objectives.insert(goObjective);
-            // Clear an area
-            MonsterCountObjective killObjective = MonsterCountObjective(0, false, *it);
-            objectives.insert(killObjective);
-        }
     }
     // We may be far from a monster, so add an objective to either:
     // - Stab any tile which currently has a monster (to get pathfinding)

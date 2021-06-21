@@ -26,7 +26,6 @@ private:
     Objective objective;
     ObjectiveReacher *objectiveReacher;
     std::vector<Position> orbs;
-    std::vector<std::set<Position>> areas;
 };
 
 #endif // DRODBOT_PLANNINGPROBLEM_H
