@@ -16,10 +16,10 @@ void initialize()
     initGlobalRoomPlayer();
 }
 
-Room simulateAction(Room room, Action action)
+Room simulateActions(Room room, std::vector<Action> actions)
 {
     globalRoomPlayer.setRoom(room);
-    globalRoomPlayer.setActions({action});
+    globalRoomPlayer.setActions(actions);
     Room resultingRoom = globalRoomPlayer.getRoom();
     globalRoomPlayer.release();
     return resultingRoom;
@@ -163,21 +163,21 @@ Initialize the room simulator.
 
 This has side effects on the file system and should only be done once.
 )docstr");
-    m.def("simulate_action", &simulateAction, R"docstr(
-Simulate an action in a room.
+    m.def("simulate_actions", &simulateActions, R"docstr(
+Simulate a actions in a room.
 
 Parameters
 ----------
 room
-    The room before taking the action.
-action
-    The action to take.
+    The room before taking the actions.
+actions
+    The actions to take.
 
 Returns
 -------
-The room after the action.
+The room after the actions.
 )docstr",
-          pybind11::arg("room"), pybind11::arg("action"));
+          pybind11::arg("room"), pybind11::arg("actions"));
 
     pybind11::enum_<Action>(m, "Action")
         .value("SW", Action::SW)

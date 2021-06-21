@@ -15,7 +15,7 @@ from room_simulator import (
     SearcherRoomObjective,
     ObjectiveReacher,
     ObjectiveReacherPhase,
-    simulate_action,
+    simulate_actions,
 )
 from util import expand_planning_solution
 
@@ -335,11 +335,10 @@ def _make_solution_inspect_info(
     if isinstance(searcher, SearcherRoomObjective):
         full_solution = expand_planning_solution(room, full_solution, objective_reacher)
     solution = full_solution[: inspected_actions_index + 1]
-    for action in solution:
-        room = simulate_action(room, action)
+    room_after = simulate_actions(room, solution)
     info = {
         "current_path": solution,
-        "current_state": room,
+        "current_state": room_after,
         "found_solution": len(solution) == len(full_solution)
         and searcher.found_solution(),
     }

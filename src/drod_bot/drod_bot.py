@@ -9,7 +9,7 @@ from room_simulator import (
     Direction,
     Element,
     Action,
-    simulate_action,
+    simulate_actions,
     ReachObjective,
     StabObjective,
     MonsterCountObjective,
@@ -316,8 +316,8 @@ class DrodBot:
                 raise RuntimeError(f"Tried to move {action} out of the room")
             else:
                 await self._interface.do_action(action)
-                self.state.current_room = simulate_action(
-                    self.state.current_room, action
+                self.state.current_room = simulate_actions(
+                    self.state.current_room, [action]
                 )
             self._notify_state_update()
             await asyncio.sleep(_ACTION_DELAY)
