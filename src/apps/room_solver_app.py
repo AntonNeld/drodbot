@@ -42,6 +42,7 @@ class RoomSolverApp(tkinter.Frame):
         self._start_position = None
         self._room_solver_info = None
         self._target = None
+        self._objective_reacher_mode = False
         self._inspect_solution_mode = False
         self._selected_goal = tkinter.StringVar(self)
         self._selected_goal.set(list(RoomSolverGoal)[0].value)
@@ -109,7 +110,10 @@ class RoomSolverApp(tkinter.Frame):
         )
         self._find_solution_button.pack(side=tkinter.LEFT)
         self._next_phase_button = tkinter.Button(
-            self._search_area, text="Next phase", command=self._next_phase
+            self._search_area,
+            text="Next phase",
+            state="disabled",
+            command=self._next_phase,
         )
         self._next_phase_button.pack(side=tkinter.LEFT)
         self._inspect_solution_button = tkinter.Button(
@@ -166,6 +170,7 @@ class RoomSolverApp(tkinter.Frame):
         self._start_position = start_position
         self._room_solver_info = room_solver_info
         self._objective_reacher_info = objective_reacher_info
+        self._objective_reacher_mode = objective_reacher_info is not None
         self._draw_view()
 
     def _draw_view(self):
@@ -233,6 +238,24 @@ class RoomSolverApp(tkinter.Frame):
             # Assign to self._view to prevent from being garbage collected
             self._view = ImageTk.PhotoImage(image=resized_image)
             self._canvas.create_image(0, 0, image=self._view, anchor=tkinter.NW)
+        self._next_phase_button.config(
+            state="normal" if self._objective_reacher_mode else "disabled"
+        )
+        self._heuristic_checkbox.config(
+            state="disabled"
+            if self._objective_reacher_mode or self._inspect_solution_mode
+            else "normal"
+        )
+        self._path_cost_checkbox.config(
+            state="disabled"
+            if self._objective_reacher_mode or self._inspect_solution_mode
+            else "normal"
+        )
+        self._avoid_duplicates_checkbox.config(
+            state="disabled"
+            if self._objective_reacher_mode or self._inspect_solution_mode
+            else "normal"
+        )
         self._inspect_solution_button.config(
             text="Continue searching"
             if self._inspect_solution_mode
