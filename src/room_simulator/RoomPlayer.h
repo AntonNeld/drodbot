@@ -10,7 +10,6 @@ class RoomPlayer
 {
 public:
     RoomPlayer();
-    void initialize();
     void setRoom(Room room, bool firstEntrance = false);
     void setActions(std::vector<Action> newActions);
     Room getRoom();
@@ -24,10 +23,6 @@ private:
     void performAction(Action action);
     void undo();
     CDbRoom *drodRoom;
-    CDbRoom *requiredRoom;
-    CDbLevel *level;
-    CDbHold *hold;
-    CDb *db;
     CCurrentGame *currentGame;
     // Only one caller can use a room player at a time.
     // A room player is claimed by setRoom() and released by release()
@@ -39,6 +34,6 @@ private:
 };
 
 extern RoomPlayer globalRoomPlayer;
-void initGlobalRoomPlayer();
+void initRoomPlayerRequirements();
 
 #endif // DRODBOT_ROOMPLAYER_H

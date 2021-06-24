@@ -13,7 +13,7 @@
 
 void initialize()
 {
-    initGlobalRoomPlayer();
+    initRoomPlayerRequirements();
 }
 
 Room simulateActions(Room room, std::vector<Action> actions)

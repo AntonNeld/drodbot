@@ -1,6 +1,7 @@
 #include <fstream>
 #include <sys/stat.h>
 #include <string>
+#include <optional>
 
 #include <BackEndLib/Files.h>
 #include <DRODLib/CurrentGame.h>
@@ -63,14 +64,11 @@ Direction convertDirectionBack(UINT direction)
     }
 }
 
-// This class creates a room and plays it.
-RoomPlayer::RoomPlayer()
-{
-}
+std::optional<CDb *> globalDb;
+std::optional<CDbHold *> globalHold;
+std::optional<CDbLevel *> globalLevel;
 
-// Initialize the RoomPlayer. This must be done before setting a room.
-// Not part of the constructor since it has side effects on the filesystem.
-void RoomPlayer::initialize()
+void initRoomPlayerRequirements()
 {
     // == Setup fake home dir ==
     char fakeHome[] = "./fake_drod_home";
@@ -109,37 +107,37 @@ void RoomPlayer::initialize()
     new CFiles(fakeDrodPath.c_str(), drodName.c_str(), drodVersion.c_str(), false, true, true);
 
     // == Initialize DB ==
-    // Initialize db and assign to global pointer used in DROD code
-    db = g_pTheDB = new CDb;
-    db->Open();
+    // Initialize globalDb and assign to global pointer used in DROD code
+    globalDb = g_pTheDB = new CDb;
+    globalDb.value()->Open();
 
     // == Initialize player profile ==
-    CDbPlayer *player = db->Players.GetNew();
+    CDbPlayer *player = globalDb.value()->Players.GetNew();
     player->NameText = u"";
     player->Update();
-    db->Commit();
+    globalDb.value()->Commit();
 
-    // == Initialize hold ==
-    hold = db->Holds.GetNew();
-    hold->NameText = u"";
-    hold->DescriptionText = u"";
-    hold->Update();
-    UINT holdID = hold->dwHoldID;
+    // == Initialize globalHold ==
+    globalHold = globalDb.value()->Holds.GetNew();
+    globalHold.value()->NameText = u"";
+    globalHold.value()->DescriptionText = u"";
+    globalHold.value()->Update();
+    UINT holdID = globalHold.value()->dwHoldID;
 
-    // == Initialize level ==
-    level = db->Levels.GetNew();
-    level->NameText = u"";
-    level->dwHoldID = holdID;
-    level->Update();
-    hold->InsertLevel(level);
+    // == Initialize globalLevel ==
+    globalLevel = globalDb.value()->Levels.GetNew();
+    globalLevel.value()->NameText = u"";
+    globalLevel.value()->dwHoldID = holdID;
+    globalLevel.value()->Update();
+    globalHold.value()->InsertLevel(globalLevel.value());
 
     // == Restore home dir ==
     setenv("HOME", oldHomeEnv, 1);
 
     // == Create a dummy required room, to get correct blue door state
-    requiredRoom = db->Rooms.GetNew();
+    CDbRoom *requiredRoom = globalDb.value()->Rooms.GetNew();
     requiredRoom->bIsRequired = true;
-    requiredRoom->dwLevelID = level->dwLevelID;
+    requiredRoom->dwLevelID = globalLevel.value()->dwLevelID;
     requiredRoom->wRoomCols = 38;
     requiredRoom->wRoomRows = 32;
     requiredRoom->AllocTileLayers();
@@ -149,9 +147,14 @@ void RoomPlayer::initialize()
     requiredRoom->ClearTLayer();
     requiredRoom->coveredOSquares.Init(38, 32);
     requiredRoom->Update();
-    UINT roomID = requiredRoom->dwRoomID;
+    // UINT roomID = requiredRoom->dwRoomID;
     delete requiredRoom;
-    requiredRoom = db->Rooms.GetByID(roomID);
+    // requiredRoom = globalDb.value()->Rooms.GetByID(roomID);
+}
+
+// This class creates a room and plays it.
+RoomPlayer::RoomPlayer()
+{
 }
 
 // Set the room that is being played.
@@ -209,13 +212,13 @@ void RoomPlayer::setRoom(
     // Clear any existing room
     if (drodRoom != NULL)
     {
-        db->Rooms.Delete(drodRoom->dwRoomID);
+        globalDb.value()->Rooms.Delete(drodRoom->dwRoomID);
         delete drodRoom;
         delete currentGame;
     }
     // Create new room
-    drodRoom = db->Rooms.GetNew();
-    drodRoom->dwLevelID = level->dwLevelID;
+    drodRoom = globalDb.value()->Rooms.GetNew();
+    drodRoom->dwLevelID = globalLevel.value()->dwLevelID;
     drodRoom->wRoomCols = 38;
     drodRoom->wRoomRows = 32;
     drodRoom->AllocTileLayers();
@@ -227,7 +230,7 @@ void RoomPlayer::setRoom(
     drodRoom->Update();
     UINT roomID = drodRoom->dwRoomID;
     delete drodRoom;
-    drodRoom = db->Rooms.GetByID(roomID);
+    drodRoom = globalDb.value()->Rooms.GetByID(roomID);
 
     // Place things in room
     for (int x = 0; x < 38; x += 1)
@@ -400,8 +403,8 @@ void RoomPlayer::setRoom(
                 CEntranceData *pEntrance = new CEntranceData(0, 0, drodRoom->dwRoomID,
                                                              x, y, convertDirection(tile.monster.direction),
                                                              true, CEntranceData::DD_No, 0);
-                hold->AddEntrance(pEntrance);
-                hold->Update();
+                globalHold.value()->AddEntrance(pEntrance);
+                globalHold.value()->Update();
                 break;
             }
             default:
@@ -432,7 +435,7 @@ void RoomPlayer::setRoom(
 
     // Start current game
     CCueEvents cueEvents;
-    this->currentGame = db->GetNewCurrentGame(hold->dwHoldID, cueEvents);
+    this->currentGame = globalDb.value()->GetNewCurrentGame(globalHold.value()->dwHoldID, cueEvents);
 
     this->baseRoom = room;
     this->actions = {};
@@ -748,7 +751,3 @@ void RoomPlayer::release()
 // Since a lot of things in the DROD code is global, we'll need the interface
 // toward it to be global too
 RoomPlayer globalRoomPlayer = RoomPlayer();
-void initGlobalRoomPlayer()
-{
-    globalRoomPlayer.initialize();
-}
