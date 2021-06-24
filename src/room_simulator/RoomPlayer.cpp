@@ -210,27 +210,27 @@ void RoomPlayer::setRoom(
         }
     }
     // Clear any existing room
-    if (drodRoom != NULL)
+    if (this->drodRoom != NULL)
     {
-        globalDb.value()->Rooms.Delete(drodRoom->dwRoomID);
-        delete drodRoom;
-        delete currentGame;
+        globalDb.value()->Rooms.Delete(this->drodRoom->dwRoomID);
+        delete this->drodRoom;
+        delete this->currentGame;
     }
     // Create new room
-    drodRoom = globalDb.value()->Rooms.GetNew();
-    drodRoom->dwLevelID = globalLevel.value()->dwLevelID;
-    drodRoom->wRoomCols = 38;
-    drodRoom->wRoomRows = 32;
-    drodRoom->AllocTileLayers();
-    const UINT dwSquareCount = drodRoom->CalcRoomArea();
-    memset(drodRoom->pszOSquares, T_FLOOR, dwSquareCount * sizeof(char));
-    memset(drodRoom->pszFSquares, T_EMPTY, dwSquareCount * sizeof(char));
-    drodRoom->ClearTLayer();
-    drodRoom->coveredOSquares.Init(38, 32);
-    drodRoom->Update();
-    UINT roomID = drodRoom->dwRoomID;
-    delete drodRoom;
-    drodRoom = globalDb.value()->Rooms.GetByID(roomID);
+    this->drodRoom = globalDb.value()->Rooms.GetNew();
+    this->drodRoom->dwLevelID = globalLevel.value()->dwLevelID;
+    this->drodRoom->wRoomCols = 38;
+    this->drodRoom->wRoomRows = 32;
+    this->drodRoom->AllocTileLayers();
+    const UINT dwSquareCount = this->drodRoom->CalcRoomArea();
+    memset(this->drodRoom->pszOSquares, T_FLOOR, dwSquareCount * sizeof(char));
+    memset(this->drodRoom->pszFSquares, T_EMPTY, dwSquareCount * sizeof(char));
+    this->drodRoom->ClearTLayer();
+    this->drodRoom->coveredOSquares.Init(38, 32);
+    this->drodRoom->Update();
+    UINT roomID = this->drodRoom->dwRoomID;
+    delete this->drodRoom;
+    this->drodRoom = globalDb.value()->Rooms.GetByID(roomID);
 
     // Place things in room
     for (int x = 0; x < 38; x += 1)
@@ -243,33 +243,33 @@ void RoomPlayer::setRoom(
             case ElementType::FLOOR:
                 break;
             case ElementType::WALL:
-                drodRoom->Plot(x, y, T_WALL);
+                this->drodRoom->Plot(x, y, T_WALL);
                 break;
             case ElementType::PIT:
-                drodRoom->Plot(x, y, T_PIT);
+                this->drodRoom->Plot(x, y, T_PIT);
                 break;
             case ElementType::MASTER_WALL:
-                drodRoom->Plot(x, y, T_WALL_M);
+                this->drodRoom->Plot(x, y, T_WALL_M);
                 break;
             case ElementType::YELLOW_DOOR:
                 if (preToggledDoors.find({x, y}) != preToggledDoors.end())
                 {
-                    drodRoom->Plot(x, y, T_DOOR_YO);
+                    this->drodRoom->Plot(x, y, T_DOOR_YO);
                 }
                 else
                 {
-                    drodRoom->Plot(x, y, T_DOOR_Y);
+                    this->drodRoom->Plot(x, y, T_DOOR_Y);
                 }
                 this->doors.insert({x, y});
                 break;
             case ElementType::YELLOW_DOOR_OPEN:
                 if (preToggledDoors.find({x, y}) != preToggledDoors.end())
                 {
-                    drodRoom->Plot(x, y, T_DOOR_Y);
+                    this->drodRoom->Plot(x, y, T_DOOR_Y);
                 }
                 else
                 {
-                    drodRoom->Plot(x, y, T_DOOR_YO);
+                    this->drodRoom->Plot(x, y, T_DOOR_YO);
                 }
                 this->doors.insert({x, y});
                 break;
@@ -278,31 +278,31 @@ void RoomPlayer::setRoom(
             case ElementType::GREEN_DOOR:
                 if (room.isConquered())
                 {
-                    drodRoom->Plot(x, y, T_DOOR_GO);
+                    this->drodRoom->Plot(x, y, T_DOOR_GO);
                 }
                 else
                 {
-                    drodRoom->Plot(x, y, T_DOOR_M);
+                    this->drodRoom->Plot(x, y, T_DOOR_M);
                 }
                 break;
             case ElementType::GREEN_DOOR_OPEN:
                 if (room.isConquered())
                 {
-                    drodRoom->Plot(x, y, T_DOOR_M);
+                    this->drodRoom->Plot(x, y, T_DOOR_M);
                 }
                 else
                 {
-                    drodRoom->Plot(x, y, T_DOOR_GO);
+                    this->drodRoom->Plot(x, y, T_DOOR_GO);
                 }
                 break;
             case ElementType::BLUE_DOOR:
-                drodRoom->Plot(x, y, T_DOOR_C);
+                this->drodRoom->Plot(x, y, T_DOOR_C);
                 break;
             case ElementType::BLUE_DOOR_OPEN:
-                drodRoom->Plot(x, y, T_DOOR_CO);
+                this->drodRoom->Plot(x, y, T_DOOR_CO);
                 break;
             case ElementType::STAIRS:
-                drodRoom->Plot(x, y, T_STAIRS);
+                this->drodRoom->Plot(x, y, T_STAIRS);
                 break;
             default:
                 throw std::invalid_argument("Wrong type in room piece layer");
@@ -316,28 +316,28 @@ void RoomPlayer::setRoom(
                 switch (tile.floorControl.direction)
                 {
                 case Direction::N:
-                    drodRoom->Plot(x, y, T_ARROW_N);
+                    this->drodRoom->Plot(x, y, T_ARROW_N);
                     break;
                 case Direction::NE:
-                    drodRoom->Plot(x, y, T_ARROW_NE);
+                    this->drodRoom->Plot(x, y, T_ARROW_NE);
                     break;
                 case Direction::E:
-                    drodRoom->Plot(x, y, T_ARROW_E);
+                    this->drodRoom->Plot(x, y, T_ARROW_E);
                     break;
                 case Direction::SE:
-                    drodRoom->Plot(x, y, T_ARROW_SE);
+                    this->drodRoom->Plot(x, y, T_ARROW_SE);
                     break;
                 case Direction::S:
-                    drodRoom->Plot(x, y, T_ARROW_S);
+                    this->drodRoom->Plot(x, y, T_ARROW_S);
                     break;
                 case Direction::SW:
-                    drodRoom->Plot(x, y, T_ARROW_SW);
+                    this->drodRoom->Plot(x, y, T_ARROW_SW);
                     break;
                 case Direction::W:
-                    drodRoom->Plot(x, y, T_ARROW_W);
+                    this->drodRoom->Plot(x, y, T_ARROW_W);
                     break;
                 case Direction::NW:
-                    drodRoom->Plot(x, y, T_ARROW_NW);
+                    this->drodRoom->Plot(x, y, T_ARROW_NW);
                     break;
                 default:
                     throw std::invalid_argument("Wrong force arrow direction");
@@ -355,8 +355,8 @@ void RoomPlayer::setRoom(
                 break;
             case ElementType::ORB:
             {
-                drodRoom->Plot(x, y, T_ORB);
-                COrbData *orb = drodRoom->AddOrbToSquare(x, y);
+                this->drodRoom->Plot(x, y, T_ORB);
+                COrbData *orb = this->drodRoom->AddOrbToSquare(x, y);
                 for (unsigned int i = 0; i < tile.item.orbEffects.size(); i += 1)
                 {
                     std::tuple<int, int, OrbEffect> effectTuple = tile.item.orbEffects[i];
@@ -382,13 +382,13 @@ void RoomPlayer::setRoom(
                 break;
             }
             case ElementType::OBSTACLE:
-                drodRoom->Plot(x, y, T_OBSTACLE);
+                this->drodRoom->Plot(x, y, T_OBSTACLE);
                 break;
             case ElementType::SCROLL:
-                drodRoom->Plot(x, y, T_SCROLL);
+                this->drodRoom->Plot(x, y, T_SCROLL);
                 break;
             case ElementType::CONQUER_TOKEN:
-                drodRoom->Plot(x, y, T_TOKEN);
+                this->drodRoom->Plot(x, y, T_TOKEN);
                 break;
             default:
                 throw std::invalid_argument("Wrong type in item layer");
@@ -400,7 +400,7 @@ void RoomPlayer::setRoom(
                 break;
             case ElementType::BEETHRO:
             {
-                CEntranceData *pEntrance = new CEntranceData(0, 0, drodRoom->dwRoomID,
+                CEntranceData *pEntrance = new CEntranceData(0, 0, this->drodRoom->dwRoomID,
                                                              x, y, convertDirection(tile.monster.direction),
                                                              true, CEntranceData::DD_No, 0);
                 globalHold.value()->AddEntrance(pEntrance);
@@ -431,7 +431,7 @@ void RoomPlayer::setRoom(
             throw std::invalid_argument("Wrong type in monster layer");
         }
     }
-    drodRoom->Update();
+    this->drodRoom->Update();
 
     // Start current game
     CCueEvents cueEvents;
@@ -538,7 +538,7 @@ Room RoomPlayer::getRoom()
         {
             Tile tile;
             Element roomPiece;
-            switch (currentGame->pRoom->GetOSquare(x, y))
+            switch (this->currentGame->pRoom->GetOSquare(x, y))
             {
             case T_FLOOR:
                 roomPiece = Element(ElementType::FLOOR);
@@ -581,7 +581,7 @@ Room RoomPlayer::getRoom()
             tile.roomPiece = roomPiece;
 
             Element floorControl;
-            switch (currentGame->pRoom->GetFSquare(x, y))
+            switch (this->currentGame->pRoom->GetFSquare(x, y))
             {
             case T_EMPTY:
                 floorControl = Element();
@@ -619,7 +619,7 @@ Room RoomPlayer::getRoom()
             tile.checkpoint = Element();
 
             Element item;
-            switch (currentGame->pRoom->GetTSquare(x, y))
+            switch (this->currentGame->pRoom->GetTSquare(x, y))
             {
             case T_EMPTY:
                 floorControl = Element();
@@ -627,7 +627,7 @@ Room RoomPlayer::getRoom()
             case T_ORB:
             {
                 OrbEffects orbEffects;
-                COrbData *orb = currentGame->pRoom->GetOrbAtCoords(x, y);
+                COrbData *orb = this->currentGame->pRoom->GetOrbAtCoords(x, y);
                 for (unsigned int i = 0; i < orb->agents.size(); i += 1)
                 {
                     COrbAgentData *agent = orb->agents[i];
@@ -668,7 +668,7 @@ Room RoomPlayer::getRoom()
     }
     // Add monsters
     Element player = Element(ElementType::BEETHRO, convertDirectionBack(this->currentGame->swordsman.wO));
-    tiles[currentGame->swordsman.wX][currentGame->swordsman.wY].monster = player;
+    tiles[this->currentGame->swordsman.wX][this->currentGame->swordsman.wY].monster = player;
     int turnOrder = 0;
     for (auto it = this->currentGame->pRoom->pFirstMonster; it != NULL; it = it->pNext)
     {
