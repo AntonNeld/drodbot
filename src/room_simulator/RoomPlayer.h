@@ -10,6 +10,7 @@ class RoomPlayer
 {
 public:
     RoomPlayer();
+    ~RoomPlayer();
     void setRoom(Room room, bool firstEntrance = false);
     void setActions(std::vector<Action> newActions);
     Room getRoom();

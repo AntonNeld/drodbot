@@ -160,6 +160,16 @@ RoomPlayer::RoomPlayer() : drodRoom(NULL),
                            actions({}),
                            doors({}){};
 
+RoomPlayer::~RoomPlayer()
+{
+    if (this->drodRoom != NULL)
+    {
+        globalDb.value()->Rooms.Delete(this->drodRoom->dwRoomID);
+        delete this->drodRoom;
+        delete this->currentGame;
+    }
+}
+
 // Set the room that is being played.
 void RoomPlayer::setRoom(
     Room room,         // Representation of the room
