@@ -366,25 +366,6 @@ This is only valid as long as the global RoomPlayer is playing the same room.
 Using an instance of this after that will produce strange results.
     )docstr")
         .def(pybind11::init<>())
-        .def("get_successor", &DerivedRoom::getSuccessor, pybind11::arg("action"), R"docstr(
-Get the resulting room from performing an action.
-
-Parameters
-----------
-action
-    The action to perform.
-
-Returns
--------
-The resulting derived room.
-)docstr")
-        .def("find_player", &DerivedRoom::findPlayer, R"docstr(
-Find the coordinates of the player.
-
-Returns
--------
-A tuple ((x, y), direction).
-)docstr")
         .def("get_full_room", &DerivedRoom::getFullRoom, R"docstr(
 Get a Room instance corresponding to the derived room.
 
