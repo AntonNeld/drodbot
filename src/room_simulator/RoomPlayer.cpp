@@ -153,9 +153,12 @@ void initRoomPlayerRequirements()
 }
 
 // This class creates a room and plays it.
-RoomPlayer::RoomPlayer()
-{
-}
+RoomPlayer::RoomPlayer() : drodRoom(NULL),
+                           currentGame(NULL),
+                           claimed(false),
+                           baseRoom(std::nullopt),
+                           actions({}),
+                           doors({}){};
 
 // Set the room that is being played.
 void RoomPlayer::setRoom(
