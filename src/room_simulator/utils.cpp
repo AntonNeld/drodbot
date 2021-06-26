@@ -171,8 +171,7 @@ std::set<Position> floodFill(Position position, Room room,
 
 Room getFullRoom(Room baseRoom, DerivedRoom derivedRoom)
 {
-    RoomPlayer roomPlayer = RoomPlayer();
-    roomPlayer.setRoom(baseRoom);
+    RoomPlayer roomPlayer = RoomPlayer(baseRoom);
     roomPlayer.setActions(derivedRoom.getActions());
     return roomPlayer.getRoom();
 }

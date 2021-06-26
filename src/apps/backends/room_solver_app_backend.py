@@ -48,7 +48,6 @@ class RoomSolverAppBackend:
         # planning problem.
         self._objective_reacher_ref = None
         # Inspect solution mode inspects the current solution instead of searching.
-        # Due to the global RoomPlayer, this does not work with ObjectiveReacher
         self._inspect_solution_mode = False
         self._inspected_actions_index = 0
 

@@ -19,11 +19,9 @@ void initialize()
 
 Room simulateActions(Room room, std::vector<Action> actions)
 {
-    RoomPlayer roomPlayer = RoomPlayer();
-    roomPlayer.setRoom(room);
+    RoomPlayer roomPlayer = RoomPlayer(room);
     roomPlayer.setActions(actions);
     Room resultingRoom = roomPlayer.getRoom();
-    roomPlayer.release();
     return resultingRoom;
 }
 
@@ -392,19 +390,18 @@ Returns
 The new base room.
 )docstr");
 
-    pybind11::class_<RoomPlayer>(m, "RoomPlayer")
-        .def(pybind11::init<>())
-        .def("set_room", &RoomPlayer::setRoom, pybind11::arg("room"), pybind11::arg("first_entrance"), R"docstr(
-Set the played room.
+    pybind11::class_<RoomPlayer>(m, "RoomPlayer", R"docstr(
+This simulates taking actions in a room.
 
 Parameters
 ----------
 room
-    The room.
+    The room to play.
 first_entrance
     Whether this is the first time entering the room. If not, apply some
     workarounds since DROD will e.g. strike orbs before the first turn.
 )docstr")
+        .def(pybind11::init<Room, bool>(), pybind11::arg("room"), pybind11::arg("first_entrance") = false)
         .def("set_actions", &RoomPlayer::setActions, pybind11::arg("actions"), R"docstr(
 Set the actions played in the room.
 

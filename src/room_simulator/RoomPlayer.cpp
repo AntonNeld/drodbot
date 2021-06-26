@@ -153,38 +153,12 @@ void initRoomPlayerRequirements()
 }
 
 // This class creates a room and plays it.
-RoomPlayer::RoomPlayer() : drodRoom(NULL),
-                           currentGame(NULL),
-                           claimed(false),
-                           baseRoom(std::nullopt),
-                           actions({}),
-                           doors({}){};
-
-RoomPlayer::~RoomPlayer()
+RoomPlayer::RoomPlayer(Room room, bool firstEntrance) : drodRoom(globalDb.value()->Rooms.GetNew()),
+                                                        currentGame(NULL),
+                                                        baseRoom(room),
+                                                        actions({}),
+                                                        doors({})
 {
-    if (this->drodRoom != NULL)
-    {
-        globalDb.value()->Rooms.Delete(this->drodRoom->dwRoomID);
-        delete this->drodRoom;
-        delete this->currentGame;
-    }
-}
-
-// Set the room that is being played.
-void RoomPlayer::setRoom(
-    Room room,         // Representation of the room
-    bool firstEntrance // Whether we're first entering the room or
-                       // whether it's a room in progress. If false,
-                       // apply some workarounds to undo things that
-                       // happen when entering a room.
-)
-{
-    if (this->claimed)
-    {
-        throw std::invalid_argument("Trying to use already claimed RoomPlayer");
-    }
-    this->claimed = true;
-    this->doors = {};
     // Map from turnorder to monster
     std::map<int, std::tuple<ElementType, Position, Direction>> monsters = {};
     // If the player starts with their sword on an orb and we are not
@@ -222,15 +196,6 @@ void RoomPlayer::setRoom(
             }
         }
     }
-    // Clear any existing room
-    if (this->drodRoom != NULL)
-    {
-        globalDb.value()->Rooms.Delete(this->drodRoom->dwRoomID);
-        delete this->drodRoom;
-        delete this->currentGame;
-    }
-    // Create new room
-    this->drodRoom = globalDb.value()->Rooms.GetNew();
     this->drodRoom->dwLevelID = globalLevel.value()->dwLevelID;
     this->drodRoom->wRoomCols = 38;
     this->drodRoom->wRoomRows = 32;
@@ -286,8 +251,6 @@ void RoomPlayer::setRoom(
                 }
                 this->doors.insert({x, y});
                 break;
-            // TODO: These may be switched depending on whether the room is
-            // conquered. Investigate.
             case ElementType::GREEN_DOOR:
                 if (room.isConquered())
                 {
@@ -445,13 +408,16 @@ void RoomPlayer::setRoom(
         }
     }
     this->drodRoom->Update();
-
     // Start current game
     CCueEvents cueEvents;
     this->currentGame = globalDb.value()->GetNewCurrentGame(globalHold.value()->dwHoldID, cueEvents);
+};
 
-    this->baseRoom = room;
-    this->actions = {};
+RoomPlayer::~RoomPlayer()
+{
+    globalDb.value()->Rooms.Delete(this->drodRoom->dwRoomID);
+    delete this->drodRoom;
+    delete this->currentGame;
 }
 
 // Perform an action in the room.
@@ -730,7 +696,7 @@ std::set<Position> RoomPlayer::getToggledDoors()
         int x = std::get<0>(position);
         int y = std::get<1>(position);
         UINT content = this->currentGame->pRoom->GetOSquare(x, y);
-        ElementType baseDoorType = this->baseRoom.value().getTile(position).roomPiece.type;
+        ElementType baseDoorType = this->baseRoom.getTile(position).roomPiece.type;
         if ((content == T_DOOR_Y && baseDoorType == ElementType::YELLOW_DOOR_OPEN) ||
             (content == T_DOOR_YO && baseDoorType == ElementType::YELLOW_DOOR))
         {
@@ -759,13 +725,4 @@ std::vector<std::tuple<ElementType, Position, Direction>> RoomPlayer::getMonster
         monsters.push_back({type, position, direction});
     }
     return monsters;
-}
-
-void RoomPlayer::release()
-{
-    if (!this->claimed)
-    {
-        throw std::invalid_argument("Trying to release unclaimed RoomPlayer");
-    }
-    this->claimed = false;
 }

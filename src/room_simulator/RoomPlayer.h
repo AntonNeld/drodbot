@@ -10,13 +10,11 @@
 class RoomPlayer
 {
 public:
-    RoomPlayer();
+    RoomPlayer(Room room, bool firstEntrance = false);
     ~RoomPlayer();
-    void setRoom(Room room, bool firstEntrance = false);
     void setActions(std::vector<Action> newActions);
     Room getRoom();
     DerivedRoom getDerivedRoom();
-    void release();
 
 private:
     void performAction(Action action);
@@ -27,11 +25,8 @@ private:
     std::vector<std::tuple<ElementType, Position, Direction>> getMonsters();
     CDbRoom *drodRoom;
     CCurrentGame *currentGame;
-    // Only one caller can use a room player at a time.
-    // A room player is claimed by setRoom() and released by release()
-    bool claimed;
     // Keeping track of things for interacting with DerivedRoom
-    std::optional<Room> baseRoom;
+    Room baseRoom;
     std::vector<Action> actions;
     std::set<Position> doors;
 };

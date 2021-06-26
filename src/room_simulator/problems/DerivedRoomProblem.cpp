@@ -10,12 +10,9 @@
 
 DerivedRoomProblem::DerivedRoomProblem(Room room,
                                        Objective objective,
-                                       std::map<Position, int> heuristicTiles) : roomPlayer(RoomPlayer()),
+                                       std::map<Position, int> heuristicTiles) : roomPlayer(RoomPlayer(room)),
                                                                                  objective(objective),
-                                                                                 heuristicTiles(heuristicTiles)
-{
-    this->roomPlayer.setRoom(room);
-};
+                                                                                 heuristicTiles(heuristicTiles){};
 
 DerivedRoom DerivedRoomProblem::initialState()
 {
