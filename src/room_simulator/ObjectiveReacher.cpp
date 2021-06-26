@@ -163,9 +163,10 @@ void ObjectiveReacher::nextPhase()
         Solution<DerivedRoom, Action> derivedRoomSolution = this->finishSimulationPhase();
         if (derivedRoomSolution.exists)
         {
+            globalRoomPlayer.setActions(derivedRoomSolution.actions.value());
             this->solution = Solution<Room, Action>(true,
                                                     derivedRoomSolution.actions,
-                                                    derivedRoomSolution.finalState.value().getFullRoom());
+                                                    globalRoomPlayer.getRoom());
         }
         else
         {

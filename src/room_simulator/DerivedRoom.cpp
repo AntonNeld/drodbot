@@ -1,11 +1,4 @@
 #include "DerivedRoom.h"
-#include "RoomPlayer.h"
-
-DerivedRoom::DerivedRoom() : actions({}),
-                             player(globalRoomPlayer.findPlayer()),
-                             toggledDoors({}),
-                             deadPlayer(false),
-                             monsters(globalRoomPlayer.getMonsters()){};
 
 DerivedRoom::DerivedRoom(std::vector<Action> actions,
                          std::tuple<Position, Direction> player,
@@ -16,22 +9,6 @@ DerivedRoom::DerivedRoom(std::vector<Action> actions,
                                               toggledDoors(toggledDoors),
                                               deadPlayer(deadPlayer),
                                               monsters(monsters){};
-
-DerivedRoom DerivedRoom::getSuccessor(Action action)
-{
-    std::vector<Action> successorActions = this->actions;
-    successorActions.push_back(action);
-    globalRoomPlayer.setActions(successorActions);
-    std::tuple<Position, Direction> successorPlayer = globalRoomPlayer.findPlayer();
-    std::set<Position> successorToggledDoors = globalRoomPlayer.getToggledDoors();
-    bool successorDeadPlayer = globalRoomPlayer.playerIsDead();
-    Monsters successorMonsters = globalRoomPlayer.getMonsters();
-    return DerivedRoom(successorActions,
-                       successorPlayer,
-                       successorToggledDoors,
-                       successorDeadPlayer,
-                       successorMonsters);
-}
 
 std::vector<Action> DerivedRoom::getActions()
 {
@@ -81,12 +58,6 @@ int DerivedRoom::monsterCount(std::optional<std::set<Position>> area)
 bool DerivedRoom::isConquered()
 {
     return this->monsterCount() == 0;
-}
-
-Room DerivedRoom::getFullRoom()
-{
-    globalRoomPlayer.setActions(this->actions);
-    return globalRoomPlayer.getRoom();
 }
 
 bool DerivedRoom::operator==(const DerivedRoom otherRoom) const

@@ -16,6 +16,7 @@ from room_simulator import (
     ObjectiveReacher,
     ObjectiveReacherPhase,
     simulate_actions,
+    tmp_get_global_room_player,
 )
 from util import expand_planning_solution
 
@@ -254,7 +255,10 @@ class RoomSolverAppBackend:
             if isinstance(searcher_data["current_state"], Room):
                 room = searcher_data["current_state"]
             elif isinstance(searcher_data["current_state"], DerivedRoom):
-                room = searcher_data["current_state"].get_full_room()
+                actions = searcher_data["current_state"].get_actions()
+                room_player = tmp_get_global_room_player()
+                room_player.set_actions(actions)
+                room = room_player.get_room()
             else:
                 room = self._room
         except UserError:  # No searcher to show data for

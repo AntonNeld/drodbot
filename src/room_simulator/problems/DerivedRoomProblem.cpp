@@ -14,7 +14,8 @@ DerivedRoomProblem::DerivedRoomProblem(Objective objective,
 
 DerivedRoom DerivedRoomProblem::initialState()
 {
-    return DerivedRoom();
+    globalRoomPlayer.setActions({});
+    return globalRoomPlayer.getDerivedRoom();
 };
 
 std::set<Action> DerivedRoomProblem::actions(DerivedRoom state)
@@ -38,7 +39,10 @@ std::set<Action> DerivedRoomProblem::actions(DerivedRoom state)
 
 DerivedRoom DerivedRoomProblem::result(DerivedRoom state, Action action)
 {
-    return state.getSuccessor(action);
+    std::vector<Action> actions = state.getActions();
+    actions.push_back(action);
+    globalRoomPlayer.setActions(actions);
+    return globalRoomPlayer.getDerivedRoom();
 }
 
 bool DerivedRoomProblem::goalTest(DerivedRoom state)

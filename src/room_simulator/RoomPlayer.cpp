@@ -701,6 +701,15 @@ Room RoomPlayer::getRoom()
     return Room(tiles, this->playerIsDead());
 }
 
+DerivedRoom RoomPlayer::getDerivedRoom()
+{
+    return DerivedRoom(this->actions,
+                       this->findPlayer(),
+                       this->getToggledDoors(),
+                       this->playerIsDead(),
+                       this->getMonsters());
+}
+
 std::tuple<Position, Direction> RoomPlayer::findPlayer()
 {
     return {{this->currentGame->swordsman.wX, this->currentGame->swordsman.wY},

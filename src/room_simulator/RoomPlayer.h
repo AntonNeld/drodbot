@@ -5,6 +5,7 @@
 #include <DRODLib/Db.h>
 #include "typedefs.h"
 #include "Room.h"
+#include "DerivedRoom.h"
 
 class RoomPlayer
 {
@@ -14,15 +15,16 @@ public:
     void setRoom(Room room, bool firstEntrance = false);
     void setActions(std::vector<Action> newActions);
     Room getRoom();
+    DerivedRoom getDerivedRoom();
     void release();
-    std::tuple<Position, Direction> findPlayer();
-    bool playerIsDead();
-    std::set<Position> getToggledDoors();
-    std::vector<std::tuple<ElementType, Position, Direction>> getMonsters();
 
 private:
     void performAction(Action action);
     void undo();
+    std::tuple<Position, Direction> findPlayer();
+    bool playerIsDead();
+    std::set<Position> getToggledDoors();
+    std::vector<std::tuple<ElementType, Position, Direction>> getMonsters();
     CDbRoom *drodRoom;
     CCurrentGame *currentGame;
     // Only one caller can use a room player at a time.

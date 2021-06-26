@@ -367,16 +367,17 @@ Basically, remove all monsters.
     pybind11::class_<DerivedRoom>(m, "DerivedRoom", R"docstr(
 An efficient representation of a room, but which is only valid in a specific context.
 
-This is only valid as long as the global RoomPlayer is playing the same room.
-Using an instance of this after that will produce strange results.
-    )docstr")
-        .def(pybind11::init<>())
-        .def("get_full_room", &DerivedRoom::getFullRoom, R"docstr(
-Get a Room instance corresponding to the derived room.
+This is only valid in the context of one RoomPlayer. Comparing instances
+originating from RoomPlayers playing different rooms will produce nonsensical
+results.
+
+)docstr")
+        .def("get_actions", &DerivedRoom::getActions, R"docstr(
+Get the actions resulting in this derived room.
 
 Returns
 -------
-The full room.
+The actions.
 )docstr");
 
     pybind11::class_<RoomPlayer>(m, "RoomPlayer")
@@ -399,6 +400,13 @@ Parameters
 ----------
 actions
     The actions.
+)docstr")
+        .def("get_room", &RoomPlayer::getRoom, R"docstr(
+Get the full played room.
+
+Returns
+----------
+The room.
 )docstr");
 
     m.def("tmp_get_global_room_player",
