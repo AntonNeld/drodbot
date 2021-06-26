@@ -25,6 +25,11 @@ Room simulateActions(Room room, std::vector<Action> actions)
     return resultingRoom;
 }
 
+RoomPlayer *tmpGetGlobalRoomPlayer()
+{
+    return &globalRoomPlayer;
+}
+
 template <class State, class SearchAction>
 void addSearcher(pybind11::module_ &m, const char *name, const char *problemName, const char *solutionName)
 {
@@ -372,6 +377,41 @@ Get a Room instance corresponding to the derived room.
 Returns
 -------
 The full room.
+)docstr");
+
+    pybind11::class_<RoomPlayer>(m, "RoomPlayer")
+        .def(pybind11::init<>())
+        .def("set_room", &RoomPlayer::setRoom, pybind11::arg("room"), pybind11::arg("first_entrance"), R"docstr(
+Set the played room.
+
+Parameters
+----------
+room
+    The room.
+first_entrance
+    Whether this is the first time entering the room. If not, apply some
+    workarounds since DROD will e.g. strike orbs before the first turn.
+)docstr")
+        .def("set_actions", &RoomPlayer::setActions, pybind11::arg("actions"), R"docstr(
+Set the actions played in the room.
+
+Parameters
+----------
+actions
+    The actions.
+)docstr");
+
+    m.def("tmp_get_global_room_player",
+          &tmpGetGlobalRoomPlayer,
+          pybind11::return_value_policy::reference,
+          R"docstr(
+Get the global room player.
+
+Temporary, until we can get rid of it.
+
+Returns
+-------
+The global room player.
 )docstr");
 
     pybind11::class_<ReachObjective>(m, "ReachObjective")
