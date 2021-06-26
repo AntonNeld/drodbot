@@ -4,3 +4,4 @@
 - Make the different states and displayed types in room solver app concentrated somewhere
 - Do level walking search in C++ code instead of having two search implementations
 - Split module.cpp into multiple files
+- Only use std::set when needed, and remove any unnecessary < operator overloads
