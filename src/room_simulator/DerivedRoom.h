@@ -23,6 +23,7 @@ public:
                 bool deadPlayer,
                 Monsters monsters);
     DerivedRoom getSuccessor(Action action);
+    std::vector<Action> getActions();
     std::tuple<Position, Direction> findPlayer();
     bool playerIsDead();
     std::vector<Position> findMonsterCoordinates(std::optional<std::set<Position>> area = std::nullopt);

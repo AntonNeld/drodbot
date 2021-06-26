@@ -33,6 +33,11 @@ DerivedRoom DerivedRoom::getSuccessor(Action action)
                        successorMonsters);
 }
 
+std::vector<Action> DerivedRoom::getActions()
+{
+    return this->actions;
+}
+
 std::tuple<Position, Direction> DerivedRoom::findPlayer()
 {
     return this->player;
