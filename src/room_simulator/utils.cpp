@@ -4,6 +4,7 @@
 #include <array>
 #include "typedefs.h"
 #include "utils.h"
+#include "RoomPlayer.h"
 
 Position positionInDirection(Position position, Direction direction)
 {
@@ -166,4 +167,12 @@ std::set<Position> floodFill(Position position, Room room,
         }
     }
     return affectedTiles;
+}
+
+Room getFullRoom(Room baseRoom, DerivedRoom derivedRoom)
+{
+    RoomPlayer roomPlayer = RoomPlayer();
+    roomPlayer.setRoom(baseRoom);
+    roomPlayer.setActions(derivedRoom.getActions());
+    return roomPlayer.getRoom();
 }

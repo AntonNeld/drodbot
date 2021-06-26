@@ -769,7 +769,3 @@ void RoomPlayer::release()
     }
     this->claimed = false;
 }
-
-// Since a lot of things in the DROD code is global, we'll need the interface
-// toward it to be global too
-RoomPlayer globalRoomPlayer = RoomPlayer();

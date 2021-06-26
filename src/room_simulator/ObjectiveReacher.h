@@ -50,7 +50,6 @@ private:
     std::optional<Searcher<Position, Action> *> pathfindingSearcher;
     std::optional<DerivedRoomProblem *> roomProblem;
     std::optional<Searcher<DerivedRoom, Action> *> simulationSearcher;
-    bool claimedRoomPlayer;
 };
 
 #endif // DRODBOT_OBJECTIVEREACHER_H

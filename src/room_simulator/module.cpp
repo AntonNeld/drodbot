@@ -10,6 +10,7 @@
 #include "problems/PathfindingProblem.h"
 #include "problems/PlanningProblem.h"
 #include "problems/DerivedRoomProblem.h"
+#include "utils.h"
 
 void initialize()
 {
@@ -18,16 +19,12 @@ void initialize()
 
 Room simulateActions(Room room, std::vector<Action> actions)
 {
-    globalRoomPlayer.setRoom(room);
-    globalRoomPlayer.setActions(actions);
-    Room resultingRoom = globalRoomPlayer.getRoom();
-    globalRoomPlayer.release();
+    RoomPlayer roomPlayer = RoomPlayer();
+    roomPlayer.setRoom(room);
+    roomPlayer.setActions(actions);
+    Room resultingRoom = roomPlayer.getRoom();
+    roomPlayer.release();
     return resultingRoom;
-}
-
-RoomPlayer *tmpGetGlobalRoomPlayer()
-{
-    return &globalRoomPlayer;
 }
 
 template <class State, class SearchAction>
@@ -380,6 +377,21 @@ Returns
 The actions.
 )docstr");
 
+    m.def("get_full_room", &getFullRoom, pybind11::arg("base_room"), pybind11::arg("derived_room"), R"docstr(
+Get a new base room from a base room and a derived room.
+
+Parameters
+----------
+base_room
+    The base room.
+derived_room
+    The derived room.
+
+Returns
+------
+The new base room.
+)docstr");
+
     pybind11::class_<RoomPlayer>(m, "RoomPlayer")
         .def(pybind11::init<>())
         .def("set_room", &RoomPlayer::setRoom, pybind11::arg("room"), pybind11::arg("first_entrance"), R"docstr(
@@ -407,19 +419,6 @@ Get the full played room.
 Returns
 ----------
 The room.
-)docstr");
-
-    m.def("tmp_get_global_room_player",
-          &tmpGetGlobalRoomPlayer,
-          pybind11::return_value_policy::reference,
-          R"docstr(
-Get the global room player.
-
-Temporary, until we can get rid of it.
-
-Returns
--------
-The global room player.
 )docstr");
 
     pybind11::class_<ReachObjective>(m, "ReachObjective")
@@ -489,10 +488,13 @@ valid as long as the global RoomPlayer is playing the same room.
 
 Parameters
 ----------
+room
+    The room.
 objective
     The objective.
 )docstr")
-        .def(pybind11::init<Objective>(),
+        .def(pybind11::init<Room, Objective>(),
+             pybind11::arg("room"),
              pybind11::arg("objective"));
 
     pybind11::enum_<ObjectiveReacherPhase>(m, "ObjectiveReacherPhase")

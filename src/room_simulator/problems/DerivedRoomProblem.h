@@ -2,6 +2,7 @@
 #define DRODBOT_DERIVEDROOMPROBLEM_H
 
 #include <map>
+#include "../Room.h"
 #include "../DerivedRoom.h"
 #include "../objectives/Objective.h"
 #include "../typedefs.h"
@@ -11,7 +12,7 @@
 class DerivedRoomProblem final : public Problem<DerivedRoom, Action>
 {
 public:
-    DerivedRoomProblem(Objective objective, std::map<Position, int> heuristicTiles = {});
+    DerivedRoomProblem(Room room, Objective objective, std::map<Position, int> heuristicTiles = {});
     DerivedRoom initialState();
     std::set<Action> actions(DerivedRoom state);
     DerivedRoom result(DerivedRoom state, Action action);
@@ -20,6 +21,7 @@ public:
     int heuristic(DerivedRoom state);
 
 private:
+    RoomPlayer roomPlayer;
     Objective objective;
     std::map<Position, int> heuristicTiles;
 };

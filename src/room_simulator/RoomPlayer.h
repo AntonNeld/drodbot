@@ -36,7 +36,6 @@ private:
     std::set<Position> doors;
 };
 
-extern RoomPlayer globalRoomPlayer;
 void initRoomPlayerRequirements();
 
 #endif // DRODBOT_ROOMPLAYER_H

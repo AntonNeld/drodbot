@@ -4,6 +4,7 @@
 #include <set>
 
 #include "Room.h"
+#include "DerivedRoom.h"
 #include "typedefs.h"
 
 Position positionInDirection(Position position, Direction direction);
@@ -17,5 +18,6 @@ std::set<Position> floodFill(Position position, Room room,
                              bool checkpoint = false,
                              bool item = false,
                              bool monster = false);
+Room getFullRoom(Room baseRoom, DerivedRoom derivedRoom);
 
 #endif // DRODBOT_UTILS_H

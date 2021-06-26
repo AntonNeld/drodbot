@@ -19,8 +19,7 @@ ObjectiveReacher::ObjectiveReacher() : cachedSolutions({}),
                                        pathfindingProblem(std::nullopt),
                                        pathfindingSearcher(std::nullopt),
                                        roomProblem(std::nullopt),
-                                       simulationSearcher(std::nullopt),
-                                       claimedRoomPlayer(false){};
+                                       simulationSearcher(std::nullopt){};
 
 ObjectiveReacher::~ObjectiveReacher()
 {
@@ -39,10 +38,6 @@ ObjectiveReacher::~ObjectiveReacher()
     if (this->simulationSearcher)
     {
         delete this->simulationSearcher.value();
-    }
-    if (this->claimedRoomPlayer)
-    {
-        globalRoomPlayer.release();
     }
 };
 
@@ -75,10 +70,6 @@ void ObjectiveReacher::start(Room room, Objective objective)
     {
         delete this->simulationSearcher.value();
     }
-    if (this->claimedRoomPlayer)
-    {
-        globalRoomPlayer.release();
-    }
     this->currentRoom = room;
     this->currentObjective = objective;
     this->pathfindingSolution = std::nullopt;
@@ -87,7 +78,6 @@ void ObjectiveReacher::start(Room room, Objective objective)
     this->pathfindingSearcher = std::nullopt;
     this->roomProblem = std::nullopt;
     this->simulationSearcher = std::nullopt;
-    this->claimedRoomPlayer = false;
     this->phase = ObjectiveReacherPhase::CHECK_CACHE;
 }
 
@@ -163,10 +153,10 @@ void ObjectiveReacher::nextPhase()
         Solution<DerivedRoom, Action> derivedRoomSolution = this->finishSimulationPhase();
         if (derivedRoomSolution.exists)
         {
-            globalRoomPlayer.setActions(derivedRoomSolution.actions.value());
             this->solution = Solution<Room, Action>(true,
                                                     derivedRoomSolution.actions,
-                                                    globalRoomPlayer.getRoom());
+                                                    getFullRoom(this->currentRoom.value(),
+                                                                derivedRoomSolution.finalState.value()));
         }
         else
         {
@@ -272,9 +262,7 @@ void ObjectiveReacher::prepareSimulationPhase()
             heuristicTiles.insert({currentPosition, currentHeuristicValue});
         }
     }
-    globalRoomPlayer.setRoom(this->currentRoom.value());
-    this->claimedRoomPlayer = true;
-    this->roomProblem = new DerivedRoomProblem(this->currentObjective.value(), heuristicTiles);
+    this->roomProblem = new DerivedRoomProblem(this->currentRoom.value(), this->currentObjective.value(), heuristicTiles);
     // Low iteration limit for now, to avoid finding the solution indirectly by accident
     // Set pathCostInPriority=false, to use greedy best-first search for performance
     this->simulationSearcher = new Searcher<DerivedRoom, Action>(this->roomProblem.value(), true, true, false, 100);
@@ -282,8 +270,5 @@ void ObjectiveReacher::prepareSimulationPhase()
 
 Solution<DerivedRoom, Action> ObjectiveReacher::finishSimulationPhase()
 {
-    Solution<DerivedRoom, Action> derivedSolution = this->simulationSearcher.value()->findSolution();
-    globalRoomPlayer.release();
-    this->claimedRoomPlayer = false;
-    return derivedSolution;
+    return this->simulationSearcher.value()->findSolution();
 }
