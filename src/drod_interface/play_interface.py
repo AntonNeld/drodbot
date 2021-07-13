@@ -30,16 +30,21 @@ class PlayInterface:
         self._origin_y = origin_y
         await self._click((3, 3))
 
-    async def _click(self, position):
-        pyautogui.click(x=self._origin_x + position[0], y=self._origin_y + position[1])
+    async def _click(self, position, right_click=False):
+        pyautogui.click(
+            x=self._origin_x + position[0],
+            y=self._origin_y + position[1],
+            button=pyautogui.SECONDARY if right_click else pyautogui.PRIMARY,
+        )
 
-    async def _click_tile(self, position):
+    async def _click_tile(self, position, right_click=False):
         x, y = position
         await self._click(
             (
                 ROOM_ORIGIN_X + (x + 0.5) * TILE_SIZE,
                 ROOM_ORIGIN_Y + (y + 0.5) * TILE_SIZE,
-            )
+            ),
+            right_click=right_click,
         )
 
     async def do_action(self, action):
@@ -235,7 +240,7 @@ class PlayInterface:
             return orb_effects, debug_images
         return orb_effects
 
-    def get_movement_orders(self, monster_positions, return_debug_images=False):
+    async def get_movement_orders(self, monster_positions, return_debug_images=False):
         """Get the movement orders for the given positions.
 
         Parameters
@@ -251,7 +256,15 @@ class PlayInterface:
         if True, also return a list of (name, image).
         """
         if return_debug_images:
-            return {}, []
+            debug_images = []
+        for position in monster_positions:
+            await self._click_tile(position, right_click=True)
+            _, _, image = await get_drod_window()
+            room_image = extract_room(image)
+            if return_debug_images:
+                debug_images.append((f"Order screenshot {position}", room_image))
+        if return_debug_images:
+            return {}, debug_images
         return {}
 
 

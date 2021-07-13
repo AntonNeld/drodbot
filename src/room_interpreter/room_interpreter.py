@@ -77,7 +77,10 @@ class RoomInterpreter:
         ]
 
         if return_debug_images:
-            movement_orders, order_debug_images = self._interface.get_movement_orders(
+            (
+                movement_orders,
+                order_debug_images,
+            ) = await self._interface.get_movement_orders(
                 monster_positions,
                 return_debug_images=True,
             )
