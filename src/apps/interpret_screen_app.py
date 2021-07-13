@@ -6,7 +6,7 @@ import tkinter
 import traceback
 
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES, TILE_SIZE
-from .util import tile_to_text
+from .util import tile_to_text, ScrollableFrame
 
 # The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
 _CANVAS_WIDTH = 418
@@ -59,7 +59,7 @@ class InterpretScreenApp(tkinter.Frame):
             self._control_panel, text="Enlarge view", command=self._toggle_view_size
         )
         self._toggle_view_size_button.pack(side=tkinter.TOP)
-        self._debug_step_frame = tkinter.Frame(self._control_panel)
+        self._debug_step_frame = ScrollableFrame(self._control_panel)
         self._debug_step_frame.pack(side=tkinter.TOP)
 
         self._set_debug_steps()
@@ -92,7 +92,7 @@ class InterpretScreenApp(tkinter.Frame):
             radio_button.pack_forget()
         self._radio_buttons = [
             tkinter.Radiobutton(
-                self._debug_step_frame,
+                self._debug_step_frame.scrollable_frame,
                 text=step,
                 value=step,
                 variable=self._selected_view_step,
