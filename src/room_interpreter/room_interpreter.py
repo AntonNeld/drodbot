@@ -70,7 +70,22 @@ class RoomInterpreter:
                 orb_positions, room_image, free_position
             )
 
-        room = room_from_apparent_tiles(tile_contents, orb_effects)
+        monster_positions = [
+            pos
+            for pos, tile in tile_contents.items()
+            if tile.monster[0] not in [ElementType.NOTHING, ElementType.BEETHRO]
+        ]
+
+        if return_debug_images:
+            movement_orders, order_debug_images = self._interface.get_movement_orders(
+                monster_positions,
+                return_debug_images=True,
+            )
+            debug_images.extend(order_debug_images)
+        else:
+            movement_orders = self._interface.get_movement_orders(monster_positions)
+
+        room = room_from_apparent_tiles(tile_contents, orb_effects, movement_orders)
 
         if return_debug_images:
             return room, debug_images

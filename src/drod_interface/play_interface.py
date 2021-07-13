@@ -235,6 +235,25 @@ class PlayInterface:
             return orb_effects, debug_images
         return orb_effects
 
+    def get_movement_orders(self, monster_positions, return_debug_images=False):
+        """Get the movement orders for the given positions.
+
+        Parameters
+        ----------
+        monster_positions
+            The positions to get movement orders for.
+        return_debug_images
+            Whether to return debug images.
+
+        Returns
+        -------
+        A dict mapping positions to movement orders. If `return_debug_images`
+        if True, also return a list of (name, image).
+        """
+        if return_debug_images:
+            return {}, []
+        return {}
+
 
 def _average_tiles(room_image):
     height, width, colors = room_image.shape
