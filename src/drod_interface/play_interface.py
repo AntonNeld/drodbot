@@ -1,11 +1,18 @@
+import re
+import warnings
 import numpy
 import pyautogui
 import scipy.ndimage
+import easyocr
+
 from common import TILE_SIZE, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .consts import ROOM_ORIGIN_X, ROOM_ORIGIN_Y
 from room_simulator import OrbEffect, Action
 from util import find_color
 from .util import get_drod_window, extract_room, extract_minimap
+
+warnings.filterwarnings("ignore", message="Named tensors", category=UserWarning)
+ocr_reader = None
 
 
 class PlayInterface:
@@ -252,6 +259,13 @@ class PlayInterface:
         A dict mapping positions to movement orders. If `return_debug_images`
         if True, also return a list of (name, image).
         """
+        # Initialize the OCR reader the first time it's used, to prevent annoyance
+        # from DRODbot taking too long to start
+        global ocr_reader
+        if ocr_reader is None:
+            print("(Initializing OCR reader, only happens once)")
+            ocr_reader = easyocr.Reader(["en"])
+        movement_orders = {}
         if return_debug_images:
             debug_images = []
         for position in monster_positions:
@@ -274,10 +288,25 @@ class PlayInterface:
             text_image = _extract_object(room_image, largest_object)
             if return_debug_images:
                 debug_images.append((f"Text box {position}", text_image))
+            ocr_result = ocr_reader.readtext(text_image)
+            if return_debug_images:
+                full_text = ""
+            for item in ocr_result:
+                text = item[1]
+                if return_debug_images:
+                    full_text += text + "\n"
+                match = re.search(r"\(\#(.*)\)", text)
+                if match:
+                    number = int(match.group(1).replace("I", "1"))
+                    movement_orders[position] = number - 1
+            if return_debug_images:
+                pass  # TODO: Make image with text
+            if position not in movement_orders:
+                print(f"Could not read number at {position}")
 
         if return_debug_images:
-            return {}, debug_images
-        return {}
+            return movement_orders, debug_images
+        return movement_orders
 
 
 def _average_tiles(room_image):
