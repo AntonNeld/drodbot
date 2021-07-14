@@ -4,11 +4,8 @@ import scipy.ndimage
 from common import TILE_SIZE, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .consts import ROOM_ORIGIN_X, ROOM_ORIGIN_Y
 from room_simulator import OrbEffect, Action
-from .util import (
-    get_drod_window,
-    extract_room,
-    extract_minimap,
-)
+from util import find_color
+from .util import get_drod_window, extract_room, extract_minimap
 
 
 class PlayInterface:
@@ -263,6 +260,21 @@ class PlayInterface:
             room_image = extract_room(image)
             if return_debug_images:
                 debug_images.append((f"Order screenshot {position}", room_image))
+            white_pixels = find_color(room_image, (255, 255, 255))
+            if return_debug_images:
+                debug_images.append((f"White pixels {position}", white_pixels))
+            labels, num_labels = scipy.ndimage.label(white_pixels)
+            object_sizes = scipy.ndimage.sum_labels(
+                white_pixels, labels, range(1, num_labels + 1)
+            )
+            largest_label = numpy.argmax(object_sizes) + 1
+            largest_object = labels == largest_label
+            if return_debug_images:
+                debug_images.append((f"Largest white area {position}", largest_object))
+            text_image = _extract_object(room_image, largest_object)
+            if return_debug_images:
+                debug_images.append((f"Text box {position}", text_image))
+
         if return_debug_images:
             return {}, debug_images
         return {}
@@ -279,3 +291,11 @@ def _average_tiles(room_image):
             colors,
         )
     ).mean((1, 3))
+
+
+def _extract_object(image, object_mask):
+    rows = numpy.any(object_mask, axis=1)
+    columns = numpy.any(object_mask, axis=0)
+    ymin, ymax = numpy.where(rows)[0][[0, -1]]
+    xmin, xmax = numpy.where(columns)[0][[0, -1]]
+    return image[ymin : ymax + 1, xmin : xmax + 1]
