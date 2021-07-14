@@ -4,7 +4,7 @@ import numpy
 import pyautogui
 import scipy.ndimage
 import easyocr
-
+from PIL import Image, ImageFont, ImageDraw
 from common import TILE_SIZE, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .consts import ROOM_ORIGIN_X, ROOM_ORIGIN_Y
 from room_simulator import OrbEffect, Action
@@ -300,7 +300,7 @@ class PlayInterface:
                     number = int(match.group(1).replace("I", "1"))
                     movement_orders[position] = number - 1
             if return_debug_images:
-                pass  # TODO: Make image with text
+                debug_images.append((f"Text {position}", _make_text_image(full_text)))
             if position not in movement_orders:
                 print(f"Could not read number at {position}")
 
@@ -328,3 +328,11 @@ def _extract_object(image, object_mask):
     ymin, ymax = numpy.where(rows)[0][[0, -1]]
     xmin, xmax = numpy.where(columns)[0][[0, -1]]
     return image[ymin : ymax + 1, xmin : xmax + 1]
+
+
+def _make_text_image(text):
+    image = Image.new("1", (300, 200))
+    draw = ImageDraw.Draw(image)
+    font = ImageFont.truetype("Pillow/Tests/fonts/FreeMono.ttf", 40)
+    draw.text((10, 10), text, 1, font=font)
+    return numpy.array(image)
