@@ -86,7 +86,9 @@ class RoomInterpreter:
             )
             debug_images.extend(order_debug_images)
         else:
-            movement_orders = self._interface.get_movement_orders(monster_positions)
+            movement_orders = await self._interface.get_movement_orders(
+                monster_positions
+            )
 
         room = room_from_apparent_tiles(tile_contents, orb_effects, movement_orders)
 
