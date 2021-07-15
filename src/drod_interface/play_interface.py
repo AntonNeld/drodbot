@@ -30,6 +30,170 @@ _HASH_PATTERN = numpy.array(
     ]
 )
 
+_NUMBER_PATTERNS = {
+    0: numpy.array(
+        [
+            [0, 0, 1, 1, 1, 1, 0, 0],
+            [0, 1, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 0, 0, 1, 1, 0],
+            [1, 1, 1, 0, 0, 1, 1, 1],
+            [1, 1, 1, 0, 0, 1, 1, 1],
+            [1, 1, 1, 0, 0, 1, 1, 1],
+            [1, 1, 1, 0, 0, 1, 1, 1],
+            [1, 1, 1, 0, 0, 1, 1, 1],
+            [1, 1, 1, 0, 0, 1, 1, 1],
+            [1, 1, 1, 0, 0, 1, 1, 1],
+            [0, 1, 1, 1, 1, 1, 1, 0],
+            [0, 0, 1, 1, 1, 1, 1, 0],
+        ]
+    ),
+    1: numpy.array(
+        [
+            [0, 1, 1, 0],
+            [1, 1, 1, 0],
+            [0, 1, 1, 0],
+            [0, 1, 1, 0],
+            [0, 1, 1, 0],
+            [0, 1, 1, 0],
+            [0, 1, 1, 0],
+            [0, 1, 1, 0],
+            [0, 1, 1, 0],
+            [0, 1, 1, 0],
+            [1, 1, 1, 1],
+        ]
+    ),
+    2: numpy.array(
+        [
+            [0, 0, 0, 1, 1, 0, 0, 0],
+            [0, 1, 1, 1, 1, 1, 1, 0],
+            [1, 1, 1, 1, 1, 1, 1, 0],
+            [1, 1, 0, 0, 0, 1, 1, 0],
+            [1, 0, 0, 0, 0, 1, 1, 0],
+            [0, 0, 0, 0, 0, 1, 1, 0],
+            [0, 0, 0, 0, 0, 1, 1, 0],
+            [0, 0, 0, 0, 1, 1, 1, 0],
+            [0, 0, 0, 1, 1, 1, 0, 0],
+            [0, 0, 1, 1, 1, 0, 0, 1],
+            [0, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1],
+        ]
+    ),
+    3: numpy.array(
+        [
+            [0, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 0, 0, 1, 1, 1],
+            [0, 0, 0, 0, 1, 1, 1],
+            [0, 0, 0, 1, 1, 1, 0],
+            [0, 0, 1, 1, 1, 1, 0],
+            [0, 0, 0, 1, 1, 1, 1],
+            [0, 0, 0, 0, 1, 1, 1],
+            [0, 0, 0, 0, 0, 1, 1],
+            [0, 0, 0, 0, 0, 1, 1],
+            [1, 1, 1, 0, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 0],
+        ]
+    ),
+    4: numpy.array(
+        [
+            [0, 0, 0, 0, 1, 1, 1, 0],
+            [0, 0, 0, 0, 1, 1, 1, 0],
+            [0, 0, 0, 1, 1, 1, 1, 0],
+            [0, 0, 1, 1, 1, 1, 1, 0],
+            [0, 0, 1, 1, 0, 1, 1, 0],
+            [0, 1, 1, 0, 0, 1, 1, 0],
+            [0, 1, 1, 0, 0, 1, 1, 0],
+            [1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1],
+            [0, 0, 0, 0, 0, 1, 1, 0],
+            [0, 0, 0, 0, 0, 1, 1, 0],
+            [0, 0, 0, 0, 0, 1, 0, 0],
+        ]
+    ),
+    5: numpy.array(
+        [
+            [0, 0, 0, 1, 1, 1, 1, 1, 1],
+            [0, 0, 1, 1, 1, 1, 1, 1, 0],
+            [0, 0, 1, 1, 0, 0, 0, 0, 0],
+            [0, 1, 1, 0, 0, 0, 0, 0, 0],
+            [0, 1, 1, 1, 1, 1, 0, 0, 0],
+            [0, 1, 1, 1, 1, 1, 1, 1, 0],
+            [0, 0, 0, 0, 1, 1, 1, 1, 1],
+            [0, 0, 0, 0, 0, 1, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 1, 1, 1],
+            [0, 0, 0, 0, 0, 0, 1, 1, 1],
+            [1, 1, 1, 0, 0, 0, 1, 1, 0],
+            [1, 1, 1, 1, 1, 1, 1, 0, 0],
+        ]
+    ),
+    6: numpy.array(
+        [
+            [0, 0, 0, 1, 1, 1, 1],
+            [0, 0, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 0, 0, 0],
+            [0, 1, 1, 1, 0, 0, 0],
+            [1, 1, 1, 0, 0, 0, 0],
+            [1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 0, 0, 0, 1, 1],
+            [1, 1, 0, 0, 0, 1, 1],
+            [1, 1, 0, 0, 0, 1, 1],
+            [1, 1, 1, 0, 0, 1, 1],
+            [0, 1, 1, 1, 1, 1, 0],
+        ]
+    ),
+    7: numpy.array(
+        [
+            [0, 0, 1, 1, 1, 1, 1, 1, 1],
+            [0, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 0, 0, 0, 0, 1, 1, 0],
+            [0, 0, 0, 0, 0, 0, 1, 1, 0],
+            [0, 0, 0, 0, 0, 1, 1, 0, 0],
+            [0, 0, 0, 0, 0, 1, 1, 0, 0],
+            [0, 0, 0, 0, 1, 1, 0, 0, 0],
+            [0, 0, 0, 0, 1, 1, 0, 0, 0],
+            [0, 0, 0, 1, 1, 0, 0, 0, 0],
+            [0, 0, 0, 1, 1, 0, 0, 0, 0],
+            [0, 0, 1, 1, 0, 0, 0, 0, 0],
+        ]
+    ),
+    8: numpy.array(
+        [
+            [0, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 0, 0, 1, 1],
+            [1, 1, 1, 0, 0, 0, 1, 1],
+            [1, 1, 1, 1, 0, 0, 1, 1],
+            [0, 1, 1, 1, 1, 1, 1, 0],
+            [0, 0, 1, 1, 1, 1, 0, 0],
+            [0, 1, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 0, 0, 1, 1, 1],
+            [1, 1, 1, 0, 0, 1, 1, 1],
+            [1, 1, 1, 0, 0, 1, 1, 1],
+            [0, 1, 1, 1, 1, 1, 1, 1],
+        ]
+    ),
+    9: numpy.array(
+        [
+            [0, 1, 1, 1, 1, 1, 1, 0],
+            [1, 1, 1, 0, 1, 1, 1, 0],
+            [1, 1, 0, 0, 0, 1, 1, 0],
+            [1, 1, 0, 0, 0, 1, 1, 1],
+            [1, 1, 1, 0, 0, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 1, 0],
+            [0, 0, 1, 1, 0, 1, 1, 0],
+            [0, 0, 0, 0, 1, 1, 1, 0],
+            [0, 0, 0, 1, 1, 1, 1, 0],
+            [0, 0, 1, 1, 1, 1, 0, 0],
+            [1, 1, 1, 1, 1, 0, 0, 0],
+            [1, 1, 0, 0, 0, 0, 0, 0],
+        ]
+    ),
+}
+
 
 class PlayInterface:
     """The interface toward DROD when playing the game."""
@@ -303,14 +467,28 @@ class PlayInterface:
                 debug_images.append((f"Non-white {position}", non_white))
             hash_eroded_image = scipy.ndimage.binary_erosion(non_white, _HASH_PATTERN)
             if return_debug_images:
-                debug_images.append((f"Hash location {position}", hash_eroded_image))
+                debug_images.append((f"Find hash {position}", hash_eroded_image))
+            hash_location = numpy.argwhere(hash_eroded_image)
+            x = hash_location[0][1]
+            y = hash_location[0][0]
+            order_region = non_white[y - 8 : y + 10, x:]
             if return_debug_images:
-                full_text = ""
+                debug_images.append((f"Order region {position}", order_region))
 
+            # Tuples of (x-coordinate, number)
+            found_numbers = []
+            for number, pattern in _NUMBER_PATTERNS.items():
+                eroded_image = scipy.ndimage.binary_erosion(order_region, pattern)
+                for coords in numpy.argwhere(eroded_image):
+                    found_numbers.append((coords[1], number))
+            found_numbers.sort(key=lambda t: t[0])
+            order_number = int("".join([str(t[1]) for t in found_numbers]))
             if return_debug_images:
-                debug_images.append((f"Text {position}", _make_text_image(full_text)))
-            if position not in movement_orders:
-                print(f"Could not read number at {position}")
+                debug_images.append(
+                    (f"Number {position}", _make_text_image(str(order_number)))
+                )
+            # Movement order is displayed 1-indexed, but we use 0-indexed elsewhere
+            movement_orders[position] = order_number - 1
 
         if return_debug_images:
             return movement_orders, debug_images
