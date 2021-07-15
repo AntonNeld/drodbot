@@ -91,8 +91,11 @@ def room_from_apparent_tiles(apparent_tiles, orb_effects=None, movement_orders=N
     extra_orders = set(range(len(monster_tiles)))
     if movement_orders is not None:
         for (x, y), order in movement_orders.items():
-            tiles[x][y].monster.turn_order = order
-            extra_orders.remove(order)
+            if order in extra_orders:
+                tiles[x][y].monster.turn_order = order
+                extra_orders.remove(order)
+            else:
+                print(f"Duplicate movement order {order}, ignoring")
             monster_tiles.remove((x, y))
     # Assign the leftover movement orders to the leftover monsters, if any
     for (x, y), order in zip(monster_tiles, extra_orders):
