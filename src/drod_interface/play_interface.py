@@ -424,8 +424,8 @@ class PlayInterface:
             return orb_effects, debug_images
         return orb_effects
 
-    async def get_movement_orders(self, monster_positions, return_debug_images=False):
-        """Get the movement orders for the given positions.
+    async def get_right_click_info(self, monster_positions, return_debug_images=False):
+        """Get right-click info for the given positions.
 
         Parameters
         ----------
@@ -436,10 +436,12 @@ class PlayInterface:
 
         Returns
         -------
-        A dict mapping positions to movement orders. If `return_debug_images`
+        A dict mapping positions to movement orders. As a bonus, also return a dict
+        mapping positions to the number of non-empty layers. If `return_debug_images`
         if True, also return a list of (name, image).
         """
         movement_orders = {}
+        layer_counts = {}
         if return_debug_images:
             debug_images = []
         for position in monster_positions:
@@ -462,6 +464,7 @@ class PlayInterface:
             text_image = _extract_object(room_image, largest_object)
             if return_debug_images:
                 debug_images.append((f"Text box {position}", text_image))
+            layer_counts[position] = round((text_image.shape[0] - 4) / 21) - 1
             non_white = numpy.logical_not(find_color(text_image, (255, 255, 255)))
             if return_debug_images:
                 debug_images.append((f"Non-white {position}", non_white))
@@ -491,8 +494,8 @@ class PlayInterface:
             movement_orders[position] = order_number - 1
 
         if return_debug_images:
-            return movement_orders, debug_images
-        return movement_orders
+            return movement_orders, layer_counts, debug_images
+        return movement_orders, layer_counts
 
 
 def _average_tiles(room_image):

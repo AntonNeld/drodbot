@@ -79,18 +79,23 @@ class RoomInterpreter:
         if return_debug_images:
             (
                 movement_orders,
+                layer_counts,
                 order_debug_images,
-            ) = await self._interface.get_movement_orders(
+            ) = await self._interface.get_right_click_info(
                 monster_positions,
                 return_debug_images=True,
             )
             debug_images.extend(order_debug_images)
         else:
-            movement_orders = await self._interface.get_movement_orders(
+            movement_orders, layer_counts = await self._interface.get_right_click_info(
                 monster_positions
             )
 
-        room = room_from_apparent_tiles(tile_contents, orb_effects, movement_orders)
+        adjusted_tile_contents = _adjust_tile_contents(tile_contents, layer_counts)
+
+        room = room_from_apparent_tiles(
+            adjusted_tile_contents, orb_effects, movement_orders
+        )
 
         if return_debug_images:
             return room, debug_images
@@ -131,3 +136,23 @@ class RoomInterpreter:
                     :,
                 ] = tile_image
         return room_image
+
+
+def _adjust_tile_contents(tile_contents, layer_counts):
+    adjusted_tile_contents = {key: value for (key, value) in tile_contents.items()}
+    for position, layer_count in layer_counts.items():
+        tile = tile_contents[position]
+        layer_types = [
+            tile.room_piece[0],
+            tile.floor_control[0],
+            tile.checkpoint[0],
+            tile.item[0],
+            tile.monster[0],
+        ]
+        apparent_layer_count = 5 - layer_types.count(ElementType.NOTHING)
+        if apparent_layer_count != layer_count:
+            print(
+                f"{apparent_layer_count} non-empty layers detected at {position}, "
+                f"but right-click says {layer_count}"
+            )
+    return adjusted_tile_contents
