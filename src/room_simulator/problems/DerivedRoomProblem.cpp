@@ -67,5 +67,5 @@ int DerivedRoomProblem::heuristic(DerivedRoom state)
     }
     // If we're not in a heuristicTile, use the objective's heuristic.
     // Add a penalty to make it prefer the heuristicTiles.
-    return objectiveHeuristic(this->objective, state) + 50;
+    return objectiveHeuristic(this->objective, state) + 100;
 }
