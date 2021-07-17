@@ -51,10 +51,18 @@ class InterpretScreenApp(tkinter.Frame):
         self._control_panel.pack(side=tkinter.RIGHT)
         self._tile_content = tkinter.Label(self._control_panel, text="")
         self._tile_content.pack(side=tkinter.TOP)
-        self._get_view = tkinter.Button(
-            self._control_panel, text="Get view", command=self._show_view
+        self._get_view_buttons = tkinter.Frame(self._control_panel)
+        self._get_view_buttons.pack(side=tkinter.TOP)
+        self._get_view_button = tkinter.Button(
+            self._get_view_buttons, text="Get view", command=self._get_view
         )
-        self._get_view.pack(side=tkinter.TOP)
+        self._get_view_button.pack(side=tkinter.LEFT)
+        self._move_then_get_view_button = tkinter.Button(
+            self._get_view_buttons,
+            text="Move E, get view",
+            command=self._move_then_get_view,
+        )
+        self._move_then_get_view_button.pack(side=tkinter.LEFT)
         self._toggle_view_size_button = tkinter.Button(
             self._control_panel, text="Enlarge view", command=self._toggle_view_size
         )
@@ -124,8 +132,11 @@ class InterpretScreenApp(tkinter.Frame):
 
         asyncio.run_coroutine_threadsafe(wrapped_coroutine(), self._event_loop)
 
-    def _show_view(self):
-        self._run_coroutine(self._backend.show_view())
+    def _get_view(self):
+        self._run_coroutine(self._backend.get_view())
+
+    def _move_then_get_view(self):
+        self._run_coroutine(self._backend.move_then_get_view())
 
     def _toggle_view_size(self):
         if self._enlarged_view:
