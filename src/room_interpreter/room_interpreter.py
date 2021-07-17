@@ -1,11 +1,13 @@
+import asyncio
 from enum import Enum
 import numpy
-from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES, TILE_SIZE
+import scipy.ndimage
 
+from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES, TILE_SIZE
 from room_simulator import ElementType, Direction
 from .room_conversion import room_from_apparent_tiles, element_to_apparent
 from tile_classifier import ApparentTile
-from util import extract_tiles
+from util import extract_tiles, find_color
 
 
 class RoomText(str, Enum):
@@ -14,6 +16,7 @@ class RoomText(str, Enum):
     NOTHING = ""
     EXIT_LEVEL = "Exit level"
     SECRET_ROOM = "Secret room"
+    EXIT_LEVEL_AND_SECRET_ROOM = "Exit level & Secret room"
 
 
 class RoomInterpreter:
@@ -60,6 +63,24 @@ class RoomInterpreter:
             debug_images.extend(room_text_debug_images)
         else:
             room_text = get_room_text(room_image)
+
+        if room_text != RoomText.NOTHING:
+            # Wait until the text is gone and try again
+            await asyncio.sleep(3)
+            if return_debug_images:
+                (
+                    room_image,
+                    minimap,
+                    after_text_debug_images,
+                ) = await self._interface.get_room_image(return_debug_images=True)
+                debug_images.extend(
+                    [
+                        (f"{name}, second try", image)
+                        for (name, image) in after_text_debug_images
+                    ]
+                )
+            else:
+                room_image, minimap = await self._interface.get_room_image()
 
         tiles, minimap_colors = extract_tiles(room_image, minimap)
 
@@ -217,7 +238,35 @@ def get_room_text(room_image, return_debug_images=False):
     """
     if return_debug_images:
         debug_images = []
-    room_text = RoomText.NOTHING
+    yellow_pixels = find_color(room_image, (254, 254, 0))
+    if return_debug_images:
+        debug_images.append(("Yellow pixels", yellow_pixels))
+    dilated = scipy.ndimage.binary_dilation(
+        yellow_pixels, structure=numpy.ones((1, 20))
+    )
+    if return_debug_images:
+        debug_images.append(("Binary dilated", dilated))
+    labels, num_labels = scipy.ndimage.label(dilated)
+    if return_debug_images:
+        debug_images.append(("Text regions", labels))
+    if num_labels == 0:
+        room_text = RoomText.NOTHING
+    elif num_labels == 4:
+        room_text = RoomText.EXIT_LEVEL_AND_SECRET_ROOM
+    elif num_labels == 2:
+        # We're assuming here that the leftmost label is 1. This seems to hold.
+        size_ratio = numpy.sum(labels == 1) / numpy.sum(labels == 2)
+        if size_ratio > 1:
+            room_text = RoomText.SECRET_ROOM
+        else:
+            room_text = RoomText.EXIT_LEVEL
+    else:
+        print("Saw an unexpected number of yellow regions, investigate manually!")
+        room_text = RoomText.NOTHING
+
+    if room_text != RoomText.NOTHING:
+        print(f"Detected room text: {room_text.value}")
+
     if return_debug_images:
         return room_text, debug_images
     return room_text
