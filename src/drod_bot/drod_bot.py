@@ -171,77 +171,74 @@ class DrodBot:
         conquer_rooms
             Whether to conquer the current room if possible.
         """
-        try:
-            while True:
-                if conquer_rooms and not self.state.current_room.is_conquered():
+        while True:
+            if conquer_rooms and not self.state.current_room.is_conquered():
+                try:
+                    await self.conquer_room()
+                    continue
+                except NoSolutionError:
+                    print(
+                        "Can't conquer current room from here, checking other entrances"
+                    )
+            if conquer_rooms and not self.state.current_room.is_conquered():
+                exits = self.state.level.get_room_exits(
+                    self.state.current_room_position,
+                    allow_unexplored_target=True,
+                )
+                possible_entrances = []
+                for exit in exits:
+                    position, _, _ = exit
+                    if position == self.state.current_room.find_player()[0]:
+                        # We already tried this one
+                        continue
+                    print(f"Trying {position}...")
+                    t = time.time()
+                    room = self.state.level.rooms[
+                        self.state.current_room_position
+                    ].copy()
+                    tile = room.get_tile(position)
+                    tile.monster = Element(
+                        # Make up a direction
+                        element_type=ElementType.BEETHRO,
+                        direction=Direction.SW,
+                    )
+                    room.set_tile(position, tile)
                     try:
-                        await self.conquer_room()
-                    except NoSolutionError:
-                        print(
-                            "Can't conquer current room from here, "
-                            "checking other entrances"
-                        )
-                        exits = self.state.level.get_room_exits(
-                            self.state.current_room_position,
-                            allow_unexplored_target=True,
-                        )
-                        possible_entrances = []
-                        for exit in exits:
-                            position, _, _ = exit
-                            if position == self.state.current_room.find_player()[0]:
-                                # We already tried this one
-                                continue
-                            print(f"Trying {position}...")
-                            t = time.time()
-                            room = self.state.level.rooms[
-                                self.state.current_room_position
-                            ].copy()
-                            tile = room.get_tile(position)
-                            tile.monster = Element(
-                                # Make up a direction
-                                element_type=ElementType.BEETHRO,
-                                direction=Direction.SW,
-                            )
-                            room.set_tile(position, tile)
-                            try:
-                                solve_room(room, MonsterCountObjective(monsters=0))
-                                print(
-                                    f"Thought in {time.time()-t:.2f}s, found a solution"
-                                )
-                                possible_entrances.append(position)
-                            except NoSolutionError:
-                                print(
-                                    f"Thought in {time.time()-t:.2f}s, "
-                                    "did not find a solution"
-                                )
-                        self.state.room_backlog.extend(
-                            [
-                                (self.state.current_room_position, pos)
-                                for pos in possible_entrances
-                            ]
-                        )
-                if self.state.room_backlog:
-                    try:
-                        print("Trying to reach a room entrance from the backlog...")
-                        t = time.time()
-                        actions = find_path_in_level(
-                            self.state.room_backlog,
-                            self.state.current_room,
-                            self.state.current_room_position,
-                            self.state.level,
-                        )
+                        solve_room(room, MonsterCountObjective(monsters=0))
                         print(f"Thought in {time.time()-t:.2f}s, found a solution")
-                        self.state.plan = actions
-                        await self._execute_plan()
+                        possible_entrances.append(position)
                     except NoSolutionError:
                         print(
-                            f"Thought in {time.time()-t:.2f}s, did not find a solution"
+                            f"Thought in {time.time()-t:.2f}s, "
+                            "did not find a solution"
                         )
-                        await self.go_to_unvisited_room()
-                else:
-                    await self.go_to_unvisited_room()
-        except NoSolutionError:
-            print("Done exploring")
+                self.state.room_backlog.extend(
+                    [
+                        (self.state.current_room_position, pos)
+                        for pos in possible_entrances
+                    ]
+                )
+            if self.state.room_backlog:
+                try:
+                    print("Trying to reach a room entrance from the backlog...")
+                    t = time.time()
+                    actions = find_path_in_level(
+                        self.state.room_backlog,
+                        self.state.current_room,
+                        self.state.current_room_position,
+                        self.state.level,
+                    )
+                    print(f"Thought in {time.time()-t:.2f}s, found a solution")
+                    self.state.plan = actions
+                    await self._execute_plan()
+                    continue
+                except NoSolutionError:
+                    print(f"Thought in {time.time()-t:.2f}s, did not find a solution")
+            try:
+                await self.go_to_unvisited_room()
+            except NoSolutionError:
+                print("Done exploring")
+                break
 
     async def strike_element(self, element):
         """Strike the nearest instance of the given element with the sword.
