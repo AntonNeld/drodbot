@@ -472,7 +472,7 @@ class PlayInterface:
             if return_debug_images:
                 debug_images.append((f"Find hash {position}", hash_eroded_image))
             hash_location = numpy.argwhere(hash_eroded_image)
-            if not hash_location:
+            if hash_location.shape[0] == 0:
                 print(f"No hash character found at {position}")
                 continue
             x = hash_location[0][1]
