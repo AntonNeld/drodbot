@@ -309,7 +309,7 @@ class DrodBot:
         t = time.time()
         room, room_text = await self._interpreter.get_initial_room()
         if room_text in [RoomText.EXIT_LEVEL, RoomText.EXIT_LEVEL_AND_SECRET_ROOM]:
-            self.state.level.cleared = True
+            self.state.level.clear()
         self.state.current_room = room
         room_in_level = room.copy()
         player_position, _ = room_in_level.find_player()
@@ -398,7 +398,7 @@ class DrodBot:
             room_image, _ = await self._interface.get_room_image()
             room_text = get_room_text(room_image)
             if room_text in [RoomText.EXIT_LEVEL, RoomText.EXIT_LEVEL_AND_SECRET_ROOM]:
-                self.state.level.cleared = True
+                self.state.level.clear()
             room = self.state.level.rooms[new_room_coords].copy()
             tile = room.get_tile(position_after)
             tile.monster = Element(

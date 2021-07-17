@@ -376,9 +376,9 @@ def _compatible_with_minimap_color(element, layer, color):
                 ElementType.GREEN_DOOR_OPEN,
             ]
         if color == (0, 255, 255):
-            return element == ElementType.BLUE_DOOR
+            return element in [ElementType.BLUE_DOOR, ElementType.BLUE_DOOR_OPEN]
         if color == (164, 255, 255):
-            return element == ElementType.BLUE_DOOR_OPEN
+            return element in [ElementType.BLUE_DOOR, ElementType.BLUE_DOOR_OPEN]
         if color == (210, 210, 100):
             return element == ElementType.STAIRS
         if color == (255, 200, 200):

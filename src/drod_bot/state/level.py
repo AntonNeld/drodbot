@@ -5,7 +5,7 @@ from pydantic import BaseModel, validator
 
 from .dict_conversion import room_from_dict
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
-from room_simulator import Action, Room
+from room_simulator import Action, Element, Room, ElementType
 
 
 class Level(BaseModel):
@@ -19,7 +19,6 @@ class Level(BaseModel):
     """
 
     rooms: Dict[Tuple[int, int], Room] = {}
-    cleared: bool = False
 
     class Config:
         arbitrary_types_allowed = True
@@ -56,6 +55,25 @@ class Level(BaseModel):
             new_rooms[str(key)] = value
         as_dict["rooms"] = new_rooms
         return as_dict
+
+    def clear(self):
+        """Clear the level.
+
+        This toggles blue doors.
+        """
+        # Possibly a bit hacky, but it's simpler than passing around whether
+        # the level is cleared when simulating rooms
+        for room in self.rooms.values():
+            blue_doors = room.find_coordinates(ElementType.BLUE_DOOR)
+            open_blue_doors = room.find_coordinates(ElementType.BLUE_DOOR_OPEN)
+            for position in blue_doors:
+                tile = room.get_tile(position)
+                tile.room_piece = Element(ElementType.BLUE_DOOR_OPEN)
+                room.set_tile(position, tile)
+            for position in open_blue_doors:
+                tile = room.get_tile(position)
+                tile.room_piece = Element(ElementType.BLUE_DOOR)
+                room.set_tile(position, tile)
 
     def find_element(self, element):
         """Find instances of an element in the level.
