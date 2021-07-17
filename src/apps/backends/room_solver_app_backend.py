@@ -56,7 +56,7 @@ class RoomSolverAppBackend:
         print("Interpreting room...")
         t = time.time()
         await self._interface.initialize()
-        self._room = await self._interpreter.get_initial_room()
+        self._room, _ = await self._interpreter.get_initial_room()
         print(f"Interpreted room in {time.time()-t:.2f}s")
         self._show_data()
 
