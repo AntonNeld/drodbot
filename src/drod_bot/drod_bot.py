@@ -164,6 +164,41 @@ class DrodBot:
             print(f"Thought in {time.time()-t:.2f}s, did not find a solution")
             raise e
 
+    async def go_to_room_in_direction(self, direction):
+        """Go to the room in the given direction.
+
+        Orthogonal directions only.
+
+        Parameters
+        ----------
+        direction
+            The direction.
+        """
+        print("Thinking...")
+        t = time.time()
+        exits = self.state.level.get_room_exits(
+            self.state.current_room_position, allow_unexplored_target=True
+        )
+        if direction == Direction.N:
+            goal_tiles = [e[0] for e in exits if e[0][1] == 0]
+            last_action = Action.N
+        elif direction == Direction.E:
+            goal_tiles = [e[0] for e in exits if e[0][0] == ROOM_WIDTH_IN_TILES - 1]
+            last_action = Action.E
+        elif direction == Direction.S:
+            goal_tiles = [e[0] for e in exits if e[0][1] == ROOM_HEIGHT_IN_TILES - 1]
+            last_action = Action.S
+        elif direction == Direction.W:
+            goal_tiles = [e[0] for e in exits if e[0][0] == 0]
+            last_action = Action.W
+        actions = solve_room(
+            self.state.current_room, ReachObjective(tiles=set(goal_tiles))
+        )
+        actions.append(last_action)
+        print(f"Thought in {time.time()-t:.2f}s")
+        self.state.plan = actions
+        await self._execute_plan()
+
     async def explore_level_continuously(self, conquer_rooms=False):
         """Explore the level while there are unvisited rooms.
 

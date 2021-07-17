@@ -1,5 +1,5 @@
 from common import Strategy, GUIEvent
-from room_simulator import ElementType
+from room_simulator import ElementType, Direction
 
 
 class PlayingAppBackend:
@@ -34,6 +34,14 @@ class PlayingAppBackend:
             await self._bot.go_to_element_in_level(ElementType.CONQUER_TOKEN)
         elif strategy == Strategy.GO_TO_UNVISITED_ROOM:
             await self._bot.go_to_unvisited_room()
+        elif strategy == Strategy.GO_TO_EAST_ROOM:
+            await self._bot.go_to_room_in_direction(Direction.E)
+        elif strategy == Strategy.GO_TO_SOUTH_ROOM:
+            await self._bot.go_to_room_in_direction(Direction.S)
+        elif strategy == Strategy.GO_TO_WEST_ROOM:
+            await self._bot.go_to_room_in_direction(Direction.W)
+        elif strategy == Strategy.GO_TO_NORTH_ROOM:
+            await self._bot.go_to_room_in_direction(Direction.N)
         elif strategy == Strategy.EXPLORE:
             await self._bot.explore_level_continuously()
         elif strategy == Strategy.EXPLORE_AND_CONQUER:
