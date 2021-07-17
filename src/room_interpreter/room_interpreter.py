@@ -1,7 +1,7 @@
 import numpy
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES, TILE_SIZE
 
-from room_simulator import ElementType
+from room_simulator import ElementType, Direction
 from .room_conversion import room_from_apparent_tiles, element_to_apparent
 from tile_classifier import ApparentTile
 from util import extract_tiles
@@ -142,17 +142,38 @@ def _adjust_tile_contents(tile_contents, layer_counts):
     adjusted_tile_contents = {key: value for (key, value) in tile_contents.items()}
     for position, layer_count in layer_counts.items():
         tile = tile_contents[position]
-        layer_types = [
-            tile.room_piece[0],
-            tile.floor_control[0],
-            tile.checkpoint[0],
-            tile.item[0],
-            tile.monster[0],
+        layer_contents = [
+            tile.monster,
+            tile.item,
+            tile.checkpoint,
+            tile.floor_control,
+            tile.room_piece,
         ]
-        apparent_layer_count = 5 - layer_types.count(ElementType.NOTHING)
+        apparent_layer_count = 5 - [t[0] for t in layer_contents].count(
+            ElementType.NOTHING
+        )
         if apparent_layer_count != layer_count:
             print(
                 f"{apparent_layer_count} non-empty layers detected at {position}, "
                 f"but right-click says {layer_count}"
             )
+            if apparent_layer_count < layer_count:
+                print(f"Apparent layers are fewer at {position}, nothing to do")
+            else:
+                claimed_layers = 1  # The room piece is always there
+                for i in range(len(layer_contents) - 1):  # Skip the room_piece
+                    if layer_contents[i][0] != ElementType.NOTHING:
+                        if claimed_layers == layer_count:
+                            print(f"Removing {layer_contents[i][0].name} at {position}")
+                            layer_contents[i] = (ElementType.NOTHING, Direction.NONE)
+                        else:
+                            claimed_layers += 1
+                adjusted_tile_contents[position] = ApparentTile(
+                    monster=layer_contents[0],
+                    item=layer_contents[1],
+                    checkpoint=layer_contents[2],
+                    floor_control=layer_contents[3],
+                    room_piece=layer_contents[4],
+                )
+
     return adjusted_tile_contents
