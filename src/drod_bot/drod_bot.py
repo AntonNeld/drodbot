@@ -294,6 +294,22 @@ class DrodBot:
                     continue
                 except NoSolutionError:
                     print(f"Thought in {time.time()-t:.2f}s, did not find a solution")
+            try:
+                print("Trying to reach stairs...")
+                t = time.time()
+                stair_tiles = self.state.level.find_element(ElementType.STAIRS)
+                actions = find_path_in_level(
+                    stair_tiles,
+                    self.state.current_room,
+                    self.state.current_room_position,
+                    self.state.level,
+                )
+                self.state.plan = actions
+                print(f"Thought in {time.time()-t:.2f}s")
+                await self._execute_plan()
+                continue
+            except NoSolutionError:
+                print(f"Thought in {time.time()-t:.2f}s, " "did not find a solution")
             print("Done exploring")
             break
 
