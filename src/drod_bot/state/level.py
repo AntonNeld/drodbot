@@ -19,6 +19,7 @@ class Level(BaseModel):
     """
 
     rooms: Dict[Tuple[int, int], Room] = {}
+    cleared: bool = False
 
     class Config:
         arbitrary_types_allowed = True

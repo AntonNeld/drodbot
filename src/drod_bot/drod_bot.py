@@ -4,6 +4,7 @@ import time
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .solve_room import solve_room
 from .level_walker import find_path_in_level
+from room_interpreter import RoomText, get_room_text
 from room_simulator import (
     ElementType,
     Direction,
@@ -306,7 +307,9 @@ class DrodBot:
     async def _interpret_room(self):
         print("Interpreting room...")
         t = time.time()
-        room, _ = await self._interpreter.get_initial_room()
+        room, room_text = await self._interpreter.get_initial_room()
+        if room_text in [RoomText.EXIT_LEVEL, RoomText.EXIT_LEVEL_AND_SECRET_ROOM]:
+            self.state.level.cleared = True
         self.state.current_room = room
         room_in_level = room.copy()
         player_position, _ = room_in_level.find_player()
@@ -392,6 +395,10 @@ class DrodBot:
         self.state.current_room_position = new_room_coords
         self.state.just_conquered_current_room = False
         if new_room_coords in self.state.level.rooms:
+            room_image, _ = await self._interface.get_room_image()
+            room_text = get_room_text(room_image)
+            if room_text in [RoomText.EXIT_LEVEL, RoomText.EXIT_LEVEL_AND_SECRET_ROOM]:
+                self.state.level.cleared = True
             room = self.state.level.rooms[new_room_coords].copy()
             tile = room.get_tile(position_after)
             tile.monster = Element(
