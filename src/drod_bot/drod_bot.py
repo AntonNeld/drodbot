@@ -84,6 +84,12 @@ class DrodBot:
             f.write(self.state.json())
         print(f"Saved state to {self._state_file}")
 
+    async def clear_state(self):
+        """Clear the current state."""
+        self.state = DrodBotState()
+        print("Cleared state")
+        self._notify_state_update()
+
     async def go_to_element_in_room(self, element):
         """Go to the nearest tile with the given element.
 

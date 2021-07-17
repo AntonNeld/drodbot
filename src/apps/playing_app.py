@@ -57,6 +57,10 @@ class PlayingApp(tkinter.Frame):
             self._state_controls, text="Save state", command=self._save_state
         )
         self._save_state_button.pack(side=tkinter.RIGHT)
+        self._clear_state_button = tkinter.Button(
+            self._state_controls, text="Clear state", command=self._clear_state
+        )
+        self._clear_state_button.pack(side=tkinter.RIGHT)
         self._recheck_room_button = tkinter.Button(
             self._state_controls, text="Recheck room", command=self._recheck_room
         )
@@ -143,6 +147,9 @@ class PlayingApp(tkinter.Frame):
 
     def _save_state(self):
         self._run_coroutine(self._backend.save_state())
+
+    def _clear_state(self):
+        self._run_coroutine(self._backend.clear_state())
 
     def _recheck_room(self):
         self._run_coroutine(self._backend.recheck_room())

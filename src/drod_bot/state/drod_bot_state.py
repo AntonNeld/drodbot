@@ -47,4 +47,4 @@ class DrodBotState(BaseModel):
 
     @validator("current_room", pre=True)
     def parse_room(cls, v):
-        return v if isinstance(v, Room) else room_from_dict(v)
+        return v if isinstance(v, Room) or v is None else room_from_dict(v)

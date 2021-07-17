@@ -47,6 +47,10 @@ class PlayingAppBackend:
         """Save the DRODbot state to disk."""
         await self._bot.save_state()
 
+    async def clear_state(self):
+        """Clear the DRODbot state."""
+        await self._bot.clear_state()
+
     async def recheck_room(self):
         """Interpret the current room again and replace the state."""
         await self._bot.reinterpret_room()
