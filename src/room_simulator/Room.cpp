@@ -184,13 +184,21 @@ bool Room::isConquered()
 
 void Room::makeConquered()
 {
-    // Remove all monsters
+    // Remove all monsters and toggle all green doors
     for (int x = 0; x < 38; x += 1)
     {
         for (int y = 0; y < 32; y += 1)
         {
             Tile tile = this->tiles[x][y];
             tile.monster = Element();
+            if (tile.roomPiece.type == ElementType::GREEN_DOOR)
+            {
+                tile.roomPiece.type = ElementType::GREEN_DOOR_OPEN;
+            }
+            else if (tile.roomPiece.type == ElementType::GREEN_DOOR_OPEN)
+            {
+                tile.roomPiece.type = ElementType::GREEN_DOOR;
+            }
             this->tiles[x][y] = tile;
         }
     }
