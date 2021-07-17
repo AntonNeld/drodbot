@@ -236,9 +236,30 @@ class DrodBot:
                     print(f"Thought in {time.time()-t:.2f}s, did not find a solution")
             try:
                 await self.go_to_unvisited_room()
+                continue
             except NoSolutionError:
-                print("Done exploring")
-                break
+                pass
+            if self.state.just_conquered_current_room:
+                try:
+                    print("Just conquered current room, trying to leave it...")
+                    t = time.time()
+                    exits = self.state.level.get_room_exits(
+                        self.state.current_room_position
+                    )
+                    actions = find_path_in_level(
+                        [e[2] for e in exits],
+                        self.state.current_room,
+                        self.state.current_room_position,
+                        self.state.level,
+                    )
+                    print(f"Thought in {time.time()-t:.2f}s, found a solution")
+                    self.state.plan = actions
+                    await self._execute_plan()
+                    continue
+                except NoSolutionError:
+                    print(f"Thought in {time.time()-t:.2f}s, did not find a solution")
+            print("Done exploring")
+            break
 
     async def strike_element(self, element):
         """Strike the nearest instance of the given element with the sword.
@@ -272,6 +293,7 @@ class DrodBot:
             ]
             # Remove monsters from the room in the level
             self.state.level.rooms[self.state.current_room_position].make_conquered()
+            self.state.just_conquered_current_room = True
         except NoSolutionError as e:
             print(f"Thought in {time.time()-t:.2f}s, did not find a solution")
             raise e
@@ -368,6 +390,7 @@ class DrodBot:
         # Wait for the animation to finish
         await asyncio.sleep(1)
         self.state.current_room_position = new_room_coords
+        self.state.just_conquered_current_room = False
         if new_room_coords in self.state.level.rooms:
             room = self.state.level.rooms[new_room_coords].copy()
             tile = room.get_tile(position_after)
