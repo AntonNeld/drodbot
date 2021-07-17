@@ -1,3 +1,4 @@
+from enum import Enum
 import numpy
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES, TILE_SIZE
 
@@ -5,6 +6,14 @@ from room_simulator import ElementType, Direction
 from .room_conversion import room_from_apparent_tiles, element_to_apparent
 from tile_classifier import ApparentTile
 from util import extract_tiles
+
+
+class RoomText(str, Enum):
+    """The text that pops up when entering a room."""
+
+    NOTHING = ""
+    EXIT_LEVEL = "Exit level"
+    SECRET_ROOM = "Secret room"
 
 
 class RoomInterpreter:
@@ -32,6 +41,8 @@ class RoomInterpreter:
         -------
         room
             A room.
+        room_text
+            The room text that pops up on room entry.
         debug_images
             Only returned if `return_debug_images` is True. A list of (name, image).
         """
@@ -41,6 +52,14 @@ class RoomInterpreter:
             )
         else:
             room_image, minimap = await self._interface.get_room_image()
+
+        if return_debug_images:
+            room_text, room_text_debug_images = get_room_text(
+                room_image, return_debug_images=True
+            )
+            debug_images.extend(room_text_debug_images)
+        else:
+            room_text = get_room_text(room_image)
 
         tiles, minimap_colors = extract_tiles(room_image, minimap)
 
@@ -98,8 +117,8 @@ class RoomInterpreter:
         )
 
         if return_debug_images:
-            return room, debug_images
-        return room
+            return room, room_text, debug_images
+        return room, room_text
 
     def reconstruct_room_image(self, room):
         """Get a reconstructed image of a room.
@@ -177,3 +196,28 @@ def _adjust_tile_contents(tile_contents, layer_counts):
                 )
 
     return adjusted_tile_contents
+
+
+def get_room_text(room_image, return_debug_images=False):
+    """Get the text that sometimes pops up when entering a room.
+
+    Parameters
+    ----------
+    room_image
+        The room extracted from a screenshot.
+    return_debug_images
+        Whether to return debug images.
+
+    Returns
+    -------
+    room_text
+        A RoomText instance.
+    debug_images
+        Debug images, only returned if return_debug_images is True.
+    """
+    if return_debug_images:
+        debug_images = []
+    room_text = RoomText.NOTHING
+    if return_debug_images:
+        return room_text, debug_images
+    return room_text

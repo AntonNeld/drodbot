@@ -42,10 +42,12 @@ class InterpretScreenAppBackend:
     async def _interpret_room(self):
         print("Interpreting room...")
         t = time.time()
-        room, debug_images = await self._interpreter.get_initial_room(
+        room, room_text, debug_images = await self._interpreter.get_initial_room(
             return_debug_images=True
         )
         reconstructed_image = self._interpreter.reconstruct_room_image(room)
         debug_images.append(("Reconstruct image", reconstructed_image))
         print(f"Interpreted room in {time.time()-t:.2f}s")
-        self._queue.put((GUIEvent.SET_INTERPRET_SCREEN_DATA, debug_images, room))
+        self._queue.put(
+            (GUIEvent.SET_INTERPRET_SCREEN_DATA, debug_images, room, room_text)
+        )

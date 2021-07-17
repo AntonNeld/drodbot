@@ -306,7 +306,7 @@ class DrodBot:
     async def _interpret_room(self):
         print("Interpreting room...")
         t = time.time()
-        room = await self._interpreter.get_initial_room()
+        room, _ = await self._interpreter.get_initial_room()
         self.state.current_room = room
         room_in_level = room.copy()
         player_position, _ = room_in_level.find_player()

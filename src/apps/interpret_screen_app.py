@@ -51,6 +51,8 @@ class InterpretScreenApp(tkinter.Frame):
         self._control_panel.pack(side=tkinter.RIGHT)
         self._tile_content = tkinter.Label(self._control_panel, text="")
         self._tile_content.pack(side=tkinter.TOP)
+        self._room_text = tkinter.Label(self._control_panel, text="")
+        self._room_text.pack(side=tkinter.TOP)
         self._get_view_buttons = tkinter.Frame(self._control_panel)
         self._get_view_buttons.pack(side=tkinter.TOP)
         self._get_view_button = tkinter.Button(
@@ -72,7 +74,7 @@ class InterpretScreenApp(tkinter.Frame):
 
         self._set_debug_steps()
 
-    def set_data(self, debug_images, room):
+    def set_data(self, debug_images, room, room_text):
         """Set the data to show in the app.
 
         Parameters
@@ -81,9 +83,12 @@ class InterpretScreenApp(tkinter.Frame):
             A list of (name, image) pairs.
         room
             The room interpreted from the screenshot.
+        room_text
+            The text that popped up when entering the room.
         """
         self._debug_images = debug_images
         self._room = room
+        self._room_text.config(text=f"Room text: {room_text.value}")
         self._set_debug_steps()
         self._draw_view()
 
