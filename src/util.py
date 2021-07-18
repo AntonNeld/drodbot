@@ -138,7 +138,8 @@ def position_in_direction(original_position, direction):
     elif direction == Action.NW or direction == Direction.NW:
         return (x - 1, y - 1)
     else:
-        raise RuntimeError(f"Unknown direction {direction}")
+        # Assume this is another action, which won't affect direction
+        return (x, y)
 
 
 def inside_room(position):

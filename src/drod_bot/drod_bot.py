@@ -2,6 +2,7 @@ import asyncio
 import time
 
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
+from util import position_in_direction
 from .solve_room import solve_room
 from .level_walker import find_path_in_level
 from room_interpreter import RoomText, get_room_text
@@ -393,6 +394,14 @@ class DrodBot:
                 await self._enter_room(Direction.N)
             elif y == 0 and action in [Action.NW, Action.NE]:
                 raise RuntimeError(f"Tried to move {action} out of the room")
+            elif (
+                self.state.current_room.get_tile(
+                    position_in_direction((x, y), action)
+                ).room_piece.element_type
+                == ElementType.STAIRS
+            ):
+                await self._interface.do_action(action)
+                await self._leave_level()
             else:
                 await self._interface.do_action(action)
                 self.state.current_room = simulate_actions(
@@ -460,3 +469,17 @@ class DrodBot:
             self._notify_state_update()
         else:
             await self._interpret_room()
+
+    async def _leave_level(self):
+        print("Leaving level")
+        # Let's watch Beethro walk down the stairs for a while
+        await asyncio.sleep(3)
+        await self._interface.do_action(Action.WAIT)
+        # Let's read the entrance text for a while
+        await asyncio.sleep(3)
+        await self._interface.do_action(Action.WAIT)
+        # Let's wait a little while for the swirly animation to stop
+        await asyncio.sleep(3)
+
+        self.state = DrodBotState()
+        await self._interpret_room()
