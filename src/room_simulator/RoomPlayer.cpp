@@ -673,6 +673,7 @@ DerivedRoom RoomPlayer::getDerivedRoom()
                        this->findPlayer(),
                        this->getToggledDoors(),
                        this->playerIsDead(),
+                       this->playerHasLeft(),
                        this->getMonsters());
 }
 
@@ -685,6 +686,11 @@ std::tuple<Position, Direction> RoomPlayer::findPlayer()
 bool RoomPlayer::playerIsDead()
 {
     return this->currentGame->IsPlayerDying();
+}
+
+bool RoomPlayer::playerHasLeft()
+{
+    return this->currentGame->bIsLeavingLevel;
 }
 
 std::set<Position> RoomPlayer::getToggledDoors()

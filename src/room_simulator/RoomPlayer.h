@@ -21,6 +21,7 @@ private:
     void undo();
     std::tuple<Position, Direction> findPlayer();
     bool playerIsDead();
+    bool playerHasLeft();
     std::set<Position> getToggledDoors();
     std::vector<std::tuple<ElementType, Position, Direction>> getMonsters();
     CDbRoom *drodRoom;

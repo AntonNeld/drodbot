@@ -22,7 +22,7 @@ DerivedRoom DerivedRoomProblem::initialState()
 
 std::set<Action> DerivedRoomProblem::actions(DerivedRoom state)
 {
-    if (state.playerIsDead())
+    if (state.playerIsDead() || state.playerHasLeft())
     {
         return {};
     }

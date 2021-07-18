@@ -24,6 +24,11 @@ Position PathfindingProblem::initialState()
 
 std::set<Action> PathfindingProblem::actions(Position state)
 {
+    // Cannot move from a stair
+    if (this->room.getTile(state).roomPiece.type == ElementType::STAIRS)
+    {
+        return {};
+    }
     std::set<Action> actions;
     int x = std::get<0>(state);
     int y = std::get<1>(state);

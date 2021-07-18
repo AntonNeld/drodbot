@@ -19,10 +19,12 @@ public:
                 std::tuple<Position, Direction> player,
                 std::set<Position> toggledDoors,
                 bool deadPlayer,
+                bool playerLeftRoom,
                 Monsters monsters);
     std::vector<Action> getActions();
     std::tuple<Position, Direction> findPlayer();
     bool playerIsDead();
+    bool playerHasLeft();
     std::vector<Position> findMonsterCoordinates(std::optional<std::set<Position>> area = std::nullopt);
     int monsterCount(std::optional<std::set<Position>> area = std::nullopt);
     bool isConquered();
@@ -35,6 +37,7 @@ private:
     std::tuple<Position, Direction> player; // Player position and direction
     std::set<Position> toggledDoors;        // Doors that are not the same as in the base room
     bool deadPlayer;
+    bool playerLeftRoom;
     Monsters monsters;
 };
 

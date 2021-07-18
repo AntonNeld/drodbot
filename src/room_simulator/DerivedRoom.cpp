@@ -4,10 +4,12 @@ DerivedRoom::DerivedRoom(std::vector<Action> actions,
                          std::tuple<Position, Direction> player,
                          std::set<Position> toggledDoors,
                          bool deadPlayer,
+                         bool playerLeftRoom,
                          Monsters monsters) : actions(actions),
                                               player(player),
                                               toggledDoors(toggledDoors),
                                               deadPlayer(deadPlayer),
+                                              playerLeftRoom(playerLeftRoom),
                                               monsters(monsters){};
 
 std::vector<Action> DerivedRoom::getActions()
@@ -23,6 +25,11 @@ std::tuple<Position, Direction> DerivedRoom::findPlayer()
 bool DerivedRoom::playerIsDead()
 {
     return this->deadPlayer;
+}
+
+bool DerivedRoom::playerHasLeft()
+{
+    return this->playerLeftRoom;
 }
 
 std::vector<Position> DerivedRoom::findMonsterCoordinates(std::optional<std::set<Position>> area)
