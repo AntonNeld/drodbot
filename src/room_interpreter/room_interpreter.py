@@ -248,7 +248,7 @@ def get_room_text(room_image, return_debug_images=False):
         debug_images.append(("Binary dilated", dilated))
     labels, num_labels = scipy.ndimage.label(dilated)
     if return_debug_images:
-        debug_images.append(("Text regions", labels))
+        debug_images.append(("Text regions", labels * 255 // max(num_labels, 1)))
     if num_labels == 0:
         room_text = RoomText.NOTHING
     elif num_labels == 4:
