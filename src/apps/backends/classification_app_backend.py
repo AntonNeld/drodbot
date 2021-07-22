@@ -92,6 +92,43 @@ class ClassificationAppBackend:
             ElementType.FLOOR, Direction.NONE, (0, 0), (37, 31), style="image"
         )
 
+        elements = await self._make_tile_data_room()
+
+        await self._interface.start_test_room((37, 31), Direction.SE)
+        tiles, _ = await self._interface.get_tiles_and_colors()
+        await self._interface.stop_test_room()
+        if os.path.exists(self._tile_data_dir):
+            shutil.rmtree(self._tile_data_dir)
+        os.makedirs(self._tile_data_dir)
+        used_names = []
+        for (element, direction, x, y, style) in elements:
+            png_info = PngInfo()
+            png_info.add_text("element", element.name)
+            png_info.add_text("direction", direction.name)
+            image = PIL.Image.fromarray(tiles[(x, y)])
+            direction_str = f"_{direction.name}" if direction != Direction.NONE else ""
+            style_str = f"_{style}" if style is not None else ""
+            base_name = f"{element.name}{direction_str}{style_str}"
+            name_increment = 0
+            while base_name in used_names:
+                base_name = f"{element.name}{direction_str}{style_str}_{name_increment}"
+                name_increment += 1
+            used_names.append(base_name)
+            image.save(
+                os.path.join(
+                    self._tile_data_dir,
+                    f"{base_name}.png",
+                ),
+                "PNG",
+                pnginfo=png_info,
+            )
+        self._classifier.load_tile_data(self._tile_data_dir)
+        if self._sample_data:
+            self._classify_sample_data()
+            self._queue.put((GUIEvent.SET_CLASSIFICATION_DATA, self._sample_data))
+        print("Finished getting tile data")
+
+    async def _make_tile_data_room(self):
         elements = (
             await place_sworded_element(
                 self._interface,
@@ -186,39 +223,7 @@ class ClassificationAppBackend:
             await self._interface.place_element(element, direction, (x, y), style=style)
         elements.extend(extra_elements)
 
-        await self._interface.start_test_room((37, 31), Direction.SE)
-        tiles, _ = await self._interface.get_tiles_and_colors()
-        await self._interface.stop_test_room()
-        if os.path.exists(self._tile_data_dir):
-            shutil.rmtree(self._tile_data_dir)
-        os.makedirs(self._tile_data_dir)
-        used_names = []
-        for (element, direction, x, y, style) in elements:
-            png_info = PngInfo()
-            png_info.add_text("element", element.name)
-            png_info.add_text("direction", direction.name)
-            image = PIL.Image.fromarray(tiles[(x, y)])
-            direction_str = f"_{direction.name}" if direction != Direction.NONE else ""
-            style_str = f"_{style}" if style is not None else ""
-            base_name = f"{element.name}{direction_str}{style_str}"
-            name_increment = 0
-            while base_name in used_names:
-                base_name = f"{element.name}{direction_str}{style_str}_{name_increment}"
-                name_increment += 1
-            used_names.append(base_name)
-            image.save(
-                os.path.join(
-                    self._tile_data_dir,
-                    f"{base_name}.png",
-                ),
-                "PNG",
-                pnginfo=png_info,
-            )
-        self._classifier.load_tile_data(self._tile_data_dir)
-        if self._sample_data:
-            self._classify_sample_data()
-            self._queue.put((GUIEvent.SET_CLASSIFICATION_DATA, self._sample_data))
-        print("Finished getting tile data")
+        return elements
 
     def _classify_sample_data(self):
         """Classify the loaded sample data."""
