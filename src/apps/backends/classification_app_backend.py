@@ -92,20 +92,36 @@ class ClassificationAppBackend:
             ElementType.FLOOR, Direction.NONE, (0, 0), (37, 31), style="image"
         )
 
-        elements = await self._make_tile_data_room()
-
+        tile_collections = []
+        elements = []
+        # Check elements whose look don't depend on room style
+        unstyled_elements = await self._make_unstyled_tile_data_room()
         await self._interface.start_test_room((37, 31), Direction.SE)
         tiles, _ = await self._interface.get_tiles_and_colors()
         await self._interface.stop_test_room()
+        tile_collections.append(tiles)
+        elements.extend([(*element, 0) for element in unstyled_elements])
+
+        await self._interface.clear_room()
+        await self._interface.place_element(
+            ElementType.FLOOR, Direction.NONE, (0, 0), (37, 31), style="image"
+        )
+        styled_elements = await self._make_styled_tile_data_room()
+        await self._interface.start_test_room((37, 31), Direction.SE)
+        tiles, _ = await self._interface.get_tiles_and_colors()
+        await self._interface.stop_test_room()
+        tile_collections.append(tiles)
+        elements.extend((*element, 1) for element in styled_elements)
+
         if os.path.exists(self._tile_data_dir):
             shutil.rmtree(self._tile_data_dir)
         os.makedirs(self._tile_data_dir)
         used_names = []
-        for (element, direction, x, y, style) in elements:
+        for (element, direction, x, y, style, tile_collection_index) in elements:
             png_info = PngInfo()
             png_info.add_text("element", element.name)
             png_info.add_text("direction", direction.name)
-            image = PIL.Image.fromarray(tiles[(x, y)])
+            image = PIL.Image.fromarray(tile_collections[tile_collection_index][(x, y)])
             direction_str = f"_{direction.name}" if direction != Direction.NONE else ""
             style_str = f"_{style}" if style is not None else ""
             base_name = f"{element.name}{direction_str}{style_str}"
@@ -128,41 +144,13 @@ class ClassificationAppBackend:
             self._queue.put((GUIEvent.SET_CLASSIFICATION_DATA, self._sample_data))
         print("Finished getting tile data")
 
-    async def _make_tile_data_room(self):
+    async def _make_styled_tile_data_room(self):
         elements = (
-            await place_sworded_element(
-                self._interface,
-                ElementType.BEETHRO,
-                ElementType.BEETHRO_SWORD,
-                0,
-                0,
-            )
-            + await place_fully_directional_elements(
-                self._interface, ElementType.ROACH, 0, 3
-            )
-            + await place_fully_directional_elements(
+            await place_fully_directional_elements(
                 self._interface, ElementType.FORCE_ARROW, 8, 2
             )
             + await place_nondirectional_edges_elements(
                 self._interface, ElementType.WALL, 1, 4, "hard"
-            )
-            + await place_nondirectional_edges_elements(
-                self._interface, ElementType.YELLOW_DOOR, 1, 9
-            )
-            + await place_nondirectional_edges_elements(
-                self._interface, ElementType.BLUE_DOOR, 1, 14
-            )
-            + await place_nondirectional_edges_elements(
-                self._interface, ElementType.GREEN_DOOR, 1, 19
-            )
-            + await place_nondirectional_edges_elements(
-                self._interface, ElementType.YELLOW_DOOR_OPEN, 11, 9
-            )
-            + await place_nondirectional_edges_elements(
-                self._interface, ElementType.BLUE_DOOR_OPEN, 11, 14
-            )
-            + await place_nondirectional_edges_elements(
-                self._interface, ElementType.GREEN_DOOR_OPEN, 11, 19
             )
             + await place_sized_obstacles(self._interface, "rock_1", 7, 0, [1, 2, 3])
             + await place_sized_obstacles(self._interface, "rock_2", 11, 4, [1, 2, 3])
@@ -213,6 +201,45 @@ class ClassificationAppBackend:
         extra_elements = [
             (ElementType.FLOOR, Direction.NONE, 2, 2, "normal"),
             (ElementType.FLOOR, Direction.NONE, 3, 2, "normal"),
+        ]
+        for (element, direction, x, y, style) in extra_elements:
+            await self._interface.place_element(element, direction, (x, y), style=style)
+        elements.extend(extra_elements)
+
+        return elements
+
+    async def _make_unstyled_tile_data_room(self):
+        elements = (
+            await place_sworded_element(
+                self._interface,
+                ElementType.BEETHRO,
+                ElementType.BEETHRO_SWORD,
+                0,
+                0,
+            )
+            + await place_fully_directional_elements(
+                self._interface, ElementType.ROACH, 0, 3
+            )
+            + await place_nondirectional_edges_elements(
+                self._interface, ElementType.YELLOW_DOOR, 1, 9
+            )
+            + await place_nondirectional_edges_elements(
+                self._interface, ElementType.BLUE_DOOR, 1, 14
+            )
+            + await place_nondirectional_edges_elements(
+                self._interface, ElementType.GREEN_DOOR, 1, 19
+            )
+            + await place_nondirectional_edges_elements(
+                self._interface, ElementType.YELLOW_DOOR_OPEN, 11, 9
+            )
+            + await place_nondirectional_edges_elements(
+                self._interface, ElementType.BLUE_DOOR_OPEN, 11, 14
+            )
+            + await place_nondirectional_edges_elements(
+                self._interface, ElementType.GREEN_DOOR_OPEN, 11, 19
+            )
+        )
+        extra_elements = [
             (ElementType.CONQUER_TOKEN, Direction.NONE, 0, 5, None),
             (ElementType.MASTER_WALL, Direction.NONE, 4, 3, None),
             (ElementType.ORB, Direction.NONE, 6, 1, None),
