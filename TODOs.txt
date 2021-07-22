@@ -1,5 +1,9 @@
-- Use asserts instead of exceptions in C++
+Python parts:
 - Make the different states and displayed types in room solver app concentrated somewhere
+- Begin using type hints
+
+C++ parts:
+- Use asserts instead of exceptions in C++
 - Do level walking search in C++ code instead of having two search implementations
 - Split module.cpp into multiple files
 - Only use std::set when needed, and remove any unnecessary < operator overloads
