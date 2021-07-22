@@ -1,7 +1,9 @@
 # DRODbot
 
 This is a program that plays [Deadly Rooms of Death](https://drod.caravelgames.com) (DROD) automatically.
-It will attempt to solve some types of rooms (see [What it can do](#what-it-can-do)).
+I am currently seeing how far I can make it go in King Dugan's Dungeon, the levels of the first DROD game.
+There are some [Youtube videos](https://www.youtube.com/watch?v=8uvHPBq1W5Y&list=PLkYGKleB7n-8U_dU3aR3vouqIywl4owcx)
+showing it in action.
 
 ## Prerequisites
 
@@ -62,13 +64,16 @@ Enter "Manage classifier" mode in the DRODbot window, and:
 - In the DRODbot window, click "Generate tile data" and wait for it to finish. While it's working,
   you can't do anything else involving the mouse, keyboard, or having another window focused.
 
-## What it can do
+### Playing the game
 
-It can:
+Begin playing a hold in DROD. You should be in a room, not reading a level description.
 
-- recognize all elements that appear in the first level of King Dugan's Dungeon
-- explore a level
-- solve orb puzzles
+Enter the default "Play game" mode in DRODbot, make sure "Explore while conquering rooms"
+is selected, and click "Go". DRODbot will now explore the level and conquer any rooms it comes
+across. Once it has conquered all the rooms it can, it will go down the stairs to the next
+level and repeat.
 
-There are some [Youtube videos](https://www.youtube.com/watch?v=8uvHPBq1W5Y&list=PLkYGKleB7n-8U_dU3aR3vouqIywl4owcx)
-showing it in action.
+To stop, slam the cursor into the a corner of the primary monitor. You will get an exception
+the next time DRODbot tries to interact with DROD. The state will still be consistent, so you can
+save it (with the "Save state" button) after this. If you close DRODbot it will load that state
+the next time you start.
