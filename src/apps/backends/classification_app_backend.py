@@ -94,7 +94,7 @@ class ClassificationAppBackend:
 
         tile_collections = []
         elements = []
-        # Check elements whose look don't depend on room style
+        print("Getting elements that don't depend on room style...")
         unstyled_elements = await self._make_unstyled_tile_data_room()
         await self._interface.start_test_room((37, 31), Direction.SE)
         tiles, _ = await self._interface.get_tiles_and_colors()
@@ -106,6 +106,7 @@ class ClassificationAppBackend:
         await self._interface.place_element(
             ElementType.FLOOR, Direction.NONE, (0, 0), (37, 31), style="image"
         )
+        print("Getting elements that depend on room style...")
         styled_elements = await self._make_styled_tile_data_room()
         await self._interface.start_test_room((37, 31), Direction.SE)
         tiles, _ = await self._interface.get_tiles_and_colors()
@@ -113,6 +114,7 @@ class ClassificationAppBackend:
         tile_collections.append(tiles)
         elements.extend((*element, 1) for element in styled_elements)
 
+        print("Making tile data files...")
         if os.path.exists(self._tile_data_dir):
             shutil.rmtree(self._tile_data_dir)
         os.makedirs(self._tile_data_dir)
