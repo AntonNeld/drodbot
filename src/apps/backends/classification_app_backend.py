@@ -190,6 +190,8 @@ class ClassificationAppBackend:
         print("Finished getting tile data")
 
     async def _make_styled_tile_data_room(self):
+        # Place some walls we don't care about, to make shadows for force arrows
+        await place_rectangle(self._interface, ElementType.WALL, 20, 13, 9, 1)
         elements = (
             await place_fully_directional_elements(
                 self._interface, ElementType.FORCE_ARROW, 8, 2
@@ -202,55 +204,17 @@ class ClassificationAppBackend:
             + await place_sized_obstacles(
                 self._interface, "square_statue", 16, 1, [1, 2, 4]
             )
-            + await place_rectangle(
-                self._interface,
-                ElementType.WALL,
-                20,
-                5,
-                9,
-                9,
-                include_all_sides=False,
-            )
             # Place some force arrows in the shadow, since we're having trouble seeing
             # those otherwise
             + await place_fully_directional_elements(
                 self._interface, ElementType.FORCE_ARROW, 21, 14, one_line=True
             )
-            + await place_rectangle(self._interface, ElementType.PIT, 20, 15, 9, 9)
-            + await place_rectangle(
-                self._interface, ElementType.FLOOR, 30, 5, 4, 4, style="mosaic"
-            )
-            + await place_rectangle(
-                self._interface, ElementType.FLOOR, 30, 9, 4, 4, style="road"
-            )
-            + await place_rectangle(
-                self._interface, ElementType.FLOOR, 30, 13, 4, 4, style="grass"
-            )
-            + await place_rectangle(
-                self._interface, ElementType.FLOOR, 30, 17, 4, 4, style="dirt"
-            )
-            + await place_rectangle(
-                self._interface,
-                ElementType.FLOOR,
-                30,
-                21,
-                4,
-                4,
-                style="alternate",
-            )
+            + await place_rectangle(self._interface, ElementType.PIT, 20, 15, 5, 4)
             + await place_rectangle(self._interface, ElementType.STAIRS, 34, 5, 1, 19)
             + await place_rectangle(
                 self._interface, ElementType.STAIRS, 35, 5, 1, 19, style="up"
             )
         )
-        extra_elements = [
-            (ElementType.FLOOR, Direction.NONE, 2, 2, "normal"),
-            (ElementType.FLOOR, Direction.NONE, 3, 2, "normal"),
-        ]
-        for (element, direction, x, y, style) in extra_elements:
-            await self._interface.place_element(element, direction, (x, y), style=style)
-        elements.extend(extra_elements)
-
         return elements
 
     async def _make_unstyled_tile_data_room(self):

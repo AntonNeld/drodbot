@@ -41,7 +41,6 @@ class TileClassifier:
                 [f.name for f in os.scandir(tile_data_dir) if not f.is_dir()]
             )
             tile_data = []
-            tile_examples = {}
             for file_name in file_names:
                 image = PIL.Image.open(os.path.join(tile_data_dir, file_name))
                 image_array = numpy.array(image)
@@ -64,11 +63,7 @@ class TileClassifier:
                         "layer": element_layer(element),
                     }
                 )
-                if (element, direction) not in tile_examples:
-                    tile_examples[(element, direction)] = {
-                        "image": image_array,
-                        "mask": mask,
-                    }
+
             # Load whole room images
             whole_room_images = []
             room_image_file_names = sorted(
@@ -93,6 +88,39 @@ class TileClassifier:
                         "element": element,
                     }
                 )
+                # Extend tile_data with images of all tiles
+                for x in range(ROOM_WIDTH_IN_TILES):
+                    for y in range(ROOM_HEIGHT_IN_TILES):
+                        tile_data.append(
+                            {
+                                "file_name": file_name,
+                                "image": _preprocess_image(
+                                    image_array[
+                                        y * TILE_SIZE : (y + 1) * TILE_SIZE,
+                                        x * TILE_SIZE : (x + 1) * TILE_SIZE,
+                                        :,
+                                    ].astype(float)
+                                ),
+                                "mask": numpy.ones((TILE_SIZE, TILE_SIZE), dtype=bool),
+                                "element": element,
+                                "direction": Direction.NONE,
+                                "layer": "room_piece",
+                                "position": (x, y),
+                            }
+                        )
+
+            # Create examples of tiles, for reconstructing a room image
+            tile_examples = {}
+            for tile_info in tile_data:
+                element = tile_info["element"]
+                direction = tile_info["direction"]
+                image_array = tile_info["image"]
+                mask = tile_info["mask"]
+                if (element, direction) not in tile_examples:
+                    tile_examples[(element, direction)] = {
+                        "image": image_array,
+                        "mask": mask,
+                    }
 
             self._whole_room_images = whole_room_images
             self._tile_data = tile_data
@@ -232,19 +260,18 @@ class TileClassifier:
             else:
                 processed_image = _preprocess_image(image.astype(float))
 
-            minimap_filtered_indices, alternatives = zip(
+            filtered_indices, alternatives = zip(
                 *[
                     (i, a)
                     for i, a in enumerate(self._tile_data)
                     if _compatible_with_minimap_color(
                         a["element"], a["layer"], minimap_colors[key]
                     )
+                    and ("position" not in a or a["position"] == key)
                 ]
             )
-            alternative_images = all_alternative_images[
-                :, :, :, minimap_filtered_indices
-            ]
-            alternative_masks = all_alternative_masks[:, :, minimap_filtered_indices]
+            alternative_images = all_alternative_images[:, :, :, filtered_indices]
+            alternative_masks = all_alternative_masks[:, :, filtered_indices]
             unmasked_image_diffs = numpy.sqrt(
                 numpy.sum(
                     (processed_image[:, :, :, numpy.newaxis] - alternative_images) ** 2,
