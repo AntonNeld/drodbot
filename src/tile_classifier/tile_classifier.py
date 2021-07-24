@@ -34,7 +34,9 @@ class TileClassifier:
             The directory to read images from.
         """
         try:
-            file_names = sorted(os.listdir(tile_data_dir))
+            file_names = sorted(
+                [f.name for f in os.scandir(tile_data_dir) if not f.is_dir()]
+            )
             tile_data = []
             tile_examples = {}
             for file_name in file_names:

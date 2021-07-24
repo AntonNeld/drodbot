@@ -536,3 +536,13 @@ class EditorInterface:
         room_image = extract_room(window_image)
         minimap_image = extract_minimap(window_image)
         return extract_tiles(room_image, minimap_image)
+
+    async def get_room_image(self):
+        """Get the room image from the DROD window.
+
+        Returns
+        -------
+        An image of the room.
+        """
+        _, _, window_image = await get_drod_window()
+        return extract_room(window_image)

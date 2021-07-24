@@ -94,6 +94,7 @@ class ClassificationAppBackend:
 
         tile_collections = []
         elements = []
+        whole_room_images = []
         print("Getting elements that don't depend on room style...")
         unstyled_elements = await self._make_unstyled_tile_data_room()
         await self._interface.start_test_room((37, 31), Direction.SE)
@@ -113,6 +114,17 @@ class ClassificationAppBackend:
         await self._interface.stop_test_room()
         tile_collections.append(tiles)
         elements.extend((*element, 1) for element in styled_elements)
+
+        await self._interface.clear_room()
+        print("Getting whole-room images...")
+        # Normal floor
+        await self._interface.place_element(
+            ElementType.FLOOR, Direction.NONE, (0, 0), (37, 31)
+        )
+        await self._interface.start_test_room((37, 31), Direction.SE)
+        room_image = await self._interface.get_room_image()
+        await self._interface.stop_test_room()
+        whole_room_images.append((ElementType.FLOOR, None, room_image))
 
         print("Making tile data files...")
         if os.path.exists(self._tile_data_dir):
@@ -140,6 +152,23 @@ class ClassificationAppBackend:
                 "PNG",
                 pnginfo=png_info,
             )
+        os.makedirs(os.path.join(self._tile_data_dir, "whole_room_images"))
+        for (element, style, room_image) in whole_room_images:
+            png_info = PngInfo()
+            png_info.add_text("element", element.name)
+            image = PIL.Image.fromarray(room_image)
+            style_str = f"_{style}" if style is not None else ""
+            file_name = f"{element.name}{style_str}"
+            image.save(
+                os.path.join(
+                    os.path.join(self._tile_data_dir, "whole_room_images"),
+                    f"{file_name}.png",
+                ),
+                "PNG",
+                pnginfo=png_info,
+            )
+
+        # Classify tiles once done
         self._classifier.load_tile_data(self._tile_data_dir)
         if self._sample_data:
             self._classify_sample_data()
