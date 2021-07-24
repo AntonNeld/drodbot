@@ -92,7 +92,7 @@ class ClassificationAppBackend:
             os.path.dirname(os.path.realpath(__file__)), "background"
         )
         await self._interface.place_element(
-            ElementType.FLOOR, Direction.NONE, (0, 0), (37, 31), style="image"
+            ElementType.FLOOR, Direction.NONE, (0, 0), (37, 31), variant="image"
         )
 
         tile_collections = []
@@ -108,7 +108,7 @@ class ClassificationAppBackend:
 
         await self._interface.clear_room()
         await self._interface.place_element(
-            ElementType.FLOOR, Direction.NONE, (0, 0), (37, 31), style="image"
+            ElementType.FLOOR, Direction.NONE, (0, 0), (37, 31), variant="image"
         )
         print("Getting elements that depend on room style...")
         styled_elements = await self._make_styled_tile_data_room()
@@ -120,7 +120,7 @@ class ClassificationAppBackend:
 
         await self._interface.clear_room()
         print("Getting whole-room images...")
-        for (element, style) in [
+        for (element, variant) in [
             (ElementType.FLOOR, None),
             (ElementType.FLOOR, "mosaic"),
             (ElementType.FLOOR, "road"),
@@ -131,31 +131,33 @@ class ClassificationAppBackend:
             (ElementType.WALL, None),
         ]:
             await self._interface.place_element(
-                element, Direction.NONE, (0, 0), (37, 31), style=style
+                element, Direction.NONE, (0, 0), (37, 31), variant=variant
             )
             await self._interface.start_test_room((37, 31), Direction.SE)
             room_image = await self._interface.get_room_image()
             await self._interface.stop_test_room()
             if element != ElementType.FLOOR:
                 await self._interface.clear_room()
-            whole_room_images.append((element, style, _fix_corner_tiles(room_image)))
+            whole_room_images.append((element, variant, _fix_corner_tiles(room_image)))
 
         print("Making tile data files...")
         if os.path.exists(self._tile_data_dir):
             shutil.rmtree(self._tile_data_dir)
         os.makedirs(self._tile_data_dir)
         used_names = []
-        for (element, direction, x, y, style, tile_collection_index) in elements:
+        for (element, direction, x, y, variant, tile_collection_index) in elements:
             png_info = PngInfo()
             png_info.add_text("element", element.name)
             png_info.add_text("direction", direction.name)
             image = PIL.Image.fromarray(tile_collections[tile_collection_index][(x, y)])
             direction_str = f"_{direction.name}" if direction != Direction.NONE else ""
-            style_str = f"_{style}" if style is not None else ""
-            base_name = f"{element.name}{direction_str}{style_str}"
+            variant_str = f"_{variant}" if variant is not None else ""
+            base_name = f"{element.name}{direction_str}{variant_str}"
             name_increment = 0
             while base_name in used_names:
-                base_name = f"{element.name}{direction_str}{style_str}_{name_increment}"
+                base_name = (
+                    f"{element.name}{direction_str}{variant_str}_{name_increment}"
+                )
                 name_increment += 1
             used_names.append(base_name)
             image.save(
@@ -167,12 +169,12 @@ class ClassificationAppBackend:
                 pnginfo=png_info,
             )
         os.makedirs(os.path.join(self._tile_data_dir, "whole_room_images"))
-        for (element, style, room_image) in whole_room_images:
+        for (element, variant, room_image) in whole_room_images:
             png_info = PngInfo()
             png_info.add_text("element", element.name)
             image = PIL.Image.fromarray(room_image)
-            style_str = f"_{style}" if style is not None else ""
-            file_name = f"{element.name}{style_str}"
+            variant_str = f"_{variant}" if variant is not None else ""
+            file_name = f"{element.name}{variant_str}"
             image.save(
                 os.path.join(
                     os.path.join(self._tile_data_dir, "whole_room_images"),
@@ -212,7 +214,7 @@ class ClassificationAppBackend:
             + await place_rectangle(self._interface, ElementType.PIT, 20, 15, 5, 4)
             + await place_rectangle(self._interface, ElementType.STAIRS, 34, 5, 1, 19)
             + await place_rectangle(
-                self._interface, ElementType.STAIRS, 35, 5, 1, 19, style="up"
+                self._interface, ElementType.STAIRS, 35, 5, 1, 19, variant="up"
             )
         )
         return elements
@@ -255,8 +257,10 @@ class ClassificationAppBackend:
             (ElementType.CHECKPOINT, Direction.NONE, 7, 1, None),
             (ElementType.SCROLL, Direction.NONE, 12, 3, None),
         ]
-        for (element, direction, x, y, style) in extra_elements:
-            await self._interface.place_element(element, direction, (x, y), style=style)
+        for (element, direction, x, y, variant) in extra_elements:
+            await self._interface.place_element(
+                element, direction, (x, y), variant=variant
+            )
         elements.extend(extra_elements)
 
         return elements
@@ -319,8 +323,10 @@ class ClassificationAppBackend:
             (ElementType.FLOOR, Direction.NONE, 7, 16, "road"),
             (ElementType.FORCE_ARROW, Direction.W, 7, 16, None),
         ]
-        for (element, direction, x, y, style) in extra_elements:
-            await self._interface.place_element(element, direction, (x, y), style=style)
+        for (element, direction, x, y, variant) in extra_elements:
+            await self._interface.place_element(
+                element, direction, (x, y), variant=variant
+            )
 
         elements.extend(extra_elements)
 
@@ -330,7 +336,7 @@ class ClassificationAppBackend:
 
         # Assign elements to tiles
         tile_contents = {}
-        for (element, direction, x, y, style) in elements:
+        for (element, direction, x, y, _) in elements:
             if (x, y) not in tile_contents:
                 tile_contents[(x, y)] = ApparentTile(
                     room_piece=(ElementType.FLOOR, Direction.NONE)

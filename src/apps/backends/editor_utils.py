@@ -19,7 +19,7 @@ async def place_sworded_element(interface, element, sword, x, y):
 
     Returns
     -------
-    A list of tuples (element, direction, x, y, style) of placed elements.
+    A list of tuples (element, direction, x, y, variant) of placed elements.
     This includes the swords.
     """
     elements = [
@@ -68,7 +68,7 @@ async def place_fully_directional_elements(interface, element, x, y, one_line=Fa
 
     Returns
     -------
-    A list of tuples (element, direction, x, y, style) of placed elements.
+    A list of tuples (element, direction, x, y, variant) of placed elements.
     """
     elements = [
         (element, Direction.N, x + 0, y + 0),
@@ -99,7 +99,7 @@ async def place_fully_directional_elements(interface, element, x, y, one_line=Fa
     return [(*e, None) for e in elements]
 
 
-async def place_nondirectional_edges_elements(interface, element, x, y, style=None):
+async def place_nondirectional_edges_elements(interface, element, x, y, variant=None):
     """Place nondirectional elements with edges to include many cases.
 
     Parameters
@@ -112,12 +112,12 @@ async def place_nondirectional_edges_elements(interface, element, x, y, style=No
         X coordinate of the upper left corner of the pattern.
     y
         Y coordinate of the upper left corner of the pattern.
-    style
-        The style of the element.
+    variant
+        The variant of the element.
 
     Returns
     -------
-    A list of tuples (element, direction, x, y, style) of placed elements.
+    A list of tuples (element, direction, x, y, variant) of placed elements.
     Not all placed elements are included, to avoid duplicate images.
     """
     returned_coords = [
@@ -158,23 +158,23 @@ async def place_nondirectional_edges_elements(interface, element, x, y, style=No
     ]
     for (element_x, element_y) in returned_coords + not_returned_coords:
         await interface.place_element(
-            element, Direction.NONE, (element_x, element_y), style=style
+            element, Direction.NONE, (element_x, element_y), variant=variant
         )
     return [
-        (element, Direction.NONE, element_x, element_y, style)
+        (element, Direction.NONE, element_x, element_y, variant)
         for element_x, element_y in returned_coords
     ]
 
 
-async def place_sized_obstacles(interface, style, x, y, sizes):
+async def place_sized_obstacles(interface, variant, x, y, sizes):
     """Place obstacles of various sizes.
 
     Parameters
     ----------
     interface
         The editor interface.
-    style
-        The style of the obstacle to place.
+    variant
+        The variant of the obstacle to place.
     x
         X coordinate of the leftmost obstacle.
     y
@@ -184,7 +184,7 @@ async def place_sized_obstacles(interface, style, x, y, sizes):
 
     Returns
     -------
-    A list of tuples (element, direction, x, y, style) of placed elements.
+    A list of tuples (element, direction, x, y, variant) of placed elements.
     """
     return_elements = []
     current_x = x
@@ -194,7 +194,7 @@ async def place_sized_obstacles(interface, style, x, y, sizes):
             Direction.NONE,
             (current_x, y),
             (current_x + size - 1, y + size - 1) if size != 1 else None,
-            style=style,
+            variant=variant,
         )
         for placed_x in range(current_x, current_x + size):
             for placed_y in range(y, y + size):
@@ -204,7 +204,7 @@ async def place_sized_obstacles(interface, style, x, y, sizes):
                         Direction.NONE,
                         placed_x,
                         placed_y,
-                        style,
+                        variant,
                     )
                 )
         current_x = current_x + size + 1
@@ -212,7 +212,7 @@ async def place_sized_obstacles(interface, style, x, y, sizes):
 
 
 async def place_rectangle(
-    interface, element, x, y, width, height, include_all_sides=True, style=None
+    interface, element, x, y, width, height, include_all_sides=True, variant=None
 ):
     """Place a rectangle of an element.
 
@@ -231,16 +231,20 @@ async def place_rectangle(
     include_all_sides
         If False, skip returning the left, right and lower sides. Use this
         when placing walls and you are only interested in the insides.
-    style
-        The style of element to place.
+    variant
+        The variant of element to place.
 
     Returns
     -------
-    A list of tuples (element, direction, x, y, style) of placed elements.
+    A list of tuples (element, direction, x, y, variant) of placed elements.
     Some may be omitted, if `include_all_sides` is false.
     """
     await interface.place_element(
-        element, Direction.NONE, (x, y), (x + width - 1, y + height - 1), style=style
+        element,
+        Direction.NONE,
+        (x, y),
+        (x + width - 1, y + height - 1),
+        variant=variant,
     )
     return_elements = []
     if include_all_sides:
@@ -251,5 +255,7 @@ async def place_rectangle(
         y_range = range(y, y + height - 1)
     for placed_x in x_range:
         for placed_y in y_range:
-            return_elements.append((element, Direction.NONE, placed_x, placed_y, style))
+            return_elements.append(
+                (element, Direction.NONE, placed_x, placed_y, variant)
+            )
     return return_elements

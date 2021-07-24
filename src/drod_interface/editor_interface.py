@@ -47,7 +47,7 @@ _ORB = (25, 50)
 _MIMIC_POTION = (60, 50)
 _SCROLL = (25, 115)
 _OBSTACLE = (125, 115)
-_OBSTACLE_STYLES = {
+_OBSTACLE_VARIANTS = {
     "rock_1": (170, 80),
     "rock_2": (200, 80),
     "square_statue": (170, 115),
@@ -294,7 +294,7 @@ class EditorInterface:
         position,
         end_position=None,
         copy_characters=False,
-        style=None,
+        variant=None,
     ):
         """Place an element in the editor.
 
@@ -315,8 +315,8 @@ class EditorInterface:
             again. This has the side effect of copying the entire contents of the tile,
             so this should only be done if we know the tile is otherwise empty, e.g. by
             placing all characters before any other layers.
-        style
-            The cosmetic style of the element. It does not count as a separate element
+        variant
+            The cosmetic variant of the element. It does not count as a separate element
             in the model (the ElementType enum), but may be of interest to place anyway.
             The possible values depend on the element to place.
         """
@@ -330,29 +330,29 @@ class EditorInterface:
 
         if element == ElementType.WALL:
             await self._select_element(_ROOM_PIECES_TAB, _WALL)
-            if (style == "hard") != self._hard_walls:
+            if (variant == "hard") != self._hard_walls:
                 await self._click(_WALL)
-                self._hard_walls = style == "hard"
+                self._hard_walls = variant == "hard"
         elif element == ElementType.PIT:
             await self._select_element(_ROOM_PIECES_TAB, _PIT)
         elif element == ElementType.STAIRS:
             await self._select_element(_ROOM_PIECES_TAB, _STAIRS)
-            if (style == "up") != self._stairs_up:
+            if (variant == "up") != self._stairs_up:
                 await self._click(_STAIRS)
-                self._stairs_up = style == "up"
+                self._stairs_up = variant == "up"
         elif element == ElementType.FLOOR:
             button = "right"
-            if style == "mosaic":
+            if variant == "mosaic":
                 await self._select_element(_ROOM_PIECES_TAB, _MOSAIC_FLOOR)
-            elif style == "road":
+            elif variant == "road":
                 await self._select_element(_ROOM_PIECES_TAB, _ROAD_FLOOR)
-            elif style == "grass":
+            elif variant == "grass":
                 await self._select_element(_ROOM_PIECES_TAB, _GRASS_FLOOR)
-            elif style == "dirt":
+            elif variant == "dirt":
                 await self._select_element(_ROOM_PIECES_TAB, _DIRT_FLOOR)
-            elif style == "alternate":
+            elif variant == "alternate":
                 await self._select_element(_ROOM_PIECES_TAB, _ALTERNATE_FLOOR)
-            elif style == "image":
+            elif variant == "image":
                 await self._select_element(_ROOM_PIECES_TAB, _IMAGE_FLOOR)
                 # This floor doesn't behave like the others, and should be
                 # created with the left button
@@ -392,13 +392,13 @@ class EditorInterface:
         elif element == ElementType.SCROLL:
             await self._select_element(_ITEMS_TAB, _SCROLL)
         elif element == ElementType.OBSTACLE:
-            used_style = style if style is not None else "rock_1"
+            used_variant = variant if variant is not None else "rock_1"
             await self._select_element(_ITEMS_TAB, _OBSTACLE)
-            if self._selected_obstacle != _OBSTACLE_STYLES[used_style]:
-                # Click it again to bring up the menu, and select the right style
+            if self._selected_obstacle != _OBSTACLE_VARIANTS[used_variant]:
+                # Click it again to bring up the menu, and select the right variant
                 await self._click(_OBSTACLE)
-                await self._click(_OBSTACLE_STYLES[used_style])
-                self._selected_obstacle = _OBSTACLE_STYLES[used_style]
+                await self._click(_OBSTACLE_VARIANTS[used_variant])
+                self._selected_obstacle = _OBSTACLE_VARIANTS[used_variant]
         elif element == ElementType.CONQUER_TOKEN:
             await self._select_element(_ITEMS_TAB, _TOKEN)
             if self._selected_token != _CONQUER_TOKEN_IN_MENU:
