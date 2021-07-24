@@ -190,7 +190,7 @@ class TileClassifier:
         Parameters
         ----------
         tiles
-            A dict with tile images as the values.
+            A dict with positions as keys and tile images as the values.
         minimap_colors
             A dict with the same keys as `tiles` and (r, g, b) color tuples
             as the values.

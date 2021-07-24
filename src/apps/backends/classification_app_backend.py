@@ -64,12 +64,15 @@ class ClassificationAppBackend:
             image = PIL.Image.open(os.path.join(self._sample_data_dir, file_name))
             content = ApparentTile.parse_raw(image.info["tile_json"])
             minimap_color = tuple(json.loads(image.info["minimap_color"]))
+            x = int(image.info["x"])
+            y = int(image.info["y"])
             self._sample_data.append(
                 {
                     "image": numpy.array(image),
                     "real_content": content,
                     "file_name": file_name,
                     "minimap_color": minimap_color,
+                    "position": (x, y),
                 }
             )
         print("Classifying sample data...")
@@ -297,13 +300,13 @@ class ClassificationAppBackend:
     def _classify_sample_data(self):
         """Classify the loaded sample data."""
         predicted_contents, debug_images = self._classifier.classify_tiles(
-            {t["file_name"]: t["image"] for t in self._sample_data},
-            {t["file_name"]: t["minimap_color"] for t in self._sample_data},
+            {t["position"]: t["image"] for t in self._sample_data},
+            {t["position"]: t["minimap_color"] for t in self._sample_data},
             return_debug_images=True,
         )
         for entry in self._sample_data:
-            entry["predicted_content"] = predicted_contents[entry["file_name"]]
-            entry["debug_images"] = debug_images[entry["file_name"]]
+            entry["predicted_content"] = predicted_contents[entry["position"]]
+            entry["debug_images"] = debug_images[entry["position"]]
 
     async def generate_sample_data(self):
         """Generate some sample data to test the classifier."""
@@ -386,6 +389,8 @@ class ClassificationAppBackend:
             minimap_color = colors[(x, y)]
             png_info = PngInfo()
             png_info.add_text("tile_json", tile_info.json())
+            png_info.add_text("x", str(x))
+            png_info.add_text("y", str(y))
             png_info.add_text("minimap_color", json.dumps(minimap_color))
             image = PIL.Image.fromarray(tiles[(x, y)])
             image.save(
