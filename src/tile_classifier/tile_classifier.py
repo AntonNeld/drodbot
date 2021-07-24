@@ -5,6 +5,8 @@ import numpy
 import PIL
 
 from common import (
+    ROOM_HEIGHT_IN_TILES,
+    ROOM_WIDTH_IN_TILES,
     TILE_SIZE,
 )
 from room_simulator import ElementType, Direction
@@ -34,6 +36,7 @@ class TileClassifier:
             The directory to read images from.
         """
         try:
+            # Load individual tiles
             file_names = sorted(
                 [f.name for f in os.scandir(tile_data_dir) if not f.is_dir()]
             )
@@ -66,6 +69,32 @@ class TileClassifier:
                         "image": image_array,
                         "mask": mask,
                     }
+            # Load whole room images
+            whole_room_images = []
+            room_image_file_names = sorted(
+                [
+                    f.name
+                    for f in os.scandir(
+                        os.path.join(tile_data_dir, "whole_room_images")
+                    )
+                    if not f.is_dir()
+                ]
+            )
+            for file_name in room_image_file_names:
+                image = PIL.Image.open(
+                    os.path.join(tile_data_dir, "whole_room_images", file_name)
+                )
+                image_array = numpy.array(image)
+                element = getattr(ElementType, image.info["element"])
+                whole_room_images.append(
+                    {
+                        "file_name": file_name,
+                        "image": image_array,
+                        "element": element,
+                    }
+                )
+
+            self._whole_room_images = whole_room_images
             self._tile_data = tile_data
             self._tile_examples = tile_examples
         except FileNotFoundError:
@@ -123,6 +152,33 @@ class TileClassifier:
         classified_tiles = {}
         if return_debug_images:
             debug_images = []
+        for whole_room_image_info in self._whole_room_images:
+            file_name = whole_room_image_info["file_name"]
+            image = whole_room_image_info["image"]
+            element = whole_room_image_info["element"]
+            # TODO: Have a mask for already found tiles for performance?
+            matching_pixels = (image == room_image).all(axis=2)
+            if return_debug_images:
+                debug_images.append((f"Matching pixels {file_name}", matching_pixels))
+            matching_tiles = numpy.zeros(
+                (ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES), dtype=bool
+            )
+            # TODO: Could be done faster by remapping matching_pixels and mapping back?
+            for x in range(ROOM_WIDTH_IN_TILES):
+                for y in range(ROOM_HEIGHT_IN_TILES):
+                    if matching_pixels[
+                        y * TILE_SIZE : (y + 1) * TILE_SIZE,
+                        x * TILE_SIZE : (x + 1) * TILE_SIZE,
+                    ].all():
+                        matching_tiles[y, x] = True
+            if return_debug_images:
+                debug_images.append((f"Matching tiles {file_name}", matching_tiles))
+            for coords in numpy.argwhere(matching_tiles):
+                position = (coords[1], coords[0])
+                # Easy tiles are always room pieces
+                classified_tiles[position] = ApparentTile(
+                    room_piece=(element, Direction.NONE)
+                )
 
         if return_debug_images:
             return classified_tiles, debug_images
