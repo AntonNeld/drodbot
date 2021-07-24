@@ -206,6 +206,15 @@ class ClassificationAppBackend:
             + await place_sized_obstacles(
                 self._interface, "square_statue", 16, 1, [1, 2, 4]
             )
+            + await place_sized_obstacles(self._interface, "plant_1", 11, 7, [1, 2])
+            + await place_sized_obstacles(self._interface, "plant_2", 11, 10, [1, 2])
+            + await place_sized_obstacles(self._interface, "house_1", 16, 8, [1, 3, 5])
+            + await place_sized_obstacles(self._interface, "house_2", 8, 13, [1, 3, 5])
+            + await place_sized_obstacles(
+                self._interface, "octogonal_statue", 4, 18, [1, 2, 4]
+            )
+            + await place_sized_obstacles(self._interface, "skulls_1", 1, 11, [1, 2])
+            + await place_sized_obstacles(self._interface, "skulls_2", 1, 14, [1, 2])
             # Place some force arrows in the shadow, since we're having trouble seeing
             # those otherwise
             + await place_fully_directional_elements(

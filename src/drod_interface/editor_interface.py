@@ -53,7 +53,14 @@ _OBSTACLE = (125, 115)
 _OBSTACLE_VARIANTS = {
     "rock_1": (170, 80),
     "rock_2": (200, 80),
+    "plant_1": (235, 80),
+    "plant_2": (265, 80),
+    "house_1": (330, 80),
+    "house_2": (360, 80),
     "square_statue": (170, 115),
+    "octogonal_statue": (200, 115),
+    "skulls_1": (235, 115),
+    "skulls_2": (265, 115),
 }
 _TOKEN = (30, 180)
 _CONQUER_TOKEN_IN_MENU = (265, 150)
