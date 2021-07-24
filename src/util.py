@@ -185,7 +185,10 @@ def element_layer(element_type):
         ElementType.GREEN_DOOR_OPEN,
         ElementType.BLUE_DOOR,
         ElementType.BLUE_DOOR_OPEN,
+        ElementType.RED_DOOR,
+        ElementType.RED_DOOR_OPEN,
         ElementType.STAIRS,
+        ElementType.TRAPDOOR,
     ]:
         return "room_piece"
     if element_type in [ElementType.FORCE_ARROW]:
@@ -197,14 +200,25 @@ def element_layer(element_type):
         ElementType.ORB,
         ElementType.SCROLL,
         ElementType.OBSTACLE,
+        ElementType.MIMIC_POTION,
+        ElementType.INVISIBILITY_POTION,
     ]:
         return "item"
     if element_type in [
         ElementType.BEETHRO,
         ElementType.ROACH,
+        ElementType.ROACH_QUEEN,
+        ElementType.EVIL_EYE,
+        ElementType.EVIL_EYE_AWAKE,
+        ElementType.SPIDER,
+        ElementType.WRAITHWING,
+        ElementType.GOBLIN,
+        ElementType.TAR_BABY,
+        ElementType.BRAIN,
+        ElementType.MIMIC,
     ]:
         return "monster"
-    if element_type in [ElementType.BEETHRO_SWORD]:
+    if element_type in [ElementType.BEETHRO_SWORD, ElementType.MIMIC_SWORD]:
         return "swords"
     raise RuntimeError(f"{element_type} has no defined layer")
 

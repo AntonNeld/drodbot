@@ -228,8 +228,32 @@ class ClassificationAppBackend:
                 0,
                 0,
             )
+            + await place_sworded_element(
+                self._interface, ElementType.MIMIC, ElementType.MIMIC_SWORD, 7, 0
+            )
             + await place_fully_directional_elements(
                 self._interface, ElementType.ROACH, 0, 3
+            )
+            + await place_fully_directional_elements(
+                self._interface, ElementType.ROACH_QUEEN, 4, 3
+            )
+            + await place_fully_directional_elements(
+                self._interface, ElementType.EVIL_EYE, 8, 3
+            )
+            + await place_fully_directional_elements(
+                self._interface, ElementType.WRAITHWING, 0, 5
+            )
+            + await place_fully_directional_elements(
+                self._interface, ElementType.SPIDER, 4, 5
+            )
+            + await place_fully_directional_elements(
+                self._interface, ElementType.EVIL_EYE_AWAKE, 8, 5
+            )
+            + await place_fully_directional_elements(
+                self._interface, ElementType.GOBLIN, 0, 7
+            )
+            + await place_fully_directional_elements(
+                self._interface, ElementType.TAR_BABY, 4, 7
             )
             + await place_nondirectional_edges_elements(
                 self._interface, ElementType.YELLOW_DOOR, 1, 9
@@ -241,6 +265,9 @@ class ClassificationAppBackend:
                 self._interface, ElementType.GREEN_DOOR, 1, 19
             )
             + await place_nondirectional_edges_elements(
+                self._interface, ElementType.RED_DOOR, 1, 24
+            )
+            + await place_nondirectional_edges_elements(
                 self._interface, ElementType.YELLOW_DOOR_OPEN, 11, 9
             )
             + await place_nondirectional_edges_elements(
@@ -249,13 +276,20 @@ class ClassificationAppBackend:
             + await place_nondirectional_edges_elements(
                 self._interface, ElementType.GREEN_DOOR_OPEN, 11, 19
             )
+            + await place_nondirectional_edges_elements(
+                self._interface, ElementType.RED_DOOR_OPEN, 11, 24
+            )
         )
         extra_elements = [
-            (ElementType.CONQUER_TOKEN, Direction.NONE, 0, 5, None),
-            (ElementType.MASTER_WALL, Direction.NONE, 4, 3, None),
+            (ElementType.CONQUER_TOKEN, Direction.NONE, 2, 2, None),
+            (ElementType.MASTER_WALL, Direction.NONE, 3, 2, None),
+            (ElementType.CHECKPOINT, Direction.NONE, 6, 0, None),
             (ElementType.ORB, Direction.NONE, 6, 1, None),
-            (ElementType.CHECKPOINT, Direction.NONE, 7, 1, None),
+            (ElementType.BRAIN, Direction.NONE, 6, 2, None),
+            (ElementType.MIMIC_POTION, Direction.NONE, 9, 2, None),
+            (ElementType.INVISIBILITY_POTION, Direction.NONE, 10, 2, None),
             (ElementType.SCROLL, Direction.NONE, 12, 3, None),
+            (ElementType.TRAPDOOR, Direction.NONE, 12, 4, None),
         ]
         for (element, direction, x, y, variant) in extra_elements:
             await self._interface.place_element(

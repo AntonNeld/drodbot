@@ -38,6 +38,35 @@ UINT convertDirection(Direction direction)
     }
 }
 
+ElementType convertMonsterBack(UINT monster)
+{
+    switch (monster)
+    {
+    case M_ROACH:
+        return ElementType::ROACH;
+    case M_QROACH:
+        return ElementType::ROACH_QUEEN;
+    case M_EYE:
+        return ElementType::EVIL_EYE;
+    case M_EYE_ACTIVE:
+        return ElementType::EVIL_EYE_AWAKE;
+    case M_WWING:
+        return ElementType::WRAITHWING;
+    case M_SPIDER:
+        return ElementType::SPIDER;
+    case M_GOBLIN:
+        return ElementType::GOBLIN;
+    case M_TARBABY:
+        return ElementType::TAR_BABY;
+    case M_BRAIN:
+        return ElementType::BRAIN;
+    case M_MIMIC:
+        return ElementType::MIMIC;
+    default:
+        throw std::invalid_argument("Unknown monster type");
+    }
+}
+
 // Helper function to convert direction from DROD format to our format.
 Direction convertDirectionBack(UINT direction)
 {
@@ -229,6 +258,9 @@ RoomPlayer::RoomPlayer(Room room, bool firstEntrance) : drodRoom(globalDb.value(
             case ElementType::MASTER_WALL:
                 this->drodRoom->Plot(x, y, T_WALL_M);
                 break;
+            case ElementType::TRAPDOOR:
+                this->drodRoom->Plot(x, y, T_TRAPDOOR);
+                break;
             case ElementType::YELLOW_DOOR:
                 if (preToggledDoors.find({x, y}) != preToggledDoors.end())
                 {
@@ -276,6 +308,13 @@ RoomPlayer::RoomPlayer(Room room, bool firstEntrance) : drodRoom(globalDb.value(
                 break;
             case ElementType::BLUE_DOOR_OPEN:
                 this->drodRoom->Plot(x, y, T_DOOR_CO);
+                break;
+            // TODO: Check whether room has trapdoors and toggle doors if appropriate
+            case ElementType::RED_DOOR:
+                this->drodRoom->Plot(x, y, T_DOOR_R);
+                break;
+            case ElementType::RED_DOOR_OPEN:
+                this->drodRoom->Plot(x, y, T_DOOR_RO);
                 break;
             case ElementType::STAIRS:
                 this->drodRoom->Plot(x, y, T_STAIRS);
@@ -360,6 +399,12 @@ RoomPlayer::RoomPlayer(Room room, bool firstEntrance) : drodRoom(globalDb.value(
             case ElementType::OBSTACLE:
                 this->drodRoom->Plot(x, y, T_OBSTACLE);
                 break;
+            case ElementType::MIMIC_POTION:
+                this->drodRoom->Plot(x, y, T_POTION_K);
+                break;
+            case ElementType::INVISIBILITY_POTION:
+                this->drodRoom->Plot(x, y, T_POTION_I);
+                break;
             case ElementType::SCROLL:
                 this->drodRoom->Plot(x, y, T_SCROLL);
                 break;
@@ -402,6 +447,33 @@ RoomPlayer::RoomPlayer(Room room, bool firstEntrance) : drodRoom(globalDb.value(
         {
         case ElementType::ROACH:
             this->drodRoom->AddNewMonster(M_ROACH, x, y)->wO = convertDirection(direction);
+            break;
+        case ElementType::ROACH_QUEEN:
+            this->drodRoom->AddNewMonster(M_QROACH, x, y)->wO = convertDirection(direction);
+            break;
+        case ElementType::EVIL_EYE:
+            this->drodRoom->AddNewMonster(M_EYE, x, y)->wO = convertDirection(direction);
+            break;
+        case ElementType::EVIL_EYE_AWAKE:
+            this->drodRoom->AddNewMonster(M_EYE_ACTIVE, x, y)->wO = convertDirection(direction);
+            break;
+        case ElementType::WRAITHWING:
+            this->drodRoom->AddNewMonster(M_WWING, x, y)->wO = convertDirection(direction);
+            break;
+        case ElementType::SPIDER:
+            this->drodRoom->AddNewMonster(M_SPIDER, x, y)->wO = convertDirection(direction);
+            break;
+        case ElementType::GOBLIN:
+            this->drodRoom->AddNewMonster(M_GOBLIN, x, y)->wO = convertDirection(direction);
+            break;
+        case ElementType::TAR_BABY:
+            this->drodRoom->AddNewMonster(M_TARBABY, x, y)->wO = convertDirection(direction);
+            break;
+        case ElementType::BRAIN:
+            this->drodRoom->AddNewMonster(M_BRAIN, x, y);
+            break;
+        case ElementType::MIMIC:
+            this->drodRoom->AddNewMonster(M_MIMIC, x, y)->wO = convertDirection(direction);
             break;
         default:
             throw std::invalid_argument("Wrong type in monster layer");
@@ -551,8 +623,19 @@ Room RoomPlayer::getRoom()
             case T_DOOR_CO:
                 roomPiece = Element(ElementType::BLUE_DOOR_OPEN);
                 break;
+            // TODO: These may be switched depending on whether the room is
+            // conquered. Investigate.
+            case T_DOOR_R:
+                roomPiece = Element(ElementType::RED_DOOR);
+                break;
+            case T_DOOR_RO:
+                roomPiece = Element(ElementType::RED_DOOR_OPEN);
+                break;
             case T_STAIRS:
                 roomPiece = Element(ElementType::STAIRS);
+                break;
+            case T_TRAPDOOR:
+                roomPiece = Element(ElementType::TRAPDOOR);
                 break;
             default:
                 throw std::invalid_argument("Unknown element in room piece layer");
@@ -637,6 +720,12 @@ Room RoomPlayer::getRoom()
             case T_TOKEN:
                 item = Element(ElementType::CONQUER_TOKEN);
                 break;
+            case T_POTION_K:
+                item = Element(ElementType::MIMIC_POTION);
+                break;
+            case T_POTION_I:
+                item = Element(ElementType::INVISIBILITY_POTION);
+                break;
             default:
                 throw std::invalid_argument("Unknown element in item layer");
             }
@@ -651,16 +740,16 @@ Room RoomPlayer::getRoom()
     int turnOrder = 0;
     for (auto it = this->currentGame->pRoom->pFirstMonster; it != NULL; it = it->pNext)
     {
-        ElementType type;
-        switch (it->wType)
+        ElementType type = convertMonsterBack(it->wType);
+        Direction direction;
+        if (type == ElementType::BRAIN)
         {
-        case M_ROACH:
-            type = ElementType::ROACH;
-            break;
-        default:
-            throw std::invalid_argument("Unknown monster type");
+            direction = Direction::NONE;
         }
-        Direction direction = convertDirectionBack(it->wO);
+        else
+        {
+            direction = convertDirectionBack(it->wO);
+        }
         tiles[it->wX][it->wY].monster = Element(type, direction, {}, turnOrder);
         turnOrder++;
     }
@@ -717,15 +806,7 @@ std::vector<std::tuple<ElementType, Position, Direction>> RoomPlayer::getMonster
     std::vector<std::tuple<ElementType, Position, Direction>> monsters = {};
     for (auto it = this->currentGame->pRoom->pFirstMonster; it != NULL; it = it->pNext)
     {
-        ElementType type;
-        switch (it->wType)
-        {
-        case M_ROACH:
-            type = ElementType::ROACH;
-            break;
-        default:
-            throw std::invalid_argument("Unknown monster type");
-        }
+        ElementType type = convertMonsterBack(it->wType);
         Position position = {it->wX, it->wY};
         Direction direction = convertDirectionBack(it->wO);
         monsters.push_back({type, position, direction});

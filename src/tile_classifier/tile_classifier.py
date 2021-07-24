@@ -552,14 +552,17 @@ def _compatible_with_minimap_color(element, layer, color):
             return element in [ElementType.BLUE_DOOR, ElementType.BLUE_DOOR_OPEN]
         if color == (164, 255, 255):
             return element in [ElementType.BLUE_DOOR, ElementType.BLUE_DOOR_OPEN]
+        if color == (255, 64, 64):
+            return element == ElementType.RED_DOOR_OPEN
+        if color == (255, 128, 128):
+            return element == ElementType.TRAPDOOR
         if color == (210, 210, 100):
             return element == ElementType.STAIRS
         if color == (255, 200, 200):
             # This only appears in the editor, but we may as well have it
             return element == ElementType.FLOOR
-        if color == (255, 0, 0):  # Not cleared, required room
-            # TODO: This can be red doors too
-            return element == ElementType.FLOOR
+        if color == (255, 0, 0):  # Red door or not cleared, required room
+            return element in [ElementType.FLOOR, ElementType.RED_DOOR]
         if color == (255, 0, 255):  # Not cleared, not required room
             return element == ElementType.FLOOR
         if color == (229, 229, 229):  # Cleared room, revisited

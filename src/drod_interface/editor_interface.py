@@ -24,12 +24,15 @@ _MONSTERS_TAB = (135, 20)
 _WALL = (30, 60)
 _PIT = (60, 200)
 _STAIRS = (135, 60)
+_TRAPDOOR = (30, 200)
 _YELLOW_DOOR = (25, 170)
 _YELLOW_DOOR_OPEN = (60, 170)
 _GREEN_DOOR = (60, 105)
 _GREEN_DOOR_OPEN = (60, 140)
 _BLUE_DOOR = (25, 105)
 _BLUE_DOOR_OPEN = (25, 140)
+_RED_DOOR = (90, 105)
+_RED_DOOR_OPEN = (90, 140)
 _MASTER_WALL = (90, 170)
 _FLOOR = (25, 300)
 _MOSAIC_FLOOR = (60, 300)
@@ -41,10 +44,10 @@ _IMAGE_FLOOR = (120, 360)
 
 _FORCE_ARROW = (30, 50)
 _CHECKPOINT = (120, 50)
-_WALL_LIGHT = (25, 85)
 
 _ORB = (25, 50)
 _MIMIC_POTION = (60, 50)
+_INVISIBILITY_POTION = (90, 50)
 _SCROLL = (25, 115)
 _OBSTACLE = (125, 115)
 _OBSTACLE_VARIANTS = {
@@ -56,10 +59,20 @@ _TOKEN = (30, 180)
 _CONQUER_TOKEN_IN_MENU = (265, 150)
 
 _ROACH = (30, 50)
+_ROACH_QUEEN = (60, 50)
+_EVIL_EYE = (90, 50)
+_WRAITHWING = (120, 50)
+_GOBLIN = (60, 85)
+_BRAIN = (90, 85)
+_TAR_BABY = (60, 115)
+_MIMIC = (30, 275)
 _CHARACTER = (110, 365)
 
 _CHARACTER_WINDOW_SCROLL_UP = (960, 180)
+_CHARACTER_WINDOW_SCROLL_DOWN = (960, 665)
 _CHARACTER_WINDOW_FIRST_TYPE = (820, 180)
+_CHARACTER_WINDOW_ELEVENTH_TYPE = (820, 405)
+_CHARACTER_WINDOW_LAST_TYPE = (820, 665)
 _CHARACTER_WINDOW_VISIBLE_CHECKBOX = (820, 700)
 _CHARACTER_WINDOW_OKAY = (570, 710)
 
@@ -321,7 +334,11 @@ class EditorInterface:
             The possible values depend on the element to place.
         """
         button = "left"
-        if element in [ElementType.BEETHRO]:
+        if element in [
+            ElementType.BEETHRO,
+            ElementType.EVIL_EYE_AWAKE,
+            ElementType.SPIDER,
+        ]:
             # Some elements cannot be placed freely, so we place characters to fake it
             await self._place_character(
                 element, direction, position, copy_characters=copy_characters
@@ -359,6 +376,12 @@ class EditorInterface:
                 button = "left"
             else:
                 await self._select_element(_ROOM_PIECES_TAB, _FLOOR)
+        elif element == ElementType.TRAPDOOR:
+            await self._select_element(_ROOM_PIECES_TAB, _TRAPDOOR)
+        elif element == ElementType.RED_DOOR:
+            await self._select_element(_ROOM_PIECES_TAB, _RED_DOOR)
+        elif element == ElementType.RED_DOOR_OPEN:
+            await self._select_element(_ROOM_PIECES_TAB, _RED_DOOR_OPEN)
         elif element == ElementType.YELLOW_DOOR:
             await self._select_element(_ROOM_PIECES_TAB, _YELLOW_DOOR)
         elif element == ElementType.YELLOW_DOOR_OPEN:
@@ -391,6 +414,10 @@ class EditorInterface:
             self._orb_type = _OrbType.NORMAL
         elif element == ElementType.SCROLL:
             await self._select_element(_ITEMS_TAB, _SCROLL)
+        elif element == ElementType.MIMIC_POTION:
+            await self._select_element(_ITEMS_TAB, _MIMIC_POTION)
+        elif element == ElementType.INVISIBILITY_POTION:
+            await self._select_element(_ITEMS_TAB, _INVISIBILITY_POTION)
         elif element == ElementType.OBSTACLE:
             used_variant = variant if variant is not None else "rock_1"
             await self._select_element(_ITEMS_TAB, _OBSTACLE)
@@ -409,6 +436,26 @@ class EditorInterface:
         elif element == ElementType.ROACH:
             await self._select_element(_MONSTERS_TAB, _ROACH)
             await self._set_direction(direction)
+        elif element == ElementType.ROACH_QUEEN:
+            await self._select_element(_MONSTERS_TAB, _ROACH_QUEEN)
+            await self._set_direction(direction)
+        elif element == ElementType.EVIL_EYE:
+            await self._select_element(_MONSTERS_TAB, _EVIL_EYE)
+            await self._set_direction(direction)
+        elif element == ElementType.WRAITHWING:
+            await self._select_element(_MONSTERS_TAB, _WRAITHWING)
+            await self._set_direction(direction)
+        elif element == ElementType.GOBLIN:
+            await self._select_element(_MONSTERS_TAB, _GOBLIN)
+            await self._set_direction(direction)
+        elif element == ElementType.TAR_BABY:
+            await self._select_element(_MONSTERS_TAB, _TAR_BABY)
+            await self._set_direction(direction)
+        elif element == ElementType.MIMIC:
+            await self._select_element(_MONSTERS_TAB, _MIMIC)
+            await self._set_direction(direction)
+        elif element == ElementType.BRAIN:
+            await self._select_element(_MONSTERS_TAB, _BRAIN)
         else:
             raise RuntimeError(f"Unknown element {element}")
         if end_position is None:
@@ -462,6 +509,12 @@ class EditorInterface:
                 await self._click(_CHARACTER_WINDOW_SCROLL_UP)
                 await self._click(_CHARACTER_WINDOW_SCROLL_UP)
                 await self._click(_CHARACTER_WINDOW_FIRST_TYPE)
+            elif element == ElementType.EVIL_EYE_AWAKE:
+                await self._click(_CHARACTER_WINDOW_ELEVENTH_TYPE)
+            elif element == ElementType.SPIDER:
+                for _ in range(8):
+                    await self._click(_CHARACTER_WINDOW_SCROLL_DOWN)
+                await self._click(_CHARACTER_WINDOW_LAST_TYPE)
             await self._click(_CHARACTER_WINDOW_VISIBLE_CHECKBOX)
             await self._click(_CHARACTER_WINDOW_OKAY)
             if copy_characters:
