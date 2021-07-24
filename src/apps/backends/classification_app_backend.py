@@ -117,16 +117,25 @@ class ClassificationAppBackend:
 
         await self._interface.clear_room()
         print("Getting whole-room images...")
-        # Normal floor
-        await self._interface.place_element(
-            ElementType.FLOOR, Direction.NONE, (0, 0), (37, 31)
-        )
-        await self._interface.start_test_room((37, 31), Direction.SE)
-        room_image = await self._interface.get_room_image()
-        await self._interface.stop_test_room()
-        whole_room_images.append(
-            (ElementType.FLOOR, None, _fix_corner_tiles(room_image))
-        )
+        for (element, style) in [
+            (ElementType.FLOOR, None),
+            (ElementType.FLOOR, "mosaic"),
+            (ElementType.FLOOR, "road"),
+            (ElementType.FLOOR, "grass"),
+            (ElementType.FLOOR, "dirt"),
+            (ElementType.FLOOR, "alternate"),
+            (ElementType.PIT, None),
+            (ElementType.WALL, None),
+        ]:
+            await self._interface.place_element(
+                element, Direction.NONE, (0, 0), (37, 31), style=style
+            )
+            await self._interface.start_test_room((37, 31), Direction.SE)
+            room_image = await self._interface.get_room_image()
+            await self._interface.stop_test_room()
+            if element != ElementType.FLOOR:
+                await self._interface.clear_room()
+            whole_room_images.append((element, style, _fix_corner_tiles(room_image)))
 
         print("Making tile data files...")
         if os.path.exists(self._tile_data_dir):
