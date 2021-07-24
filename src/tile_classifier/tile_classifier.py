@@ -18,7 +18,11 @@ class TileClassifier:
     """This is used to determine the content of tiles."""
 
     def __init__(self):
-        self._tile_data = None
+        self._non_positional_tile_data = None
+        self._positional_tile_data = None
+        self._non_positional_alternative_images = None
+        self._non_positional_alternative_masks = None
+        self._whole_room_images = None
         self._tile_examples = None
 
     def load_tile_data(self, tile_data_dir):
@@ -40,7 +44,7 @@ class TileClassifier:
             file_names = sorted(
                 [f.name for f in os.scandir(tile_data_dir) if not f.is_dir()]
             )
-            tile_data = []
+            non_positional_tile_data = []
             for file_name in file_names:
                 image = PIL.Image.open(os.path.join(tile_data_dir, file_name))
                 image_array = numpy.array(image)
@@ -53,7 +57,7 @@ class TileClassifier:
                 element = getattr(ElementType, image.info["element"])
 
                 direction = getattr(Direction, image.info["direction"])
-                tile_data.append(
+                non_positional_tile_data.append(
                     {
                         "file_name": file_name,
                         "image": _preprocess_image(image_array.astype(float)),
@@ -75,6 +79,7 @@ class TileClassifier:
                     if not f.is_dir()
                 ]
             )
+            positional_tile_data = {}
             for file_name in room_image_file_names:
                 image = PIL.Image.open(
                     os.path.join(tile_data_dir, "whole_room_images", file_name)
@@ -91,7 +96,9 @@ class TileClassifier:
                 # Extend tile_data with images of all tiles
                 for x in range(ROOM_WIDTH_IN_TILES):
                     for y in range(ROOM_HEIGHT_IN_TILES):
-                        tile_data.append(
+                        if (x, y) not in positional_tile_data:
+                            positional_tile_data[(x, y)] = []
+                        positional_tile_data[(x, y)].append(
                             {
                                 "file_name": file_name,
                                 "image": _preprocess_image(
@@ -111,7 +118,7 @@ class TileClassifier:
 
             # Create examples of tiles, for reconstructing a room image
             tile_examples = {}
-            for tile_info in tile_data:
+            for tile_info in non_positional_tile_data + positional_tile_data[(0, 0)]:
                 element = tile_info["element"]
                 direction = tile_info["direction"]
                 image_array = tile_info["image"]
@@ -123,15 +130,25 @@ class TileClassifier:
                     }
 
             self._whole_room_images = whole_room_images
-            self._tile_data = tile_data
+            self._non_positional_tile_data = non_positional_tile_data
+            self._positional_tile_data = positional_tile_data
             self._tile_examples = tile_examples
             # Pre-generate numpy arrays for performance
-            self._all_alternative_images = numpy.stack(
-                [a["image"] for a in self._tile_data], axis=-1
+            self._non_positional_alternative_images = numpy.stack(
+                [a["image"] for a in non_positional_tile_data], axis=-1
             )
-            self._all_alternative_masks = numpy.stack(
-                [a["mask"] for a in self._tile_data], axis=-1
+            self._non_positional_alternative_masks = numpy.stack(
+                [a["mask"] for a in non_positional_tile_data], axis=-1
             )
+            self._positional_alternative_images = {
+                position: numpy.stack([a["image"] for a in data], axis=-1)
+                for (position, data) in positional_tile_data.items()
+            }
+            self._positional_alternative_masks = {
+                position: numpy.stack([a["mask"] for a in data], axis=-1)
+                for (position, data) in positional_tile_data.items()
+            }
+
         except FileNotFoundError:
             print(
                 f"No directory '{tile_data_dir}' found. "
@@ -159,18 +176,35 @@ class TileClassifier:
             A numpy array with the alternative masks.
             The last dimension matches the list of alternatives.
         """
-        filtered_indices, alternatives = zip(
-            *[
-                (i, a)
-                for i, a in enumerate(self._tile_data)
-                if _compatible_with_minimap_color(
-                    a["element"], a["layer"], minimap_color
-                )
-                and ("position" not in a or a["position"] == position)
-            ]
-        )
-        alternative_images = self._all_alternative_images[:, :, :, filtered_indices]
-        alternative_masks = self._all_alternative_masks[:, :, filtered_indices]
+        try:
+            filtered_indices, alternatives = zip(
+                *[
+                    (i, a)
+                    for i, a in enumerate(
+                        self._non_positional_tile_data
+                        + self._positional_tile_data[position]
+                    )
+                    if _compatible_with_minimap_color(
+                        a["element"], a["layer"], minimap_color
+                    )
+                ]
+            )
+        except ValueError:
+            raise RuntimeError("No tile data loaded, cannot classify tiles")
+        alternative_images = numpy.concatenate(
+            (
+                self._non_positional_alternative_images,
+                self._positional_alternative_images[position],
+            ),
+            axis=-1,
+        )[:, :, :, filtered_indices]
+        alternative_masks = numpy.concatenate(
+            (
+                self._non_positional_alternative_masks,
+                self._positional_alternative_masks[position],
+            ),
+            axis=-1,
+        )[:, :, filtered_indices]
         return alternatives, alternative_images, alternative_masks
 
     def get_tile_image(self, apparent_tile):
@@ -274,8 +308,6 @@ class TileClassifier:
         representing the tile contents as the values. If `return_debug_images`
         is True, return a second dict with debug images.
         """
-        if self._tile_data is None:
-            raise RuntimeError("No tile data loaded, cannot classify tiles")
         classified_tiles = {
             key: ApparentTile(
                 room_piece=(ElementType.UNKNOWN, Direction.NONE),
