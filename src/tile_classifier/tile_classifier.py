@@ -101,6 +101,33 @@ class TileClassifier:
             tile_image[mask] = image[mask]
         return tile_image
 
+    def get_easy_tiles(self, room_image, return_debug_images=False):
+        """Get the easily classified tiles from a room image.
+
+        Easily classified tiles are those that completely match a
+        portion of one of the full-room images, i.e. tiles with only
+        a floor, pit or (inside) wall.
+
+        Parameters
+        ----------
+        room_image
+            The room image.
+        return_debug_images
+            Whether to return debug images.
+
+        Returns
+        -------
+        A dict mapping coordinates to ApparentTiles, with only classified tiles
+        present. If return_debug_images is True, also return a list of debug images.
+        """
+        classified_tiles = {}
+        if return_debug_images:
+            debug_images = []
+
+        if return_debug_images:
+            return classified_tiles, debug_images
+        return classified_tiles
+
     def classify_tiles(self, tiles, minimap_colors, return_debug_images=False):
         """Classify the given tiles.
 
@@ -214,7 +241,7 @@ class TileClassifier:
                                     masked_diffs[:, :, true_index],
                                 )
                             )
-                best_match_index, best_match_diff = min(
+                best_match_index, _ = min(
                     ((i, v) for (i, v) in enumerate(average_diffs)),
                     key=lambda x: x[1],
                 )

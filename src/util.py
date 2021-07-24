@@ -31,7 +31,7 @@ def find_color(image, color):
     )
 
 
-def extract_tiles(room_image, minimap_image):
+def extract_tiles(room_image, minimap_image, skip_coords=None):
     """Extract tiles from a room image.
 
     Parameters
@@ -40,6 +40,8 @@ def extract_tiles(room_image, minimap_image):
         The room to extract tiles from.
     minimap_image
         The minimap to extract minimap colors from.
+    skip_coords
+        If not None, skip these coordinates.
 
     Returns
     -------
@@ -52,6 +54,8 @@ def extract_tiles(room_image, minimap_image):
     colors = {}
     for x in range(ROOM_WIDTH_IN_TILES):
         for y in range(ROOM_HEIGHT_IN_TILES):
+            if skip_coords is not None and (x, y) in skip_coords:
+                continue
             start_x = x * TILE_SIZE
             end_x = (x + 1) * TILE_SIZE
             start_y = y * TILE_SIZE
