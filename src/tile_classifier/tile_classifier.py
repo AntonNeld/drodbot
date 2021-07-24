@@ -125,11 +125,53 @@ class TileClassifier:
             self._whole_room_images = whole_room_images
             self._tile_data = tile_data
             self._tile_examples = tile_examples
+            # Pre-generate numpy arrays for performance
+            self._all_alternative_images = numpy.stack(
+                [a["image"] for a in self._tile_data], axis=-1
+            )
+            self._all_alternative_masks = numpy.stack(
+                [a["mask"] for a in self._tile_data], axis=-1
+            )
         except FileNotFoundError:
             print(
                 f"No directory '{tile_data_dir}' found. "
                 "You need to generate tile data before you can classify tiles."
             )
+
+    def _get_alternatives(self, position, minimap_color):
+        """Get the possible alternative tiles based on some conditions.
+
+        Parameters
+        ----------
+        position
+            The position.
+        minimap_color
+            The minimap color.
+
+        Returns
+        -------
+        alternatives
+            List of tile info for the possible tiles.
+        alternative_images
+            A numpy array with the alternative images.
+            The last dimension matches the list of alternatives.
+        alternative_masks
+            A numpy array with the alternative masks.
+            The last dimension matches the list of alternatives.
+        """
+        filtered_indices, alternatives = zip(
+            *[
+                (i, a)
+                for i, a in enumerate(self._tile_data)
+                if _compatible_with_minimap_color(
+                    a["element"], a["layer"], minimap_color
+                )
+                and ("position" not in a or a["position"] == position)
+            ]
+        )
+        alternative_images = self._all_alternative_images[:, :, :, filtered_indices]
+        alternative_masks = self._all_alternative_masks[:, :, filtered_indices]
+        return alternatives, alternative_images, alternative_masks
 
     def get_tile_image(self, apparent_tile):
         """Construct an image of an apparent tile.
@@ -245,12 +287,6 @@ class TileClassifier:
             for key in tiles
         }
         debug_images = {key: [] for key in tiles}
-        all_alternative_images = numpy.stack(
-            [a["image"] for a in self._tile_data], axis=-1
-        )
-        all_alternative_masks = numpy.stack(
-            [a["mask"] for a in self._tile_data], axis=-1
-        )
         for key, image in tiles.items():
             if return_debug_images:
                 processed_image, preprocess_debug_images = _preprocess_image(
@@ -260,18 +296,11 @@ class TileClassifier:
             else:
                 processed_image = _preprocess_image(image.astype(float))
 
-            filtered_indices, alternatives = zip(
-                *[
-                    (i, a)
-                    for i, a in enumerate(self._tile_data)
-                    if _compatible_with_minimap_color(
-                        a["element"], a["layer"], minimap_colors[key]
-                    )
-                    and ("position" not in a or a["position"] == key)
-                ]
-            )
-            alternative_images = all_alternative_images[:, :, :, filtered_indices]
-            alternative_masks = all_alternative_masks[:, :, filtered_indices]
+            (
+                alternatives,
+                alternative_images,
+                alternative_masks,
+            ) = self._get_alternatives(key, minimap_colors[key])
             unmasked_image_diffs = numpy.sqrt(
                 numpy.sum(
                     (processed_image[:, :, :, numpy.newaxis] - alternative_images) ** 2,
