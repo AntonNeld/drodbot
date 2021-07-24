@@ -7,7 +7,7 @@ import numpy
 import PIL
 from PIL.PngImagePlugin import PngInfo
 
-from common import GUIEvent
+from common import GUIEvent, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES, TILE_SIZE
 from room_simulator import ElementType, Direction
 from tile_classifier import ApparentTile
 from .editor_utils import (
@@ -124,7 +124,9 @@ class ClassificationAppBackend:
         await self._interface.start_test_room((37, 31), Direction.SE)
         room_image = await self._interface.get_room_image()
         await self._interface.stop_test_room()
-        whole_room_images.append((ElementType.FLOOR, None, room_image))
+        whole_room_images.append(
+            (ElementType.FLOOR, None, _fix_corner_tiles(room_image))
+        )
 
         print("Making tile data files...")
         if os.path.exists(self._tile_data_dir):
@@ -386,3 +388,82 @@ class ClassificationAppBackend:
                 pnginfo=png_info,
             )
         print("Finished generating sample data")
+
+
+def _fix_corner_tiles(room_image):
+    """Remove Beethro from the corner tile.
+
+    Since the textures are periodic, we can remove Beethro
+    from the bottom-right tile by replacing him with another
+    tile from the room image.
+
+    Parameters
+    ----------
+    room_image
+        The room image.
+
+    Returns
+    -------
+    The fixed room image.
+    """
+    match_region_size = 3
+    replace_region_size = 2  # Beethro is drawn in multiple tiles when on a wall
+    # Cut out a region to match with, just above the corner
+    region_to_match = room_image[
+        (ROOM_HEIGHT_IN_TILES - replace_region_size - match_region_size)
+        * TILE_SIZE : (ROOM_HEIGHT_IN_TILES - replace_region_size)
+        * TILE_SIZE,
+        (ROOM_WIDTH_IN_TILES - match_region_size)
+        * TILE_SIZE : ROOM_WIDTH_IN_TILES
+        * TILE_SIZE,
+        :,
+    ]
+    # Find all matches
+    matching_origins = []
+    for x in range(ROOM_WIDTH_IN_TILES - match_region_size):
+        for y in range(ROOM_HEIGHT_IN_TILES - match_region_size - replace_region_size):
+            if (
+                x == ROOM_WIDTH_IN_TILES - match_region_size
+                and y == ROOM_HEIGHT_IN_TILES - match_region_size - replace_region_size
+            ):
+                # Skip the region we just extracted, since Beethro is below it
+                continue
+            if (
+                region_to_match
+                == room_image[
+                    y * TILE_SIZE : (y + match_region_size) * TILE_SIZE,
+                    x * TILE_SIZE : (x + match_region_size) * TILE_SIZE,
+                    :,
+                ]
+            ).all():
+                matching_origins.append((x, y))
+    # Extract tiles to replace
+    replacements = [
+        room_image[
+            (y + match_region_size)
+            * TILE_SIZE : (y + match_region_size + replace_region_size)
+            * TILE_SIZE,
+            (x + match_region_size - replace_region_size)
+            * TILE_SIZE : (x + match_region_size)
+            * TILE_SIZE,
+            :,
+        ]
+        for (x, y) in matching_origins
+    ]
+    # Verify that they are all identical
+    replacement = replacements[0]
+    for other_replacement in replacements[1:]:
+        if not (replacement == other_replacement).all():
+            raise RuntimeError("Not all replacements are identical")
+    # Replace Beethro with the found replacement
+    fixed_room_image = room_image.copy()
+    fixed_room_image[
+        (ROOM_HEIGHT_IN_TILES - replace_region_size)
+        * TILE_SIZE : ROOM_HEIGHT_IN_TILES
+        * TILE_SIZE,
+        (ROOM_WIDTH_IN_TILES - replace_region_size)
+        * TILE_SIZE : ROOM_WIDTH_IN_TILES
+        * TILE_SIZE,
+        :,
+    ] = replacement
+    return fixed_room_image
