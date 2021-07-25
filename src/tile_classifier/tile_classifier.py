@@ -18,10 +18,15 @@ class TileClassifier:
     """This is used to determine the content of tiles."""
 
     def __init__(self):
-        self._non_positional_tile_data = None
-        self._positional_tile_data = None
-        self._non_positional_alternative_images = None
-        self._non_positional_alternative_masks = None
+        self._non_positional_non_styled_tile_data = None
+        self._non_positional_non_styled_alternative_images = None
+        self._non_positional_non_styled_alternative_masks = None
+        self._non_positional_styled_tile_data = None
+        self._non_positional_styled_alternative_images = None
+        self._non_positional_styled_alternative_masks = None
+        self._positional_styled_tile_data = None
+        self._positional_styled_alternative_images = None
+        self._positional_styled_alternative_masks = None
         self._whole_room_images = None
         self._tile_examples = None
 
@@ -42,7 +47,8 @@ class TileClassifier:
         try:
             # Load individual tiles
             file_names = sorted(os.listdir(os.path.join(tile_data_dir, "tiles")))
-            non_positional_tile_data = []
+            non_positional_non_styled_tile_data = []
+            non_positional_styled_tile_data = {}
             for file_name in file_names:
                 image = PIL.Image.open(os.path.join(tile_data_dir, "tiles", file_name))
                 image_array = numpy.array(image)
@@ -53,25 +59,39 @@ class TileClassifier:
                     )
                 )
                 element = getattr(ElementType, image.info["element"])
-
                 direction = getattr(Direction, image.info["direction"])
-                non_positional_tile_data.append(
-                    {
-                        "file_name": file_name,
-                        "image": _preprocess_image(image_array.astype(float)),
-                        "mask": mask,
-                        "element": element,
-                        "direction": direction,
-                        "layer": element_layer(element),
-                    }
-                )
+                if "room_style" not in image.info:
+                    non_positional_non_styled_tile_data.append(
+                        {
+                            "file_name": file_name,
+                            "image": _preprocess_image(image_array.astype(float)),
+                            "mask": mask,
+                            "element": element,
+                            "direction": direction,
+                            "layer": element_layer(element),
+                        }
+                    )
+                else:
+                    style = image.info["room_style"]
+                    if style not in non_positional_styled_tile_data:
+                        non_positional_styled_tile_data[style] = []
+                    non_positional_styled_tile_data[style].append(
+                        {
+                            "file_name": file_name,
+                            "image": _preprocess_image(image_array.astype(float)),
+                            "mask": mask,
+                            "element": element,
+                            "direction": direction,
+                            "layer": element_layer(element),
+                        }
+                    )
 
             # Load whole room images
             whole_room_images = []
             room_image_file_names = sorted(
                 os.listdir(os.path.join(tile_data_dir, "whole_room_images"))
             )
-            positional_tile_data = {}
+            positional_styled_tile_data = {}
             for file_name in room_image_file_names:
                 image = PIL.Image.open(
                     os.path.join(tile_data_dir, "whole_room_images", file_name)
@@ -87,12 +107,14 @@ class TileClassifier:
                         "room_style": room_style,
                     }
                 )
+                if room_style not in positional_styled_tile_data:
+                    positional_styled_tile_data[room_style] = {}
                 # Extend tile_data with images of all tiles
                 for x in range(ROOM_WIDTH_IN_TILES):
                     for y in range(ROOM_HEIGHT_IN_TILES):
-                        if (x, y) not in positional_tile_data:
-                            positional_tile_data[(x, y)] = []
-                        positional_tile_data[(x, y)].append(
+                        if (x, y) not in positional_styled_tile_data[room_style]:
+                            positional_styled_tile_data[room_style][(x, y)] = []
+                        positional_styled_tile_data[room_style][(x, y)].append(
                             {
                                 "file_name": file_name,
                                 "image": _preprocess_image(
@@ -112,7 +134,11 @@ class TileClassifier:
 
             # Create examples of tiles, for reconstructing a room image
             tile_examples = {}
-            for tile_info in non_positional_tile_data + positional_tile_data[(0, 0)]:
+            for tile_info in (
+                non_positional_non_styled_tile_data
+                + non_positional_styled_tile_data["Foundation"]
+                + positional_styled_tile_data["Foundation"][(0, 0)]
+            ):
                 element = tile_info["element"]
                 direction = tile_info["direction"]
                 image_array = tile_info["image"]
@@ -124,23 +150,40 @@ class TileClassifier:
                     }
 
             self._whole_room_images = whole_room_images
-            self._non_positional_tile_data = non_positional_tile_data
-            self._positional_tile_data = positional_tile_data
+            self._non_positional_non_styled_tile_data = (
+                non_positional_non_styled_tile_data
+            )
+            self._non_positional_styled_tile_data = non_positional_styled_tile_data
+            self._positional_styled_tile_data = positional_styled_tile_data
             self._tile_examples = tile_examples
             # Pre-generate numpy arrays for performance
-            self._non_positional_alternative_images = numpy.stack(
-                [a["image"] for a in non_positional_tile_data], axis=-1
+            self._non_positional_non_styled_alternative_images = numpy.stack(
+                [a["image"] for a in non_positional_non_styled_tile_data], axis=-1
             )
-            self._non_positional_alternative_masks = numpy.stack(
-                [a["mask"] for a in non_positional_tile_data], axis=-1
+            self._non_positional_non_styled_alternative_masks = numpy.stack(
+                [a["mask"] for a in non_positional_non_styled_tile_data], axis=-1
             )
-            self._positional_alternative_images = {
-                position: numpy.stack([a["image"] for a in data], axis=-1)
-                for (position, data) in positional_tile_data.items()
+            self._non_positional_styled_alternative_images = {
+                style: numpy.stack([a["image"] for a in data], axis=-1)
+                for style, data in non_positional_styled_tile_data.items()
             }
-            self._positional_alternative_masks = {
-                position: numpy.stack([a["mask"] for a in data], axis=-1)
-                for (position, data) in positional_tile_data.items()
+            self._non_positional_styled_alternative_masks = {
+                style: numpy.stack([a["mask"] for a in data], axis=-1)
+                for (style, data) in non_positional_styled_tile_data.items()
+            }
+            self._positional_styled_alternative_images = {
+                style: {
+                    position: numpy.stack([a["image"] for a in data], axis=-1)
+                    for (position, data) in positional_styled_tile_data[style].items()
+                }
+                for style in positional_styled_tile_data
+            }
+            self._positional_styled_alternative_masks = {
+                style: {
+                    position: numpy.stack([a["mask"] for a in data], axis=-1)
+                    for (position, data) in positional_styled_tile_data[style].items()
+                }
+                for style in positional_styled_tile_data
             }
 
         except FileNotFoundError:
@@ -173,13 +216,39 @@ class TileClassifier:
             The last dimension matches the list of alternatives.
         """
         try:
+            if room_style is not None:
+                all_tile_data = (
+                    self._non_positional_non_styled_tile_data
+                    + self._non_positional_styled_tile_data[room_style]
+                    + self._positional_styled_tile_data[room_style][position]
+                )
+                stacked_images = numpy.concatenate(
+                    (
+                        self._non_positional_non_styled_alternative_images,
+                        self._non_positional_styled_alternative_images[room_style],
+                        self._positional_styled_alternative_images[room_style][
+                            position
+                        ],
+                    ),
+                    axis=-1,
+                )
+                stacked_masks = numpy.concatenate(
+                    (
+                        self._non_positional_non_styled_alternative_masks,
+                        self._non_positional_styled_alternative_masks[room_style],
+                        self._positional_styled_alternative_masks[room_style][position],
+                    ),
+                    axis=-1,
+                )
+            else:
+                raise RuntimeError(
+                    "Interpreting room without detected style not implemented"
+                )
+
             filtered_indices, alternatives = zip(
                 *[
                     (i, a)
-                    for i, a in enumerate(
-                        self._non_positional_tile_data
-                        + self._positional_tile_data[position]
-                    )
+                    for i, a in enumerate(all_tile_data)
                     if _compatible_with_minimap_color(
                         a["element"], a["layer"], minimap_color
                     )
@@ -187,20 +256,8 @@ class TileClassifier:
             )
         except ValueError:
             raise RuntimeError("No tile data loaded, cannot classify tiles")
-        alternative_images = numpy.concatenate(
-            (
-                self._non_positional_alternative_images,
-                self._positional_alternative_images[position],
-            ),
-            axis=-1,
-        )[:, :, :, filtered_indices]
-        alternative_masks = numpy.concatenate(
-            (
-                self._non_positional_alternative_masks,
-                self._positional_alternative_masks[position],
-            ),
-            axis=-1,
-        )[:, :, filtered_indices]
+        alternative_images = stacked_images[:, :, :, filtered_indices]
+        alternative_masks = stacked_masks[:, :, filtered_indices]
         return alternatives, alternative_images, alternative_masks
 
     def get_tile_image(self, apparent_tile):
@@ -294,8 +351,8 @@ class TileClassifier:
         if detected_style is None:
             print("Did not detect a style from whole-room images")
         if return_debug_images:
-            return classified_tiles, debug_images
-        return classified_tiles
+            return classified_tiles, detected_style, debug_images
+        return classified_tiles, detected_style
 
     def classify_tiles(
         self, tiles, minimap_colors, room_style=None, return_debug_images=False
