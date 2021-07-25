@@ -78,11 +78,13 @@ class TileClassifier:
                 )
                 image_array = numpy.array(image)
                 element = getattr(ElementType, image.info["element"])
+                room_style = image.info["room_style"]
                 whole_room_images.append(
                     {
                         "file_name": file_name,
                         "image": image_array,
                         "element": element,
+                        "room_style": room_style,
                     }
                 )
                 # Extend tile_data with images of all tiles
@@ -147,7 +149,7 @@ class TileClassifier:
                 "You need to generate tile data before you can classify tiles."
             )
 
-    def _get_alternatives(self, position, minimap_color):
+    def _get_alternatives(self, position, minimap_color, room_style):
         """Get the possible alternative tiles based on some conditions.
 
         Parameters
@@ -156,6 +158,8 @@ class TileClassifier:
             The position.
         minimap_color
             The minimap color.
+        room_style
+            The room style, or None.
 
         Returns
         -------
@@ -242,16 +246,25 @@ class TileClassifier:
 
         Returns
         -------
-        A dict mapping coordinates to ApparentTiles, with only classified tiles
-        present. If return_debug_images is True, also return a list of debug images.
+        classified_tiles
+            A dict mapping coordinates to ApparentTiles, with only classified tiles
+            present.
+        detected_style
+            The detected room style.
+        debug_images
+            If return_debug_images is True, also return a list of debug images.
         """
         classified_tiles = {}
         if return_debug_images:
             debug_images = []
+        detected_style = None
         for whole_room_image_info in self._whole_room_images:
             file_name = whole_room_image_info["file_name"]
             image = whole_room_image_info["image"]
             element = whole_room_image_info["element"]
+            room_style = whole_room_image_info["room_style"]
+            if detected_style is not None and room_style != detected_style:
+                continue
             # TODO: Have a mask for already found tiles for performance?
             matching_pixels = (image == room_image).all(axis=2)
             if return_debug_images:
@@ -269,6 +282,8 @@ class TileClassifier:
                         matching_tiles[y, x] = True
             if return_debug_images:
                 debug_images.append((f"Matching tiles {file_name}", matching_tiles))
+            if matching_tiles.any():
+                detected_style = room_style
             for coords in numpy.argwhere(matching_tiles):
                 position = (coords[1], coords[0])
                 # Easy tiles are always room pieces
@@ -276,11 +291,15 @@ class TileClassifier:
                     room_piece=(element, Direction.NONE)
                 )
 
+        if detected_style is None:
+            print("Did not detect a style from whole-room images")
         if return_debug_images:
             return classified_tiles, debug_images
         return classified_tiles
 
-    def classify_tiles(self, tiles, minimap_colors, return_debug_images=False):
+    def classify_tiles(
+        self, tiles, minimap_colors, room_style=None, return_debug_images=False
+    ):
         """Classify the given tiles.
 
         Parameters
@@ -290,6 +309,9 @@ class TileClassifier:
         minimap_colors
             A dict with the same keys as `tiles` and (r, g, b) color tuples
             as the values.
+        room_style
+            The room style, or None if not known. This narrows down the element images
+            to compare with.
         return_debug_images
             If True, return a second dict with the same keys, and the values lists of
             (name, image) tuples with intermediate images.
@@ -324,7 +346,7 @@ class TileClassifier:
                 alternatives,
                 alternative_images,
                 alternative_masks,
-            ) = self._get_alternatives(key, minimap_colors[key])
+            ) = self._get_alternatives(key, minimap_colors[key], room_style)
             unmasked_image_diffs = numpy.sqrt(
                 numpy.sum(
                     (processed_image[:, :, :, numpy.newaxis] - alternative_images) ** 2,

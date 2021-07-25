@@ -83,18 +83,24 @@ class RoomInterpreter:
                 room_image, minimap = await self._interface.get_room_image()
 
         if return_debug_images:
-            tile_contents, easy_tiles_debug_images = self._classifier.get_easy_tiles(
-                room_image, return_debug_images=True
-            )
+            (
+                tile_contents,
+                detected_style,
+                easy_tiles_debug_images,
+            ) = self._classifier.get_easy_tiles(room_image, return_debug_images=True)
             debug_images.extend(easy_tiles_debug_images)
         else:
-            tile_contents = self._classifier.get_easy_tiles(room_image)
+            tile_contents, detected_style = self._classifier.get_easy_tiles(room_image)
 
         tiles, minimap_colors = extract_tiles(
             room_image, minimap, skip_coords=tile_contents.keys()
         )
 
-        tile_contents.update(self._classifier.classify_tiles(tiles, minimap_colors))
+        tile_contents.update(
+            self._classifier.classify_tiles(
+                tiles, minimap_colors, room_style=detected_style
+            )
+        )
 
         orb_positions = [
             pos
