@@ -19,6 +19,22 @@ from .editor_utils import (
 )
 from util import element_layer
 
+_ROOM_STYLES = [
+    "Aboveground",
+    "Badlands",
+    "Beach",
+    "Caldera",
+    "City",
+    "Deep Spaces",
+    "Forest",
+    "Fortress",
+    "Foundation",
+    "Greenhouse",
+    "Iceworks",
+    "Mosaic Frost",
+    "Swamp",
+]
+
 
 class ClassificationAppBackend:
     """The backend for the classification app.
@@ -104,7 +120,7 @@ class ClassificationAppBackend:
         tiles, _ = await self._interface.get_tiles_and_colors()
         await self._interface.stop_test_room()
         tile_collections.append(tiles)
-        elements.extend([(*element, 0) for element in unstyled_elements])
+        elements.extend([(*element, None, 0) for element in unstyled_elements])
 
         await self._interface.clear_room()
         await self._interface.place_element(
@@ -112,69 +128,93 @@ class ClassificationAppBackend:
         )
         print("Getting elements that depend on room style...")
         styled_elements = await self._make_styled_tile_data_room()
-        await self._interface.start_test_room((37, 31), Direction.SE)
-        tiles, _ = await self._interface.get_tiles_and_colors()
-        await self._interface.stop_test_room()
-        tile_collections.append(tiles)
-        elements.extend((*element, 1) for element in styled_elements)
-
-        await self._interface.clear_room()
-        print("Getting whole-room images...")
-        for (element, variant) in [
-            (ElementType.FLOOR, None),
-            (ElementType.FLOOR, "mosaic"),
-            (ElementType.FLOOR, "road"),
-            (ElementType.FLOOR, "grass"),
-            (ElementType.FLOOR, "dirt"),
-            (ElementType.FLOOR, "alternate"),
-            (ElementType.PIT, None),
-            (ElementType.WALL, None),
-        ]:
-            await self._interface.place_element(
-                element, Direction.NONE, (0, 0), (37, 31), variant=variant
-            )
+        await self._interface.select_first_style()
+        for i, room_style in enumerate(_ROOM_STYLES):
             await self._interface.start_test_room((37, 31), Direction.SE)
-            room_image = await self._interface.get_room_image()
+            tiles, _ = await self._interface.get_tiles_and_colors()
             await self._interface.stop_test_room()
-            if element != ElementType.FLOOR:
-                await self._interface.clear_room()
-            whole_room_images.append((element, variant, _fix_corner_tiles(room_image)))
+            tile_collections.append(tiles)
+            elements.extend(
+                (*element, room_style, i + 1) for element in styled_elements
+            )
+            if room_style != _ROOM_STYLES[-1]:
+                await self._interface.select_next_style()
+
+        print("Getting whole-room images...")
+        await self._interface.clear_room()
+        await self._interface.select_first_style()
+        for room_style in _ROOM_STYLES:
+            for (element, variant) in [
+                (ElementType.FLOOR, None),
+                (ElementType.FLOOR, "mosaic"),
+                (ElementType.FLOOR, "road"),
+                (ElementType.FLOOR, "grass"),
+                (ElementType.FLOOR, "dirt"),
+                (ElementType.FLOOR, "alternate"),
+                (ElementType.PIT, None),
+                (ElementType.WALL, None),
+            ]:
+                await self._interface.place_element(
+                    element, Direction.NONE, (0, 0), (37, 31), variant=variant
+                )
+                await self._interface.start_test_room((37, 31), Direction.SE)
+                room_image = await self._interface.get_room_image()
+                await self._interface.stop_test_room()
+                if element != ElementType.FLOOR:
+                    await self._interface.clear_room()
+                whole_room_images.append(
+                    (element, variant, room_style, _fix_corner_tiles(room_image))
+                )
+            if room_style != _ROOM_STYLES[-1]:
+                await self._interface.select_next_style()
 
         print("Making tile data files...")
         if os.path.exists(self._tile_data_dir):
             shutil.rmtree(self._tile_data_dir)
         os.makedirs(self._tile_data_dir)
         used_names = []
-        for (element, direction, x, y, variant, tile_collection_index) in elements:
+        for (
+            element,
+            direction,
+            x,
+            y,
+            variant,
+            room_style,
+            tile_collection_index,
+        ) in elements:
             png_info = PngInfo()
             png_info.add_text("element", element.name)
             png_info.add_text("direction", direction.name)
+            if room_style is not None:
+                png_info.add_text("room_style", room_style)
             image = PIL.Image.fromarray(tile_collections[tile_collection_index][(x, y)])
             direction_str = f"_{direction.name}" if direction != Direction.NONE else ""
             variant_str = f"_{variant}" if variant is not None else ""
-            base_name = f"{element.name}{direction_str}{variant_str}"
+            style_str = f"_{room_style.replace(' ','_')}" if room_style else ""
+            base_name = f"{element.name}{direction_str}{variant_str}{style_str}"
+            name_with_order = base_name
             name_increment = 0
-            while base_name in used_names:
-                base_name = (
-                    f"{element.name}{direction_str}{variant_str}_{name_increment}"
-                )
+            while name_with_order in used_names:
+                name_with_order = f"{base_name}_{name_increment}"
                 name_increment += 1
-            used_names.append(base_name)
+            used_names.append(name_with_order)
             image.save(
                 os.path.join(
                     self._tile_data_dir,
-                    f"{base_name}.png",
+                    f"{name_with_order}.png",
                 ),
                 "PNG",
                 pnginfo=png_info,
             )
         os.makedirs(os.path.join(self._tile_data_dir, "whole_room_images"))
-        for (element, variant, room_image) in whole_room_images:
+        for (element, variant, room_style, room_image) in whole_room_images:
             png_info = PngInfo()
             png_info.add_text("element", element.name)
+            png_info.add_text("room_style", room_style)
             image = PIL.Image.fromarray(room_image)
             variant_str = f"_{variant}" if variant is not None else ""
-            file_name = f"{element.name}{variant_str}"
+            style_str = f"_{room_style.replace(' ','_')}" if room_style else ""
+            file_name = f"{element.name}{variant_str}{style_str}"
             image.save(
                 os.path.join(
                     os.path.join(self._tile_data_dir, "whole_room_images"),

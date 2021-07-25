@@ -60,7 +60,7 @@ Before DRODbot can play any rooms, it needs to learn how to interpret what it is
 Enter "Manage classifier" mode in the DRODbot window, and:
 
 - Open the editor in DROD, and begin editing a new room. The room style should be Foundation
-  and the weather should be normal.
+  and the weather should be normal. The main level entrance should not be in the room.
 - In the DRODbot window, click "Generate tile data" and wait for it to finish. While it's working,
   you can't do anything else involving the mouse, keyboard, or having another window focused.
 
