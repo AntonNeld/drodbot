@@ -160,7 +160,7 @@ class EditorInterface:
         self._selected_element[_FLOOR_CONTROLS_TAB] = _FORCE_ARROW
         # Make sure the force arrows are facing SE
         _, _, image = await get_drod_window()
-        while image[60, 35, 0] != 165:  # The tip of the arrow when facing SE
+        while image[60, 35, 0] == 255:  # The tip of the arrow when facing SE
             pyautogui.press("q")
             _, _, image = await get_drod_window()
         self._force_arrow_direction = Direction.SE
