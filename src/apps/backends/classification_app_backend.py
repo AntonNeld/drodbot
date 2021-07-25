@@ -101,7 +101,18 @@ class ClassificationAppBackend:
 
         This must be done before the classifier will work.
         """
-        print("Getting tile data...")
+        await self.generate_individual_element_images()
+        await self.generate_whole_room_images()
+        # Classify tiles once done
+        self._classifier.load_tile_data(self._tile_data_dir)
+        if self._sample_data:
+            self._classify_sample_data()
+            self._queue.put((GUIEvent.SET_CLASSIFICATION_DATA, self._sample_data))
+        print("Finished getting tile data")
+
+    async def generate_individual_element_images(self):
+        """Generate images for individual elements."""
+        print("Getting individual elements...")
         await self._interface.initialize()
         await self._interface.clear_room()
         await self._interface.set_floor_image(
@@ -113,7 +124,6 @@ class ClassificationAppBackend:
 
         tile_collections = []
         elements = []
-        whole_room_images = []
         print("Getting elements that don't depend on room style...")
         unstyled_elements = await self._make_unstyled_tile_data_room()
         await self._interface.start_test_room((37, 31), Direction.SE)
@@ -140,38 +150,10 @@ class ClassificationAppBackend:
             if room_style != _ROOM_STYLES[-1]:
                 await self._interface.select_next_style()
 
-        print("Getting whole-room images...")
-        await self._interface.clear_room()
-        await self._interface.select_first_style()
-        for room_style in _ROOM_STYLES:
-            for (element, variant) in [
-                (ElementType.FLOOR, None),
-                (ElementType.FLOOR, "mosaic"),
-                (ElementType.FLOOR, "road"),
-                (ElementType.FLOOR, "grass"),
-                (ElementType.FLOOR, "dirt"),
-                (ElementType.FLOOR, "alternate"),
-                (ElementType.PIT, None),
-                (ElementType.WALL, None),
-            ]:
-                await self._interface.place_element(
-                    element, Direction.NONE, (0, 0), (37, 31), variant=variant
-                )
-                await self._interface.start_test_room((37, 31), Direction.SE)
-                room_image = await self._interface.get_room_image()
-                await self._interface.stop_test_room()
-                if element != ElementType.FLOOR:
-                    await self._interface.clear_room()
-                whole_room_images.append(
-                    (element, variant, room_style, _fix_corner_tiles(room_image))
-                )
-            if room_style != _ROOM_STYLES[-1]:
-                await self._interface.select_next_style()
-
-        print("Making tile data files...")
-        if os.path.exists(self._tile_data_dir):
-            shutil.rmtree(self._tile_data_dir)
-        os.makedirs(self._tile_data_dir)
+        destination_dir = os.path.join(self._tile_data_dir, "tiles")
+        if os.path.exists(destination_dir):
+            shutil.rmtree(destination_dir)
+        os.makedirs(destination_dir)
         used_names = []
         for (
             element,
@@ -200,13 +182,50 @@ class ClassificationAppBackend:
             used_names.append(name_with_order)
             image.save(
                 os.path.join(
-                    self._tile_data_dir,
+                    destination_dir,
                     f"{name_with_order}.png",
                 ),
                 "PNG",
                 pnginfo=png_info,
             )
-        os.makedirs(os.path.join(self._tile_data_dir, "whole_room_images"))
+        print("Finished getting individual elements")
+
+    async def generate_whole_room_images(self):
+        """Generate whole-room images."""
+        print("Getting whole-room images...")
+        whole_room_images = []
+        await self._interface.initialize()
+        await self._interface.clear_room()
+        await self._interface.select_first_style()
+        for room_style in _ROOM_STYLES:
+            for (element, variant) in [
+                (ElementType.FLOOR, None),
+                (ElementType.FLOOR, "mosaic"),
+                (ElementType.FLOOR, "road"),
+                (ElementType.FLOOR, "grass"),
+                (ElementType.FLOOR, "dirt"),
+                (ElementType.FLOOR, "alternate"),
+                (ElementType.PIT, None),
+                (ElementType.WALL, None),
+            ]:
+                await self._interface.place_element(
+                    element, Direction.NONE, (0, 0), (37, 31), variant=variant
+                )
+                await self._interface.start_test_room((37, 31), Direction.SE)
+                room_image = await self._interface.get_room_image()
+                await self._interface.stop_test_room()
+                if element != ElementType.FLOOR:
+                    await self._interface.clear_room()
+                whole_room_images.append(
+                    (element, variant, room_style, _fix_corner_tiles(room_image))
+                )
+            if room_style != _ROOM_STYLES[-1]:
+                await self._interface.select_next_style()
+
+        destination_dir = os.path.join(self._tile_data_dir, "whole_room_images")
+        if os.path.exists(destination_dir):
+            shutil.rmtree(destination_dir)
+        os.makedirs(destination_dir)
         for (element, variant, room_style, room_image) in whole_room_images:
             png_info = PngInfo()
             png_info.add_text("element", element.name)
@@ -217,19 +236,13 @@ class ClassificationAppBackend:
             file_name = f"{element.name}{variant_str}{style_str}"
             image.save(
                 os.path.join(
-                    os.path.join(self._tile_data_dir, "whole_room_images"),
+                    os.path.join(destination_dir),
                     f"{file_name}.png",
                 ),
                 "PNG",
                 pnginfo=png_info,
             )
-
-        # Classify tiles once done
-        self._classifier.load_tile_data(self._tile_data_dir)
-        if self._sample_data:
-            self._classify_sample_data()
-            self._queue.put((GUIEvent.SET_CLASSIFICATION_DATA, self._sample_data))
-        print("Finished getting tile data")
+        print("Finished getting whole-room images")
 
     async def _make_styled_tile_data_room(self):
         # Place some walls we don't care about, to make shadows for force arrows

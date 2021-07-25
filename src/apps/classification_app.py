@@ -89,6 +89,18 @@ class ClassificationApp(tkinter.Frame):
             command=self._generate_tile_data,
         )
         self._tile_data_button.pack(side=tkinter.TOP)
+        self._only_tile_button = tkinter.Button(
+            self._control_panel,
+            text="Generate only individual elements",
+            command=self._generate_individual_elements,
+        )
+        self._only_tile_button.pack(side=tkinter.TOP)
+        self._only_whole_room_images_button = tkinter.Button(
+            self._control_panel,
+            text="Generate only whole-room images",
+            command=self._generate_whole_room_images,
+        )
+        self._only_whole_room_images_button.pack(side=tkinter.TOP)
         self._generate_sample_data_button = tkinter.Button(
             self._control_panel,
             text="Generate sample data",
@@ -225,6 +237,12 @@ class ClassificationApp(tkinter.Frame):
 
     def _generate_tile_data(self):
         self._run_coroutine(self._backend.generate_tile_data())
+
+    def _generate_individual_elements(self):
+        self._run_coroutine(self._backend.generate_individual_element_images())
+
+    def _generate_whole_room_images(self):
+        self._run_coroutine(self._backend.generate_whole_room_images())
 
     def _next_tile(self):
         self._data_index += 1

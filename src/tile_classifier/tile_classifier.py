@@ -41,12 +41,10 @@ class TileClassifier:
         """
         try:
             # Load individual tiles
-            file_names = sorted(
-                [f.name for f in os.scandir(tile_data_dir) if not f.is_dir()]
-            )
+            file_names = sorted(os.listdir(os.path.join(tile_data_dir, "tiles")))
             non_positional_tile_data = []
             for file_name in file_names:
-                image = PIL.Image.open(os.path.join(tile_data_dir, file_name))
+                image = PIL.Image.open(os.path.join(tile_data_dir, "tiles", file_name))
                 image_array = numpy.array(image)
                 mask = numpy.logical_not(
                     numpy.logical_or(
@@ -71,13 +69,7 @@ class TileClassifier:
             # Load whole room images
             whole_room_images = []
             room_image_file_names = sorted(
-                [
-                    f.name
-                    for f in os.scandir(
-                        os.path.join(tile_data_dir, "whole_room_images")
-                    )
-                    if not f.is_dir()
-                ]
+                os.listdir(os.path.join(tile_data_dir, "whole_room_images"))
             )
             positional_tile_data = {}
             for file_name in room_image_file_names:
@@ -151,7 +143,7 @@ class TileClassifier:
 
         except FileNotFoundError:
             print(
-                f"No directory '{tile_data_dir}' found. "
+                "Not all tile data is present. "
                 "You need to generate tile data before you can classify tiles."
             )
 
