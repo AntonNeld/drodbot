@@ -377,6 +377,7 @@ class ClassificationAppBackend:
         predicted_contents, debug_images = self._classifier.classify_tiles(
             {t["position"]: t["image"] for t in self._sample_data},
             {t["position"]: t["minimap_color"] for t in self._sample_data},
+            room_style="Foundation",  # Assume it's Foundation, so we have something
             return_debug_images=True,
         )
         for entry in self._sample_data:
@@ -416,6 +417,10 @@ class ClassificationAppBackend:
             (ElementType.WALL, Direction.NONE, 15, 23, None),
             (ElementType.WALL, Direction.NONE, 16, 22, None),
             (ElementType.FLOOR, Direction.NONE, 16, 23, None),
+            (ElementType.WALL, Direction.NONE, 19, 22, None),
+            (ElementType.WALL, Direction.NONE, 19, 21, None),
+            (ElementType.WALL, Direction.NONE, 20, 21, None),
+            (ElementType.FLOOR, Direction.NONE, 20, 22, None),
             (ElementType.BLUE_DOOR, Direction.NONE, 6, 5, None),
             (ElementType.BLUE_DOOR, Direction.NONE, 7, 5, None),
             (ElementType.BLUE_DOOR, Direction.NONE, 8, 5, None),
