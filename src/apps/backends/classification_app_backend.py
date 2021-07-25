@@ -102,7 +102,7 @@ class ClassificationAppBackend:
         This must be done before the classifier will work.
         """
         await self.generate_individual_element_images()
-        await self.generate_whole_room_images()
+        await self.generate_textures()
         # Classify tiles once done
         self._classifier.load_tile_data(self._tile_data_dir)
         if self._sample_data:
@@ -190,10 +190,10 @@ class ClassificationAppBackend:
             )
         print("Finished getting individual elements")
 
-    async def generate_whole_room_images(self):
-        """Generate whole-room images."""
-        print("Getting whole-room images...")
-        whole_room_images = []
+    async def generate_textures(self):
+        """Generate textures."""
+        print("Getting textures...")
+        textures = []
         await self._interface.initialize()
         await self._interface.clear_room()
         await self._interface.select_first_style()
@@ -216,17 +216,17 @@ class ClassificationAppBackend:
                 await self._interface.stop_test_room()
                 if element != ElementType.FLOOR:
                     await self._interface.clear_room()
-                whole_room_images.append(
-                    (element, variant, room_style, _fix_corner_tiles(room_image))
+                textures.append(
+                    (element, variant, room_style, _get_repeating_pattern(room_image))
                 )
             if room_style != _ROOM_STYLES[-1]:
                 await self._interface.select_next_style()
 
-        destination_dir = os.path.join(self._tile_data_dir, "whole_room_images")
+        destination_dir = os.path.join(self._tile_data_dir, "textures")
         if os.path.exists(destination_dir):
             shutil.rmtree(destination_dir)
         os.makedirs(destination_dir)
-        for (element, variant, room_style, room_image) in whole_room_images:
+        for (element, variant, room_style, room_image) in textures:
             png_info = PngInfo()
             png_info.add_text("element", element.name)
             png_info.add_text("room_style", room_style)
@@ -242,7 +242,7 @@ class ClassificationAppBackend:
                 "PNG",
                 pnginfo=png_info,
             )
-        print("Finished getting whole-room images")
+        print("Finished getting textures")
 
     async def _make_styled_tile_data_room(self):
         # Place some walls we don't care about, to make shadows for force arrows
@@ -481,12 +481,8 @@ class ClassificationAppBackend:
         print("Finished generating sample data")
 
 
-def _fix_corner_tiles(room_image):
-    """Remove Beethro from the corner tile.
-
-    Since the textures are periodic, we can remove Beethro
-    from the bottom-right tile by replacing him with another
-    tile from the room image.
+def _get_repeating_pattern(room_image):
+    """Get the smallest repeating pattern from the image.
 
     Parameters
     ----------
@@ -495,66 +491,32 @@ def _fix_corner_tiles(room_image):
 
     Returns
     -------
-    The fixed room image.
+    The smallest repeating pattern.
     """
-    match_region_size = 3
-    replace_region_size = 2  # Beethro is drawn in multiple tiles when on a wall
-    # Cut out a region to match with, just above the corner
-    region_to_match = room_image[
-        (ROOM_HEIGHT_IN_TILES - replace_region_size - match_region_size)
-        * TILE_SIZE : (ROOM_HEIGHT_IN_TILES - replace_region_size)
-        * TILE_SIZE,
-        (ROOM_WIDTH_IN_TILES - match_region_size)
-        * TILE_SIZE : ROOM_WIDTH_IN_TILES
-        * TILE_SIZE,
-        :,
-    ]
-    # Find all matches
-    matching_origins = []
-    for x in range(ROOM_WIDTH_IN_TILES - match_region_size):
-        for y in range(ROOM_HEIGHT_IN_TILES - match_region_size - replace_region_size):
-            if (
-                x == ROOM_WIDTH_IN_TILES - match_region_size
-                and y == ROOM_HEIGHT_IN_TILES - match_region_size - replace_region_size
-            ):
-                # Skip the region we just extracted, since Beethro is below it
-                continue
-            if (
-                region_to_match
-                == room_image[
-                    y * TILE_SIZE : (y + match_region_size) * TILE_SIZE,
-                    x * TILE_SIZE : (x + match_region_size) * TILE_SIZE,
-                    :,
-                ]
-            ).all():
-                matching_origins.append((x, y))
-    # Extract tiles to replace
-    replacements = [
-        room_image[
-            (y + match_region_size)
-            * TILE_SIZE : (y + match_region_size + replace_region_size)
-            * TILE_SIZE,
-            (x + match_region_size - replace_region_size)
-            * TILE_SIZE : (x + match_region_size)
-            * TILE_SIZE,
-            :,
+    full_width = ROOM_WIDTH_IN_TILES * TILE_SIZE - TILE_SIZE
+    # Crop out the edge of the image, to remove Beethro
+    cropped_image = room_image[:, :full_width, :]
+    # Find horizontal period
+    width = TILE_SIZE
+    while not numpy.all(
+        numpy.tile(cropped_image[:, :width, :], (1, full_width // width + 1, 1))[
+            :, :full_width, :
         ]
-        for (x, y) in matching_origins
-    ]
-    # Verify that they are all identical
-    replacement = replacements[0]
-    for other_replacement in replacements[1:]:
-        if not (replacement == other_replacement).all():
-            raise RuntimeError("Not all replacements are identical")
-    # Replace Beethro with the found replacement
-    fixed_room_image = room_image.copy()
-    fixed_room_image[
-        (ROOM_HEIGHT_IN_TILES - replace_region_size)
-        * TILE_SIZE : ROOM_HEIGHT_IN_TILES
-        * TILE_SIZE,
-        (ROOM_WIDTH_IN_TILES - replace_region_size)
-        * TILE_SIZE : ROOM_WIDTH_IN_TILES
-        * TILE_SIZE,
-        :,
-    ] = replacement
-    return fixed_room_image
+        == cropped_image
+    ):
+        width += TILE_SIZE
+    if width == full_width:
+        raise RuntimeError("Pattern does not repeat in X")
+    # Find vertical period
+    height = TILE_SIZE
+    while not numpy.all(
+        numpy.tile(
+            cropped_image[:height, :, :],
+            (ROOM_HEIGHT_IN_TILES * TILE_SIZE // height + 1, 1, 1),
+        )[: ROOM_HEIGHT_IN_TILES * TILE_SIZE, :, :]
+        == cropped_image
+    ):
+        height += TILE_SIZE
+    if height == ROOM_HEIGHT_IN_TILES * TILE_SIZE:
+        raise RuntimeError("Pattern does not repeat in Y")
+    return room_image[:height, :width, :]

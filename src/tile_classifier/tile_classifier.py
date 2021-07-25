@@ -27,7 +27,7 @@ class TileClassifier:
         self._positional_styled_tile_data = None
         self._positional_styled_alternative_images = None
         self._positional_styled_alternative_masks = None
-        self._whole_room_images = None
+        self._textures = None
         self._tile_examples = None
 
     def load_tile_data(self, tile_data_dir):
@@ -64,6 +64,8 @@ class TileClassifier:
                     non_positional_non_styled_tile_data.append(
                         {
                             "file_name": file_name,
+                            # Keeping image and mask here does not take up extra memory,
+                            # probably because of some behind-the-scenes optimization
                             "image": _preprocess_image(image_array.astype(float)),
                             "mask": mask,
                             "element": element,
@@ -86,20 +88,20 @@ class TileClassifier:
                         }
                     )
 
-            # Load whole room images
-            whole_room_images = []
+            # Load textures
+            textures = []
             room_image_file_names = sorted(
-                os.listdir(os.path.join(tile_data_dir, "whole_room_images"))
+                os.listdir(os.path.join(tile_data_dir, "textures"))
             )
             positional_styled_tile_data = {}
             for file_name in room_image_file_names:
                 image = PIL.Image.open(
-                    os.path.join(tile_data_dir, "whole_room_images", file_name)
+                    os.path.join(tile_data_dir, "textures", file_name)
                 )
                 image_array = numpy.array(image)
                 element = getattr(ElementType, image.info["element"])
                 room_style = image.info["room_style"]
-                whole_room_images.append(
+                textures.append(
                     {
                         "file_name": file_name,
                         "image": image_array,
@@ -110,20 +112,29 @@ class TileClassifier:
                 if room_style not in positional_styled_tile_data:
                     positional_styled_tile_data[room_style] = {}
                 # Extend tile_data with images of all tiles
+                texture_tiles = {}
                 for x in range(ROOM_WIDTH_IN_TILES):
                     for y in range(ROOM_HEIGHT_IN_TILES):
                         if (x, y) not in positional_styled_tile_data[room_style]:
                             positional_styled_tile_data[room_style][(x, y)] = []
+                        x_in_image = x % (image_array.shape[1] // TILE_SIZE)
+                        y_in_image = y % (image_array.shape[0] // TILE_SIZE)
+                        if (x_in_image, y_in_image) not in texture_tiles:
+                            texture_tiles[(x_in_image, y_in_image)] = _preprocess_image(
+                                image_array[
+                                    y_in_image
+                                    * TILE_SIZE : (y_in_image + 1)
+                                    * TILE_SIZE,
+                                    x_in_image
+                                    * TILE_SIZE : (x_in_image + 1)
+                                    * TILE_SIZE,
+                                    :,
+                                ].astype(float)
+                            )
                         positional_styled_tile_data[room_style][(x, y)].append(
                             {
                                 "file_name": file_name,
-                                "image": _preprocess_image(
-                                    image_array[
-                                        y * TILE_SIZE : (y + 1) * TILE_SIZE,
-                                        x * TILE_SIZE : (x + 1) * TILE_SIZE,
-                                        :,
-                                    ].astype(float)
-                                ),
+                                "image": texture_tiles[(x_in_image, y_in_image)],
                                 "mask": numpy.ones((TILE_SIZE, TILE_SIZE), dtype=bool),
                                 "element": element,
                                 "direction": Direction.NONE,
@@ -149,7 +160,7 @@ class TileClassifier:
                         "mask": mask,
                     }
 
-            self._whole_room_images = whole_room_images
+            self._textures = textures
             self._non_positional_non_styled_tile_data = (
                 non_positional_non_styled_tile_data
             )
@@ -315,15 +326,23 @@ class TileClassifier:
         if return_debug_images:
             debug_images = []
         detected_style = None
-        for whole_room_image_info in self._whole_room_images:
-            file_name = whole_room_image_info["file_name"]
-            image = whole_room_image_info["image"]
-            element = whole_room_image_info["element"]
-            room_style = whole_room_image_info["room_style"]
+        for texture in self._textures:
+            file_name = texture["file_name"]
+            image = texture["image"]
+            element = texture["element"]
+            room_style = texture["room_style"]
             if detected_style is not None and room_style != detected_style:
                 continue
+            expanded_image = numpy.tile(
+                image,
+                (
+                    ROOM_HEIGHT_IN_TILES * TILE_SIZE // image.shape[0] + 1,
+                    ROOM_WIDTH_IN_TILES * TILE_SIZE // image.shape[1] + 1,
+                    1,
+                ),
+            )[: ROOM_HEIGHT_IN_TILES * TILE_SIZE, : ROOM_WIDTH_IN_TILES * TILE_SIZE, :]
             # TODO: Have a mask for already found tiles for performance?
-            matching_pixels = (image == room_image).all(axis=2)
+            matching_pixels = (expanded_image == room_image).all(axis=2)
             if return_debug_images:
                 debug_images.append((f"Matching pixels {file_name}", matching_pixels))
             matching_tiles = numpy.zeros(
@@ -349,7 +368,7 @@ class TileClassifier:
                 )
 
         if detected_style is None:
-            print("Did not detect a style from whole-room images")
+            print("Did not detect a style from texture comparison")
         if return_debug_images:
             return classified_tiles, detected_style, debug_images
         return classified_tiles, detected_style
