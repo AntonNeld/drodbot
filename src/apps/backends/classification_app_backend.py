@@ -266,9 +266,22 @@ class ClassificationAppBackend:
                 self._interface, ElementType.STAIRS, 35, 5, 1, 19, variant="up"
             )
         )
+        extra_elements = [
+            (ElementType.ORB, Direction.NONE, 6, 11, None),
+            (ElementType.TRAPDOOR, Direction.NONE, 7, 11, None),
+        ]
+        for (element, direction, x, y, variant) in extra_elements:
+            await self._interface.place_element(
+                element, direction, (x, y), variant=variant
+            )
+        elements.extend(extra_elements)
         return elements
 
     async def _make_unstyled_tile_data_room(self):
+        # Place a trapdoor to make the red doors have the correct state
+        await self._interface.place_element(
+            ElementType.TRAPDOOR, Direction.NONE, (36, 1)
+        )
         elements = (
             await place_sworded_element(
                 self._interface,
@@ -333,12 +346,10 @@ class ClassificationAppBackend:
             (ElementType.CONQUER_TOKEN, Direction.NONE, 2, 2, None),
             (ElementType.MASTER_WALL, Direction.NONE, 3, 2, None),
             (ElementType.CHECKPOINT, Direction.NONE, 6, 0, None),
-            (ElementType.ORB, Direction.NONE, 6, 1, None),
             (ElementType.BRAIN, Direction.NONE, 6, 2, None),
             (ElementType.MIMIC_POTION, Direction.NONE, 9, 2, None),
             (ElementType.INVISIBILITY_POTION, Direction.NONE, 10, 2, None),
-            (ElementType.SCROLL, Direction.NONE, 12, 3, None),
-            (ElementType.TRAPDOOR, Direction.NONE, 12, 4, None),
+            (ElementType.SCROLL, Direction.NONE, 6, 1, None),
         ]
         for (element, direction, x, y, variant) in extra_elements:
             await self._interface.place_element(
