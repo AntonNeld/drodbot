@@ -85,7 +85,7 @@ class ClassificationApp(tkinter.Frame):
         self._control_panel.pack(side=tkinter.LEFT)
         self._tile_data_button = tkinter.Button(
             self._control_panel,
-            text="Generate tile data",
+            text="Generate all tile data",
             command=self._generate_tile_data,
         )
         self._tile_data_button.pack(side=tkinter.TOP)
@@ -101,6 +101,12 @@ class ClassificationApp(tkinter.Frame):
             command=self._generate_textures,
         )
         self._only_textures_button.pack(side=tkinter.TOP)
+        self._only_shadows_button = tkinter.Button(
+            self._control_panel,
+            text="Generate only shadows",
+            command=self._generate_shadows,
+        )
+        self._only_shadows_button.pack(side=tkinter.TOP)
         self._generate_sample_data_button = tkinter.Button(
             self._control_panel,
             text="Generate sample data",
@@ -243,6 +249,9 @@ class ClassificationApp(tkinter.Frame):
 
     def _generate_textures(self):
         self._run_coroutine(self._backend.generate_textures())
+
+    def _generate_shadows(self):
+        self._run_coroutine(self._backend.generate_shadows())
 
     def _next_tile(self):
         self._data_index += 1

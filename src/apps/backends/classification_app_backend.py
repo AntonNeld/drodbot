@@ -103,6 +103,7 @@ class ClassificationAppBackend:
         """
         await self.generate_individual_element_images()
         await self.generate_textures()
+        await self.generate_shadows()
         # Classify tiles once done
         self._classifier.load_tile_data(self._tile_data_dir)
         if self._sample_data:
@@ -243,6 +244,53 @@ class ClassificationAppBackend:
                 pnginfo=png_info,
             )
         print("Finished getting textures")
+
+    async def generate_shadows(self):
+        """Generate shadows."""
+        print("Generating shadows...")
+        await self._interface.initialize()
+        await self._interface.clear_room()
+        await self._interface.set_floor_image(
+            os.path.dirname(os.path.realpath(__file__)), "background"
+        )
+        await self._interface.place_element(
+            ElementType.FLOOR, Direction.NONE, (0, 0), (37, 31), variant="image"
+        )
+        for position in [(13, 5), (12, 6), (11, 6), (11, 7), (11, 8), (11, 9), (12, 9)]:
+            await self._interface.place_element(
+                ElementType.WALL, Direction.NONE, position
+            )
+        await self._interface.select_first_style()
+        shadows = []
+        for room_style in _ROOM_STYLES:
+            await self._interface.start_test_room((37, 31), Direction.SE)
+            tiles, _ = await self._interface.get_tiles_and_colors()
+            await self._interface.stop_test_room()
+            for i, position in enumerate(
+                [(13, 6), (13, 7), (12, 7), (12, 8), (13, 9), (12, 10), (11, 10)]
+            ):
+                image = tiles[position]
+                shadows.append((image, room_style, i))
+            if room_style != _ROOM_STYLES[-1]:
+                await self._interface.select_next_style()
+        destination_dir = os.path.join(self._tile_data_dir, "shadows")
+        if os.path.exists(destination_dir):
+            shutil.rmtree(destination_dir)
+        os.makedirs(destination_dir)
+        for (tile_image, room_style, index) in shadows:
+            png_info = PngInfo()
+            png_info.add_text("room_style", room_style)
+            image = PIL.Image.fromarray(tile_image)
+            file_name = f"shadow_{room_style.replace(' ','_')}_{index}"
+            image.save(
+                os.path.join(
+                    os.path.join(destination_dir),
+                    f"{file_name}.png",
+                ),
+                "PNG",
+                pnginfo=png_info,
+            )
+        print("Finished getting shadows")
 
     async def _make_styled_tile_data_room(self):
         # Place some walls we don't care about, to make shadows for force arrows
