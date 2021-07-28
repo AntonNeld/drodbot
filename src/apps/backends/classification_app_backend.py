@@ -266,8 +266,19 @@ class ClassificationAppBackend:
             await self._interface.start_test_room((37, 31), Direction.SE)
             tiles, _ = await self._interface.get_tiles_and_colors()
             await self._interface.stop_test_room()
+            # The order matters here. Since the shadows will be stored in
+            # alphabetical order based on the file name, and tried in the
+            # stored order, more common shadows should be earlier.
             for i, position in enumerate(
-                [(13, 6), (13, 7), (12, 7), (12, 8), (13, 9), (12, 10), (11, 10)]
+                [
+                    (12, 10),  # Horizontal
+                    (12, 8),  # Vertical
+                    (12, 7),  # Inner corner
+                    (11, 10),  # SW corner
+                    (13, 9),  # NE corner
+                    (13, 7),  # SE corner
+                    (13, 6),  # NE+SW corners
+                ]
             ):
                 image = tiles[position]
                 shadows.append((image, room_style, i))
