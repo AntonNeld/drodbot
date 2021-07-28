@@ -13,6 +13,24 @@ from room_simulator import ElementType, Direction
 from .apparent_tile import ApparentTile
 from util import find_color, element_layer
 
+_SHADABLE_ELEMENTS = set(
+    [
+        ElementType.GREEN_DOOR_OPEN,
+        ElementType.RED_DOOR_OPEN,
+        ElementType.BLUE_DOOR_OPEN,
+        ElementType.YELLOW_DOOR_OPEN,
+        ElementType.FLOOR,
+        ElementType.TRAPDOOR,
+        ElementType.FORCE_ARROW,
+        ElementType.CHECKPOINT,
+        ElementType.ORB,
+        ElementType.MIMIC_POTION,
+        ElementType.INVISIBILITY_POTION,
+        ElementType.OBSTACLE,
+        ElementType.CONQUER_TOKEN,
+    ]
+)
+
 
 class TileClassifier:
     """This is used to determine the content of tiles."""
@@ -224,7 +242,7 @@ class TileClassifier:
                 "You need to generate tile data before you can classify tiles."
             )
 
-    def _get_alternatives(self, position, minimap_color, room_style):
+    def _get_alternatives(self, position, minimap_color, room_style, shadow=None):
         """Get the possible alternative tiles based on some conditions.
 
         Parameters
@@ -235,6 +253,8 @@ class TileClassifier:
             The minimap color.
         room_style
             The room style, or None.
+        shadow
+            Add this shadow over elements that can be in the shade. Skip if None.
 
         Returns
         -------
@@ -290,6 +310,16 @@ class TileClassifier:
             raise RuntimeError("No tile data loaded, cannot classify tiles")
         alternative_images = stacked_images[:, :, :, filtered_indices]
         alternative_masks = stacked_masks[:, :, filtered_indices]
+        if shadow is not None:
+            shadow_mask = shadow["image"]
+            shadable_indices = [
+                i
+                for i, alternative in enumerate(alternatives)
+                if alternative["element"] in _SHADABLE_ELEMENTS
+            ]
+            shaded = alternative_images[:, :, :, shadable_indices]
+            shaded[shadow_mask, :, :] = shaded[shadow_mask, :, :] * 0.75
+            alternative_images[:, :, :, shadable_indices] = shaded
         return alternatives, alternative_images, alternative_masks
 
     def get_tile_image(self, apparent_tile):
@@ -419,16 +449,7 @@ class TileClassifier:
         representing the tile contents as the values. If `return_debug_images`
         is True, return a second dict with debug images.
         """
-        classified_tiles = {
-            key: ApparentTile(
-                room_piece=(ElementType.UNKNOWN, Direction.NONE),
-                floor_control=(ElementType.UNKNOWN, Direction.NONE),
-                checkpoint=(ElementType.UNKNOWN, Direction.NONE),
-                item=(ElementType.UNKNOWN, Direction.NONE),
-                monster=(ElementType.UNKNOWN, Direction.NONE),
-            )
-            for key in tiles
-        }
+        classified_tiles = {}
         debug_images = {key: [] for key in tiles}
         for key, image in tiles.items():
             if return_debug_images:
@@ -439,22 +460,35 @@ class TileClassifier:
             else:
                 preprocessed_image = _preprocess_image(image.astype(float))
 
-            if return_debug_images:
-                tile, classified_debug_images = self._classify_tile(
-                    preprocessed_image,
-                    key,
-                    minimap_colors[key],
-                    room_style,
-                    return_debug_images=True,
-                )
-                debug_images[key].extend(classified_debug_images)
-            else:
-                tile = self._classify_tile(
-                    preprocessed_image,
-                    key,
-                    minimap_colors[key],
-                    room_style,
-                )
+            min_max_min_diff = None
+            for shadow in [None, *self._shadows[room_style]]:
+                if return_debug_images:
+                    (
+                        new_tile,
+                        max_min_diff,
+                        classified_debug_images,
+                    ) = self._classify_tile(
+                        preprocessed_image,
+                        key,
+                        minimap_colors[key],
+                        room_style,
+                        shadow=shadow,
+                        return_debug_images=True,
+                    )
+                    debug_images[key].extend(classified_debug_images)
+                else:
+                    new_tile, max_min_diff = self._classify_tile(
+                        preprocessed_image,
+                        key,
+                        minimap_colors[key],
+                        room_style,
+                        shadow=shadow,
+                    )
+                if min_max_min_diff is None or max_min_diff < min_max_min_diff:
+                    min_max_min_diff = max_min_diff
+                    tile = new_tile
+                if min_max_min_diff < 20:
+                    break
 
             # Assume there is nothing below an obstacle. Unless it's a tunnel, it
             # doesn't matter anyway. The classifier easily gets confused about what
@@ -509,6 +543,7 @@ class TileClassifier:
         position,
         minimap_color,
         room_style,
+        shadow=None,
         return_debug_images=False,
     ):
         """Classify a single tile.
@@ -523,6 +558,8 @@ class TileClassifier:
             The color of the minimap at the position. Used to narrow down alternatives.
         room_style
             The room style. Used to compare to the correct images.
+        shadow
+            Shade elements that can be in the shade using this shadow. Skip if None.
         return_debug_images
             Whether to also return debug images.
 
@@ -530,6 +567,9 @@ class TileClassifier:
         -------
         tile
             An ApparentTile with the contents of the tile.
+        max_min_diff
+            The maximum average diff between the selected tile and the chosen element.
+            Bigger means the classification is more uncertain.
         debug_images
             Debug images. Only returned if return_debug_images is True.
         """
@@ -544,7 +584,7 @@ class TileClassifier:
         )
 
         alternatives, alternative_images, alternative_masks = self._get_alternatives(
-            position, minimap_color, room_style
+            position, minimap_color, room_style, shadow=shadow
         )
         unmasked_image_diffs = numpy.sqrt(
             numpy.sum(
@@ -554,6 +594,7 @@ class TileClassifier:
         )
         found_elements_mask = numpy.ones((TILE_SIZE, TILE_SIZE), dtype=bool)
         passes = 1
+        max_min_diff = 0
         while numpy.sum(found_elements_mask) != 0:
             masks = numpy.logical_and(
                 alternative_masks, found_elements_mask[:, :, numpy.newaxis]
@@ -590,26 +631,36 @@ class TileClassifier:
                         except ValueError:
                             average_diff = average_diffs[true_index]
                         identifier = alternative["file_name"].replace(".png", "")
+                        if shadow is not None:
+                            shadow_index = (
+                                shadow["file_name"].split("_")[-1].replace(".png", "")
+                            )
+                            identifier = f"{identifier}+shdw{shadow_index}"
                         debug_images.append(
                             (
                                 f"Pass {passes}: {identifier} ({average_diff})",
                                 masked_diffs[:, :, true_index],
                             )
                         )
-            best_match_index, _ = min(
+            best_match_index, min_diff = min(
                 ((i, v) for (i, v) in enumerate(average_diffs)),
                 key=lambda x: x[1],
             )
+            if min_diff > max_min_diff:
+                max_min_diff = min_diff
 
             actual_index = alternative_indices[best_match_index]
             element = alternatives[actual_index]["element"]
             direction = alternatives[actual_index]["direction"]
             identifier = alternatives[actual_index]["file_name"].replace(".png", "")
+            if shadow is not None:
+                shadow_index = shadow["file_name"].split("_")[-1].replace(".png", "")
+                identifier = f"{identifier}+shdw{shadow_index}"
             if return_debug_images:
                 debug_images.append(
                     (
                         f"=Pass {passes}, selected " f"{identifier}=",
-                        alternatives[actual_index]["image"],
+                        alternative_images[:, :, :, actual_index],
                     )
                 )
             element_mask = alternatives[actual_index]["mask"]
@@ -647,8 +698,8 @@ class TileClassifier:
                             (ElementType.NOTHING, Direction.NONE),
                         )
         if return_debug_images:
-            return tile, debug_images
-        return tile
+            return tile, max_min_diff, debug_images
+        return tile, max_min_diff
 
 
 def _preprocess_image(image, return_debug_images=False):
