@@ -28,6 +28,7 @@ class TileClassifier:
         self._positional_styled_alternative_images = None
         self._positional_styled_alternative_masks = None
         self._textures = None
+        self._shadows = None
         self._tile_examples = None
 
     def load_tile_data(self, tile_data_dir):
@@ -142,6 +143,25 @@ class TileClassifier:
                                 "position": (x, y),
                             }
                         )
+            # Load shadows
+            shadows = {}
+            shadow_file_names = sorted(
+                os.listdir(os.path.join(tile_data_dir, "shadows"))
+            )
+            for file_name in shadow_file_names:
+                image = PIL.Image.open(
+                    os.path.join(tile_data_dir, "shadows", file_name)
+                )
+                image_array = numpy.array(image)
+                room_style = image.info["room_style"]
+                if room_style not in shadows:
+                    shadows[room_style] = []
+                shadows[room_style].append(
+                    {
+                        "file_name": file_name,
+                        "image": find_color(image_array, (192, 0, 192)),
+                    }
+                )
 
             # Create examples of tiles, for reconstructing a room image
             tile_examples = {}
@@ -161,6 +181,7 @@ class TileClassifier:
                     }
 
             self._textures = textures
+            self._shadows = shadows
             self._non_positional_non_styled_tile_data = (
                 non_positional_non_styled_tile_data
             )
