@@ -489,6 +489,8 @@ class TileClassifier:
                     tile = new_tile
                 if min_max_min_diff < 20:
                     break
+            if min_max_min_diff >= 20:
+                print(f"Difficult to classify tile at {key}")
 
             # Assume there is nothing below an obstacle. Unless it's a tunnel, it
             # doesn't matter anyway. The classifier easily gets confused about what
