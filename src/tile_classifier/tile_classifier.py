@@ -403,7 +403,9 @@ class TileClassifier:
             for x in range(ROOM_WIDTH_IN_TILES):
                 for y in range(ROOM_HEIGHT_IN_TILES):
                     if matching_pixels[
-                        y * TILE_SIZE : (y + 1) * TILE_SIZE,
+                        # Only the lower 10 rows need to match. This helps with north
+                        # edges of walls, where these pixels are part of the texture
+                        y * TILE_SIZE + 12 : (y + 1) * TILE_SIZE,
                         x * TILE_SIZE : (x + 1) * TILE_SIZE,
                     ].all():
                         matching_tiles[y, x] = True
