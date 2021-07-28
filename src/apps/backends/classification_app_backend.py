@@ -304,8 +304,6 @@ class ClassificationAppBackend:
         print("Finished getting shadows")
 
     async def _make_styled_tile_data_room(self):
-        # Place some walls we don't care about, to make shadows for force arrows
-        await place_rectangle(self._interface, ElementType.WALL, 20, 13, 9, 1)
         elements = (
             await place_fully_directional_elements(
                 self._interface, ElementType.FORCE_ARROW, 8, 2
@@ -314,11 +312,11 @@ class ClassificationAppBackend:
                 self._interface, ElementType.WALL, 1, 4, "hard"
             )
             + await place_sized_obstacles(self._interface, "rock_1", 7, 0, [1, 2, 3])
-            + await place_sized_obstacles(self._interface, "rock_2", 11, 4, [1, 2, 3])
+            + await place_sized_obstacles(self._interface, "rock_2", 15, 21, [1, 2, 3])
             + await place_sized_obstacles(
                 self._interface, "square_statue", 16, 1, [1, 2, 4]
             )
-            + await place_sized_obstacles(self._interface, "plant_1", 11, 7, [1, 2])
+            + await place_sized_obstacles(self._interface, "plant_1", 1, 23, [1, 2])
             + await place_sized_obstacles(self._interface, "plant_2", 11, 10, [1, 2])
             + await place_sized_obstacles(self._interface, "house_1", 16, 8, [1, 3, 5])
             + await place_sized_obstacles(self._interface, "house_2", 8, 13, [1, 3, 5])
@@ -327,11 +325,6 @@ class ClassificationAppBackend:
             )
             + await place_sized_obstacles(self._interface, "skulls_1", 1, 11, [1, 2])
             + await place_sized_obstacles(self._interface, "skulls_2", 1, 14, [1, 2])
-            # Place some force arrows in the shadow, since we're having trouble seeing
-            # those otherwise
-            + await place_fully_directional_elements(
-                self._interface, ElementType.FORCE_ARROW, 21, 14, one_line=True
-            )
             + await place_rectangle(self._interface, ElementType.PIT, 20, 15, 5, 4)
             + await place_rectangle(self._interface, ElementType.STAIRS, 34, 5, 1, 19)
             + await place_rectangle(
@@ -402,16 +395,16 @@ class ClassificationAppBackend:
                 self._interface, ElementType.RED_DOOR, 1, 24
             )
             + await place_nondirectional_edges_elements(
-                self._interface, ElementType.YELLOW_DOOR_OPEN, 11, 9
+                self._interface, ElementType.YELLOW_DOOR_OPEN, 15, 9
             )
             + await place_nondirectional_edges_elements(
-                self._interface, ElementType.BLUE_DOOR_OPEN, 11, 14
+                self._interface, ElementType.BLUE_DOOR_OPEN, 15, 14
             )
             + await place_nondirectional_edges_elements(
-                self._interface, ElementType.GREEN_DOOR_OPEN, 11, 19
+                self._interface, ElementType.GREEN_DOOR_OPEN, 15, 19
             )
             + await place_nondirectional_edges_elements(
-                self._interface, ElementType.RED_DOOR_OPEN, 11, 24
+                self._interface, ElementType.RED_DOOR_OPEN, 15, 24
             )
         )
         extra_elements = [

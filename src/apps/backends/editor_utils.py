@@ -141,6 +141,13 @@ async def place_nondirectional_edges_elements(interface, element, x, y, variant=
         (x + 6, y + 4),
         (x + 8, y + 0),
         (x + 8, y + 2),
+        # Little plus
+        (x + 10, y + 2),
+        (x + 11, y + 1),
+        (x + 12, y + 2),
+        (x + 11, y + 3),
+        # Single tile
+        (x + 10, y + 4),
     ]
     not_returned_coords = [
         (x + 4, y + 3),
@@ -155,6 +162,7 @@ async def place_nondirectional_edges_elements(interface, element, x, y, variant=
         (x + 8, y + 1),
         (x + 8, y + 3),
         (x + 8, y + 4),
+        (x + 11, y + 2),
     ]
     for (element_x, element_y) in returned_coords + not_returned_coords:
         await interface.place_element(
