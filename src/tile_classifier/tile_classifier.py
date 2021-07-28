@@ -411,135 +411,46 @@ class TileClassifier:
         debug_images = {key: [] for key in tiles}
         for key, image in tiles.items():
             if return_debug_images:
-                processed_image, preprocess_debug_images = _preprocess_image(
+                preprocessed_image, preprocess_debug_images = _preprocess_image(
                     image.astype(float), return_debug_images=True
                 )
                 debug_images[key].extend(preprocess_debug_images)
             else:
-                processed_image = _preprocess_image(image.astype(float))
+                preprocessed_image = _preprocess_image(image.astype(float))
 
-            (
-                alternatives,
-                alternative_images,
-                alternative_masks,
-            ) = self._get_alternatives(key, minimap_colors[key], room_style)
-            unmasked_image_diffs = numpy.sqrt(
-                numpy.sum(
-                    (processed_image[:, :, :, numpy.newaxis] - alternative_images) ** 2,
-                    axis=2,
+            if return_debug_images:
+                tile, classified_debug_images = self._classify_tile(
+                    preprocessed_image,
+                    key,
+                    minimap_colors[key],
+                    room_style,
+                    return_debug_images=True,
                 )
-            )
-            found_elements_mask = numpy.ones((TILE_SIZE, TILE_SIZE), dtype=bool)
-            passes = 1
-            while numpy.sum(found_elements_mask) != 0:
-                masks = numpy.logical_and(
-                    alternative_masks, found_elements_mask[:, :, numpy.newaxis]
-                )
-                mask_sizes = numpy.sum(masks, axis=(0, 1))
-
-                alternative_indices = [
-                    i
-                    for i, a in enumerate(alternatives)
-                    if (
-                        (
-                            a["layer"] == "swords"
-                            and classified_tiles[key].monster
-                            == (ElementType.UNKNOWN, Direction.NONE)
-                        )
-                        or (
-                            a["layer"] != "swords"
-                            and getattr(classified_tiles[key], a["layer"])
-                            == (ElementType.UNKNOWN, Direction.NONE)
-                        )
-                    )
-                    and mask_sizes[i] != 0
-                ]
-                diffs = unmasked_image_diffs[:, :, alternative_indices]
-                masked_diffs = diffs * masks[:, :, alternative_indices]
-                average_diffs = (
-                    numpy.sum(masked_diffs, axis=(0, 1))
-                    / mask_sizes[alternative_indices]
-                )
-                if return_debug_images:
-                    for index, alternative in enumerate(alternatives):
-                        if index in alternative_indices:
-                            true_index = alternative_indices.index(index)
-                            try:
-                                average_diff = int(average_diffs[true_index])
-                            except ValueError:
-                                average_diff = average_diffs[true_index]
-                            identifier = alternative["file_name"].replace(".png", "")
-                            debug_images[key].append(
-                                (
-                                    f"Pass {passes}: {identifier} ({average_diff})",
-                                    masked_diffs[:, :, true_index],
-                                )
-                            )
-                best_match_index, _ = min(
-                    ((i, v) for (i, v) in enumerate(average_diffs)),
-                    key=lambda x: x[1],
+                debug_images[key].extend(classified_debug_images)
+            else:
+                tile = self._classify_tile(
+                    preprocessed_image,
+                    key,
+                    minimap_colors[key],
+                    room_style,
                 )
 
-                actual_index = alternative_indices[best_match_index]
-                element = alternatives[actual_index]["element"]
-                direction = alternatives[actual_index]["direction"]
-                identifier = alternatives[actual_index]["file_name"].replace(".png", "")
-                debug_images[key].append(
-                    (
-                        f"=Pass {passes}, selected " f"{identifier}=",
-                        alternatives[actual_index]["image"],
-                    )
-                )
-                element_mask = alternatives[actual_index]["mask"]
-                found_elements_mask = numpy.logical_and(
-                    found_elements_mask, numpy.logical_not(element_mask)
-                )
-                passes += 1
-                layer = alternatives[actual_index]["layer"]
-                if layer != "swords":  # Discard swords
-                    layers = [
-                        "monster",
-                        "item",
-                        "checkpoint",
-                        "floor_control",
-                        "room_piece",
-                    ]
-                    if getattr(classified_tiles[key], layer) != (
-                        ElementType.UNKNOWN,
-                        Direction.NONE,
-                    ):
-                        raise RuntimeError(
-                            f"Saw {(element,direction)} in tile {key}, but it already "
-                            f"has {getattr(classified_tiles[key],layer)} in "
-                            f"the {layer} layer"
-                        )
-                    setattr(classified_tiles[key], layer, (element, direction))
-                    for layer_above in layers[: layers.index(layer)]:
-                        if getattr(classified_tiles[key], layer_above) == (
-                            ElementType.UNKNOWN,
-                            Direction.NONE,
-                        ):
-                            setattr(
-                                classified_tiles[key],
-                                layer_above,
-                                (ElementType.NOTHING, Direction.NONE),
-                            )
             # Assume there is nothing below an obstacle. Unless it's a tunnel, it
             # doesn't matter anyway. The classifier easily gets confused about what
             # is under obstacles, because of the shadows.
-            if classified_tiles[key].item == (
+            if tile.item == (
                 ElementType.OBSTACLE,
                 Direction.NONE,
             ):
-                classified_tiles[key].checkpoint = (
+                tile.checkpoint = (
                     ElementType.NOTHING,
                     Direction.NONE,
                 )
-                classified_tiles[key].floor_control = (
+                tile.floor_control = (
                     ElementType.NOTHING,
                     Direction.NONE,
                 )
-                classified_tiles[key].room_piece = (
+                tile.room_piece = (
                     ElementType.FLOOR,
                     Direction.NONE,
                 )
@@ -547,28 +458,176 @@ class TileClassifier:
             # appearances, and are closed when playtesting. If we know there is a
             # master wall in a tile (because of the minimap), let's assume there is
             # nothing else there (except possibly Beethro).
-            if classified_tiles[key].room_piece == (
+            if tile.room_piece == (
                 ElementType.MASTER_WALL,
                 Direction.NONE,
             ):
-                classified_tiles[key].floor_control = (
+                tile.floor_control = (
                     ElementType.NOTHING,
                     Direction.NONE,
                 )
-                classified_tiles[key].checkpoint = (
+                tile.checkpoint = (
                     ElementType.NOTHING,
                     Direction.NONE,
                 )
-                classified_tiles[key].item = (ElementType.NOTHING, Direction.NONE)
-                if classified_tiles[key].monster[0] != ElementType.BEETHRO:
-                    classified_tiles[key].monster = (
+                tile.item = (ElementType.NOTHING, Direction.NONE)
+                if tile.monster[0] != ElementType.BEETHRO:
+                    tile.monster = (
                         ElementType.NOTHING,
                         Direction.NONE,
                     )
+            classified_tiles[key] = tile
 
         if return_debug_images:
             return classified_tiles, debug_images
         return classified_tiles
+
+    def _classify_tile(
+        self,
+        preprocessed_image,
+        position,
+        minimap_color,
+        room_style,
+        return_debug_images=False,
+    ):
+        """Classify a single tile.
+
+        Parameters
+        ----------
+        preprocessed_image
+            The tile image, already preprocessed.
+        position
+            The position of the tile. Used to get the correct part of textures.
+        minimap_color
+            The color of the minimap at the position. Used to narrow down alternatives.
+        room_style
+            The room style. Used to compare to the correct images.
+        return_debug_images
+            Whether to also return debug images.
+
+        Returns
+        -------
+        tile
+            An ApparentTile with the contents of the tile.
+        debug_images
+            Debug images. Only returned if return_debug_images is True.
+        """
+        if return_debug_images:
+            debug_images = []
+        tile = ApparentTile(
+            room_piece=(ElementType.UNKNOWN, Direction.NONE),
+            floor_control=(ElementType.UNKNOWN, Direction.NONE),
+            checkpoint=(ElementType.UNKNOWN, Direction.NONE),
+            item=(ElementType.UNKNOWN, Direction.NONE),
+            monster=(ElementType.UNKNOWN, Direction.NONE),
+        )
+
+        alternatives, alternative_images, alternative_masks = self._get_alternatives(
+            position, minimap_color, room_style
+        )
+        unmasked_image_diffs = numpy.sqrt(
+            numpy.sum(
+                (preprocessed_image[:, :, :, numpy.newaxis] - alternative_images) ** 2,
+                axis=2,
+            )
+        )
+        found_elements_mask = numpy.ones((TILE_SIZE, TILE_SIZE), dtype=bool)
+        passes = 1
+        while numpy.sum(found_elements_mask) != 0:
+            masks = numpy.logical_and(
+                alternative_masks, found_elements_mask[:, :, numpy.newaxis]
+            )
+            mask_sizes = numpy.sum(masks, axis=(0, 1))
+
+            alternative_indices = [
+                i
+                for i, a in enumerate(alternatives)
+                if (
+                    (
+                        a["layer"] == "swords"
+                        and tile.monster == (ElementType.UNKNOWN, Direction.NONE)
+                    )
+                    or (
+                        a["layer"] != "swords"
+                        and getattr(tile, a["layer"])
+                        == (ElementType.UNKNOWN, Direction.NONE)
+                    )
+                )
+                and mask_sizes[i] != 0
+            ]
+            diffs = unmasked_image_diffs[:, :, alternative_indices]
+            masked_diffs = diffs * masks[:, :, alternative_indices]
+            average_diffs = (
+                numpy.sum(masked_diffs, axis=(0, 1)) / mask_sizes[alternative_indices]
+            )
+            if return_debug_images:
+                for index, alternative in enumerate(alternatives):
+                    if index in alternative_indices:
+                        true_index = alternative_indices.index(index)
+                        try:
+                            average_diff = int(average_diffs[true_index])
+                        except ValueError:
+                            average_diff = average_diffs[true_index]
+                        identifier = alternative["file_name"].replace(".png", "")
+                        debug_images.append(
+                            (
+                                f"Pass {passes}: {identifier} ({average_diff})",
+                                masked_diffs[:, :, true_index],
+                            )
+                        )
+            best_match_index, _ = min(
+                ((i, v) for (i, v) in enumerate(average_diffs)),
+                key=lambda x: x[1],
+            )
+
+            actual_index = alternative_indices[best_match_index]
+            element = alternatives[actual_index]["element"]
+            direction = alternatives[actual_index]["direction"]
+            identifier = alternatives[actual_index]["file_name"].replace(".png", "")
+            if return_debug_images:
+                debug_images.append(
+                    (
+                        f"=Pass {passes}, selected " f"{identifier}=",
+                        alternatives[actual_index]["image"],
+                    )
+                )
+            element_mask = alternatives[actual_index]["mask"]
+            found_elements_mask = numpy.logical_and(
+                found_elements_mask, numpy.logical_not(element_mask)
+            )
+            passes += 1
+            layer = alternatives[actual_index]["layer"]
+            if layer != "swords":  # Discard swords
+                layers = [
+                    "monster",
+                    "item",
+                    "checkpoint",
+                    "floor_control",
+                    "room_piece",
+                ]
+                if getattr(tile, layer) != (
+                    ElementType.UNKNOWN,
+                    Direction.NONE,
+                ):
+                    raise RuntimeError(
+                        f"Saw {(element,direction)} in tile {position}, but it already "
+                        f"has {getattr(tile,layer)} in "
+                        f"the {layer} layer"
+                    )
+                setattr(tile, layer, (element, direction))
+                for layer_above in layers[: layers.index(layer)]:
+                    if getattr(tile, layer_above) == (
+                        ElementType.UNKNOWN,
+                        Direction.NONE,
+                    ):
+                        setattr(
+                            tile,
+                            layer_above,
+                            (ElementType.NOTHING, Direction.NONE),
+                        )
+        if return_debug_images:
+            return tile, debug_images
+        return tile
 
 
 def _preprocess_image(image, return_debug_images=False):
