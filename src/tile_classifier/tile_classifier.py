@@ -489,11 +489,14 @@ class TileClassifier:
                 if min_max_min_diff is None or max_min_diff < min_max_min_diff:
                     min_max_min_diff = max_min_diff
                     tile = new_tile
-                if min_max_min_diff < 20:
+                if min_max_min_diff < 30:
                     break
-            if min_max_min_diff >= 20:
+            if (
+                min_max_min_diff >= 30 and tile.item[0] != ElementType.OBSTACLE
+            ):  # Obstacles are always difficult, that's not news
                 print(f"Difficult to classify tile at {key}")
-            debug_images[key].extend(classified_debug_images)
+            if return_debug_images:
+                debug_images[key].extend(classified_debug_images)
 
             # Assume there is nothing below an obstacle. Unless it's a tunnel, it
             # doesn't matter anyway. The classifier easily gets confused about what
