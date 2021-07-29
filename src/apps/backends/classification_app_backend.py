@@ -137,6 +137,25 @@ class ClassificationAppBackend:
         await self._interface.place_element(
             ElementType.FLOOR, Direction.NONE, (0, 0), (37, 31), variant="image"
         )
+        print("Getting roach eggs...")
+        await self._interface.place_element(
+            ElementType.ROACH_QUEEN, Direction.NW, (0, 0)
+        )
+        await self._interface.start_test_room((37, 31), Direction.SE)
+        await self._interface.wait_turns(29)
+        for i in range(1, 5):
+            await self._interface.wait_turns(1)
+            tiles, _ = await self._interface.get_tiles_and_colors()
+            tile_collections.append(tiles)
+            elements.append(
+                (ElementType.ROACH_EGG, Direction.NONE, 1, 1, None, None, i)
+            )
+        await self._interface.stop_test_room()
+
+        await self._interface.clear_room()
+        await self._interface.place_element(
+            ElementType.FLOOR, Direction.NONE, (0, 0), (37, 31), variant="image"
+        )
         print("Getting elements that depend on room style...")
         styled_elements = await self._make_styled_tile_data_room()
         await self._interface.select_first_style()
@@ -146,7 +165,7 @@ class ClassificationAppBackend:
             await self._interface.stop_test_room()
             tile_collections.append(tiles)
             elements.extend(
-                (*element, room_style, i + 1) for element in styled_elements
+                (*element, room_style, i + 5) for element in styled_elements
             )
             if room_style != _ROOM_STYLES[-1]:
                 await self._interface.select_next_style()
@@ -247,7 +266,7 @@ class ClassificationAppBackend:
 
     async def generate_shadows(self):
         """Generate shadows."""
-        print("Generating shadows...")
+        print("Getting shadows...")
         await self._interface.initialize()
         await self._interface.clear_room()
         await self._interface.set_floor_image(

@@ -220,6 +220,7 @@ The room after the actions.
         .value("BEETHRO_SWORD", ElementType::BEETHRO_SWORD)
         .value("ROACH", ElementType::ROACH)
         .value("ROACH_QUEEN", ElementType::ROACH_QUEEN)
+        .value("ROACH_EGG", ElementType::ROACH_EGG)
         .value("EVIL_EYE", ElementType::EVIL_EYE)
         .value("EVIL_EYE_AWAKE", ElementType::EVIL_EYE_AWAKE)
         .value("WRAITHWING", ElementType::WRAITHWING)

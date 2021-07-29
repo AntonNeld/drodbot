@@ -208,6 +208,7 @@ def element_layer(element_type):
         ElementType.BEETHRO,
         ElementType.ROACH,
         ElementType.ROACH_QUEEN,
+        ElementType.ROACH_EGG,
         ElementType.EVIL_EYE,
         ElementType.EVIL_EYE_AWAKE,
         ElementType.SPIDER,

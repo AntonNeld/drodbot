@@ -562,6 +562,19 @@ class EditorInterface:
         # Sleep to let the transition finish
         await asyncio.sleep(3)
 
+    async def wait_turns(self, turns):
+        """Wait the given number of turns.
+
+        Must be playing the room.
+
+        Parameters
+        ----------
+        turns
+            The number of turns to wait.
+        """
+        for _ in range(turns):
+            pyautogui.press("num5")
+
     async def stop_test_room(self):
         """Stop testing the room."""
         pyautogui.press("esc")

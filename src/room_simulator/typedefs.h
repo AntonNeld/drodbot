@@ -54,6 +54,7 @@ enum class ElementType
     BEETHRO_SWORD,
     ROACH,
     ROACH_QUEEN,
+    ROACH_EGG,
     EVIL_EYE,
     EVIL_EYE_AWAKE,
     WRAITHWING,

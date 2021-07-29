@@ -46,6 +46,8 @@ ElementType convertMonsterBack(UINT monster)
         return ElementType::ROACH;
     case M_QROACH:
         return ElementType::ROACH_QUEEN;
+    case M_REGG:
+        return ElementType::ROACH_EGG;
     case M_EYE:
         return ElementType::EVIL_EYE;
     case M_EYE_ACTIVE:
@@ -451,6 +453,8 @@ RoomPlayer::RoomPlayer(Room room, bool firstEntrance) : drodRoom(globalDb.value(
         case ElementType::ROACH_QUEEN:
             this->drodRoom->AddNewMonster(M_QROACH, x, y)->wO = convertDirection(direction);
             break;
+        case ElementType::ROACH_EGG:
+            this->drodRoom->AddNewMonster(M_REGG, x, y);
         case ElementType::EVIL_EYE:
             this->drodRoom->AddNewMonster(M_EYE, x, y)->wO = convertDirection(direction);
             break;
