@@ -486,6 +486,7 @@ class ClassificationAppBackend:
             (ElementType.FORCE_ARROW, Direction.NW, 9, 9, None),
             (ElementType.FLOOR, Direction.NONE, 7, 16, "road"),
             (ElementType.FORCE_ARROW, Direction.W, 7, 16, None),
+            (ElementType.SCROLL, Direction.NONE, 9, 16, None),
         ]
         for (element, direction, x, y, variant) in extra_elements:
             await self._interface.place_element(

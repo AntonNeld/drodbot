@@ -24,6 +24,7 @@ _SHADABLE_ELEMENTS = set(
         ElementType.FORCE_ARROW,
         ElementType.CHECKPOINT,
         ElementType.ORB,
+        ElementType.SCROLL,
         ElementType.MIMIC_POTION,
         ElementType.INVISIBILITY_POTION,
         ElementType.OBSTACLE,
@@ -477,7 +478,6 @@ class TileClassifier:
                         shadow=shadow,
                         return_debug_images=True,
                     )
-                    debug_images[key].extend(classified_debug_images)
                 else:
                     new_tile, max_min_diff = self._classify_tile(
                         preprocessed_image,
@@ -493,6 +493,7 @@ class TileClassifier:
                     break
             if min_max_min_diff >= 20:
                 print(f"Difficult to classify tile at {key}")
+            debug_images[key].extend(classified_debug_images)
 
             # Assume there is nothing below an obstacle. Unless it's a tunnel, it
             # doesn't matter anyway. The classifier easily gets confused about what
