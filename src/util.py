@@ -31,6 +31,27 @@ def find_color(image, color):
     )
 
 
+def extract_object(image, object_mask):
+    """Crop an image to only contain an object.
+
+    Parameters
+    ----------
+    image
+        The image to extract the object from.
+    object_mask
+        True where the object is.
+
+    Returns
+    -------
+    The cropped image.
+    """
+    rows = numpy.any(object_mask, axis=1)
+    columns = numpy.any(object_mask, axis=0)
+    ymin, ymax = numpy.where(rows)[0][[0, -1]]
+    xmin, xmax = numpy.where(columns)[0][[0, -1]]
+    return image[ymin : ymax + 1, xmin : xmax + 1]
+
+
 def extract_tiles(room_image, minimap_image, skip_coords=None):
     """Extract tiles from a room image.
 

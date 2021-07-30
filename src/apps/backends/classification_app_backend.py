@@ -2,7 +2,7 @@ import json
 import os
 import os.path
 import shutil
-
+import scipy
 import numpy
 import PIL
 from PIL.PngImagePlugin import PngInfo
@@ -17,7 +17,7 @@ from .editor_utils import (
     place_sized_obstacles,
     place_sworded_element,
 )
-from util import element_layer, find_color
+from util import element_layer, extract_object, find_color
 
 _ROOM_STYLES = [
     "Aboveground",
@@ -104,6 +104,7 @@ class ClassificationAppBackend:
         await self.generate_individual_element_images()
         await self.generate_textures()
         await self.generate_shadows()
+        await self.generate_characters()
         # Classify tiles once done
         self._classifier.load_tile_data(self._tile_data_dir)
         if self._sample_data:
@@ -342,9 +343,55 @@ class ClassificationAppBackend:
         room_image = await self._interface.get_room_image()
         await self._interface.stop_test_room()
 
-        find_color(room_image, (255, 255, 255))
+        white_pixels = find_color(room_image, (255, 255, 255))
+        text_image = extract_object(room_image, white_pixels)
+        non_white = numpy.logical_not(find_color(text_image, (255, 255, 255)))
+        # Smear the letters in Y, to not detect the dots over i and j separately
+        dilated = scipy.ndimage.binary_dilation(non_white, structure=numpy.ones((3, 1)))
+        labels, num_labels = scipy.ndimage.label(dilated)
+        letter_positions = scipy.ndimage.center_of_mass(
+            non_white, labels=labels, index=range(1, num_labels + 1)
+        )
+        first_row = [
+            (i + 1, (y, x)) for (i, (y, x)) in enumerate(letter_positions) if y <= 25
+        ]
+        second_row = [
+            (i + 1, (y, x)) for (i, (y, x)) in enumerate(letter_positions) if y > 25
+        ]
+        # Sorted by X, so index corresponds to index in characters
+        labels_and_positions = sorted(first_row, key=lambda p: p[1][1]) + sorted(
+            second_row, key=lambda p: p[1][1]
+        )
 
-        PIL.Image.fromarray(room_image).show()
+        destination_dir = os.path.join(self._tile_data_dir, "characters")
+        if os.path.exists(destination_dir):
+            shutil.rmtree(destination_dir)
+        os.makedirs(destination_dir)
+        for character, (label, _) in zip(characters, labels_and_positions):
+            cropped_image = extract_object(
+                non_white, numpy.logical_and(labels == label, non_white)
+            )
+            png_info = PngInfo()
+            png_info.add_text("character", character)
+            image = PIL.Image.fromarray(cropped_image)
+            if character == "#":
+                char_str = "hash"
+            elif character == "(":
+                char_str = "left_paren"
+            elif character == ")":
+                char_str = "right_paren"
+            else:
+                char_str = character
+            file_name = f"char_{char_str}"
+            image.save(
+                os.path.join(
+                    os.path.join(destination_dir),
+                    f"{file_name}.png",
+                ),
+                "PNG",
+                pnginfo=png_info,
+            )
+        print("Finished getting character images")
 
     async def _make_styled_tile_data_room(self):
         elements = (

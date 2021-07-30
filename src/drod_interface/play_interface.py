@@ -5,7 +5,7 @@ from PIL import Image, ImageFont, ImageDraw
 from common import TILE_SIZE, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .consts import ROOM_ORIGIN_X, ROOM_ORIGIN_Y
 from room_simulator import OrbEffect, Action
-from util import find_color
+from util import find_color, extract_object
 from .util import get_drod_window, extract_room, extract_minimap
 
 # These are lovingly hand-copied from screenshots.
@@ -461,7 +461,7 @@ class PlayInterface:
             largest_object = labels == largest_label
             if return_debug_images:
                 debug_images.append((f"Largest white area {position}", largest_object))
-            text_image = _extract_object(room_image, largest_object)
+            text_image = extract_object(room_image, largest_object)
             if return_debug_images:
                 debug_images.append((f"Text box {position}", text_image))
             layer_counts[position] = round((text_image.shape[0] - 4) / 21) - 1
@@ -512,14 +512,6 @@ def _average_tiles(room_image):
             colors,
         )
     ).mean((1, 3))
-
-
-def _extract_object(image, object_mask):
-    rows = numpy.any(object_mask, axis=1)
-    columns = numpy.any(object_mask, axis=0)
-    ymin, ymax = numpy.where(rows)[0][[0, -1]]
-    xmin, xmax = numpy.where(columns)[0][[0, -1]]
-    return image[ymin : ymax + 1, xmin : xmax + 1]
 
 
 def _make_text_image(text):
