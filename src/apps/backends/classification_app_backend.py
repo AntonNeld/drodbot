@@ -17,7 +17,7 @@ from .editor_utils import (
     place_sized_obstacles,
     place_sworded_element,
 )
-from util import element_layer
+from util import element_layer, find_color
 
 _ROOM_STYLES = [
     "Aboveground",
@@ -321,6 +321,30 @@ class ClassificationAppBackend:
                 pnginfo=png_info,
             )
         print("Finished getting shadows")
+
+    async def generate_characters(self):
+        """Generate character images."""
+        print("Generating character images...")
+        await self._interface.initialize()
+        await self._interface.clear_room()
+        await self._interface.set_floor_image(
+            os.path.dirname(os.path.realpath(__file__)), "background"
+        )
+        await self._interface.place_element(
+            ElementType.FLOOR, Direction.NONE, (0, 0), (37, 31), variant="image"
+        )
+        characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890#()"
+        await self._interface.place_talking_character(
+            (15, 15),
+            " ".join(characters),
+        )
+        await self._interface.start_test_room((37, 31), Direction.SE)
+        room_image = await self._interface.get_room_image()
+        await self._interface.stop_test_room()
+
+        find_color(room_image, (255, 255, 255))
+
+        PIL.Image.fromarray(room_image).show()
 
     async def _make_styled_tile_data_room(self):
         elements = (

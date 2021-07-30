@@ -81,6 +81,12 @@ _CHARACTER_WINDOW_FIRST_TYPE = (820, 180)
 _CHARACTER_WINDOW_ELEVENTH_TYPE = (820, 405)
 _CHARACTER_WINDOW_LAST_TYPE = (820, 665)
 _CHARACTER_WINDOW_VISIBLE_CHECKBOX = (820, 700)
+_CHARACTER_WINDOW_ADD_COMMAND = (710, 110)
+_CHARACTER_WINDOW_SELECT_ACTION_SCROLL_DOWN = (440, 535)
+_CHARACTER_WINDOW_SELECT_ACTION_SCROLL_UP = (440, 270)
+_CHARACTER_WINDOW_SELECT_ACTION_FIRST = (270, 270)
+_CHARACTER_WINDOW_DIALOG_TEXT = (490, 270)
+_CHARACTER_WINDOW_SELECT_ACTION_OKAY = (520, 570)
 _CHARACTER_WINDOW_OKAY = (570, 710)
 
 _IMAGE_SELECT_WINDOW_OKAY = (550, 670)
@@ -536,6 +542,31 @@ class EditorInterface:
                 pyautogui.press("esc")  # Leave pasting mode
                 self._copied_element = element
                 self._copied_element_direction = direction
+
+    async def place_talking_character(self, position, text):
+        """Place a character with dialogue.
+
+        Parameters
+        ----------
+        position
+            The position of the character.
+        text
+            The text the character should say.
+        """
+        real_x = ROOM_ORIGIN_X + (position[0] + 0.5) * TILE_SIZE
+        real_y = ROOM_ORIGIN_Y + (position[1] + 0.5) * TILE_SIZE
+        await self._select_element(_MONSTERS_TAB, _CHARACTER)
+        await self._click((real_x, real_y))
+        await self._click(_CHARACTER_WINDOW_ADD_COMMAND)
+        for _ in range(62):
+            await self._click(_CHARACTER_WINDOW_SELECT_ACTION_SCROLL_DOWN)
+        for _ in range(15):
+            await self._click(_CHARACTER_WINDOW_SELECT_ACTION_SCROLL_UP)
+        await self._click(_CHARACTER_WINDOW_SELECT_ACTION_FIRST)
+        await self._click(_CHARACTER_WINDOW_DIALOG_TEXT)
+        pyautogui.write(text)
+        await self._click(_CHARACTER_WINDOW_SELECT_ACTION_OKAY)
+        await self._click(_CHARACTER_WINDOW_OKAY)
 
     async def start_test_room(self, position, direction):
         """Start testing the room.

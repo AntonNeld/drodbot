@@ -107,6 +107,12 @@ class ClassificationApp(tkinter.Frame):
             command=self._generate_shadows,
         )
         self._only_shadows_button.pack(side=tkinter.TOP)
+        self._only_characters_button = tkinter.Button(
+            self._control_panel,
+            text="Generate only character images",
+            command=self._generate_characters,
+        )
+        self._only_characters_button.pack(side=tkinter.TOP)
         self._generate_sample_data_button = tkinter.Button(
             self._control_panel,
             text="Generate sample data",
@@ -252,6 +258,9 @@ class ClassificationApp(tkinter.Frame):
 
     def _generate_shadows(self):
         self._run_coroutine(self._backend.generate_shadows())
+
+    def _generate_characters(self):
+        self._run_coroutine(self._backend.generate_characters())
 
     def _next_tile(self):
         self._data_index += 1
