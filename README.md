@@ -51,8 +51,8 @@ pipenv run python src/drodbot.py
 
 Open DROD in a separate window.
 
-> **Note:** DRODbot cannot handle lighting very well, so go into settings and
-> turn off "Alpha Blending".
+> **Note:** DRODbot cannot handle lighting or weather very well, so go into settings and
+> turn off "Alpha Blending" and set "Environmental Effects" to the minimum.
 
 ### Get data for the tile classification
 
