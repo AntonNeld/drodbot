@@ -454,7 +454,25 @@ RoomPlayer::RoomPlayer(Room room, bool firstEntrance) : drodRoom(globalDb.value(
             this->drodRoom->AddNewMonster(M_QROACH, x, y)->wO = convertDirection(direction);
             break;
         case ElementType::ROACH_EGG:
-            this->drodRoom->AddNewMonster(M_REGG, x, y);
+            Direction eggDirection;
+            switch (room.getTurnNumber() % 30)
+            {
+            case 0:
+                eggDirection = Direction::SW;
+                break;
+            case 1:
+                eggDirection = Direction::W;
+                break;
+            case 2:
+                eggDirection = Direction::NW;
+                break;
+            case 3:
+                eggDirection = Direction::N;
+                break;
+            default:
+                throw std::invalid_argument("Roach egg at wrong turn number");
+            }
+            this->drodRoom->AddNewMonster(M_REGG, x, y)->wO = convertDirection(eggDirection);
             break;
         case ElementType::EVIL_EYE:
             this->drodRoom->AddNewMonster(M_EYE, x, y)->wO = convertDirection(direction);
