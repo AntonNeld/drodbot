@@ -455,6 +455,7 @@ RoomPlayer::RoomPlayer(Room room, bool firstEntrance) : drodRoom(globalDb.value(
             break;
         case ElementType::ROACH_EGG:
             this->drodRoom->AddNewMonster(M_REGG, x, y);
+            break;
         case ElementType::EVIL_EYE:
             this->drodRoom->AddNewMonster(M_EYE, x, y)->wO = convertDirection(direction);
             break;
@@ -813,7 +814,15 @@ std::vector<std::tuple<ElementType, Position, Direction>> RoomPlayer::getMonster
     {
         ElementType type = convertMonsterBack(it->wType);
         Position position = {it->wX, it->wY};
-        Direction direction = convertDirectionBack(it->wO);
+        Direction direction;
+        if (type == ElementType::BRAIN || type == ElementType::ROACH_EGG)
+        {
+            direction = Direction::NONE;
+        }
+        else
+        {
+            direction = convertDirectionBack(it->wO);
+        }
         monsters.push_back({type, position, direction});
     }
     return monsters;
