@@ -1,3 +1,4 @@
+import os
 import numpy
 import pyautogui
 import scipy.ndimage
@@ -8,200 +9,37 @@ from room_simulator import OrbEffect, Action
 from util import find_color, extract_object
 from .util import get_drod_window, extract_room, extract_minimap
 
-# These are lovingly hand-copied from screenshots.
-# The font is called "Tom's New Roman" and can be found here:
-# https://www.1001fonts.com/toms-new-roman-font.html
-
-_HASH_PATTERN = numpy.array(
-    [
-        [0, 0, 1, 1, 0, 0, 0, 1],
-        [0, 0, 1, 1, 0, 0, 1, 1],
-        [0, 0, 1, 1, 0, 0, 1, 1],
-        [0, 0, 1, 1, 0, 1, 1, 0],
-        [0, 1, 1, 0, 0, 1, 1, 0],
-        [1, 1, 1, 1, 1, 1, 1, 1],
-        [0, 1, 1, 0, 0, 1, 1, 0],
-        [0, 1, 1, 0, 0, 1, 1, 0],
-        [1, 1, 1, 1, 1, 1, 1, 1],
-        [0, 1, 0, 0, 1, 1, 0, 0],
-        [1, 1, 0, 0, 1, 1, 0, 0],
-        [1, 1, 0, 0, 1, 1, 0, 0],
-        [1, 1, 0, 0, 1, 1, 0, 0],
-    ]
-)
-
-_NUMBER_PATTERNS = {
-    0: numpy.array(
-        [
-            [0, 0, 1, 1, 1, 1, 0, 0],
-            [0, 1, 1, 1, 1, 1, 1, 0],
-            [0, 1, 1, 0, 0, 1, 1, 0],
-            [1, 1, 1, 0, 0, 1, 1, 1],
-            [1, 1, 1, 0, 0, 1, 1, 1],
-            [1, 1, 1, 0, 0, 1, 1, 1],
-            [1, 1, 1, 0, 0, 1, 1, 1],
-            [1, 1, 1, 0, 0, 1, 1, 1],
-            [1, 1, 1, 0, 0, 1, 1, 1],
-            [1, 1, 1, 0, 0, 1, 1, 1],
-            [0, 1, 1, 1, 1, 1, 1, 0],
-            [0, 0, 1, 1, 1, 1, 1, 0],
-        ]
-    ),
-    1: numpy.array(
-        [
-            [0, 1, 1, 0],
-            [1, 1, 1, 0],
-            [0, 1, 1, 0],
-            [0, 1, 1, 0],
-            [0, 1, 1, 0],
-            [0, 1, 1, 0],
-            [0, 1, 1, 0],
-            [0, 1, 1, 0],
-            [0, 1, 1, 0],
-            [0, 1, 1, 0],
-            [1, 1, 1, 1],
-        ]
-    ),
-    2: numpy.array(
-        [
-            [0, 0, 0, 1, 1, 0, 0, 0],
-            [0, 1, 1, 1, 1, 1, 1, 0],
-            [1, 1, 1, 1, 1, 1, 1, 0],
-            [1, 1, 0, 0, 0, 1, 1, 0],
-            [1, 0, 0, 0, 0, 1, 1, 0],
-            [0, 0, 0, 0, 0, 1, 1, 0],
-            [0, 0, 0, 0, 0, 1, 1, 0],
-            [0, 0, 0, 0, 1, 1, 1, 0],
-            [0, 0, 0, 1, 1, 1, 0, 0],
-            [0, 0, 1, 1, 1, 0, 0, 1],
-            [0, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1],
-        ]
-    ),
-    3: numpy.array(
-        [
-            [0, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 0, 0, 1, 1, 1],
-            [0, 0, 0, 0, 1, 1, 1],
-            [0, 0, 0, 1, 1, 1, 0],
-            [0, 0, 1, 1, 1, 1, 0],
-            [0, 0, 0, 1, 1, 1, 1],
-            [0, 0, 0, 0, 1, 1, 1],
-            [0, 0, 0, 0, 0, 1, 1],
-            [0, 0, 0, 0, 0, 1, 1],
-            [1, 1, 1, 0, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 0],
-        ]
-    ),
-    4: numpy.array(
-        [
-            [0, 0, 0, 0, 1, 1, 1, 0],
-            [0, 0, 0, 0, 1, 1, 1, 0],
-            [0, 0, 0, 1, 1, 1, 1, 0],
-            [0, 0, 1, 1, 1, 1, 1, 0],
-            [0, 0, 1, 1, 0, 1, 1, 0],
-            [0, 1, 1, 0, 0, 1, 1, 0],
-            [0, 1, 1, 0, 0, 1, 1, 0],
-            [1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1],
-            [0, 0, 0, 0, 0, 1, 1, 0],
-            [0, 0, 0, 0, 0, 1, 1, 0],
-            [0, 0, 0, 0, 0, 1, 0, 0],
-        ]
-    ),
-    5: numpy.array(
-        [
-            [0, 0, 0, 1, 1, 1, 1, 1, 1],
-            [0, 0, 1, 1, 1, 1, 1, 1, 0],
-            [0, 0, 1, 1, 0, 0, 0, 0, 0],
-            [0, 1, 1, 0, 0, 0, 0, 0, 0],
-            [0, 1, 1, 1, 1, 1, 0, 0, 0],
-            [0, 1, 1, 1, 1, 1, 1, 1, 0],
-            [0, 0, 0, 0, 1, 1, 1, 1, 1],
-            [0, 0, 0, 0, 0, 1, 1, 1, 1],
-            [0, 0, 0, 0, 0, 0, 1, 1, 1],
-            [0, 0, 0, 0, 0, 0, 1, 1, 1],
-            [1, 1, 1, 0, 0, 0, 1, 1, 0],
-            [1, 1, 1, 1, 1, 1, 1, 0, 0],
-        ]
-    ),
-    6: numpy.array(
-        [
-            [0, 0, 0, 1, 1, 1, 1],
-            [0, 0, 1, 1, 1, 1, 0],
-            [0, 1, 1, 1, 0, 0, 0],
-            [0, 1, 1, 1, 0, 0, 0],
-            [1, 1, 1, 0, 0, 0, 0],
-            [1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 0, 0, 0, 1, 1],
-            [1, 1, 0, 0, 0, 1, 1],
-            [1, 1, 0, 0, 0, 1, 1],
-            [1, 1, 1, 0, 0, 1, 1],
-            [0, 1, 1, 1, 1, 1, 0],
-        ]
-    ),
-    7: numpy.array(
-        [
-            [0, 0, 1, 1, 1, 1, 1, 1, 1],
-            [0, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 0, 0, 0, 0, 1, 1, 0],
-            [0, 0, 0, 0, 0, 0, 1, 1, 0],
-            [0, 0, 0, 0, 0, 1, 1, 0, 0],
-            [0, 0, 0, 0, 0, 1, 1, 0, 0],
-            [0, 0, 0, 0, 1, 1, 0, 0, 0],
-            [0, 0, 0, 0, 1, 1, 0, 0, 0],
-            [0, 0, 0, 1, 1, 0, 0, 0, 0],
-            [0, 0, 0, 1, 1, 0, 0, 0, 0],
-            [0, 0, 1, 1, 0, 0, 0, 0, 0],
-        ]
-    ),
-    8: numpy.array(
-        [
-            [0, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 0, 0, 1, 1],
-            [1, 1, 1, 0, 0, 0, 1, 1],
-            [1, 1, 1, 1, 0, 0, 1, 1],
-            [0, 1, 1, 1, 1, 1, 1, 0],
-            [0, 0, 1, 1, 1, 1, 0, 0],
-            [0, 1, 1, 1, 1, 1, 1, 0],
-            [0, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 0, 0, 1, 1, 1],
-            [1, 1, 1, 0, 0, 1, 1, 1],
-            [1, 1, 1, 0, 0, 1, 1, 1],
-            [0, 1, 1, 1, 1, 1, 1, 1],
-        ]
-    ),
-    9: numpy.array(
-        [
-            [0, 1, 1, 1, 1, 1, 1, 0],
-            [1, 1, 1, 0, 1, 1, 1, 0],
-            [1, 1, 0, 0, 0, 1, 1, 0],
-            [1, 1, 0, 0, 0, 1, 1, 1],
-            [1, 1, 1, 0, 0, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 0],
-            [0, 1, 1, 1, 1, 1, 1, 0],
-            [0, 0, 1, 1, 0, 1, 1, 0],
-            [0, 0, 0, 0, 1, 1, 1, 0],
-            [0, 0, 0, 1, 1, 1, 1, 0],
-            [0, 0, 1, 1, 1, 1, 0, 0],
-            [1, 1, 1, 1, 1, 0, 0, 0],
-            [1, 1, 0, 0, 0, 0, 0, 0],
-        ]
-    ),
-}
-
 
 class PlayInterface:
     """The interface toward DROD when playing the game."""
 
     def __init__(self):
+        self._character_images = None
         # Will be set by initialize()
         self._origin_x = None
         self._origin_y = None
+
+    def load_character_images(self, tile_data_dir):
+        """Load images with text characters, for reading textboxes.
+
+        Parameters
+        ----------
+        tile_data_dir
+            The location of the image data.
+        """
+        try:
+            file_names = sorted(os.listdir(os.path.join(tile_data_dir, "characters")))
+            self._character_images = {}
+            for file_name in file_names:
+                image = Image.open(os.path.join(tile_data_dir, "characters", file_name))
+                image_array = numpy.array(image)
+                character = image.info["character"]
+                self._character_images[character] = image_array
+        except FileNotFoundError:
+            print(
+                "Not all character data is present. "
+                "You need to generate tile data before you can read text boxes."
+            )
 
     async def initialize(self):
         """Find the DROD window and focus it.
@@ -424,7 +262,7 @@ class PlayInterface:
             return orb_effects, debug_images
         return orb_effects
 
-    async def get_right_click_info(self, monster_positions, return_debug_images=False):
+    async def get_right_click_text(self, monster_positions, return_debug_images=False):
         """Get right-click info for the given positions.
 
         Parameters
@@ -436,12 +274,10 @@ class PlayInterface:
 
         Returns
         -------
-        A dict mapping positions to movement orders. As a bonus, also return a dict
-        mapping positions to the number of non-empty layers. If `return_debug_images`
+        A dict mapping positions to text. If `return_debug_images`
         if True, also return a list of (name, image).
         """
-        movement_orders = {}
-        layer_counts = {}
+        texts = {}
         if return_debug_images:
             debug_images = []
         for position in monster_positions:
@@ -449,7 +285,7 @@ class PlayInterface:
             _, _, image = await get_drod_window()
             room_image = extract_room(image)
             if return_debug_images:
-                debug_images.append((f"Order screenshot {position}", room_image))
+                debug_images.append((f"Textbox screenshot {position}", room_image))
             white_pixels = find_color(room_image, (255, 255, 255))
             if return_debug_images:
                 debug_images.append((f"White pixels {position}", white_pixels))
@@ -464,41 +300,58 @@ class PlayInterface:
             text_image = extract_object(room_image, largest_object)
             if return_debug_images:
                 debug_images.append((f"Text box {position}", text_image))
-            layer_counts[position] = round((text_image.shape[0] - 4) / 21) - 1
             non_white = numpy.logical_not(find_color(text_image, (255, 255, 255)))
             if return_debug_images:
                 debug_images.append((f"Non-white {position}", non_white))
-            hash_eroded_image = scipy.ndimage.binary_erosion(non_white, _HASH_PATTERN)
-            if return_debug_images:
-                debug_images.append((f"Find hash {position}", hash_eroded_image))
-            hash_location = numpy.argwhere(hash_eroded_image)
-            if hash_location.shape[0] == 0:
-                print(f"No hash character found at {position}")
-                continue
-            x = hash_location[0][1]
-            y = hash_location[0][0]
-            order_region = non_white[y - 8 : y + 10, x:]
-            if return_debug_images:
-                debug_images.append((f"Order region {position}", order_region))
 
-            # Tuples of (x-coordinate, number)
-            found_numbers = []
-            for number, pattern in _NUMBER_PATTERNS.items():
-                eroded_image = scipy.ndimage.binary_erosion(order_region, pattern)
+            # Tuples of (x, y, character)
+            found_characters = []
+            taken_pixels = numpy.zeros_like(non_white)
+            # Check for the presence of larger characters first, and exclude the
+            # found pixels from later checks. This is because the non-white pixels
+            # of some characters are a superset of those of other characters
+            for character, character_image in sorted(
+                self._character_images.items(), key=lambda t: -numpy.sum(t[1])
+            ):
+                eroded_image = scipy.ndimage.binary_erosion(
+                    numpy.logical_and(non_white, numpy.logical_not(taken_pixels)),
+                    character_image,
+                )
+                reconstructed_character = scipy.ndimage.binary_dilation(
+                    eroded_image, character_image
+                )
+                taken_pixels[reconstructed_character] = True
                 for coords in numpy.argwhere(eroded_image):
-                    found_numbers.append((coords[1], number))
-            found_numbers.sort(key=lambda t: t[0])
-            order_number = int("".join([str(t[1]) for t in found_numbers]))
+                    found_characters.append((coords[1], coords[0], character))
+                if return_debug_images and eroded_image.any():
+                    overlaid_image = text_image.copy()
+                    overlaid_image[reconstructed_character, :] = [255, 0, 0]
+                    debug_images.append(
+                        (f"Character '{character}' at {position}", overlaid_image)
+                    )
+            if numpy.logical_and(non_white, numpy.logical_not(taken_pixels)).any():
+                print(f"Unaccounted for pixels in text box at {position}")
+            number_of_lines = round((text_image.shape[0] - 4) / 21) - 1
+            # Determine the text
+            lines = []
+            for line_no in range(number_of_lines + 1):
+                characters_in_line = [
+                    (x, y, character)
+                    for (x, y, character) in found_characters
+                    if y > line_no * 21 and y <= (line_no + 1) * 21
+                ]
+                sorted_characters = sorted(characters_in_line, key=lambda t: t[0])
+                lines.append([c for (_, _, c) in sorted_characters])
+            text = "\n".join(["".join(line) for line in lines])
             if return_debug_images:
                 debug_images.append(
-                    (f"Number {position}", _make_text_image(str(order_number)))
+                    (f"Text content {position}", _make_text_image(text))
                 )
-            # Movement order is displayed 1-indexed, but we use 0-indexed elsewhere
-            movement_orders[position] = order_number - 1
+            texts[position] = text
 
         if return_debug_images:
-            return movement_orders, layer_counts, debug_images
-        return movement_orders, layer_counts
+            return texts, debug_images
+        return texts
 
 
 def _average_tiles(room_image):
@@ -515,7 +368,9 @@ def _average_tiles(room_image):
 
 
 def _make_text_image(text):
-    image = Image.new("1", (300, 200))
+    lines = text.split("\n")
+    max_line_length = max([len(line) for line in lines])
+    image = Image.new("1", (25 * max_line_length, 40 * len(lines)))
     draw = ImageDraw.Draw(image)
     font = ImageFont.truetype("Pillow/Tests/fonts/FreeMono.ttf", 40)
     draw.text((10, 10), text, 1, font=font)

@@ -1,3 +1,4 @@
+import re
 import asyncio
 from enum import Enum
 import numpy
@@ -133,19 +134,17 @@ class RoomInterpreter:
         ]
 
         if return_debug_images:
-            (
-                movement_orders,
-                layer_counts,
-                order_debug_images,
-            ) = await self._interface.get_right_click_info(
+            (texts, order_debug_images,) = await self._interface.get_right_click_text(
                 monster_positions,
                 return_debug_images=True,
             )
             debug_images.extend(order_debug_images)
         else:
-            movement_orders, layer_counts = await self._interface.get_right_click_info(
-                monster_positions
-            )
+            texts = await self._interface.get_right_click_text(monster_positions)
+        movement_orders = {
+            pos: _get_movement_order(text) for (pos, text) in texts.items()
+        }
+        layer_counts = {pos: text.count("\n") for (pos, text) in texts.items()}
 
         adjusted_tile_contents = _adjust_tile_contents(tile_contents, layer_counts)
 
@@ -286,3 +285,9 @@ def get_room_text(room_image, return_debug_images=False):
     if return_debug_images:
         return room_text, debug_images
     return room_text
+
+
+def _get_movement_order(text):
+    match = re.search(r"\(#.*\)", text)
+    # We use zero-indexing, but displayed movement order starts at 1
+    return int(match.group()[2:-1]) - 1

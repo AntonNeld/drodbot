@@ -28,6 +28,7 @@ def main():
 
     editor_interface = EditorInterface()
     play_interface = PlayInterface()
+    play_interface.load_character_images("tile_data")
     classifier = TileClassifier()
     classifier.load_tile_data("tile_data")
     interpreter = RoomInterpreter(classifier, play_interface)

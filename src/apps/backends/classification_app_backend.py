@@ -334,7 +334,9 @@ class ClassificationAppBackend:
         await self._interface.place_element(
             ElementType.FLOOR, Direction.NONE, (0, 0), (37, 31), variant="image"
         )
-        characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890#()"
+        characters = (
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890#(),"
+        )
         await self._interface.place_talking_character(
             (15, 15),
             " ".join(characters),
@@ -380,6 +382,8 @@ class ClassificationAppBackend:
                 char_str = "left_paren"
             elif character == ")":
                 char_str = "right_paren"
+            elif character == ",":
+                char_str = "comma"
             else:
                 char_str = character
             file_name = f"char_{char_str}"
