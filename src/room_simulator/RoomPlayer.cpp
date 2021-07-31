@@ -746,7 +746,7 @@ Room RoomPlayer::getRoom()
     {
         ElementType type = convertMonsterBack(it->wType);
         Direction direction;
-        if (type == ElementType::BRAIN)
+        if (type == ElementType::BRAIN || type == ElementType::ROACH_EGG)
         {
             direction = Direction::NONE;
         }
