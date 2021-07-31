@@ -192,9 +192,11 @@ class RoomInterpreter:
             debug_images.extend(order_debug_images)
         else:
             texts = await self._interface.get_right_click_text(to_right_click)
-        movement_orders = {
-            pos: _get_movement_order(text) for (pos, text) in texts.items()
-        }
+        movement_orders = {}
+        for pos, text in texts.items():
+            order = _get_movement_order(text)
+            if order is not None:
+                movement_orders[pos] = order
 
         adjusted_tile_contents = _adjust_tile_contents(tile_contents, texts)
 
@@ -349,5 +351,7 @@ def get_room_text(room_image, return_debug_images=False):
 
 def _get_movement_order(text):
     match = re.search(r"\(#.*\)", text)
+    if match is None:
+        return None
     # We use zero-indexing, but displayed movement order starts at 1
     return int(match.group()[2:-1]) - 1
