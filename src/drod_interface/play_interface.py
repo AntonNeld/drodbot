@@ -314,7 +314,11 @@ class PlayInterface:
                 self._character_images.items(), key=lambda t: -numpy.sum(t[1])
             ):
                 eroded_image = scipy.ndimage.binary_erosion(
-                    numpy.logical_and(non_white, numpy.logical_not(taken_pixels)),
+                    numpy.logical_and(
+                        non_white,
+                        # Erode taken_pixels a bit, to allow for overlapping characters
+                        numpy.logical_not(scipy.ndimage.binary_erosion(taken_pixels)),
+                    ),
                     character_image,
                 )
                 reconstructed_character = scipy.ndimage.binary_dilation(
