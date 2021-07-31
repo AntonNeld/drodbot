@@ -448,12 +448,17 @@ class TileClassifier:
 
         Returns
         -------
-        A dict with the same keys as `tiles`, but ApparentTile objects
-        representing the tile contents as the values. If `return_debug_images`
-        is True, return a second dict with debug images.
+        classified_tiles
+            A dict with the same keys as `tiles`, but ApparentTile objects
+            representing the tile contents as the values.
+        difficult_tiles
+            A list of all positions which were difficult to interpret.
+        debug_images
+            If `return_debug_images` is True, return another dict with debug images.
         """
         classified_tiles = {}
         debug_images = {key: [] for key in tiles}
+        difficult_tiles = []
         for key, image in tiles.items():
             if return_debug_images:
                 preprocessed_image, preprocess_debug_images = _preprocess_image(
@@ -494,7 +499,7 @@ class TileClassifier:
             if (
                 min_max_min_diff >= 30 and tile.item[0] != ElementType.OBSTACLE
             ):  # Obstacles are always difficult, that's not news
-                print(f"Difficult to classify tile at {key}")
+                difficult_tiles.append(key)
             if return_debug_images:
                 debug_images[key].extend(classified_debug_images)
 
@@ -542,8 +547,8 @@ class TileClassifier:
             classified_tiles[key] = tile
 
         if return_debug_images:
-            return classified_tiles, debug_images
-        return classified_tiles
+            return classified_tiles, difficult_tiles, debug_images
+        return classified_tiles, difficult_tiles
 
     def _classify_tile(
         self,

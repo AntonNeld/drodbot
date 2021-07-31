@@ -145,11 +145,10 @@ class RoomInterpreter:
             room_image, minimap, skip_coords=tile_contents.keys()
         )
 
-        tile_contents.update(
-            self._classifier.classify_tiles(
-                tiles, minimap_colors, room_style=detected_style
-            )
+        classified_tiles, difficult_positions = self._classifier.classify_tiles(
+            tiles, minimap_colors, room_style=detected_style
         )
+        tile_contents.update(classified_tiles)
 
         orb_positions = [
             pos
@@ -180,15 +179,19 @@ class RoomInterpreter:
             for pos, tile in tile_contents.items()
             if tile.monster[0] not in [ElementType.NOTHING, ElementType.BEETHRO]
         ]
+        to_right_click = sorted(
+            list(set(monster_positions + difficult_positions)),
+            key=lambda p: p[0] * 100 + p[1],
+        )
 
         if return_debug_images:
             (texts, order_debug_images,) = await self._interface.get_right_click_text(
-                monster_positions,
+                to_right_click,
                 return_debug_images=True,
             )
             debug_images.extend(order_debug_images)
         else:
-            texts = await self._interface.get_right_click_text(monster_positions)
+            texts = await self._interface.get_right_click_text(to_right_click)
         movement_orders = {
             pos: _get_movement_order(text) for (pos, text) in texts.items()
         }

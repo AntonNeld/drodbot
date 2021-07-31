@@ -520,12 +520,17 @@ class ClassificationAppBackend:
 
     def _classify_sample_data(self):
         """Classify the loaded sample data."""
-        predicted_contents, debug_images = self._classifier.classify_tiles(
+        (
+            predicted_contents,
+            difficult_tiles,
+            debug_images,
+        ) = self._classifier.classify_tiles(
             {t["position"]: t["image"] for t in self._sample_data},
             {t["position"]: t["minimap_color"] for t in self._sample_data},
             room_style="Foundation",  # Assume it's Foundation, so we have something
             return_debug_images=True,
         )
+        print(f"Difficult to interpret: {difficult_tiles}")
         for entry in self._sample_data:
             entry["predicted_content"] = predicted_contents[entry["position"]]
             entry["debug_images"] = debug_images[entry["position"]]
