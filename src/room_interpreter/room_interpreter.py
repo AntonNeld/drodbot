@@ -8,7 +8,55 @@ from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES, TILE_SIZE
 from room_simulator import ElementType, Direction
 from .room_conversion import room_from_apparent_tiles, element_to_apparent
 from tile_classifier import ApparentTile
-from util import extract_tiles, find_color
+from util import element_layer, extract_tiles, find_color
+
+_TEXT_TO_ELEMENT = {
+    "Wall": ElementType.WALL,
+    "Pit": ElementType.PIT,
+    "Masterwall": ElementType.MASTER_WALL,
+    "Yellowdoor": ElementType.YELLOW_DOOR,
+    "Roomcleargate": ElementType.GREEN_DOOR,
+    "Levelcleargate": ElementType.BLUE_DOOR,
+    "Trapdoorgate": ElementType.RED_DOOR,
+    "Trapdoor": ElementType.TRAPDOOR,
+    "Stairs": ElementType.STAIRS,
+    "Stairsup": ElementType.STAIRS,
+    "Forcearrow": ElementType.FORCE_ARROW,
+    "Checkpoint": ElementType.CHECKPOINT,
+    "Orb": ElementType.ORB,
+    "Mimicpotion": ElementType.MIMIC_POTION,
+    "Invisibilitypotion": ElementType.INVISIBILITY_POTION,
+    "Scroll": ElementType.SCROLL,
+    "Obstacle": ElementType.OBSTACLE,
+    "Player": ElementType.BEETHRO,
+    "Roach": ElementType.ROACH,
+    "Roachqueen": ElementType.ROACH_QUEEN,
+    "Roachegg": ElementType.ROACH_EGG,
+    "Evileye": ElementType.EVIL_EYE,
+    "Wraithwing": ElementType.WRAITHWING,
+    "Spider": ElementType.SPIDER,
+    "Goblin": ElementType.GOBLIN,
+    "Brain": ElementType.BRAIN,
+    "Tarbaby": ElementType.TAR_BABY,
+    "Mimic": ElementType.MIMIC,
+    "Token": ElementType.CONQUER_TOKEN,
+    "Floor": ElementType.FLOOR,
+    "Alternatefloor": ElementType.FLOOR,
+    "Floormosaic": ElementType.FLOOR,
+    "Road": ElementType.FLOOR,
+    "Grass": ElementType.FLOOR,
+    "Dirtfloor": ElementType.FLOOR,
+}
+_TEXT_TO_DIRECTION = {
+    "South": Direction.S,
+    "North": Direction.N,
+    "West": Direction.W,
+    "East": Direction.E,
+    "northwest": Direction.NW,
+    "northeast": Direction.NE,
+    "southwest": Direction.SW,
+    "southeast": Direction.SE,
+}
 
 
 class RoomText(str, Enum):
@@ -144,9 +192,8 @@ class RoomInterpreter:
         movement_orders = {
             pos: _get_movement_order(text) for (pos, text) in texts.items()
         }
-        layer_counts = {pos: text.count("\n") for (pos, text) in texts.items()}
 
-        adjusted_tile_contents = _adjust_tile_contents(tile_contents, layer_counts)
+        adjusted_tile_contents = _adjust_tile_contents(tile_contents, texts)
 
         room = room_from_apparent_tiles(
             adjusted_tile_contents, orb_effects, movement_orders
@@ -193,43 +240,53 @@ class RoomInterpreter:
         return room_image
 
 
-def _adjust_tile_contents(tile_contents, layer_counts):
+def _adjust_tile_contents(tile_contents, texts):
+    """Adjust the tile content based on the right-click text.
+
+    Parameters
+    ----------
+    tile_contents
+        Map of position to ApparentTile.
+    texts
+        Map of position to right-click text.
+
+    Returns
+    -------
+    Adjusted tile contents.
+    """
     adjusted_tile_contents = {key: value for (key, value) in tile_contents.items()}
-    for position, layer_count in layer_counts.items():
+    for position, text in texts.items():
         tile = tile_contents[position]
-        layer_contents = [
-            tile.monster,
-            tile.item,
-            tile.checkpoint,
-            tile.floor_control,
-            tile.room_piece,
-        ]
-        apparent_layer_count = 5 - [t[0] for t in layer_contents].count(
-            ElementType.NOTHING
-        )
-        if apparent_layer_count != layer_count:
-            print(
-                f"{apparent_layer_count} non-empty layers detected at {position}, "
-                f"but right-click says {layer_count}"
-            )
-            if apparent_layer_count < layer_count:
-                print(f"Apparent layers are fewer at {position}, nothing to do")
+        lines = text.split("\n")
+        for line in lines[1:]:  # First line is position
+            parts = line.split("(")
+            element_text = parts[0]
+            element = _TEXT_TO_ELEMENT[element_text]
+            layer = element_layer(element)
+            parenthesis_text = parts[1].replace(")", "") if len(parts) > 1 else ""
+            if parenthesis_text in _TEXT_TO_DIRECTION:
+                direction = _TEXT_TO_DIRECTION[parenthesis_text]
             else:
-                claimed_layers = 1  # The room piece is always there
-                for i in range(len(layer_contents) - 1):  # Skip the room_piece
-                    if layer_contents[i][0] != ElementType.NOTHING:
-                        if claimed_layers == layer_count:
-                            print(f"Removing {layer_contents[i][0].name} at {position}")
-                            layer_contents[i] = (ElementType.NOTHING, Direction.NONE)
-                        else:
-                            claimed_layers += 1
-                adjusted_tile_contents[position] = ApparentTile(
-                    monster=layer_contents[0],
-                    item=layer_contents[1],
-                    checkpoint=layer_contents[2],
-                    floor_control=layer_contents[3],
-                    room_piece=layer_contents[4],
-                )
+                # This probably works, since the only directional elements where
+                # it's not included in the text are monsters. Hopefully we've
+                # detected those properly since they are on top.
+                # (The exception is roach eggs, where NONE is correct)
+                direction = Direction.NONE
+            if parenthesis_text == "open":
+                open_doors = {
+                    ElementType.YELLOW_DOOR: ElementType.YELLOW_DOOR_OPEN,
+                    ElementType.BLUE_DOOR: ElementType.BLUE_DOOR_OPEN,
+                    ElementType.GREEN_DOOR: ElementType.GREEN_DOOR_OPEN,
+                    ElementType.RED_DOOR: ElementType.RED_DOOR_OPEN,
+                }
+                element = open_doors[element]
+            if element != getattr(tile, layer)[0]:
+                # Awake and sleeping evil eyes have the same text
+                if not (
+                    element == ElementType.EVIL_EYE
+                    and getattr(tile, layer)[0] == ElementType.EVIL_EYE_AWAKE
+                ):
+                    setattr(tile, layer, (element, direction))
 
     return adjusted_tile_contents
 
