@@ -3,9 +3,9 @@
 #include "Room.h"
 #include "utils.h"
 
-Room::Room() : tiles(Tiles()), deadPlayer(false) {}
+Room::Room() : tiles(Tiles()), turnNumber(0), deadPlayer(false) {}
 
-Room::Room(Tiles tiles, bool deadPlayer) : tiles(tiles), deadPlayer(deadPlayer){};
+Room::Room(Tiles tiles, int turnNumber, bool deadPlayer) : tiles(tiles), turnNumber(turnNumber), deadPlayer(deadPlayer){};
 
 Room Room::copy()
 {
@@ -151,6 +151,11 @@ bool Room::isPassableInDirection(Position position, Direction fromDirection)
 bool Room::playerIsDead()
 {
     return this->deadPlayer;
+}
+
+int Room::getTurnNumber()
+{
+    return this->turnNumber;
 }
 
 int Room::monsterCount(std::optional<std::set<Position>> area)

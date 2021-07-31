@@ -39,6 +39,7 @@ private:
     bool deadPlayer;
     bool playerLeftRoom;
     Monsters monsters;
+    // Also the number of actions taken
 };
 
 #endif // DRODBOT_DERIVEDROOM_H

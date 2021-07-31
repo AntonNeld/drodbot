@@ -487,6 +487,7 @@ RoomPlayer::RoomPlayer(Room room, bool firstEntrance) : drodRoom(globalDb.value(
     // Start current game
     CCueEvents cueEvents;
     this->currentGame = globalDb.value()->GetNewCurrentGame(globalHold.value()->dwHoldID, cueEvents);
+    this->currentGame->wSpawnCycleCount = room.getTurnNumber();
 };
 
 RoomPlayer::~RoomPlayer()
@@ -757,7 +758,7 @@ Room RoomPlayer::getRoom()
         tiles[it->wX][it->wY].monster = Element(type, direction, {}, turnOrder);
         turnOrder++;
     }
-    return Room(tiles, this->playerIsDead());
+    return Room(tiles, this->baseRoom.getTurnNumber() + this->actions.size(), this->playerIsDead());
 }
 
 DerivedRoom RoomPlayer::getDerivedRoom()
