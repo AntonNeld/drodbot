@@ -110,13 +110,15 @@ struct Element
     {
         return this->type == otherElement.type &&
                this->direction == otherElement.direction &&
-               this->orbEffects == otherElement.orbEffects;
+               this->orbEffects == otherElement.orbEffects &&
+               this->turnOrder == otherElement.turnOrder;
     };
     bool operator<(const Element otherElement) const
     {
         return this->type < otherElement.type ||
                this->direction < otherElement.direction ||
-               this->orbEffects < otherElement.orbEffects;
+               this->orbEffects < otherElement.orbEffects ||
+               this->turnOrder < otherElement.turnOrder;
     };
 };
 
