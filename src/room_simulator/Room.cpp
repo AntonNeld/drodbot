@@ -211,7 +211,10 @@ void Room::makeConquered()
 
 bool Room::operator==(const Room otherRoom) const
 {
-    // TODO: In some cases the turn number also matters. Possibly only modulo 30.
+    if (otherRoom.turnNumber != this->turnNumber)
+    {
+        return false;
+    }
     if (otherRoom.deadPlayer != this->deadPlayer)
     {
         return false;
@@ -233,12 +236,15 @@ bool Room::operator==(const Room otherRoom) const
 
 bool Room::operator<(const Room otherRoom) const
 {
-    // We'll order rooms based on the tiles, beginning from the upper left
-    // TODO: In some cases the turn number also matters. Possibly only modulo 30.
+    if (otherRoom.turnNumber != this->turnNumber)
+    {
+        return otherRoom.turnNumber < this->turnNumber;
+    }
     if (otherRoom.deadPlayer != this->deadPlayer)
     {
         return otherRoom.deadPlayer < this->deadPlayer;
     }
+    // We'll order rooms based on the tiles, beginning from the upper left
     for (int x = 0; x < 38; x++)
     {
         for (int y = 0; y < 32; y++)
