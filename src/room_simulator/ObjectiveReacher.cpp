@@ -3,6 +3,7 @@
 #include <tuple>
 #include <optional>
 #include <set>
+#include "RoomPlayer.h"
 #include "ObjectiveReacher.h"
 #include "objectives/Objective.h"
 #include "typedefs.h"
@@ -13,6 +14,7 @@
 ObjectiveReacher::ObjectiveReacher() : cachedSolutions({}),
                                        phase(ObjectiveReacherPhase::NOTHING),
                                        currentRoom(std::nullopt),
+                                       roomPlayer(std::nullopt),
                                        currentObjective(std::nullopt),
                                        pathfindingSolution(std::nullopt),
                                        solution(std::nullopt),
@@ -38,6 +40,10 @@ ObjectiveReacher::~ObjectiveReacher()
     if (this->simulationSearcher)
     {
         delete this->simulationSearcher.value();
+    }
+    if (this->roomPlayer)
+    {
+        delete this->roomPlayer.value();
     }
 };
 
@@ -70,7 +76,12 @@ void ObjectiveReacher::start(Room room, Objective objective)
     {
         delete this->simulationSearcher.value();
     }
+    if (this->roomPlayer)
+    {
+        delete this->roomPlayer.value();
+    }
     this->currentRoom = room;
+    this->roomPlayer = new RoomPlayer(room);
     this->currentObjective = objective;
     this->pathfindingSolution = std::nullopt;
     this->solution = std::nullopt;
@@ -262,7 +273,7 @@ void ObjectiveReacher::prepareSimulationPhase()
             heuristicTiles.insert({currentPosition, currentHeuristicValue});
         }
     }
-    this->roomProblem = new DerivedRoomProblem(this->currentRoom.value(), this->currentObjective.value(), heuristicTiles);
+    this->roomProblem = new DerivedRoomProblem(this->roomPlayer.value(), this->currentObjective.value(), heuristicTiles);
     // Low iteration limit for now, to avoid finding the solution indirectly by accident
     // Set pathCostInPriority=false, to use greedy best-first search for performance
     this->simulationSearcher = new Searcher<DerivedRoom, Action>(this->roomProblem.value(), true, true, false, 100);

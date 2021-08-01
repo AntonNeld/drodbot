@@ -12,7 +12,7 @@
 class DerivedRoomProblem final : public Problem<DerivedRoom, Action>
 {
 public:
-    DerivedRoomProblem(Room room, Objective objective, std::map<Position, int> heuristicTiles = {});
+    DerivedRoomProblem(RoomPlayer *roomPlayer, Objective objective, std::map<Position, int> heuristicTiles = {});
     DerivedRoom initialState();
     std::set<Action> actions(DerivedRoom state);
     DerivedRoom result(DerivedRoom state, Action action);
@@ -21,7 +21,7 @@ public:
     int heuristic(DerivedRoom state);
 
 private:
-    RoomPlayer roomPlayer;
+    RoomPlayer *roomPlayer;
     Objective objective;
     std::map<Position, int> heuristicTiles;
 };

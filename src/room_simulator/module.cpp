@@ -496,18 +496,15 @@ objective_reacher
     pybind11::class_<DerivedRoomProblem, Problem<DerivedRoom, Action>>(m, "DerivedRoomProblem", R"docstr(
 A problem for reaching an objective in a room.
 
-This uses the more efficient DerivedRoom room representation, but is only
-valid as long as the global RoomPlayer is playing the same room.
-
 Parameters
 ----------
-room
-    The room.
+room_player
+    A room player that's playing the room to reach the objective in.
 objective
     The objective.
 )docstr")
-        .def(pybind11::init<Room, Objective>(),
-             pybind11::arg("room"),
+        .def(pybind11::init<RoomPlayer *, Objective>(),
+             pybind11::arg("room_player"),
              pybind11::arg("objective"));
 
     pybind11::enum_<ObjectiveReacherPhase>(m, "ObjectiveReacherPhase")

@@ -8,16 +8,16 @@
 #include "DerivedRoomProblem.h"
 #include "../utils.h"
 
-DerivedRoomProblem::DerivedRoomProblem(Room room,
+DerivedRoomProblem::DerivedRoomProblem(RoomPlayer *roomPlayer,
                                        Objective objective,
-                                       std::map<Position, int> heuristicTiles) : roomPlayer(RoomPlayer(room)),
+                                       std::map<Position, int> heuristicTiles) : roomPlayer(roomPlayer),
                                                                                  objective(objective),
                                                                                  heuristicTiles(heuristicTiles){};
 
 DerivedRoom DerivedRoomProblem::initialState()
 {
-    this->roomPlayer.setActions({});
-    return this->roomPlayer.getDerivedRoom();
+    this->roomPlayer->setActions({});
+    return this->roomPlayer->getDerivedRoom();
 };
 
 std::set<Action> DerivedRoomProblem::actions(DerivedRoom state)
@@ -43,8 +43,8 @@ DerivedRoom DerivedRoomProblem::result(DerivedRoom state, Action action)
 {
     std::vector<Action> actions = state.getActions();
     actions.push_back(action);
-    this->roomPlayer.setActions(actions);
-    return this->roomPlayer.getDerivedRoom();
+    this->roomPlayer->setActions(actions);
+    return this->roomPlayer->getDerivedRoom();
 }
 
 bool DerivedRoomProblem::goalTest(DerivedRoom state)

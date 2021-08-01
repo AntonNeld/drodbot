@@ -43,6 +43,7 @@ private:
     std::map<std::tuple<Room, Objective>, Solution<Room, Action>> cachedSolutions;
     ObjectiveReacherPhase phase;
     std::optional<Room> currentRoom;
+    std::optional<RoomPlayer *> roomPlayer;
     std::optional<Objective> currentObjective;
     std::optional<Solution<Position, Action>> pathfindingSolution;
     std::optional<Solution<Room, Action>> solution;
