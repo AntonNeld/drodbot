@@ -7,7 +7,13 @@ import tkinter
 import traceback
 
 from common import TILE_SIZE, RoomSolverGoal
-from room_simulator import Action, ReachObjective, StabObjective
+from room_simulator import (
+    Action,
+    MonsterCountObjective,
+    OrObjective,
+    ReachObjective,
+    StabObjective,
+)
 from .util import tile_to_text
 
 # The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
@@ -343,18 +349,21 @@ def _solver_info_to_text(room_solver_info):
     if room_solver_info is None:
         return ""
     action_strings = []
+    row_length = 20
     for action in room_solver_info["current_path"]:
         if isinstance(action, Action):
             action_strings.append(action.name)
-        elif isinstance(action, ReachObjective):
-            coords = [f"({t[0]},{t[1]})" for t in action.tiles]
-            action_strings.append(f"Reach {'|'.join(coords)}")
-        elif isinstance(action, StabObjective):
-            coords = [f"({t[0]},{t[1]})" for t in action.tiles]
-            action_strings.append(f"Stab {'|'.join(coords)}")
+        elif (
+            isinstance(action, ReachObjective)
+            or isinstance(action, StabObjective)
+            or isinstance(action, OrObjective)
+            or isinstance(action, MonsterCountObjective)
+        ):
+            # Display objectives on separate rows
+            row_length = 1
+            action_strings.append(_objective_to_text(action))
         else:
             action_strings.append("?")
-    row_length = 20
     action_rows = [
         ",".join(action_strings[i : i + row_length])
         for i in range(0, len(action_strings), row_length)
@@ -431,3 +440,23 @@ def _draw_circles(pil_image, positions, color):
             outline=color,
             width=3,
         )
+
+
+def _objective_to_text(objective):
+    if isinstance(objective, ReachObjective):
+        coords = [f"({t[0]},{t[1]})" for t in objective.tiles]
+        return f"Reach {'|'.join(coords)}"
+    elif isinstance(objective, StabObjective):
+        coords = [f"({t[0]},{t[1]})" for t in objective.tiles]
+        return f"Stab {'|'.join(coords)}"
+    elif isinstance(objective, MonsterCountObjective):
+        count = objective.monsters
+        if objective.allow_less:
+            return f"MonsterCount<={count}"
+        else:
+            return f"MonsterCount={count}"
+    elif isinstance(objective, OrObjective):
+        sub_objectives = objective.objectives
+        return f"Or[{', '.join([_objective_to_text(obj) for obj in sub_objectives])}]"
+    else:
+        return "?"
