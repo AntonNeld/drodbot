@@ -9,15 +9,16 @@
 #include "../utils.h"
 
 DerivedRoomProblem::DerivedRoomProblem(RoomPlayer *roomPlayer,
+                                       DerivedRoom startingRoom,
                                        Objective objective,
                                        std::map<Position, int> heuristicTiles) : roomPlayer(roomPlayer),
+                                                                                 startingRoom(startingRoom),
                                                                                  objective(objective),
                                                                                  heuristicTiles(heuristicTiles){};
 
 DerivedRoom DerivedRoomProblem::initialState()
 {
-    this->roomPlayer->setActions({});
-    return this->roomPlayer->getDerivedRoom();
+    return this->startingRoom;
 };
 
 std::set<Action> DerivedRoomProblem::actions(DerivedRoom state)

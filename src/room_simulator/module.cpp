@@ -426,6 +426,13 @@ Parameters
 actions
     The actions.
 )docstr")
+        .def("get_derived_room", &RoomPlayer::getDerivedRoom, R"docstr(
+Get the full played room.
+
+Returns
+----------
+The derived room.
+)docstr")
         .def("get_room", &RoomPlayer::getRoom, R"docstr(
 Get the full played room.
 
@@ -456,7 +463,7 @@ The room.
 
     addSearcher<Position, Action>(m, "SearcherPositionAction", "ProblemPositionAction", "SolutionPositionAction");
     addSearcher<Room, Action>(m, "SearcherRoomAction", "ProblemRoomAction", "SolutionRoomAction");
-    addSearcher<Room, Objective>(m, "SearcherRoomObjective", "ProblemRoomObjective", "SolutionRoomObjective");
+    addSearcher<DerivedRoom, Objective>(m, "SearcherDerivedRoomObjective", "ProblemDerivedRoomObjective", "SolutionDerivedRoomObjective");
     addSearcher<DerivedRoom, Action>(m, "SearcherDerivedRoomAction", "ProblemDerivedRoomAction", "SolutionDerivedRoomAction");
 
     pybind11::class_<PathfindingProblem, Problem<Position, Action>>(m, "PathfindingProblem", R"docstr(
@@ -475,13 +482,11 @@ goals
              pybind11::arg("start_position"),
              pybind11::arg("room"),
              pybind11::arg("goals"));
-    pybind11::class_<PlanningProblem, Problem<Room, Objective>>(m, "PlanningProblem", R"docstr(
+    pybind11::class_<PlanningProblem, Problem<DerivedRoom, Objective>>(m, "PlanningProblem", R"docstr(
 A problem for reaching an objective in a room, on a high level with intermediate objectives.
 
 Parameters
 ----------
-room
-    The room.
 objective
     The goal objective.
 objective_reacher
@@ -489,8 +494,7 @@ objective_reacher
     Can be used to put together a complete solution from the
     high-level steps.
 )docstr")
-        .def(pybind11::init<Room, Objective, ObjectiveReacher *>(),
-             pybind11::arg("room"),
+        .def(pybind11::init<Objective, ObjectiveReacher *>(),
              pybind11::arg("objective"),
              pybind11::arg("objective_reacher"));
     pybind11::class_<DerivedRoomProblem, Problem<DerivedRoom, Action>>(m, "DerivedRoomProblem", R"docstr(
@@ -500,11 +504,14 @@ Parameters
 ----------
 room_player
     A room player that's playing the room to reach the objective in.
+starting_room
+    The room to start searching from.
 objective
     The objective.
 )docstr")
-        .def(pybind11::init<RoomPlayer *, Objective>(),
+        .def(pybind11::init<RoomPlayer *, DerivedRoom, Objective>(),
              pybind11::arg("room_player"),
+             pybind11::arg("starting_room"),
              pybind11::arg("objective"));
 
     pybind11::enum_<ObjectiveReacherPhase>(m, "ObjectiveReacherPhase")
@@ -516,12 +523,27 @@ objective
         .export_values();
 
     pybind11::class_<ObjectiveReacher>(m, "ObjectiveReacher", R"docstr(
-Find solutions to directly reach a objectives in rooms.
+Find solutions to directly reach objectives in a room.
 
 Finding a solution is done through several phases and sanity checks,
 for efficiency. Also caches found solutions.
+
+Parameters
+----------
+room
+    The room to find solutions in.
 )docstr")
-        .def(pybind11::init<>())
+        .def(pybind11::init<Room>(), pybind11::arg("room"))
+        .def("get_room_player",
+             &ObjectiveReacher::getRoomPlayer,
+             pybind11::return_value_policy::reference,
+             R"docstr(
+Get the room player.
+
+Returns
+-------
+The room player.
+)docstr")
         .def("find_solution", &ObjectiveReacher::findSolution, pybind11::arg("room"), pybind11::arg("objective"), R"docstr(
 Find a solution to reach the given objective in the given room.
 

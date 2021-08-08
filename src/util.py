@@ -245,7 +245,7 @@ def element_layer(element_type):
     raise RuntimeError(f"{element_type} has no defined layer")
 
 
-def expand_planning_solution(room, sub_objectives, objective_reacher):
+def expand_planning_solution(sub_objectives, objective_reacher):
     """Get a sequence of actions from a solution to a planning problem.
 
     Parameters
@@ -264,7 +264,8 @@ def expand_planning_solution(room, sub_objectives, objective_reacher):
     A list of actions reaching all sub-objectives in order.
     """
     actions = []
-    latest_room = room
+    objective_reacher.get_room_player().set_actions([])
+    latest_room = objective_reacher.get_room_player().get_derived_room()
     for sub_objective in sub_objectives:
         sub_solution = objective_reacher.find_solution(latest_room, sub_objective)
         actions.extend(sub_solution.actions)

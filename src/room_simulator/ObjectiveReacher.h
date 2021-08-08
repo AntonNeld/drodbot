@@ -24,13 +24,14 @@ enum class ObjectiveReacherPhase
 class ObjectiveReacher
 {
 public:
-    ObjectiveReacher();
+    ObjectiveReacher(Room room);
     ~ObjectiveReacher();
-    Solution<Room, Action> findSolution(Room room, Objective objective);
-    void start(Room room, Objective objective);
+    RoomPlayer *getRoomPlayer();
+    Solution<DerivedRoom, Action> findSolution(DerivedRoom room, Objective objective);
+    void start(DerivedRoom room, Objective objective);
     void nextPhase();
     ObjectiveReacherPhase getPhase();
-    Solution<Room, Action> getSolution();
+    Solution<DerivedRoom, Action> getSolution();
     Searcher<Position, Action> *getPathfindingSearcher();
     Searcher<DerivedRoom, Action> *getRoomSimulationSearcher();
 
@@ -40,13 +41,13 @@ private:
     void prepareSimulationPhase();
     Solution<DerivedRoom, Action> finishSimulationPhase();
 
-    std::map<std::tuple<Room, Objective>, Solution<Room, Action>> cachedSolutions;
+    std::map<std::tuple<DerivedRoom, Objective>, Solution<DerivedRoom, Action>> cachedSolutions;
+    RoomPlayer *roomPlayer;
     ObjectiveReacherPhase phase;
-    std::optional<Room> currentRoom;
-    std::optional<RoomPlayer *> roomPlayer;
+    std::optional<DerivedRoom> currentRoom;
     std::optional<Objective> currentObjective;
     std::optional<Solution<Position, Action>> pathfindingSolution;
-    std::optional<Solution<Room, Action>> solution;
+    std::optional<Solution<DerivedRoom, Action>> solution;
     std::optional<PathfindingProblem *> pathfindingProblem;
     std::optional<Searcher<Position, Action> *> pathfindingSearcher;
     std::optional<DerivedRoomProblem *> roomProblem;

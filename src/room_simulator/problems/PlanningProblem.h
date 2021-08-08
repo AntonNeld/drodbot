@@ -10,19 +10,18 @@
 #include "../search/Problem.h"
 #include "../ObjectiveReacher.h"
 
-class PlanningProblem final : public Problem<Room, Objective>
+class PlanningProblem final : public Problem<DerivedRoom, Objective>
 {
 public:
-    PlanningProblem(Room room, Objective objective, ObjectiveReacher *objectiveReacher);
-    Room initialState();
-    std::set<Objective> actions(Room state);
-    Room result(Room state, Objective action);
-    bool goalTest(Room state);
-    int stepCost(Room state, Objective action, Room result);
-    int heuristic(Room state);
+    PlanningProblem(Objective objective, ObjectiveReacher *objectiveReacher);
+    DerivedRoom initialState();
+    std::set<Objective> actions(DerivedRoom state);
+    DerivedRoom result(DerivedRoom state, Objective action);
+    bool goalTest(DerivedRoom state);
+    int stepCost(DerivedRoom state, Objective action, DerivedRoom result);
+    int heuristic(DerivedRoom state);
 
 private:
-    Room room;
     Objective objective;
     ObjectiveReacher *objectiveReacher;
     std::vector<Position> orbs;

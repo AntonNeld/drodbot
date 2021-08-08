@@ -9,19 +9,19 @@
 #include "../objectives/MonsterCountObjective.h"
 #include "../utils.h"
 
-PlanningProblem::PlanningProblem(Room room,
-                                 Objective objective,
-                                 ObjectiveReacher *objectiveReacher) : room(room),
-                                                                       objective(objective),
-                                                                       objectiveReacher(objectiveReacher),
-                                                                       orbs(room.findCoordinates(ElementType::ORB)){};
+PlanningProblem::PlanningProblem(
+    Objective objective,
+    ObjectiveReacher *objectiveReacher) : objective(objective),
+                                          objectiveReacher(objectiveReacher),
+                                          orbs(objectiveReacher->getRoomPlayer()->getRoom().findCoordinates(ElementType::ORB)){};
 
-Room PlanningProblem::initialState()
+DerivedRoom PlanningProblem::initialState()
 {
-    return this->room;
+    this->objectiveReacher->getRoomPlayer()->setActions({});
+    return this->objectiveReacher->getRoomPlayer()->getDerivedRoom();
 }
 
-std::set<Objective> PlanningProblem::actions(Room state)
+std::set<Objective> PlanningProblem::actions(DerivedRoom state)
 {
     std::set<Objective> objectives = {};
     // Always try reaching the final objective
@@ -46,7 +46,7 @@ std::set<Objective> PlanningProblem::actions(Room state)
     {
         if (!objectiveFulfilled(*it, state))
         {
-            Solution<Room, Action> solution = this->objectiveReacher->findSolution(state, *it);
+            Solution<DerivedRoom, Action> solution = this->objectiveReacher->findSolution(state, *it);
             if (solution.exists)
             {
                 reachableObjectives.insert(*it);
@@ -56,24 +56,24 @@ std::set<Objective> PlanningProblem::actions(Room state)
     return reachableObjectives;
 }
 
-Room PlanningProblem::result(Room state, Objective action)
+DerivedRoom PlanningProblem::result(DerivedRoom state, Objective action)
 {
-    Solution<Room, Action> solution = this->objectiveReacher->findSolution(state, action);
+    Solution<DerivedRoom, Action> solution = this->objectiveReacher->findSolution(state, action);
     return solution.finalState.value();
 }
 
-bool PlanningProblem::goalTest(Room state)
+bool PlanningProblem::goalTest(DerivedRoom state)
 {
     return objectiveFulfilled(this->objective, state);
 }
 
-int PlanningProblem::stepCost(Room state, Objective action, Room result)
+int PlanningProblem::stepCost(DerivedRoom state, Objective action, DerivedRoom result)
 {
-    Solution<Room, Action> solution = this->objectiveReacher->findSolution(state, action);
+    Solution<DerivedRoom, Action> solution = this->objectiveReacher->findSolution(state, action);
     return solution.actions.value().size();
 }
 
-int PlanningProblem::heuristic(Room state)
+int PlanningProblem::heuristic(DerivedRoom state)
 {
     return objectiveHeuristic(this->objective, state);
 }

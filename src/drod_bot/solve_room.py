@@ -1,7 +1,7 @@
 from room_simulator import (
     ObjectiveReacher,
     PlanningProblem,
-    SearcherRoomObjective,
+    SearcherDerivedRoomObjective,
     FailureReason,
 )
 from search import NoSolutionError
@@ -18,13 +18,13 @@ def solve_room(room, objective):
     objective
         The objective to reach.
     """
-    objective_reacher = ObjectiveReacher()
-    problem = PlanningProblem(room, objective, objective_reacher)
-    searcher = SearcherRoomObjective(problem)
+    objective_reacher = ObjectiveReacher(room)
+    problem = PlanningProblem(objective, objective_reacher)
+    searcher = SearcherDerivedRoomObjective(problem)
     solution = searcher.find_solution()
     if not solution.exists:
         raise NoSolutionError(
             iteration_limited=solution.failure_reason
             == FailureReason.ITERATION_LIMIT_REACHED
         )
-    return expand_planning_solution(room, solution.actions, objective_reacher)
+    return expand_planning_solution(solution.actions, objective_reacher)

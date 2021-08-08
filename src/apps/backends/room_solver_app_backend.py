@@ -12,7 +12,7 @@ from room_simulator import (
     PathfindingProblem,
     PlanningProblem,
     SearcherPositionAction,
-    SearcherRoomObjective,
+    SearcherDerivedRoomObjective,
     ObjectiveReacher,
     ObjectiveReacherPhase,
     simulate_actions,
@@ -103,11 +103,9 @@ class RoomSolverAppBackend:
         elif goal == RoomSolverGoal.MOVE_TO_CONQUER_TOKEN_PLANNING:
             conquer_tokens = self._room.find_coordinates(ElementType.CONQUER_TOKEN)
             objective = ReachObjective(tiles=set(conquer_tokens))
-            self._objective_reacher_ref = ObjectiveReacher()
-            self._problem = PlanningProblem(
-                self._room, objective, self._objective_reacher_ref
-            )
-            self._searcher = SearcherRoomObjective(
+            self._objective_reacher_ref = ObjectiveReacher(self._room)
+            self._problem = PlanningProblem(objective, self._objective_reacher_ref)
+            self._searcher = SearcherDerivedRoomObjective(
                 self._problem,
                 avoid_duplicates=avoid_duplicates,
                 heuristic_in_priority=heuristic_in_priority,
@@ -116,25 +114,23 @@ class RoomSolverAppBackend:
         elif goal == RoomSolverGoal.MOVE_TO_CONQUER_TOKEN_OBJECTIVE_REACHER:
             conquer_tokens = self._room.find_coordinates(ElementType.CONQUER_TOKEN)
             objective = ReachObjective(tiles=set(conquer_tokens))
-            self._searcher = ObjectiveReacher()
+            self._searcher = ObjectiveReacher(self._room)
             self._searcher.start(self._room, objective)
         elif goal == RoomSolverGoal.STRIKE_ORB_OBJECTIVE_REACHER:
             orbs = self._room.find_coordinates(ElementType.ORB)
             objective = StabObjective(tiles=set(orbs))
-            self._searcher = ObjectiveReacher()
+            self._searcher = ObjectiveReacher(self._room)
             self._searcher.start(self._room, objective)
         elif goal == RoomSolverGoal.DECREASE_MONSTERS_OBJECTIVE_REACHER:
             monsters = self._room.monster_count()
             objective = MonsterCountObjective(monsters=monsters - 1)
-            self._searcher = ObjectiveReacher()
+            self._searcher = ObjectiveReacher(self._room)
             self._searcher.start(self._room, objective)
         elif goal == RoomSolverGoal.MOVE_TO_TARGET_PLANNING:
             objective = ReachObjective(tiles=set([target]))
-            self._objective_reacher_ref = ObjectiveReacher()
-            self._problem = PlanningProblem(
-                self._room, objective, self._objective_reacher_ref
-            )
-            self._searcher = SearcherRoomObjective(
+            self._objective_reacher_ref = ObjectiveReacher(self._room)
+            self._problem = PlanningProblem(objective, self._objective_reacher_ref)
+            self._searcher = SearcherDerivedRoomObjective(
                 self._problem,
                 avoid_duplicates=avoid_duplicates,
                 heuristic_in_priority=heuristic_in_priority,
@@ -142,19 +138,17 @@ class RoomSolverAppBackend:
             )
         elif goal == RoomSolverGoal.MOVE_TO_TARGET_OBJECTIVE_REACHER:
             objective = ReachObjective(tiles=set([target]))
-            self._searcher = ObjectiveReacher()
+            self._searcher = ObjectiveReacher(self._room)
             self._searcher.start(self._room, objective)
         elif goal == RoomSolverGoal.STRIKE_TARGET_OBJECTIVE_REACHER:
             objective = StabObjective(tiles=set([target]))
-            self._searcher = ObjectiveReacher()
+            self._searcher = ObjectiveReacher(self._room)
             self._searcher.start(self._room, objective)
         elif goal == RoomSolverGoal.KILL_EVERYTHING_PLANNING:
             objective = MonsterCountObjective(monsters=0)
-            self._objective_reacher_ref = ObjectiveReacher()
-            self._problem = PlanningProblem(
-                self._room, objective, self._objective_reacher_ref
-            )
-            self._searcher = SearcherRoomObjective(
+            self._objective_reacher_ref = ObjectiveReacher(self._room)
+            self._problem = PlanningProblem(objective, self._objective_reacher_ref)
+            self._searcher = SearcherDerivedRoomObjective(
                 self._problem,
                 avoid_duplicates=avoid_duplicates,
                 heuristic_in_priority=heuristic_in_priority,
@@ -168,7 +162,7 @@ class RoomSolverAppBackend:
                     MonsterCountObjective(self._room.monster_count() - 1),
                 ]
             )
-            self._searcher = ObjectiveReacher()
+            self._searcher = ObjectiveReacher(self._room)
             self._searcher.start(self._room, objective)
 
         self._show_data()
@@ -269,7 +263,7 @@ class RoomSolverAppBackend:
             if "solution" in objective_reacher_data:
                 solution = objective_reacher_data["solution"]
                 if solution.exists:
-                    room = solution.final_state
+                    room = get_full_room(self._room, solution.final_state)
         else:
             objective_reacher_data = None
 
@@ -332,8 +326,8 @@ def _make_solution_inspect_info(
     searcher, inspected_actions_index, room, objective_reacher
 ):
     full_solution = searcher.get_current_path()
-    if isinstance(searcher, SearcherRoomObjective):
-        full_solution = expand_planning_solution(room, full_solution, objective_reacher)
+    if isinstance(searcher, SearcherDerivedRoomObjective):
+        full_solution = expand_planning_solution(full_solution, objective_reacher)
     solution = full_solution[: inspected_actions_index + 1]
     room_after = simulate_actions(room, solution)
     info = {
