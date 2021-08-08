@@ -69,16 +69,16 @@ bool DerivedRoom::isConquered()
 
 bool DerivedRoom::operator==(const DerivedRoom otherRoom) const
 {
+    // TODO: Turn numbers
     return otherRoom.player == this->player &&
            otherRoom.toggledDoors == this->toggledDoors &&
            otherRoom.deadPlayer == this->deadPlayer &&
-           otherRoom.monsters == this->monsters &&
-           otherRoom.actions.size() == this->actions.size();
+           otherRoom.monsters == this->monsters;
 };
 
 bool DerivedRoom::operator<(const DerivedRoom otherRoom) const
 {
-
+    // TODO: Turn numbers
     if (otherRoom.player != this->player)
     {
         return otherRoom.player < this->player;
@@ -94,10 +94,6 @@ bool DerivedRoom::operator<(const DerivedRoom otherRoom) const
     if (otherRoom.monsters != this->monsters)
     {
         return otherRoom.monsters < this->monsters;
-    }
-    if (otherRoom.actions.size() != this->actions.size())
-    {
-        return otherRoom.actions.size() < this->actions.size();
     }
     return false;
 };
