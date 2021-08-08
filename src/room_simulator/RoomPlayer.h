@@ -18,7 +18,7 @@ public:
 
 private:
     void performAction(Action action);
-    void undo();
+    void undo(unsigned long int turns);
     std::tuple<Position, Direction> findPlayer();
     bool playerIsDead();
     bool playerHasLeft();

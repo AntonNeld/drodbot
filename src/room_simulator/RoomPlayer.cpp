@@ -544,11 +544,17 @@ void RoomPlayer::performAction(Action action)
 }
 
 // Rewind an action
-void RoomPlayer::undo()
+void RoomPlayer::undo(unsigned long int turns)
 {
+    if (turns == 0)
+    {
+        return;
+    }
     CCueEvents cueEvents;
-    this->currentGame->UndoCommand(cueEvents);
-    this->actions.pop_back();
+    this->currentGame->UndoCommands(turns, cueEvents);
+    auto end = this->actions.end();
+    auto firstToErase = end - turns;
+    this->actions.erase(firstToErase, end);
 }
 
 // Set the actions performed from the base room, undoing if necessary
@@ -571,11 +577,8 @@ void RoomPlayer::setActions(std::vector<Action> newActions)
         }
     }
     // Undo all old actions that are not part of the new actions
-    long unsigned int timesToUndo = this->actions.size() - divergingIndex;
-    for (long unsigned int i = 0; i < timesToUndo; i++)
-    {
-        this->undo();
-    }
+    unsigned long int timesToUndo = this->actions.size() - divergingIndex;
+    this->undo(timesToUndo);
     // Perform the new actions after the point of divergence
     for (long unsigned int i = divergingIndex; i < newActions.size(); i++)
     {
