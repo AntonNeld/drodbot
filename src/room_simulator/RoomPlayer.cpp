@@ -487,6 +487,8 @@ RoomPlayer::RoomPlayer(Room room, bool firstEntrance) : drodRoom(globalDb.value(
     // Start current game
     CCueEvents cueEvents;
     this->currentGame = globalDb.value()->GetNewCurrentGame(globalHold.value()->dwHoldID, cueEvents);
+    // Take snapshots more often, since we reset the counter by undoing all the time
+    this->currentGame->SetComputationTimePerSnapshot(100);
 };
 
 RoomPlayer::~RoomPlayer()
