@@ -276,7 +276,19 @@ The room after the actions.
         .def_readwrite("item", &Tile::item)
         .def_readwrite("monster", &Tile::monster);
 
-    pybind11::class_<Room>(m, "Room")
+    pybind11::class_<Room>(m, "Room", R"docstr(
+A representation of a room.
+
+A room is assumed to start at turn 0 if it should be played. Creating
+an instance of this class that represents a room in progress should only
+be done for display purposes.
+
+Parameters
+----------
+tiles
+    The tiles in the room, as arrays of arrays so that tiles[x][y] has
+    the tile at coordinates (x, y).
+)docstr")
         .def(pybind11::init<Tiles>(), pybind11::arg("tiles"))
         .def("copy", &Room::copy, R"docstr(
 Copy the room.

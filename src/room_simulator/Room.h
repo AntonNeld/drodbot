@@ -12,7 +12,7 @@ class Room
 {
 public:
     Room();
-    Room(Tiles tiles, int turnNumber = 0, bool deadPlayer = false);
+    Room(Tiles tiles, bool deadPlayer = false);
     Room copy();
     Tile getTile(Position position);
     void setTile(Position position, Tile tile);
@@ -22,7 +22,6 @@ public:
     bool isPassable(int x, int y);
     bool isPassableInDirection(Position position, Direction fromDirection);
     bool playerIsDead();
-    int getTurnNumber();
     int monsterCount(std::optional<std::set<Position>> area = std::nullopt);
     bool isConquered();
     void makeConquered();
@@ -31,7 +30,6 @@ public:
 
 private:
     Tiles tiles;
-    int turnNumber;
     bool deadPlayer;
 };
 

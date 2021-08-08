@@ -3,9 +3,9 @@
 #include "Room.h"
 #include "utils.h"
 
-Room::Room() : tiles(Tiles()), turnNumber(0), deadPlayer(false) {}
+Room::Room() : tiles(Tiles()), deadPlayer(false) {}
 
-Room::Room(Tiles tiles, int turnNumber, bool deadPlayer) : tiles(tiles), turnNumber(turnNumber), deadPlayer(deadPlayer){};
+Room::Room(Tiles tiles, bool deadPlayer) : tiles(tiles), deadPlayer(deadPlayer){};
 
 Room Room::copy()
 {
@@ -153,11 +153,6 @@ bool Room::playerIsDead()
     return this->deadPlayer;
 }
 
-int Room::getTurnNumber()
-{
-    return this->turnNumber;
-}
-
 int Room::monsterCount(std::optional<std::set<Position>> area)
 {
     int monsters = 0;
@@ -211,10 +206,6 @@ void Room::makeConquered()
 
 bool Room::operator==(const Room otherRoom) const
 {
-    if (otherRoom.turnNumber != this->turnNumber)
-    {
-        return false;
-    }
     if (otherRoom.deadPlayer != this->deadPlayer)
     {
         return false;
@@ -236,10 +227,6 @@ bool Room::operator==(const Room otherRoom) const
 
 bool Room::operator<(const Room otherRoom) const
 {
-    if (otherRoom.turnNumber != this->turnNumber)
-    {
-        return otherRoom.turnNumber < this->turnNumber;
-    }
     if (otherRoom.deadPlayer != this->deadPlayer)
     {
         return otherRoom.deadPlayer < this->deadPlayer;

@@ -454,26 +454,7 @@ RoomPlayer::RoomPlayer(Room room, bool firstEntrance) : drodRoom(globalDb.value(
             this->drodRoom->AddNewMonster(M_QROACH, x, y)->wO = convertDirection(direction);
             break;
         case ElementType::ROACH_EGG:
-            Direction eggDirection;
-            switch (room.getTurnNumber() % 30)
-            {
-            case 0:
-                eggDirection = Direction::SW;
-                break;
-            case 1:
-                eggDirection = Direction::W;
-                break;
-            case 2:
-                eggDirection = Direction::NW;
-                break;
-            case 3:
-                eggDirection = Direction::N;
-                break;
-            default:
-                throw std::invalid_argument("Roach egg at wrong turn number");
-            }
-            this->drodRoom->AddNewMonster(M_REGG, x, y)->wO = convertDirection(eggDirection);
-            break;
+            throw std::invalid_argument("Cannot start room with roach egg");
         case ElementType::EVIL_EYE:
             this->drodRoom->AddNewMonster(M_EYE, x, y)->wO = convertDirection(direction);
             break;
@@ -506,7 +487,6 @@ RoomPlayer::RoomPlayer(Room room, bool firstEntrance) : drodRoom(globalDb.value(
     // Start current game
     CCueEvents cueEvents;
     this->currentGame = globalDb.value()->GetNewCurrentGame(globalHold.value()->dwHoldID, cueEvents);
-    this->currentGame->wSpawnCycleCount = room.getTurnNumber();
 };
 
 RoomPlayer::~RoomPlayer()
@@ -777,7 +757,7 @@ Room RoomPlayer::getRoom()
         tiles[it->wX][it->wY].monster = Element(type, direction, {}, turnOrder);
         turnOrder++;
     }
-    return Room(tiles, this->baseRoom.getTurnNumber() + this->actions.size(), this->playerIsDead());
+    return Room(tiles, this->playerIsDead());
 }
 
 DerivedRoom RoomPlayer::getDerivedRoom()
