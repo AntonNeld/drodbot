@@ -12,7 +12,9 @@ class RoomPlayer
 public:
     RoomPlayer(Room room, bool firstEntrance = false);
     ~RoomPlayer();
+    std::vector<Action> getPossibleActions();
     void setActions(std::vector<Action> newActions);
+    bool isPassableInDirection(Position position, Direction fromDirection);
     Room getRoom();
     DerivedRoom getDerivedRoom();
 

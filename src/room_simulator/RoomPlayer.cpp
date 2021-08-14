@@ -498,6 +498,48 @@ RoomPlayer::~RoomPlayer()
     delete this->currentGame;
 }
 
+std::vector<Action> RoomPlayer::getPossibleActions()
+{
+    if (this->playerIsDead() || this->playerHasLeft())
+    {
+        return {};
+    }
+    Position playerPosition = std::get<0>(this->findPlayer());
+    std::vector<std::pair<Action, Direction>> movementActions = {
+        {Action::N, Direction::N},
+        {Action::NE, Direction::NE},
+        {Action::E, Direction::E},
+        {Action::SE, Direction::SE},
+        {Action::S, Direction::S},
+        {Action::SW, Direction::SW},
+        {Action::W, Direction::W},
+        {Action::NW, Direction::NW},
+    };
+    std::vector<Action> actions = {Action::WAIT, Action::CW, Action::CCW};
+    // Don't add movement actions that will bump into things, they are equivalent to waiting.
+    for (auto it = movementActions.begin(); it != movementActions.end(); ++it)
+    {
+        Direction direction = (*it).second;
+        if (this->isPassableInDirection(positionInDirection(playerPosition, direction), direction))
+        {
+            actions.push_back((*it).first);
+        }
+    }
+    return actions;
+}
+
+bool RoomPlayer::isPassableInDirection(Position position, Direction moveDirection)
+{
+    unsigned int x = std::get<0>(position);
+    unsigned int y = std::get<1>(position);
+    if (x < 0 || x >= 38 || y < 0 || y >= 32)
+    {
+        return false;
+    }
+    bool ignored;
+    return !this->currentGame->pRoom->DoesSquareContainPlayerObstacle(x, y, convertDirection(moveDirection), ignored);
+}
+
 // Perform an action in the room.
 void RoomPlayer::performAction(Action action)
 {

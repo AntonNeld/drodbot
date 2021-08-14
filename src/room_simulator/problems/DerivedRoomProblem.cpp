@@ -23,21 +23,9 @@ DerivedRoom DerivedRoomProblem::initialState()
 
 std::vector<Action> DerivedRoomProblem::actions(DerivedRoom state)
 {
-    if (state.playerIsDead() || state.playerHasLeft())
-    {
-        return {};
-    }
-    return {Action::E,
-            Action::SE,
-            Action::S,
-            Action::SW,
-            Action::W,
-            Action::NW,
-            Action::N,
-            Action::NE,
-            Action::CW,
-            Action::CCW,
-            Action::WAIT};
+    std::vector<Action> actions = state.getActions();
+    this->roomPlayer->setActions(actions);
+    return this->roomPlayer->getPossibleActions();
 };
 
 DerivedRoom DerivedRoomProblem::result(DerivedRoom state, Action action)
