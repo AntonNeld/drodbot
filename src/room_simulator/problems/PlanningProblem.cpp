@@ -32,14 +32,18 @@ std::set<Objective> PlanningProblem::actions(DerivedRoom state)
     {
         objectives.insert(StabObjective({*it}));
     }
-    // We may be far from a monster, so add an objective to either:
+    // We may be far from a monster, so (if there are monsters) add an objective to either:
     // - Stab any tile which currently has a monster (to get pathfinding)
     // - Kill a monster (to stop going to the tile if we kill it early)
     std::vector<Position> monsterPositions = state.findMonsterCoordinates();
-    std::set<Position> monsterPositionsSet = {};
-    monsterPositionsSet.insert(monsterPositions.begin(), monsterPositions.end());
-    objectives.insert(OrObjective({StabObjective(monsterPositionsSet),
-                                   MonsterCountObjective(monsterPositions.size() - 1)}));
+    if (monsterPositions.size() > 0)
+    {
+        std::set<Position> monsterPositionsSet = {};
+        monsterPositionsSet.insert(monsterPositions.begin(), monsterPositions.end());
+        objectives.insert(OrObjective({StabObjective(monsterPositionsSet),
+                                       MonsterCountObjective(monsterPositions.size() - 1)}));
+    }
+
     // Only return objectives we can actually reach, but haven't reached already
     std::set<Objective> reachableObjectives = {};
     for (auto it = objectives.begin(); it != objectives.end(); ++it)
