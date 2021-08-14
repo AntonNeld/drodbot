@@ -21,16 +21,15 @@ DerivedRoom PlanningProblem::initialState()
     return this->objectiveReacher->getRoomPlayer()->getDerivedRoom();
 }
 
-std::set<Objective> PlanningProblem::actions(DerivedRoom state)
+std::vector<Objective> PlanningProblem::actions(DerivedRoom state)
 {
-    std::set<Objective> objectives = {};
     // Always try reaching the final objective
     // TODO: May not make sense if it's something like clearing the room
-    objectives.insert(this->objective);
+    std::vector<Objective> objectives = {this->objective};
     // Try to strike each orb
     for (auto it = this->orbs.begin(); it != this->orbs.end(); ++it)
     {
-        objectives.insert(StabObjective({*it}));
+        objectives.push_back(StabObjective({*it}));
     }
     // We may be far from a monster, so (if there are monsters) add an objective to either:
     // - Stab any tile which currently has a monster (to get pathfinding)
@@ -40,12 +39,12 @@ std::set<Objective> PlanningProblem::actions(DerivedRoom state)
     {
         std::set<Position> monsterPositionsSet = {};
         monsterPositionsSet.insert(monsterPositions.begin(), monsterPositions.end());
-        objectives.insert(OrObjective({StabObjective(monsterPositionsSet),
-                                       MonsterCountObjective(monsterPositions.size() - 1)}));
+        objectives.push_back(OrObjective({StabObjective(monsterPositionsSet),
+                                          MonsterCountObjective(monsterPositions.size() - 1)}));
     }
 
     // Only return objectives we can actually reach, but haven't reached already
-    std::set<Objective> reachableObjectives = {};
+    std::vector<Objective> reachableObjectives = {};
     for (auto it = objectives.begin(); it != objectives.end(); ++it)
     {
         if (!objectiveFulfilled(*it, state))
@@ -53,7 +52,7 @@ std::set<Objective> PlanningProblem::actions(DerivedRoom state)
             Solution<DerivedRoom, Action> solution = this->objectiveReacher->findSolution(state, *it);
             if (solution.exists)
             {
-                reachableObjectives.insert(*it);
+                reachableObjectives.push_back(*it);
             }
         }
     }

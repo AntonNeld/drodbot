@@ -17,7 +17,7 @@ public:
                        Objective objective,
                        std::map<Position, int> heuristicTiles = {});
     DerivedRoom initialState();
-    std::set<Action> actions(DerivedRoom state);
+    std::vector<Action> actions(DerivedRoom state);
     DerivedRoom result(DerivedRoom state, Action action);
     bool goalTest(DerivedRoom state);
     int stepCost(DerivedRoom state, Action action, DerivedRoom result);

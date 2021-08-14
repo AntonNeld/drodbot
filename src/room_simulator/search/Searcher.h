@@ -137,9 +137,8 @@ template <class State, class SearchAction>
 inline void Searcher<State, SearchAction>::expandCurrentNode()
 {
     // Expand the current node and add its children to the frontier where appropriate
-    std::set<SearchAction> actions = this->problem->actions(this->currentNode.state);
-    typename std::set<SearchAction>::iterator actionIterator;
-    for (actionIterator = actions.begin(); actionIterator != actions.end(); ++actionIterator)
+    std::vector<SearchAction> actions = this->problem->actions(this->currentNode.state);
+    for (auto actionIterator = actions.begin(); actionIterator != actions.end(); ++actionIterator)
     {
         SearchAction action = *actionIterator;
         // Find the child node

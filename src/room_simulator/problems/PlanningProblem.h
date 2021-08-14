@@ -15,7 +15,7 @@ class PlanningProblem final : public Problem<DerivedRoom, Objective>
 public:
     PlanningProblem(Objective objective, ObjectiveReacher *objectiveReacher);
     DerivedRoom initialState();
-    std::set<Objective> actions(DerivedRoom state);
+    std::vector<Objective> actions(DerivedRoom state);
     DerivedRoom result(DerivedRoom state, Objective action);
     bool goalTest(DerivedRoom state);
     int stepCost(DerivedRoom state, Objective action, DerivedRoom result);

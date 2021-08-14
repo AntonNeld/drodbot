@@ -21,7 +21,7 @@ DerivedRoom DerivedRoomProblem::initialState()
     return this->startingRoom;
 };
 
-std::set<Action> DerivedRoomProblem::actions(DerivedRoom state)
+std::vector<Action> DerivedRoomProblem::actions(DerivedRoom state)
 {
     if (state.playerIsDead() || state.playerHasLeft())
     {

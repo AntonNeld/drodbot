@@ -22,47 +22,47 @@ Position PathfindingProblem::initialState()
     return this->startPosition;
 }
 
-std::set<Action> PathfindingProblem::actions(Position state)
+std::vector<Action> PathfindingProblem::actions(Position state)
 {
     // Cannot move from a stair
     if (this->room.getTile(state).roomPiece.type == ElementType::STAIRS)
     {
         return {};
     }
-    std::set<Action> actions;
+    std::vector<Action> actions = {};
     int x = std::get<0>(state);
     int y = std::get<1>(state);
     if (this->room.isPassableInDirection({x + 1, y}, Direction::E))
     {
-        actions.insert(Action::E);
+        actions.push_back(Action::E);
     }
     if (this->room.isPassableInDirection({x + 1, y + 1}, Direction::SE))
     {
-        actions.insert(Action::SE);
+        actions.push_back(Action::SE);
     }
     if (this->room.isPassableInDirection({x, y + 1}, Direction::S))
     {
-        actions.insert(Action::S);
+        actions.push_back(Action::S);
     }
     if (this->room.isPassableInDirection({x - 1, y + 1}, Direction::SW))
     {
-        actions.insert(Action::SW);
+        actions.push_back(Action::SW);
     }
     if (this->room.isPassableInDirection({x - 1, y}, Direction::W))
     {
-        actions.insert(Action::W);
+        actions.push_back(Action::W);
     }
     if (this->room.isPassableInDirection({x - 1, y - 1}, Direction::NW))
     {
-        actions.insert(Action::NW);
+        actions.push_back(Action::NW);
     }
     if (this->room.isPassableInDirection({x, y - 1}, Direction::N))
     {
-        actions.insert(Action::N);
+        actions.push_back(Action::N);
     }
     if (this->room.isPassableInDirection({x + 1, y - 1}, Direction::NE))
     {
-        actions.insert(Action::NE);
+        actions.push_back(Action::NE);
     }
     return actions;
 }

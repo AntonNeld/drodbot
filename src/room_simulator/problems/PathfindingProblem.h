@@ -13,7 +13,7 @@ class PathfindingProblem final : public Problem<Position, Action>
 public:
     PathfindingProblem(Position startPosition, Room room, std::set<Position> goals);
     Position initialState();
-    std::set<Action> actions(Position state);
+    std::vector<Action> actions(Position state);
     Position result(Position state, Action action);
     bool goalTest(Position state);
     int stepCost(Position state, Action action, Position result);

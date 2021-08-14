@@ -8,7 +8,7 @@ class Problem
 {
 public:
     virtual State initialState();
-    virtual std::set<SearchAction> actions(State);
+    virtual std::vector<SearchAction> actions(State);
     virtual State result(State, SearchAction);
     virtual bool goalTest(State);
     virtual int stepCost(State, SearchAction, State);
