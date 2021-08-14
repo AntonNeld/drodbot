@@ -3,13 +3,13 @@
 #include "Room.h"
 #include "utils.h"
 
-Room::Room() : tiles(Tiles()), deadPlayer(false) {}
+Room::Room() : tiles(Tiles()) {}
 
-Room::Room(Tiles tiles, bool deadPlayer) : tiles(tiles), deadPlayer(deadPlayer){};
+Room::Room(Tiles tiles, bool deadPlayer) : tiles(tiles){};
 
 Room Room::copy()
 {
-    return Room(this->tiles, this->deadPlayer);
+    return Room(this->tiles);
 }
 
 Tile Room::getTile(Position position)
@@ -148,11 +148,6 @@ bool Room::isPassableInDirection(Position position, Direction fromDirection)
     return true;
 }
 
-bool Room::playerIsDead()
-{
-    return this->deadPlayer;
-}
-
 int Room::monsterCount(std::optional<std::set<Position>> area)
 {
     int monsters = 0;
@@ -203,51 +198,3 @@ void Room::makeConquered()
         }
     }
 }
-
-bool Room::operator==(const Room otherRoom) const
-{
-    if (otherRoom.deadPlayer != this->deadPlayer)
-    {
-        return false;
-    }
-    for (int x = 0; x < 38; x++)
-    {
-        for (int y = 0; y < 32; y++)
-        {
-            Tile thisTile = this->tiles[x][y];
-            Tile otherTile = otherRoom.tiles[x][y];
-            if (!(thisTile == otherTile))
-            {
-                return false;
-            }
-        }
-    }
-    return true;
-};
-
-bool Room::operator<(const Room otherRoom) const
-{
-    if (otherRoom.deadPlayer != this->deadPlayer)
-    {
-        return otherRoom.deadPlayer < this->deadPlayer;
-    }
-    // We'll order rooms based on the tiles, beginning from the upper left
-    for (int x = 0; x < 38; x++)
-    {
-        for (int y = 0; y < 32; y++)
-        {
-            Tile thisTile = this->tiles[x][y];
-            Tile otherTile = otherRoom.tiles[x][y];
-            if (thisTile < otherTile)
-            {
-                return true;
-            }
-            if (!(thisTile == otherTile))
-            {
-                return false;
-            }
-            // If the tiles are equal, go on to the next tile
-        }
-    }
-    return false; // Rooms are equal
-};

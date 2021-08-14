@@ -11,18 +11,6 @@ bool OrObjective::operator<(const OrObjective other) const
     return this->objectives < other.objectives;
 };
 
-bool OrObjective::goalTest(Room room)
-{
-    for (auto objective : this->objectives)
-    {
-        if (objectiveFulfilled(objective, room))
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
 bool OrObjective::goalTest(DerivedRoom room)
 {
     for (auto objective : this->objectives)
@@ -33,11 +21,6 @@ bool OrObjective::goalTest(DerivedRoom room)
         }
     }
     return false;
-}
-
-int OrObjective::heuristic(Room room)
-{
-    return objectiveHeuristic(this->objectives.front(), room);
 }
 
 int OrObjective::heuristic(DerivedRoom room)

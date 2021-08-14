@@ -474,7 +474,6 @@ The room.
         .value("EXHAUSTED_FRONTIER", FailureReason::EXHAUSTED_FRONTIER);
 
     addSearcher<Position, Action>(m, "SearcherPositionAction", "ProblemPositionAction", "SolutionPositionAction");
-    addSearcher<Room, Action>(m, "SearcherRoomAction", "ProblemRoomAction", "SolutionRoomAction");
     addSearcher<DerivedRoom, Objective>(m, "SearcherDerivedRoomObjective", "ProblemDerivedRoomObjective", "SolutionDerivedRoomObjective");
     addSearcher<DerivedRoom, Action>(m, "SearcherDerivedRoomAction", "ProblemDerivedRoomAction", "SolutionDerivedRoomAction");
 

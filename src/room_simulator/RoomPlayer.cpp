@@ -762,7 +762,7 @@ Room RoomPlayer::getRoom()
         tiles[it->wX][it->wY].monster = Element(type, direction, {}, turnOrder);
         turnOrder++;
     }
-    return Room(tiles, this->playerIsDead());
+    return Room(tiles);
 }
 
 DerivedRoom RoomPlayer::getDerivedRoom()

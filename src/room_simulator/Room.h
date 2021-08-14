@@ -21,16 +21,12 @@ public:
     std::tuple<Position, Direction> findPlayer();
     bool isPassable(int x, int y);
     bool isPassableInDirection(Position position, Direction fromDirection);
-    bool playerIsDead();
     int monsterCount(std::optional<std::set<Position>> area = std::nullopt);
     bool isConquered();
     void makeConquered();
-    bool operator==(const Room) const;
-    bool operator<(const Room) const;
 
 private:
     Tiles tiles;
-    bool deadPlayer;
 };
 
 #endif // DRODBOT_ROOM_H

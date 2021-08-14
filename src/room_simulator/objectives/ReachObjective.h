@@ -10,9 +10,7 @@ class ReachObjective
 public:
     ReachObjective(std::set<Position> tiles = {});
     bool operator<(const ReachObjective) const;
-    bool goalTest(Room room);
     bool goalTest(DerivedRoom room);
-    int heuristic(Room room);
     int heuristic(DerivedRoom room);
 
     std::set<Position> tiles;
