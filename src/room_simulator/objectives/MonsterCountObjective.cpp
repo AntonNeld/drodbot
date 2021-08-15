@@ -6,8 +6,10 @@
 MonsterCountObjective::MonsterCountObjective(
     int monsters,
     bool allowLess,
+    std::optional<ElementType> monsterType,
     std::optional<std::set<Position>> area) : monsters(monsters),
                                               allowLess(allowLess),
+                                              monsterType(monsterType),
                                               area(area){};
 
 bool MonsterCountObjective::operator<(const MonsterCountObjective other) const
@@ -20,6 +22,10 @@ bool MonsterCountObjective::operator<(const MonsterCountObjective other) const
     {
         return this->allowLess < other.allowLess;
     }
+    if (this->monsterType != other.monsterType)
+    {
+        return this->area < other.area;
+    }
     if (this->area != other.area)
     {
         return this->area < other.area;
@@ -29,7 +35,7 @@ bool MonsterCountObjective::operator<(const MonsterCountObjective other) const
 
 bool MonsterCountObjective::goalTest(DerivedRoom room)
 {
-    int monsterCount = room.monsterCount(this->area);
+    int monsterCount = room.monsterCount(this->monsterType, this->area);
     if (this->allowLess)
     {
         return monsterCount <= this->monsters;
@@ -47,7 +53,7 @@ int MonsterCountObjective::heuristic(DerivedRoom room)
     Position swordPosition = positionInDirection(std::get<0>(player), std::get<1>(player));
     int x = std::get<0>(swordPosition);
     int y = std::get<1>(swordPosition);
-    std::vector<Position> monsterCoords = room.findMonsterCoordinates(this->area);
+    std::vector<Position> monsterCoords = room.findMonsterCoordinates(this->monsterType, this->area);
     int closestDistance = 37;
     for (auto it = monsterCoords.begin(); it != monsterCoords.end(); ++it)
     {

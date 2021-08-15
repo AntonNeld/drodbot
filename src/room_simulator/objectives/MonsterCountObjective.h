@@ -8,13 +8,17 @@
 class MonsterCountObjective
 {
 public:
-    MonsterCountObjective(int monsters, bool allowLess = true, std::optional<std::set<Position>> area = std::nullopt);
+    MonsterCountObjective(int monsters,
+                          bool allowLess = true,
+                          std::optional<ElementType> monsterType = std::nullopt,
+                          std::optional<std::set<Position>> area = std::nullopt);
     bool operator<(const MonsterCountObjective) const;
     bool goalTest(DerivedRoom room);
     int heuristic(DerivedRoom room);
 
     int monsters;
     bool allowLess;
+    std::optional<ElementType> monsterType;
     std::optional<std::set<Position>> area;
 };
 

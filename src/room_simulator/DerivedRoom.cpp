@@ -32,32 +32,44 @@ bool DerivedRoom::playerHasLeft()
     return this->playerLeftRoom;
 }
 
-std::vector<Position> DerivedRoom::findMonsterCoordinates(std::optional<std::set<Position>> area)
+std::vector<Position> DerivedRoom::findMonsterCoordinates(std::optional<ElementType> monsterType,
+                                                          std::optional<std::set<Position>> area)
 {
     std::vector<Position> monsterCoords = {};
     for (auto it = this->monsters.begin(); it != this->monsters.end(); ++it)
     {
-        if (!area || area.value().contains(std::get<1>(*it)))
+        if (monsterType && monsterType.value() != std::get<0>(*it))
         {
-            monsterCoords.push_back(std::get<1>(*it));
+            continue;
         }
+        if (area && !area.value().contains(std::get<1>(*it)))
+        {
+            continue;
+        }
+        monsterCoords.push_back(std::get<1>(*it));
     }
     return monsterCoords;
 }
 
-int DerivedRoom::monsterCount(std::optional<std::set<Position>> area)
+int DerivedRoom::monsterCount(std::optional<ElementType> monsterType,
+                              std::optional<std::set<Position>> area)
 {
-    if (!area)
+    if (!area && !monsterType)
     {
         return this->monsters.size();
     }
     int monsterCount = 0;
     for (auto it = this->monsters.begin(); it != this->monsters.end(); ++it)
     {
-        if (area.value().contains(std::get<1>(*it)))
+        if (monsterType && monsterType.value() != std::get<0>(*it))
         {
-            monsterCount++;
+            continue;
         }
+        if (area && !area.value().contains(std::get<1>(*it)))
+        {
+            continue;
+        }
+        monsterCount++;
     }
     return monsterCount;
 }

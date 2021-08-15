@@ -31,16 +31,23 @@ std::vector<Objective> PlanningProblem::actions(DerivedRoom state)
     {
         objectives.push_back(StabObjective({*it}));
     }
+    // If there are roach queens, ignore other monsters
+    std::vector<Position> monsterPositions = state.findMonsterCoordinates(ElementType::ROACH_QUEEN);
+    std::optional<ElementType> monsterType = ElementType::ROACH_QUEEN;
+    if (monsterPositions.size() == 0)
+    {
+        monsterPositions = state.findMonsterCoordinates();
+        monsterType = std::nullopt;
+    }
     // We may be far from a monster, so (if there are monsters) add an objective to either:
     // - Stab any tile which currently has a monster (to get pathfinding)
     // - Kill a monster (to stop going to the tile if we kill it early)
-    std::vector<Position> monsterPositions = state.findMonsterCoordinates();
     if (monsterPositions.size() > 0)
     {
         std::set<Position> monsterPositionsSet = {};
         monsterPositionsSet.insert(monsterPositions.begin(), monsterPositions.end());
         objectives.push_back(OrObjective({StabObjective(monsterPositionsSet),
-                                          MonsterCountObjective(monsterPositions.size() - 1)}));
+                                          MonsterCountObjective(monsterPositions.size() - 1, true, monsterType)}));
     }
 
     // Only return objectives we can actually reach, but haven't reached already
