@@ -1,6 +1,6 @@
-MODULE_SUFFIX=$(shell python3.9-config --extension-suffix)
+MODULE_SUFFIX=$(shell python3.10-config --extension-suffix)
 PYBIND11_INCLUDES=$(shell python3 -m pybind11 --includes)
-INCLUDES=$(PYBIND11_INCLUDES) -I/usr/include/python3.9 -Idrod -Imetakit/include -I/usr/include/jsoncpp
+INCLUDES=$(PYBIND11_INCLUDES) -I/usr/include/python3.10 -Idrod -Imetakit/include -I/usr/include/jsoncpp
 # -Wno-parentheses is to suppress a warning from metakit
 WARNING_ARGS=-Wall -Werror -Wno-parentheses -Wno-volatile
 COMMON_COMPILE_ARGS=-O3 -g -std=c++20 -fPIC $(INCLUDES) $(shell sdl2-config --cflags)
@@ -22,7 +22,7 @@ OWN_OBJECTIVES_OBJECT_FILES=$(patsubst %.cpp,build/own/%.o,$(OWN_OBJECTIVES_FILE
 OBJECT_FILES=$(BACKENDLIB_OBJECT_FILES) $(DRODLIB_OBJECT_FILES) $(METAKIT_OBJECT_FILES) $(OWN_OBJECT_FILES) $(OWN_SEARCH_OBJECT_FILES) $(OWN_PROBLEMS_OBJECT_FILES) $(OWN_OBJECTIVES_OBJECT_FILES)
 DEPENDENCY_FILES= $(OBJECT_FILES:%.o=%.d)
 
-LINK_LIBS=$(shell sdl2-config --libs) -lpython3.9 -ljsoncpp -lcurl
+LINK_LIBS=$(shell sdl2-config --libs) -lpython3.10 -ljsoncpp -lcurl
 
 ../room_simulator$(MODULE_SUFFIX): $(OBJECT_FILES)
 	g++ -shared -o ../room_simulator$(MODULE_SUFFIX) $(OBJECT_FILES) $(LINK_LIBS)
