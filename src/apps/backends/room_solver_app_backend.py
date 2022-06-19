@@ -115,17 +115,23 @@ class RoomSolverAppBackend:
             conquer_tokens = self._room.find_coordinates(ElementType.CONQUER_TOKEN)
             objective = ReachObjective(tiles=set(conquer_tokens))
             self._searcher = ObjectiveReacher(self._room)
-            self._searcher.start(self._room, objective)
+            self._searcher.start(
+                self._searcher.get_room_player().get_derived_room(), objective
+            )
         elif goal == RoomSolverGoal.STRIKE_ORB_OBJECTIVE_REACHER:
             orbs = self._room.find_coordinates(ElementType.ORB)
             objective = StabObjective(tiles=set(orbs))
             self._searcher = ObjectiveReacher(self._room)
-            self._searcher.start(self._room, objective)
+            self._searcher.start(
+                self._searcher.get_room_player().get_derived_room(), objective
+            )
         elif goal == RoomSolverGoal.DECREASE_MONSTERS_OBJECTIVE_REACHER:
             monsters = self._room.monster_count()
             objective = MonsterCountObjective(monsters=monsters - 1)
             self._searcher = ObjectiveReacher(self._room)
-            self._searcher.start(self._room, objective)
+            self._searcher.start(
+                self._searcher.get_room_player().get_derived_room(), objective
+            )
         elif goal == RoomSolverGoal.MOVE_TO_TARGET_PLANNING:
             objective = ReachObjective(tiles=set([target]))
             self._objective_reacher_ref = ObjectiveReacher(self._room)
@@ -139,11 +145,15 @@ class RoomSolverAppBackend:
         elif goal == RoomSolverGoal.MOVE_TO_TARGET_OBJECTIVE_REACHER:
             objective = ReachObjective(tiles=set([target]))
             self._searcher = ObjectiveReacher(self._room)
-            self._searcher.start(self._room, objective)
+            self._searcher.start(
+                self._searcher.get_room_player().get_derived_room(), objective
+            )
         elif goal == RoomSolverGoal.STRIKE_TARGET_OBJECTIVE_REACHER:
             objective = StabObjective(tiles=set([target]))
             self._searcher = ObjectiveReacher(self._room)
-            self._searcher.start(self._room, objective)
+            self._searcher.start(
+                self._searcher.get_room_player().get_derived_room(), objective
+            )
         elif goal == RoomSolverGoal.KILL_EVERYTHING_PLANNING:
             objective = MonsterCountObjective(monsters=0)
             self._objective_reacher_ref = ObjectiveReacher(self._room)
@@ -163,7 +173,9 @@ class RoomSolverAppBackend:
                 ]
             )
             self._searcher = ObjectiveReacher(self._room)
-            self._searcher.start(self._room, objective)
+            self._searcher.start(
+                self._searcher.get_room_player().get_derived_room(), objective
+            )
 
         self._show_data()
 
