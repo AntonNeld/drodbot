@@ -615,16 +615,20 @@ class EditorInterface:
     async def select_first_style(self):
         """Select the first room style for the current room."""
         pyautogui.press("esc")
+        await asyncio.sleep(1)
         await self._click(_STYLE_SELECT_SCROLL_UP)
         pyautogui.press("up", presses=13, interval=0.1)
         await self._click(_EDIT_ROOM)
+        await asyncio.sleep(1)
 
     async def select_next_style(self):
         """Select the next room style for the current room."""
         pyautogui.press("esc")
+        await asyncio.sleep(1)
         await self._click(_STYLE_SELECT_SCROLL_UP)
         pyautogui.press("down")
         await self._click(_EDIT_ROOM)
+        await asyncio.sleep(1)
 
     async def get_tiles_and_colors(self):
         """Get the tiles and minimap colors for each coordinate.
