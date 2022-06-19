@@ -1,6 +1,9 @@
 Python parts:
 - Make the different states and displayed types in room solver app concentrated somewhere
 - Begin using type hints
+- Bug: We make up a direction when checking alternative room entrances. If the room is
+  solvable with that direction but not the one we end up facing, we can get into an infinite
+  loop
 
 C++ parts:
 - Use asserts instead of exceptions in C++
