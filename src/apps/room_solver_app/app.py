@@ -14,7 +14,7 @@ from room_simulator import (
     ReachObjective,
     StabObjective,
 )
-from .util import tile_to_text
+from apps.util import tile_to_text
 
 # The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
 _CANVAS_WIDTH = 418

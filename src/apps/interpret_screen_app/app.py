@@ -6,7 +6,7 @@ import tkinter
 import traceback
 
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES, TILE_SIZE
-from .util import tile_to_text, ScrollableFrame
+from apps.util import tile_to_text, ScrollableFrame
 
 # The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
 _CANVAS_WIDTH = 418

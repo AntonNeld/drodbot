@@ -6,7 +6,7 @@ from PIL import ImageTk, Image
 import tkinter
 import traceback
 
-from .util import apparent_tile_to_text, ScrollableFrame
+from apps.util import apparent_tile_to_text, ScrollableFrame
 
 _CANVAS_WIDTH = 88
 _CANVAS_HEIGHT = 88

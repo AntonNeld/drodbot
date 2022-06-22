@@ -8,8 +8,8 @@ from tile_classifier import TileClassifier
 from room_interpreter import RoomInterpreter
 from drod_bot import DrodBot
 from drod_interface import PlayInterface, EditorInterface
-from apps import MainApp
-from apps.backends import (
+from apps import (
+    MainApp,
     ClassificationAppBackend,
     InterpretScreenAppBackend,
     PlayingAppBackend,
