@@ -1,9 +1,10 @@
 {
-  "python.pythonPath": ".venv/bin/python",
   "python.linting.pylintEnabled": false,
   "python.formatting.provider": "black",
   "editor.formatOnSave": true,
   "python.linting.enabled": true,
   "python.linting.flake8Enabled": true,
-  "python.analysis.stubPath": "src/room_simulator"
+  "python.analysis.stubPath": "src/room_simulator",
+  "mypy.dmypyExecutable": "${workspaceFolder}/.venv/bin/dmypy",
+  "mypy.targets": []
 }
