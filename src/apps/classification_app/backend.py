@@ -7,7 +7,9 @@ import numpy
 import PIL
 from PIL.PngImagePlugin import PngInfo
 
-from common import GUIEvent, ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES, TILE_SIZE
+
+from apps.util import GUIEvent
+from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES, TILE_SIZE
 from room_simulator import ElementType, Direction
 from tile_classifier import ApparentTile
 from .editor_utils import (

@@ -6,7 +6,8 @@ from PIL import ImageTk, Image, ImageDraw
 import tkinter
 import traceback
 
-from common import TILE_SIZE, RoomSolverGoal
+from .backend import RoomSolverGoal
+from common import TILE_SIZE
 from room_simulator import (
     Action,
     MonsterCountObjective,

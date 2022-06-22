@@ -1,5 +1,23 @@
-from common import Strategy, GUIEvent
+from enum import Enum
+
+from apps.util import GUIEvent
 from room_simulator import ElementType, Direction
+
+
+# The values are also what will be displayed in the GUI
+class Strategy(str, Enum):
+    """A strategy for what Beethro should do."""
+
+    EXPLORE_AND_CONQUER = "Explore while conquering rooms"
+    EXPLORE = "Explore the current level"
+    GO_TO_UNVISITED_ROOM = "Go to the nearest unvisited room"
+    GO_TO_EAST_ROOM = "Go to the room east of here"
+    GO_TO_SOUTH_ROOM = "Go to the room south of here"
+    GO_TO_WEST_ROOM = "Go to the room west of here"
+    GO_TO_NORTH_ROOM = "Go to the room north of here"
+    MOVE_TO_CONQUER_TOKEN = "Move to a conquer token in the room"
+    MOVE_TO_CONQUER_TOKEN_IN_LEVEL = "Move to a conquer token anywhere in the level"
+    STRIKE_ORB = "Strike the nearest orb"
 
 
 class PlayingAppBackend:

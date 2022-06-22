@@ -2,7 +2,7 @@ from queue import Empty
 import tkinter
 from tkinter import ttk
 
-from common import GUIEvent
+from apps.util import GUIEvent
 from .interpret_screen_app import InterpretScreenApp
 from .playing_app import PlayingApp
 from .room_solver_app import RoomSolverApp

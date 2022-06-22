@@ -1,7 +1,8 @@
 import asyncio
 import time
 
-from common import GUIEvent
+
+from apps.util import GUIEvent
 from room_simulator import Action
 
 

@@ -1,6 +1,8 @@
+from enum import Enum
 import time
 
-from common import GUIEvent, UserError, RoomSolverGoal
+from apps.util import GUIEvent
+from common import UserError
 from room_simulator import (
     ReachObjective,
     StabObjective,
@@ -19,6 +21,25 @@ from room_simulator import (
     get_full_room,
 )
 from util import expand_planning_solution
+
+
+class RoomSolverGoal(str, Enum):
+    """A goal to reach in the room solver app."""
+
+    MOVE_TO_CONQUER_TOKEN_PATHFINDING = "Move to conquer token (pathfinding)"
+    MOVE_TO_CONQUER_TOKEN_PLANNING = "Move to conquer token (planning)"
+    MOVE_TO_CONQUER_TOKEN_OBJECTIVE_REACHER = (
+        "Move to conquer token (objective reacher)"
+    )
+    STRIKE_ORB_OBJECTIVE_REACHER = "Strike orb (objective reacher)"
+    MOVE_TO_TARGET_PLANNING = "Move to target (planning)"
+    MOVE_TO_TARGET_OBJECTIVE_REACHER = "Move to target (objective reacher)"
+    STRIKE_TARGET_OBJECTIVE_REACHER = "Strike target (objective reacher)"
+    DECREASE_MONSTERS_OBJECTIVE_REACHER = "Decrease monsters (objective reacher)"
+    KILL_EVERYTHING_PLANNING = "Kill everything (planning)"
+    MOVE_TO_MONSTER_OR_KILL_SOMETHING = (
+        "Move to a monster or kill something (objective reacher)"
+    )
 
 
 class RoomSolverAppBackend:
