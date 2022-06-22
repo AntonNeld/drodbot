@@ -564,7 +564,7 @@ class EditorInterface:
             await self._click(_CHARACTER_WINDOW_SELECT_ACTION_SCROLL_UP)
         await self._click(_CHARACTER_WINDOW_SELECT_ACTION_FIRST)
         await self._click(_CHARACTER_WINDOW_DIALOG_TEXT)
-        pyautogui.write(text)
+        pyautogui.write(text, interval=0.1)
         await self._click(_CHARACTER_WINDOW_SELECT_ACTION_OKAY)
         await self._click(_CHARACTER_WINDOW_OKAY)
 
