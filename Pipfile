@@ -4,11 +4,7 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-# Need to pin the version, since it's a prerelease
-black = "==20.8b1"
-# This is not installed as a dependency of Black since we have Python >= 3.8.
-# Black fails without it, so we're installing it manually.
-typing-extensions = "*"
+black = "*"
 flake8 = "*"
 pybind11 = "*"
 pybind11-stubgen = "*"
