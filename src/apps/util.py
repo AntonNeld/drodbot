@@ -1,3 +1,6 @@
+import asyncio
+import traceback
+
 import tkinter
 from tkinter import ttk
 
@@ -29,6 +32,26 @@ ELEMENT_CHARACTERS = {
     ElementType.FLOOR: ".",
     ElementType.NOTHING: " ",
 }
+
+
+def run_coroutine(coroutine, event_loop):
+    """Trigger a coroutine, possibly from another thread.
+
+    Parameters
+    ----------
+    coroutine
+        The coroutine to run
+    event_loop
+        The asyncio event loop to run the coroutine in
+    """
+
+    async def wrapped_coroutine():
+        try:
+            await coroutine
+        except Exception:
+            traceback.print_exc()
+
+    asyncio.run_coroutine_threadsafe(wrapped_coroutine(), event_loop)
 
 
 def apparent_tile_to_text(tile):

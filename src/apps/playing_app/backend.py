@@ -1,6 +1,7 @@
 from enum import Enum
 import queue
 
+from apps.util import run_coroutine
 from room_simulator import ElementType, Direction
 
 
@@ -26,14 +27,17 @@ class PlayingAppBackend:
     Parameters
     ----------
     bot
-        The DRODbot itself.
+        The DRODbot itself
+    event_loop
+        The asyncio event loop
     """
 
-    def __init__(self, bot):
+    def __init__(self, bot, event_loop):
         self._bot = bot
         self._bot.subscribe_to_state_update(self._push_state_update)
         self._queue = queue.Queue()
         self._queue.put(self._bot.state)
+        self._event_loop = event_loop
 
     def get_queue(self):
         """Get a queue with state updates.
@@ -44,7 +48,7 @@ class PlayingAppBackend:
         """
         return self._queue
 
-    async def run_strategy(self, strategy):
+    def run_strategy(self, strategy):
         """Have Beethro do something, usually trying to solve the room.
 
         Parameters
@@ -52,6 +56,9 @@ class PlayingAppBackend:
         strategy
             The strategy to execute.
         """
+        run_coroutine(self._async_run_strategy(strategy), self._event_loop)
+
+    async def _async_run_strategy(self, strategy):
         await self._bot.initialize()
         if strategy == Strategy.MOVE_TO_CONQUER_TOKEN:
             await self._bot.go_to_element_in_room(ElementType.CONQUER_TOKEN)
@@ -76,17 +83,17 @@ class PlayingAppBackend:
         else:
             raise RuntimeError(f"Unknown strategy {strategy}")
 
-    async def save_state(self):
+    def save_state(self):
         """Save the DRODbot state to disk."""
-        await self._bot.save_state()
+        run_coroutine(self._bot.save_state(), self._event_loop)
 
-    async def clear_state(self):
+    def clear_state(self):
         """Clear the DRODbot state."""
-        await self._bot.clear_state()
+        run_coroutine(self._bot.clear_state(), self._event_loop)
 
-    async def recheck_room(self):
+    def recheck_room(self):
         """Interpret the current room again and replace the state."""
-        await self._bot.reinterpret_room()
+        run_coroutine(self._bot.reinterpret_room(), self._event_loop)
 
     def _push_state_update(self, state):
         self._queue.put(state)

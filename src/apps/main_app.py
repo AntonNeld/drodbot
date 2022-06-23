@@ -60,7 +60,7 @@ class MainApp(tkinter.Frame):
         self._interpret_screen_app = InterpretScreenApp(
             self, event_loop, interpret_screen_app_backend
         )
-        self._playing_app = PlayingApp(self, event_loop, playing_app_backend)
+        self._playing_app = PlayingApp(self, playing_app_backend)
         self._classification_app = ClassificationApp(
             self, event_loop, classification_app_backend
         )

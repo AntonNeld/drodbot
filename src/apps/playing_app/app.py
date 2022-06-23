@@ -23,17 +23,14 @@ class PlayingApp(tkinter.Frame):
     ----------
     root
         The parent of the tkinter Frame.
-    event_loop
-        The asyncio event loop for the backend thread.
     backend
         The backend containing the DRODbot.
     """
 
-    def __init__(self, root, event_loop, backend):
+    def __init__(self, root, backend):
         super().__init__(root)
         self._main_window = root
         self._main_window.after(QUEUE_POLL_INTERVAL, self._check_queue)
-        self._event_loop = event_loop
         self._backend = backend
         self._data = None
         self._selected_strategy = tkinter.StringVar(self)
@@ -59,15 +56,17 @@ class PlayingApp(tkinter.Frame):
         self._state_controls = tkinter.Frame(self._control_panel)
         self._state_controls.pack(side=tkinter.TOP)
         self._save_state_button = tkinter.Button(
-            self._state_controls, text="Save state", command=self._save_state
+            self._state_controls, text="Save state", command=self._backend.save_state
         )
         self._save_state_button.pack(side=tkinter.RIGHT)
         self._clear_state_button = tkinter.Button(
-            self._state_controls, text="Clear state", command=self._clear_state
+            self._state_controls, text="Clear state", command=self._backend.clear_state
         )
         self._clear_state_button.pack(side=tkinter.RIGHT)
         self._recheck_room_button = tkinter.Button(
-            self._state_controls, text="Recheck room", command=self._recheck_room
+            self._state_controls,
+            text="Recheck room",
+            command=self._backend.recheck_room,
         )
         self._recheck_room_button.pack(side=tkinter.RIGHT)
 
@@ -157,16 +156,7 @@ class PlayingApp(tkinter.Frame):
     def _run_strategy(self):
         strategy_value = self._selected_strategy.get()
         strategy = next(e for e in Strategy if e.value == strategy_value)
-        self._run_coroutine(self._backend.run_strategy(strategy))
-
-    def _save_state(self):
-        self._run_coroutine(self._backend.save_state())
-
-    def _clear_state(self):
-        self._run_coroutine(self._backend.clear_state())
-
-    def _recheck_room(self):
-        self._run_coroutine(self._backend.recheck_room())
+        self._backend.run_strategy(strategy)
 
 
 def _room_to_image(room):

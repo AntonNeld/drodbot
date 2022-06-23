@@ -39,7 +39,7 @@ def main():
     interpret_screen_app_backend = InterpretScreenAppBackend(
         play_interface, interpreter
     )
-    playing_app_backend = PlayingAppBackend(bot)
+    playing_app_backend = PlayingAppBackend(bot, loop)
     room_solver_app_backend = RoomSolverAppBackend(play_interface, interpreter, bot)
 
     window = tkinter.Tk()
