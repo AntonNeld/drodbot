@@ -79,9 +79,7 @@ class MainApp(tkinter.Frame):
     def _check_queue(self):
         try:
             item, *detail = self._queue.get(block=False)
-            if item == GUIEvent.QUIT:
-                self._main_window.destroy()
-            elif item == GUIEvent.SET_INTERPRET_SCREEN_DATA:
+            if item == GUIEvent.SET_INTERPRET_SCREEN_DATA:
                 self._interpret_screen_app.set_data(*detail)
             elif item == GUIEvent.SET_CLASSIFICATION_DATA:
                 self._classification_app.set_data(*detail)
