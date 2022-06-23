@@ -6,9 +6,9 @@ import scipy
 import numpy
 import PIL
 from PIL.PngImagePlugin import PngInfo
+import queue
 
 
-from apps.util import GUIEvent
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES, TILE_SIZE
 from room_simulator import ElementType, Direction
 from tile_classifier import ApparentTile
@@ -54,19 +54,24 @@ class ClassificationAppBackend:
         The directory to read and write sample data.
     editor_interface
         The interface to the DROD editor, to generate data.
-    window_queue
-        A queue for sending updates to the GUI.
     """
 
-    def __init__(
-        self, classifier, tile_data_dir, sample_data_dir, editor_interface, window_queue
-    ):
+    def __init__(self, classifier, tile_data_dir, sample_data_dir, editor_interface):
         self._tile_data_dir = tile_data_dir
         self._sample_data_dir = sample_data_dir
         self._interface = editor_interface
         self._sample_data = []
-        self._queue = window_queue
+        self._queue = queue.Queue()
         self._classifier = classifier
+
+    def get_queue(self):
+        """Get a queue with state updates.
+
+        Returns
+        -------
+        The queue
+        """
+        return self._queue
 
     async def load_sample_data(self):
         """Load the sample data and send it to the GUI."""
@@ -76,7 +81,7 @@ class ClassificationAppBackend:
             file_names = os.listdir(self._sample_data_dir)
         except FileNotFoundError:
             print("No sample data directory found")
-            self._queue.put((GUIEvent.SET_CLASSIFICATION_DATA, self._sample_data))
+            self._queue.put(self._sample_data)
             return
         for file_name in file_names:
             image = PIL.Image.open(os.path.join(self._sample_data_dir, file_name))
@@ -95,7 +100,7 @@ class ClassificationAppBackend:
             )
         print("Classifying sample data...")
         self._classify_sample_data()
-        self._queue.put((GUIEvent.SET_CLASSIFICATION_DATA, self._sample_data))
+        self._queue.put(self._sample_data)
         print("Loaded and classified sample data")
 
     async def generate_tile_data(self):
@@ -111,7 +116,7 @@ class ClassificationAppBackend:
         self._classifier.load_tile_data(self._tile_data_dir)
         if self._sample_data:
             self._classify_sample_data()
-            self._queue.put((GUIEvent.SET_CLASSIFICATION_DATA, self._sample_data))
+            self._queue.put(self._sample_data)
         print("Finished getting tile data")
 
     async def generate_individual_element_images(self):

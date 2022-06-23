@@ -1,11 +1,13 @@
 import asyncio
 import statistics
+from queue import Empty
 
 import PIL
 from PIL import ImageTk, Image, ImageDraw
 import tkinter
 import traceback
 
+from apps.util import QUEUE_POLL_INTERVAL
 from .backend import RoomSolverGoal
 from common import TILE_SIZE
 from room_simulator import (
@@ -41,6 +43,8 @@ class RoomSolverApp(tkinter.Frame):
 
     def __init__(self, root, event_loop, backend):
         super().__init__(root)
+        self._main_window = root
+        self._main_window.after(QUEUE_POLL_INTERVAL, self._check_queue)
         self._event_loop = event_loop
         self._backend = backend
         self._enlarged_view = False
@@ -151,6 +155,15 @@ class RoomSolverApp(tkinter.Frame):
         self._objective_reacher_text.pack(side=tkinter.TOP)
         self._room_solver_text = tkinter.Label(self._control_panel, text="")
         self._room_solver_text.pack(side=tkinter.TOP)
+
+    def _check_queue(self):
+        """Check the queue for updates."""
+        try:
+            data = self._backend.get_queue().get(block=False)
+            self.set_data(*data)
+        except Empty:
+            pass
+        self._main_window.after(QUEUE_POLL_INTERVAL, self._check_queue)
 
     def set_data(
         self, room_image, room, start_position, room_solver_info, objective_reacher_info

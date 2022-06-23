@@ -1,5 +1,4 @@
 import asyncio
-import queue
 import threading
 import tkinter
 
@@ -34,24 +33,20 @@ def main():
     interpreter = RoomInterpreter(classifier, play_interface)
     bot = DrodBot("bot_state.json", play_interface, interpreter)
 
-    window_queue = queue.Queue()
     classification_app_backend = ClassificationAppBackend(
-        classifier, "tile_data", "sample_tiles", editor_interface, window_queue
+        classifier, "tile_data", "sample_tiles", editor_interface
     )
     interpret_screen_app_backend = InterpretScreenAppBackend(
-        play_interface, interpreter, window_queue
+        play_interface, interpreter
     )
-    playing_app_backend = PlayingAppBackend(bot, window_queue)
-    room_solver_app_backend = RoomSolverAppBackend(
-        play_interface, interpreter, bot, window_queue
-    )
+    playing_app_backend = PlayingAppBackend(bot)
+    room_solver_app_backend = RoomSolverAppBackend(play_interface, interpreter, bot)
 
     window = tkinter.Tk()
     window.title("DRODbot")
     app = MainApp(
         root=window,
         event_loop=loop,
-        queue=window_queue,
         playing_app_backend=playing_app_backend,
         interpret_screen_app_backend=interpret_screen_app_backend,
         room_solver_app_backend=room_solver_app_backend,

@@ -1,6 +1,6 @@
 from enum import Enum
+import queue
 
-from apps.util import GUIEvent
 from room_simulator import ElementType, Direction
 
 
@@ -27,15 +27,22 @@ class PlayingAppBackend:
     ----------
     bot
         The DRODbot itself.
-    window_queue
-        A queue for sending updates to the GUI.
     """
 
-    def __init__(self, bot, window_queue):
+    def __init__(self, bot):
         self._bot = bot
         self._bot.subscribe_to_state_update(self._push_state_update)
-        self._queue = window_queue
-        self._queue.put((GUIEvent.SET_PLAYING_DATA, self._bot.state))
+        self._queue = queue.Queue()
+        self._queue.put(self._bot.state)
+
+    def get_queue(self):
+        """Get a queue with state updates.
+
+        Returns
+        -------
+        The queue
+        """
+        return self._queue
 
     async def run_strategy(self, strategy):
         """Have Beethro do something, usually trying to solve the room.
@@ -82,4 +89,4 @@ class PlayingAppBackend:
         await self._bot.reinterpret_room()
 
     def _push_state_update(self, state):
-        self._queue.put((GUIEvent.SET_PLAYING_DATA, state))
+        self._queue.put(state)

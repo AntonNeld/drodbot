@@ -1,4 +1,5 @@
 import asyncio
+from queue import Empty
 
 import numpy
 import PIL
@@ -6,7 +7,7 @@ from PIL import ImageTk, Image
 import tkinter
 import traceback
 
-from apps.util import apparent_tile_to_text, ScrollableFrame
+from apps.util import apparent_tile_to_text, ScrollableFrame, QUEUE_POLL_INTERVAL
 
 _CANVAS_WIDTH = 88
 _CANVAS_HEIGHT = 88
@@ -31,6 +32,8 @@ class ClassificationApp(tkinter.Frame):
 
     def __init__(self, root, event_loop, backend):
         super().__init__(root)
+        self._main_window = root
+        self._main_window.after(QUEUE_POLL_INTERVAL, self._check_queue)
         self._event_loop = event_loop
         self._backend = backend
         self._raw_data = []
@@ -125,6 +128,15 @@ class ClassificationApp(tkinter.Frame):
             command=self._load_sample_data,
         )
         self._load_sample_data_button.pack(side=tkinter.TOP)
+
+    def _check_queue(self):
+        """Check the queue for updates."""
+        try:
+            data = self._backend.get_queue().get(block=False)
+            self.set_data(data)
+        except Empty:
+            pass
+        self._main_window.after(QUEUE_POLL_INTERVAL, self._check_queue)
 
     def set_data(self, data):
         """Set the sample data to show in the app.

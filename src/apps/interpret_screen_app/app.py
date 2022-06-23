@@ -1,4 +1,5 @@
 import asyncio
+from queue import Empty
 
 import PIL
 from PIL import ImageTk, Image
@@ -6,7 +7,7 @@ import tkinter
 import traceback
 
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES, TILE_SIZE
-from apps.util import tile_to_text, ScrollableFrame
+from apps.util import tile_to_text, ScrollableFrame, QUEUE_POLL_INTERVAL
 
 # The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
 _CANVAS_WIDTH = 418
@@ -33,6 +34,8 @@ class InterpretScreenApp(tkinter.Frame):
 
     def __init__(self, root, event_loop, backend):
         super().__init__(root)
+        self._main_window = root
+        self._main_window.after(QUEUE_POLL_INTERVAL, self._check_queue)
         self._event_loop = event_loop
         self._backend = backend
         self._selected_view_step = tkinter.StringVar(self)
@@ -73,6 +76,15 @@ class InterpretScreenApp(tkinter.Frame):
         self._debug_step_frame.pack(side=tkinter.TOP)
 
         self._set_debug_steps()
+
+    def _check_queue(self):
+        """Check the queue for updates."""
+        try:
+            data = self._backend.get_queue().get(block=False)
+            self.set_data(*data)
+        except Empty:
+            pass
+        self._main_window.after(QUEUE_POLL_INTERVAL, self._check_queue)
 
     def set_data(self, debug_images, room, room_text):
         """Set the data to show in the app.

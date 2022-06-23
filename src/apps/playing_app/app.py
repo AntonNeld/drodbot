@@ -3,7 +3,9 @@ import numpy
 import PIL
 import tkinter
 import traceback
+from queue import Empty
 
+from apps.util import QUEUE_POLL_INTERVAL
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from .backend import Strategy
 from room_simulator import ElementType, Action
@@ -29,6 +31,8 @@ class PlayingApp(tkinter.Frame):
 
     def __init__(self, root, event_loop, backend):
         super().__init__(root)
+        self._main_window = root
+        self._main_window.after(QUEUE_POLL_INTERVAL, self._check_queue)
         self._event_loop = event_loop
         self._backend = backend
         self._data = None
@@ -66,6 +70,15 @@ class PlayingApp(tkinter.Frame):
             self._state_controls, text="Recheck room", command=self._recheck_room
         )
         self._recheck_room_button.pack(side=tkinter.RIGHT)
+
+    def _check_queue(self):
+        """Check the queue for updates."""
+        try:
+            data = self._backend.get_queue().get(block=False)
+            self.set_data(data)
+        except Empty:
+            pass
+        self._main_window.after(QUEUE_POLL_INTERVAL, self._check_queue)
 
     def set_data(self, data):
         """Set the DRODbot state to show in the app.

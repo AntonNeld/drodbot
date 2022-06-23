@@ -1,7 +1,7 @@
 from enum import Enum
 import time
+import queue
 
-from apps.util import GUIEvent
 from common import UserError
 from room_simulator import (
     ReachObjective,
@@ -51,12 +51,10 @@ class RoomSolverAppBackend:
         The interface for playing rooms, to initialize it.
     room_interpreter
         The room interpreter, to get a room from a screenshot.
-    window_queue
-        A queue for sending updates to the GUI.
     """
 
-    def __init__(self, play_interface, room_interpreter, bot, window_queue):
-        self._queue = window_queue
+    def __init__(self, play_interface, room_interpreter, bot):
+        self._queue = queue.Queue()
         self._interface = play_interface
         self._interpreter = room_interpreter
         self._bot = bot
@@ -71,6 +69,15 @@ class RoomSolverAppBackend:
         # Inspect solution mode inspects the current solution instead of searching.
         self._inspect_solution_mode = False
         self._inspected_actions_index = 0
+
+    def get_queue(self):
+        """Get a queue with state updates.
+
+        Returns
+        -------
+        The queue
+        """
+        return self._queue
 
     async def get_room_from_screenshot(self):
         """Set the current room from a screenshot."""
@@ -304,7 +311,6 @@ class RoomSolverAppBackend:
         start_position, _ = self._room.find_player()
         self._queue.put(
             (
-                GUIEvent.SET_ROOM_SOLVER_DATA,
                 reconstructed_image,
                 room,
                 start_position,
