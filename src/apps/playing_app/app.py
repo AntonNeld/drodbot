@@ -1,14 +1,13 @@
-import asyncio
 import numpy
 import PIL
 import tkinter
-import traceback
 from queue import Empty
 
 from apps.util import QUEUE_POLL_INTERVAL
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
-from .backend import Strategy
-from room_simulator import ElementType, Action
+from drod_bot.state.drod_bot_state import DrodBotState
+from .backend import PlayingAppBackend, Strategy
+from room_simulator import ElementType, Action, Room
 
 _CANVAS_WIDTH = 190
 _CANVAS_HEIGHT = 160
@@ -27,12 +26,12 @@ class PlayingApp(tkinter.Frame):
         The backend containing the DRODbot.
     """
 
-    def __init__(self, root, backend):
+    def __init__(self, root: tkinter.Frame, backend: PlayingAppBackend):
         super().__init__(root)
         self._main_window = root
         self._main_window.after(QUEUE_POLL_INTERVAL, self._check_queue)
         self._backend = backend
-        self._data = None
+        self._data = DrodBotState()
         self._selected_strategy = tkinter.StringVar(self)
         self._selected_strategy.set(list(Strategy)[0].value)
 
@@ -79,7 +78,7 @@ class PlayingApp(tkinter.Frame):
             pass
         self._main_window.after(QUEUE_POLL_INTERVAL, self._check_queue)
 
-    def set_data(self, data):
+    def set_data(self, data: DrodBotState):
         """Set the DRODbot state to show in the app.
 
         Parameters
@@ -144,22 +143,13 @@ class PlayingApp(tkinter.Frame):
         self._view = PIL.ImageTk.PhotoImage(image=pil_image)
         self._canvas.create_image(0, 0, image=self._view, anchor=tkinter.NW)
 
-    def _run_coroutine(self, coroutine):
-        async def wrapped_coroutine():
-            try:
-                await coroutine
-            except Exception:
-                traceback.print_exc()
-
-        asyncio.run_coroutine_threadsafe(wrapped_coroutine(), self._event_loop)
-
     def _run_strategy(self):
         strategy_value = self._selected_strategy.get()
         strategy = next(e for e in Strategy if e.value == strategy_value)
         self._backend.run_strategy(strategy)
 
 
-def _room_to_image(room):
+def _room_to_image(room: Room):
     image = (
         numpy.ones((ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES, 3), dtype=numpy.uint8)
         * 255

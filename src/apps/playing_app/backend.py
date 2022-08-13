@@ -38,7 +38,7 @@ class PlayingAppBackend:
     def __init__(self, bot: DrodBot, event_loop: AbstractEventLoop):
         self._bot = bot
         self._bot.subscribe_to_state_update(self._push_state_update)
-        self._queue: queue.Queue = queue.Queue()
+        self._queue: queue.Queue[DrodBotState] = queue.Queue()
         self._queue.put(self._bot.state)
         self._event_loop = event_loop
 
