@@ -1,7 +1,11 @@
 import asyncio
+from pathlib import Path
 import time
+from typing import Callable, List
 
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
+from drod_interface.play_interface import PlayInterface
+from room_interpreter.room_interpreter import RoomInterpreter
 from util import position_in_direction
 from .solve_room import solve_room
 from .level_walker import find_path_in_level
@@ -39,18 +43,23 @@ class DrodBot:
         The current DRODbot state.
     """
 
-    def __init__(self, state_file, drod_interface, room_interpreter):
+    def __init__(
+        self,
+        state_file: str | Path,
+        drod_interface: PlayInterface,
+        room_interpreter: RoomInterpreter,
+    ):
         self._state_file = state_file
         self._interface = drod_interface
         self._interpreter = room_interpreter
-        self._state_subscribers = []
+        self._state_subscribers: List[Callable[[DrodBotState], None]] = []
         try:
             self.state = DrodBotState.parse_file(self._state_file)
             print(f"Loaded state from {self._state_file}")
         except FileNotFoundError:
             self.state = DrodBotState()
 
-    def subscribe_to_state_update(self, callback):
+    def subscribe_to_state_update(self, callback: Callable[[DrodBotState], None]):
         """Subscribe to changes in the state.
 
         Parameters
@@ -92,7 +101,7 @@ class DrodBot:
         print("Cleared state")
         self._notify_state_update()
 
-    async def go_to_element_in_room(self, element):
+    async def go_to_element_in_room(self, element: ElementType):
         """Go to the nearest tile with the given element.
 
         We will not leave the current room.
@@ -102,6 +111,8 @@ class DrodBot:
         element
             The element to go to.
         """
+        if self.state.current_room is None:
+            raise RuntimeError("No current room")
         print("Thinking...")
         t = time.time()
         room = self.state.current_room
@@ -111,7 +122,7 @@ class DrodBot:
         self.state.plan = actions
         await self._execute_plan()
 
-    async def go_to_element_in_level(self, element):
+    async def go_to_element_in_level(self, element: ElementType):
         """Go to the nearest tile with the given element.
 
         This works across rooms, as long as the element and path
@@ -122,6 +133,8 @@ class DrodBot:
         element
             The element to go to.
         """
+        if self.state.current_room is None:
+            raise RuntimeError("No current room")
         goal_tiles = self.state.level.find_element(element)
         print("Thinking...")
         t = time.time()
@@ -137,6 +150,8 @@ class DrodBot:
 
     async def go_to_unvisited_room(self):
         """Enter the nearest unvisited room."""
+        if self.state.current_room is None:
+            raise RuntimeError("No current room")
         goal_tiles = self.state.level.find_uncrossed_edges()
         print("Trying to go to an unvisited room...")
         t = time.time()
@@ -165,7 +180,7 @@ class DrodBot:
             print(f"Thought in {time.time()-t:.2f}s, did not find a solution")
             raise e
 
-    async def go_to_room_in_direction(self, direction):
+    async def go_to_room_in_direction(self, direction: Direction):
         """Go to the room in the given direction.
 
         Orthogonal directions only.
@@ -175,6 +190,8 @@ class DrodBot:
         direction
             The direction.
         """
+        if self.state.current_room is None:
+            raise RuntimeError("No current room")
         print("Thinking...")
         t = time.time()
         exits = self.state.level.get_room_exits(
@@ -208,6 +225,8 @@ class DrodBot:
         conquer_rooms
             Whether to conquer the current room if possible.
         """
+        if self.state.current_room is None:
+            raise RuntimeError("No current room")
         while True:
             if conquer_rooms and not self.state.current_room.is_conquered():
                 try:
@@ -314,7 +333,7 @@ class DrodBot:
             print("Done exploring")
             break
 
-    async def strike_element(self, element):
+    async def strike_element(self, element: ElementType):
         """Strike the nearest instance of the given element with the sword.
 
         Parameters
@@ -322,6 +341,8 @@ class DrodBot:
         element
             The element to strike.
         """
+        if self.state.current_room is None:
+            raise RuntimeError("No current room")
         room = self.state.current_room
         goal_tiles = room.find_coordinates(element)
         actions = solve_room(room, StabObjective(tiles=set(goal_tiles)))
@@ -330,6 +351,8 @@ class DrodBot:
 
     async def conquer_room(self):
         """Conquer the current room."""
+        if self.state.current_room is None:
+            raise RuntimeError("No current room")
         print("Trying to conquer current room...")
         t = time.time()
         try:
@@ -410,7 +433,7 @@ class DrodBot:
             self._notify_state_update()
             await asyncio.sleep(_ACTION_DELAY)
 
-    async def _enter_room(self, direction):
+    async def _enter_room(self, direction: Direction):
         """Enter a new room.
 
         The player must be on the correct edge for this to work.
@@ -420,6 +443,8 @@ class DrodBot:
         direction
             The direction to go in. Cannot be diagonal.
         """
+        if self.state.current_room is None:
+            raise RuntimeError("No current room")
         print(f"Entering new room in direction {direction.name}")
         room_x, room_y = self.state.current_room_position
         (player_x, player_y), player_direction = self.state.current_room.find_player()
