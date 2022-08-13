@@ -3,6 +3,7 @@ import traceback
 
 import tkinter
 from tkinter import ttk
+from typing import Coroutine
 
 from room_simulator import ElementType, Direction
 
@@ -34,7 +35,9 @@ ELEMENT_CHARACTERS = {
 }
 
 
-def run_coroutine(coroutine, event_loop):
+def run_coroutine(
+    coroutine: Coroutine[None, None, None], event_loop: asyncio.AbstractEventLoop
+):
     """Trigger a coroutine, possibly from another thread.
 
     Parameters

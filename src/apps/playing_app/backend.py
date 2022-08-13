@@ -1,7 +1,10 @@
+from asyncio import AbstractEventLoop
 from enum import Enum
 import queue
 
 from apps.util import run_coroutine
+from drod_bot.drod_bot import DrodBot
+from drod_bot.state.drod_bot_state import DrodBotState
 from room_simulator import ElementType, Direction
 
 
@@ -32,10 +35,10 @@ class PlayingAppBackend:
         The asyncio event loop
     """
 
-    def __init__(self, bot, event_loop):
+    def __init__(self, bot: DrodBot, event_loop: AbstractEventLoop):
         self._bot = bot
         self._bot.subscribe_to_state_update(self._push_state_update)
-        self._queue = queue.Queue()
+        self._queue: queue.Queue = queue.Queue()
         self._queue.put(self._bot.state)
         self._event_loop = event_loop
 
@@ -48,7 +51,7 @@ class PlayingAppBackend:
         """
         return self._queue
 
-    def run_strategy(self, strategy):
+    def run_strategy(self, strategy: Strategy):
         """Have Beethro do something, usually trying to solve the room.
 
         Parameters
@@ -58,7 +61,7 @@ class PlayingAppBackend:
         """
         run_coroutine(self._async_run_strategy(strategy), self._event_loop)
 
-    async def _async_run_strategy(self, strategy):
+    async def _async_run_strategy(self, strategy: Strategy):
         await self._bot.initialize()
         if strategy == Strategy.MOVE_TO_CONQUER_TOKEN:
             await self._bot.go_to_element_in_room(ElementType.CONQUER_TOKEN)
@@ -95,5 +98,5 @@ class PlayingAppBackend:
         """Interpret the current room again and replace the state."""
         run_coroutine(self._bot.reinterpret_room(), self._event_loop)
 
-    def _push_state_update(self, state):
+    def _push_state_update(self, state: DrodBotState):
         self._queue.put(state)
