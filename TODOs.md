@@ -31,6 +31,7 @@
 - Multi-threaded search!
 - Regression tests of solving rooms
 - Regression tests to not break apps
+- Improve start time by saving textures better
 
 ## Done but not presented
 
