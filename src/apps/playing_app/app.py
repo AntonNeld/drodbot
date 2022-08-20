@@ -6,6 +6,7 @@ from queue import Empty
 from apps.util import QUEUE_POLL_INTERVAL
 from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from drod_bot.state.drod_bot_state import DrodBotState
+from drod_bot import SaveTestRoomBehavior
 from .backend import PlayingAppBackend, Strategy
 from room_simulator import ElementType, Action, Room
 
@@ -34,6 +35,8 @@ class PlayingApp(tkinter.Frame):
         self._data = DrodBotState()
         self._selected_strategy = tkinter.StringVar(self)
         self._selected_strategy.set(list(Strategy)[0].value)
+        self._save_test_rooms = tkinter.StringVar(self)
+        self._save_test_rooms.set(SaveTestRoomBehavior.NO_SAVING.value)
 
         # Create widgets
         self._canvas = tkinter.Canvas(
@@ -68,6 +71,14 @@ class PlayingApp(tkinter.Frame):
             command=self._backend.recheck_room,
         )
         self._recheck_room_button.pack(side=tkinter.RIGHT)
+        self._save_room_controls = tkinter.Frame(self._control_panel)
+        self._save_room_controls.pack(side=tkinter.TOP)
+        self._save_test_rooms_dropdown = tkinter.OptionMenu(
+            self._save_room_controls,
+            self._save_test_rooms,
+            *[s.value for s in SaveTestRoomBehavior]
+        )
+        self._save_test_rooms_dropdown.pack(side=tkinter.LEFT)
 
     def _check_queue(self):
         """Check the queue for updates."""
@@ -144,9 +155,11 @@ class PlayingApp(tkinter.Frame):
         self._canvas.create_image(0, 0, image=self._view, anchor=tkinter.NW)
 
     def _run_strategy(self):
-        strategy_value = self._selected_strategy.get()
-        strategy = next(e for e in Strategy if e.value == strategy_value)
-        self._backend.run_strategy(strategy)
+        strategy = next(e for e in Strategy if e.value == self._selected_strategy.get())
+        save_test_rooms = next(
+            e for e in SaveTestRoomBehavior if e.value == self._save_test_rooms.get()
+        )
+        self._backend.run_strategy(strategy, save_test_rooms=save_test_rooms)
 
 
 def _room_to_image(room: Room):

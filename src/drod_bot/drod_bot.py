@@ -7,7 +7,7 @@ from common import ROOM_HEIGHT_IN_TILES, ROOM_WIDTH_IN_TILES
 from drod_interface.play_interface import PlayInterface
 from room_interpreter.room_interpreter import RoomInterpreter
 from util import position_in_direction
-from .solve_room import solve_room
+from .solve_room import solve_room, SaveTestRoomBehavior
 from .level_walker import find_path_in_level
 from room_interpreter import RoomText, get_room_text
 from room_simulator import (
@@ -34,6 +34,8 @@ class DrodBot:
     state_file
         File to save and load DRODbot state, like knowledge about
         visited rooms.
+    test_room_location
+        Where to save test rooms.
     drod_interface
         The interface for playing rooms.
 
@@ -46,10 +48,12 @@ class DrodBot:
     def __init__(
         self,
         state_file: str | Path,
+        test_room_location: str | Path,
         drod_interface: PlayInterface,
         room_interpreter: RoomInterpreter,
     ):
         self._state_file = state_file
+        self._test_room_location = test_room_location
         self._interface = drod_interface
         self._interpreter = room_interpreter
         self._state_subscribers: List[Callable[[DrodBotState], None]] = []
@@ -101,7 +105,11 @@ class DrodBot:
         print("Cleared state")
         self._notify_state_update()
 
-    async def go_to_element_in_room(self, element: ElementType):
+    async def go_to_element_in_room(
+        self,
+        element: ElementType,
+        save_test_rooms: SaveTestRoomBehavior = SaveTestRoomBehavior.NO_SAVING,
+    ):
         """Go to the nearest tile with the given element.
 
         We will not leave the current room.
@@ -110,6 +118,8 @@ class DrodBot:
         ----------
         element
             The element to go to.
+        save_test_rooms
+            Whether and which rooms to save for regression tests.
         """
         if self.state.current_room is None:
             raise RuntimeError("No current room")
@@ -117,12 +127,21 @@ class DrodBot:
         t = time.time()
         room = self.state.current_room
         goal_tiles = room.find_coordinates(element)
-        actions = solve_room(room, ReachObjective(tiles=set(goal_tiles)))
+        actions = solve_room(
+            room,
+            ReachObjective(tiles=set(goal_tiles)),
+            save_test_rooms=save_test_rooms,
+            test_room_location=self._test_room_location,
+        )
         print(f"Thought in {time.time()-t:.2f}s")
         self.state.plan = actions
         await self._execute_plan()
 
-    async def go_to_element_in_level(self, element: ElementType):
+    async def go_to_element_in_level(
+        self,
+        element: ElementType,
+        save_test_rooms: SaveTestRoomBehavior = SaveTestRoomBehavior.NO_SAVING,
+    ):
         """Go to the nearest tile with the given element.
 
         This works across rooms, as long as the element and path
@@ -132,6 +151,8 @@ class DrodBot:
         ----------
         element
             The element to go to.
+        save_test_rooms
+            Whether and which rooms to save for regression tests.
         """
         if self.state.current_room is None:
             raise RuntimeError("No current room")
@@ -143,13 +164,23 @@ class DrodBot:
             self.state.current_room,
             self.state.current_room_position,
             self.state.level,
+            save_test_rooms=save_test_rooms,
+            test_room_location=self._test_room_location,
         )
         print(f"Thought in {time.time()-t:.2f}s")
         self.state.plan = actions
         await self._execute_plan()
 
-    async def go_to_unvisited_room(self):
-        """Enter the nearest unvisited room."""
+    async def go_to_unvisited_room(
+        self, save_test_rooms: SaveTestRoomBehavior = SaveTestRoomBehavior.NO_SAVING
+    ):
+        """Enter the nearest unvisited room.
+
+        Parameters
+        ----------
+        save_test_rooms
+            Whether and which rooms to save for regression tests.
+        """
         if self.state.current_room is None:
             raise RuntimeError("No current room")
         goal_tiles = self.state.level.find_uncrossed_edges()
@@ -161,6 +192,8 @@ class DrodBot:
                 self.state.current_room,
                 self.state.current_room_position,
                 self.state.level,
+                save_test_rooms=save_test_rooms,
+                test_room_location=self._test_room_location,
             )
             print(f"Thought in {time.time()-t:.2f}s, found a solution")
             self.state.plan = actions
@@ -180,7 +213,11 @@ class DrodBot:
             print(f"Thought in {time.time()-t:.2f}s, did not find a solution")
             raise e
 
-    async def go_to_room_in_direction(self, direction: Direction):
+    async def go_to_room_in_direction(
+        self,
+        direction: Direction,
+        save_test_rooms: SaveTestRoomBehavior = SaveTestRoomBehavior.NO_SAVING,
+    ):
         """Go to the room in the given direction.
 
         Orthogonal directions only.
@@ -189,6 +226,8 @@ class DrodBot:
         ----------
         direction
             The direction.
+        save_test_rooms
+            Whether and which rooms to save for regression tests.
         """
         if self.state.current_room is None:
             raise RuntimeError("No current room")
@@ -210,27 +249,36 @@ class DrodBot:
             goal_tiles = [e[0] for e in exits if e[0][0] == 0]
             last_action = Action.W
         actions = solve_room(
-            self.state.current_room, ReachObjective(tiles=set(goal_tiles))
+            self.state.current_room,
+            ReachObjective(tiles=set(goal_tiles)),
+            save_test_rooms=save_test_rooms,
+            test_room_location=self._test_room_location,
         )
         actions.append(last_action)
         print(f"Thought in {time.time()-t:.2f}s")
         self.state.plan = actions
         await self._execute_plan()
 
-    async def explore_level_continuously(self, conquer_rooms=False):
+    async def explore_level_continuously(
+        self,
+        conquer_rooms=False,
+        save_test_rooms: SaveTestRoomBehavior = SaveTestRoomBehavior.NO_SAVING,
+    ):
         """Explore the level while there are unvisited rooms.
 
         Parameters
         ----------
         conquer_rooms
             Whether to conquer the current room if possible.
+        save_test_rooms
+            Whether and which rooms to save for regression tests.
         """
         if self.state.current_room is None:
             raise RuntimeError("No current room")
         while True:
             if conquer_rooms and not self.state.current_room.is_conquered():
                 try:
-                    await self.conquer_room()
+                    await self.conquer_room(save_test_rooms=save_test_rooms)
                     continue
                 except NoSolutionError:
                     print(
@@ -260,7 +308,12 @@ class DrodBot:
                     )
                     room.set_tile(position, tile)
                     try:
-                        solve_room(room, MonsterCountObjective(monsters=0))
+                        solve_room(
+                            room,
+                            MonsterCountObjective(monsters=0),
+                            save_test_rooms=save_test_rooms,
+                            test_room_location=self._test_room_location,
+                        )
                         print(f"Thought in {time.time()-t:.2f}s, found a solution")
                         possible_entrances.append(position)
                     except NoSolutionError:
@@ -283,6 +336,8 @@ class DrodBot:
                         self.state.current_room,
                         self.state.current_room_position,
                         self.state.level,
+                        save_test_rooms=save_test_rooms,
+                        test_room_location=self._test_room_location,
                     )
                     print(f"Thought in {time.time()-t:.2f}s, found a solution")
                     self.state.plan = actions
@@ -291,7 +346,7 @@ class DrodBot:
                 except NoSolutionError:
                     print(f"Thought in {time.time()-t:.2f}s, did not find a solution")
             try:
-                await self.go_to_unvisited_room()
+                await self.go_to_unvisited_room(save_test_rooms=save_test_rooms)
                 continue
             except NoSolutionError:
                 pass
@@ -307,6 +362,8 @@ class DrodBot:
                         self.state.current_room,
                         self.state.current_room_position,
                         self.state.level,
+                        save_test_rooms=save_test_rooms,
+                        test_room_location=self._test_room_location,
                     )
                     print(f"Thought in {time.time()-t:.2f}s, found a solution")
                     self.state.plan = actions
@@ -323,6 +380,8 @@ class DrodBot:
                     self.state.current_room,
                     self.state.current_room_position,
                     self.state.level,
+                    save_test_rooms=save_test_rooms,
+                    test_room_location=self._test_room_location,
                 )
                 self.state.plan = actions
                 print(f"Thought in {time.time()-t:.2f}s")
@@ -333,31 +392,55 @@ class DrodBot:
             print("Done exploring")
             break
 
-    async def strike_element(self, element: ElementType):
+    async def strike_element(
+        self,
+        element: ElementType,
+        save_test_rooms: SaveTestRoomBehavior = SaveTestRoomBehavior.NO_SAVING,
+    ):
         """Strike the nearest instance of the given element with the sword.
 
         Parameters
         ----------
         element
             The element to strike.
+        save_test_rooms
+            Whether and which rooms to save for regression tests.
         """
         if self.state.current_room is None:
             raise RuntimeError("No current room")
         room = self.state.current_room
         goal_tiles = room.find_coordinates(element)
-        actions = solve_room(room, StabObjective(tiles=set(goal_tiles)))
+        actions = solve_room(
+            room,
+            StabObjective(tiles=set(goal_tiles)),
+            save_test_rooms=save_test_rooms,
+            test_room_location=self._test_room_location,
+        )
         self.state.plan = actions
         await self._execute_plan()
 
-    async def conquer_room(self):
-        """Conquer the current room."""
+    async def conquer_room(
+        self, save_test_rooms: SaveTestRoomBehavior = SaveTestRoomBehavior.NO_SAVING
+    ):
+        """Conquer the current room.
+
+        Parameters
+        ----------
+        save_test_rooms
+            Whether and which rooms to save for regression tests.
+        """
         if self.state.current_room is None:
             raise RuntimeError("No current room")
         print("Trying to conquer current room...")
         t = time.time()
         try:
             room = self.state.current_room
-            actions = solve_room(room, MonsterCountObjective(monsters=0))
+            actions = solve_room(
+                room,
+                MonsterCountObjective(monsters=0),
+                save_test_rooms=save_test_rooms,
+                test_room_location=self._test_room_location,
+            )
             print(f"Thought in {time.time()-t:.2f}s, found a solution")
             self.state.plan = actions
             await self._execute_plan()

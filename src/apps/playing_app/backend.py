@@ -3,7 +3,7 @@ from enum import Enum
 import queue
 
 from apps.util import run_coroutine
-from drod_bot.drod_bot import DrodBot
+from drod_bot.drod_bot import DrodBot, SaveTestRoomBehavior
 from drod_bot.state.drod_bot_state import DrodBotState
 from room_simulator import ElementType, Direction
 
@@ -51,38 +51,67 @@ class PlayingAppBackend:
         """
         return self._queue
 
-    def run_strategy(self, strategy: Strategy):
+    def run_strategy(
+        self,
+        strategy: Strategy,
+        save_test_rooms: SaveTestRoomBehavior = SaveTestRoomBehavior.NO_SAVING,
+    ):
         """Have Beethro do something, usually trying to solve the room.
 
         Parameters
         ----------
         strategy
             The strategy to execute.
+        save_test_rooms
+            Whether and which rooms to save for regression tests.
         """
-        run_coroutine(self._async_run_strategy(strategy), self._event_loop)
+        run_coroutine(
+            self._async_run_strategy(strategy, save_test_rooms=save_test_rooms),
+            self._event_loop,
+        )
 
-    async def _async_run_strategy(self, strategy: Strategy):
+    async def _async_run_strategy(
+        self,
+        strategy: Strategy,
+        save_test_rooms: SaveTestRoomBehavior = SaveTestRoomBehavior.NO_SAVING,
+    ):
         await self._bot.initialize()
         if strategy == Strategy.MOVE_TO_CONQUER_TOKEN:
-            await self._bot.go_to_element_in_room(ElementType.CONQUER_TOKEN)
+            await self._bot.go_to_element_in_room(
+                ElementType.CONQUER_TOKEN, save_test_rooms=save_test_rooms
+            )
         elif strategy == Strategy.MOVE_TO_CONQUER_TOKEN_IN_LEVEL:
-            await self._bot.go_to_element_in_level(ElementType.CONQUER_TOKEN)
+            await self._bot.go_to_element_in_level(
+                ElementType.CONQUER_TOKEN, save_test_rooms=save_test_rooms
+            )
         elif strategy == Strategy.GO_TO_UNVISITED_ROOM:
-            await self._bot.go_to_unvisited_room()
+            await self._bot.go_to_unvisited_room(save_test_rooms=save_test_rooms)
         elif strategy == Strategy.GO_TO_EAST_ROOM:
-            await self._bot.go_to_room_in_direction(Direction.E)
+            await self._bot.go_to_room_in_direction(
+                Direction.E, save_test_rooms=save_test_rooms
+            )
         elif strategy == Strategy.GO_TO_SOUTH_ROOM:
-            await self._bot.go_to_room_in_direction(Direction.S)
+            await self._bot.go_to_room_in_direction(
+                Direction.S, save_test_rooms=save_test_rooms
+            )
         elif strategy == Strategy.GO_TO_WEST_ROOM:
-            await self._bot.go_to_room_in_direction(Direction.W)
+            await self._bot.go_to_room_in_direction(
+                Direction.W, save_test_rooms=save_test_rooms
+            )
         elif strategy == Strategy.GO_TO_NORTH_ROOM:
-            await self._bot.go_to_room_in_direction(Direction.N)
+            await self._bot.go_to_room_in_direction(
+                Direction.N, save_test_rooms=save_test_rooms
+            )
         elif strategy == Strategy.EXPLORE:
-            await self._bot.explore_level_continuously()
+            await self._bot.explore_level_continuously(save_test_rooms=save_test_rooms)
         elif strategy == Strategy.EXPLORE_AND_CONQUER:
-            await self._bot.explore_level_continuously(conquer_rooms=True)
+            await self._bot.explore_level_continuously(
+                conquer_rooms=save_test_rooms, save_test_rooms=save_test_rooms
+            )
         elif strategy == Strategy.STRIKE_ORB:
-            await self._bot.strike_element(ElementType.ORB)
+            await self._bot.strike_element(
+                ElementType.ORB, save_test_rooms=save_test_rooms
+            )
         else:
             raise RuntimeError(f"Unknown strategy {strategy}")
 
