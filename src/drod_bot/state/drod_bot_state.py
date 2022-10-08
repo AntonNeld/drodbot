@@ -3,7 +3,7 @@ from typing import Optional, Tuple, List
 from pydantic import BaseModel, Field, validator
 
 from .level import Level
-from .dict_conversion import room_from_dict, room_to_dict
+from util import room_from_dict, room_to_dict
 from room_simulator import Room, Action
 
 
