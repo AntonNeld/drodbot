@@ -75,5 +75,8 @@ class RoomTester:
                 print(f"Failed to solve test room {test.file_name}")
                 self._failed_tests.append(test)
 
+    def get_tests(self):
+        return self._tests
+
     def get_failed_tests(self):
         return self._failed_tests

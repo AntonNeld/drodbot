@@ -10,6 +10,7 @@ from .backend import RoomTesterAppBackend, RoomTesterAppState
 from common import TILE_SIZE
 from apps.util import tile_to_text, ScrollableFrame, QUEUE_POLL_INTERVAL
 from room_simulator import Room
+from room_tester import Test
 
 # The DROD room size is 836x704, use half that for canvas to preserve aspect ratio
 _CANVAS_WIDTH = 418
@@ -37,7 +38,7 @@ class RoomTesterApp(tkinter.Frame):
         self._enlarged_view = False
         self._active_test_room: Optional[Room] = None
         self._active_test_room_image: Optional[numpy.ndarray] = None
-        self._tests: List[str] = []
+        self._tests: List[Test] = []
         self._selected_active_test = tkinter.StringVar(self)
 
         self._radio_buttons: List[tkinter.Radiobutton] = []
@@ -51,6 +52,12 @@ class RoomTesterApp(tkinter.Frame):
         self._control_panel.pack(side=tkinter.RIGHT)
         self._tile_content = tkinter.Label(self._control_panel, text="")
         self._tile_content.pack(side=tkinter.TOP)
+        self._control_tests_frame = tkinter.Frame(self._control_panel)
+        self._control_tests_frame.pack(side=tkinter.TOP)
+        self._load_tests_button = tkinter.Button(
+            self._control_tests_frame, text="Load tests", command=self._load_tests
+        )
+        self._load_tests_button.pack(side=tkinter.LEFT)
         self._toggle_view_size_button = tkinter.Button(
             self._control_panel, text="Enlarge view", command=self._toggle_view_size
         )
@@ -84,9 +91,9 @@ class RoomTesterApp(tkinter.Frame):
         self._draw_view()
 
     def _set_tests(self):
-        if self._selected_active_test.get() not in self._tests:
+        if self._selected_active_test.get() not in [t.file_name for t in self._tests]:
             if len(self._tests) != 0:
-                self._selected_active_test.set(self._tests[0])
+                self._selected_active_test.set(self._tests[0].file_name)
                 self._set_active_test()
             else:
                 self._selected_active_test.set("notset")
@@ -96,8 +103,8 @@ class RoomTesterApp(tkinter.Frame):
         self._radio_buttons = [
             tkinter.Radiobutton(
                 self._tests_frame.scrollable_frame,
-                text=test,
-                value=test,
+                text=test.file_name,
+                value=test.file_name,
                 variable=self._selected_active_test,
                 command=self._set_active_test,
             )
@@ -115,6 +122,9 @@ class RoomTesterApp(tkinter.Frame):
             # Assign to self._view to prevent from being garbage collected
             self._view = ImageTk.PhotoImage(image=resized_image)
             self._canvas.create_image(0, 0, image=self._view, anchor=tkinter.NW)
+
+    def _load_tests(self):
+        self._backend.load_tests()
 
     def _set_active_test(self):
         self._backend.set_active_test(self._selected_active_test.get())

@@ -5,6 +5,7 @@ import sys
 
 from common import UserError
 import room_simulator
+from room_tester import RoomTester
 from tile_classifier import TileClassifier
 from room_interpreter import RoomInterpreter
 from drod_bot import DrodBot
@@ -47,7 +48,8 @@ def main():
     )
     playing_app_backend = PlayingAppBackend(bot, loop)
     room_solver_app_backend = RoomSolverAppBackend(play_interface, interpreter, bot)
-    room_tester_app_backend = RoomTesterAppBackend(loop)
+    room_tester = RoomTester(TEST_ROOM_DIR)
+    room_tester_app_backend = RoomTesterAppBackend(room_tester, loop)
 
     window = tkinter.Tk()
     window.title("DRODbot")
