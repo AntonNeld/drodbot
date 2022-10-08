@@ -52,6 +52,7 @@ def test_rooms(test_room_dir: str):
         Location of saved rooms
     """
     tests = _load_test_rooms(test_room_dir)
+    failed_tests: List[Test] = []
     for test in tests:
         try:
             time_before = time.time()
@@ -60,6 +61,14 @@ def test_rooms(test_room_dir: str):
             print(f"Solved test room {test.file_name} in {time_taken}s")
         except NoSolutionError:
             print(f"FAILED to solve test room {test.file_name}")
+            failed_tests.append(test)
+    print("---")
+    if len(failed_tests) == 0:
+        print("Solved all rooms")
+    else:
+        print("Failed to solve these rooms:")
+        for test in failed_tests:
+            print(test.file_name)
 
 
 def _load_test_rooms(test_room_dir: str) -> List[Test]:
