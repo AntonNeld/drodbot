@@ -49,7 +49,7 @@ def main():
     playing_app_backend = PlayingAppBackend(bot, loop)
     room_solver_app_backend = RoomSolverAppBackend(play_interface, interpreter, bot)
     room_tester = RoomTester(TEST_ROOM_DIR)
-    room_tester_app_backend = RoomTesterAppBackend(room_tester, loop)
+    room_tester_app_backend = RoomTesterAppBackend(room_tester, interpreter, loop)
 
     window = tkinter.Tk()
     window.title("DRODbot")

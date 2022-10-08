@@ -4,6 +4,7 @@ from typing import Optional, List
 from dataclasses import dataclass, field
 
 import numpy
+from room_interpreter import RoomInterpreter
 
 from room_simulator import Room
 from room_tester import RoomTester, Test
@@ -25,8 +26,14 @@ class RoomTesterAppBackend:
         The asyncio event loop
     """
 
-    def __init__(self, room_tester: RoomTester, event_loop: AbstractEventLoop):
+    def __init__(
+        self,
+        room_tester: RoomTester,
+        interpreter: RoomInterpreter,
+        event_loop: AbstractEventLoop,
+    ):
         self._room_tester = room_tester
+        self._interpreter = interpreter
         self._queue: queue.Queue[RoomTesterAppState] = queue.Queue()
         self._queue.put(RoomTesterAppState())
         self._event_loop = event_loop
@@ -45,13 +52,24 @@ class RoomTesterAppBackend:
         self._room_tester.load_test_rooms()
         self._push_state_update(RoomTesterAppState(tests=self._room_tester.get_tests()))
 
-    def set_active_test(self, test: str):
+    def set_active_test(self, test_name: str):
         """Set the active test.
 
-        test
+        test_name
             The name of the test to set as active
         """
-        pass
+        test = next(
+            t for t in self._room_tester.get_tests() if t.file_name == test_name
+        )
+        room = test.room
+        room_image = self._interpreter.reconstruct_room_image(room)
+        self._push_state_update(
+            RoomTesterAppState(
+                active_test_room=room,
+                active_test_room_image=room_image,
+                tests=self._room_tester.get_tests(),
+            )
+        )
 
     def _push_state_update(self, state: RoomTesterAppState):
         self._queue.put(state)
