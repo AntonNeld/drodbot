@@ -15,6 +15,7 @@ from apps import (
     InterpretScreenAppBackend,
     PlayingAppBackend,
     RoomSolverAppBackend,
+    RoomTesterAppBackend,
 )
 from room_tester import test_rooms_standalone
 
@@ -46,6 +47,7 @@ def main():
     )
     playing_app_backend = PlayingAppBackend(bot, loop)
     room_solver_app_backend = RoomSolverAppBackend(play_interface, interpreter, bot)
+    room_tester_app_backend = RoomTesterAppBackend(loop)
 
     window = tkinter.Tk()
     window.title("DRODbot")
@@ -56,6 +58,7 @@ def main():
         interpret_screen_app_backend=interpret_screen_app_backend,
         room_solver_app_backend=room_solver_app_backend,
         classification_app_backend=classification_app_backend,
+        room_tester_app_backend=room_tester_app_backend,
     )
     app.pack()
     try:

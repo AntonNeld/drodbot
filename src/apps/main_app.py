@@ -5,8 +5,15 @@ from .interpret_screen_app import InterpretScreenApp
 from .playing_app import PlayingApp
 from .room_solver_app import RoomSolverApp
 from .classification_app import ClassificationApp
+from .room_tester_app import RoomTesterApp, RoomTesterAppBackend
 
-_APPS = ["Play game", "Interpret screen", "Examine room solver", "Manage classifier"]
+_APPS = [
+    "Play game",
+    "Interpret screen",
+    "Examine room solver",
+    "Manage classifier",
+    "Regression test rooms",
+]
 _DEFAULT_APP = 0
 
 
@@ -26,8 +33,10 @@ class MainApp(tkinter.Frame):
         The backend for the playing app.
     interpret_screen_app_backend
         The backend for the interpret screen app.
-    classifcation_app_backend
+    classification_app_backend
         The backend for the classification app.
+    room_tester_app_backend
+        The backend for the room tester app.
     """
 
     def __init__(
@@ -38,6 +47,7 @@ class MainApp(tkinter.Frame):
         interpret_screen_app_backend,
         room_solver_app_backend,
         classification_app_backend,
+        room_tester_app_backend: RoomTesterAppBackend,
     ):
         super().__init__(root)
         self._main_window = root
@@ -65,6 +75,7 @@ class MainApp(tkinter.Frame):
             self, event_loop, classification_app_backend
         )
         self._room_solver_app = RoomSolverApp(self, event_loop, room_solver_app_backend)
+        self._room_tester_app = RoomTesterApp(self, room_tester_app_backend)
         self._switch_app(_APPS[_DEFAULT_APP])
 
     def _switch_app(self, app):
@@ -72,6 +83,7 @@ class MainApp(tkinter.Frame):
         self._classification_app.pack_forget()
         self._interpret_screen_app.pack_forget()
         self._room_solver_app.pack_forget()
+        self._room_tester_app.pack_forget()
         if app == "Play game":
             self._playing_app.pack(side=tkinter.TOP)
         elif app == "Interpret screen":
@@ -82,3 +94,5 @@ class MainApp(tkinter.Frame):
             self._room_solver_app.focus_set()
         elif app == "Manage classifier":
             self._classification_app.pack(side=tkinter.TOP)
+        elif app == "Regression test rooms":
+            self._room_tester_app.pack(side=tkinter.TOP)
