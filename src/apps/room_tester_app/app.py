@@ -58,6 +58,10 @@ class RoomTesterApp(tkinter.Frame):
             self._control_tests_frame, text="Load tests", command=self._load_tests
         )
         self._load_tests_button.pack(side=tkinter.LEFT)
+        self._run_tests_button = tkinter.Button(
+            self._control_tests_frame, text="Run tests", command=self._run_tests
+        )
+        self._run_tests_button.pack(side=tkinter.LEFT)
         self._toggle_view_size_button = tkinter.Button(
             self._control_panel, text="Enlarge view", command=self._toggle_view_size
         )
@@ -106,6 +110,7 @@ class RoomTesterApp(tkinter.Frame):
                 text=test.file_name,
                 value=test.file_name,
                 variable=self._selected_active_test,
+                fg=_get_test_color(test),
                 command=self._set_active_test,
             )
             for test in self._tests
@@ -125,6 +130,9 @@ class RoomTesterApp(tkinter.Frame):
 
     def _load_tests(self):
         self._backend.load_tests()
+
+    def _run_tests(self):
+        self._backend.run_tests()
 
     def _set_active_test(self):
         self._backend.set_active_test(self._selected_active_test.get())
@@ -152,3 +160,11 @@ class RoomTesterApp(tkinter.Frame):
             y = event.y // (TILE_SIZE // 2)
         tile = self._active_test_room.get_tile((x, y))
         self._tile_content.config(text=tile_to_text(tile))
+
+
+def _get_test_color(test: Test):
+    if test.passed is True:
+        return "green"
+    if test.passed is False:
+        return "red"
+    return "black"

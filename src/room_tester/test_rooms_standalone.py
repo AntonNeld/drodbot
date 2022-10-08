@@ -12,7 +12,7 @@ def test_rooms_standalone(test_room_dir: str):
     room_tester = RoomTester(test_room_dir)
     room_tester.load_test_rooms()
     room_tester.run_tests()
-    failed_tests = room_tester.get_failed_tests()
+    failed_tests = [t for t in room_tester.get_tests() if t.passed is False]
     print("---")
     if len(failed_tests) == 0:
         print("Solved all rooms")

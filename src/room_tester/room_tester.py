@@ -1,8 +1,9 @@
 import json
 import os
 import os.path
-from typing import List, Union
+from typing import List, Union, Optional
 import time
+from dataclasses import dataclass
 
 from room_simulator import (
     OrObjective,
@@ -16,22 +17,12 @@ from search import NoSolutionError
 from util import room_from_dict, objective_from_dict
 
 
+@dataclass
 class Test:
     file_name: str
     objective: Union[OrObjective, ReachObjective, StabObjective, MonsterCountObjective]
     room: Room
-
-    def __init__(
-        self,
-        file_name: str,
-        objective: Union[
-            OrObjective, ReachObjective, StabObjective, MonsterCountObjective
-        ],
-        room: Room,
-    ):
-        self.file_name = file_name
-        self.objective = objective
-        self.room = room
+    passed: Optional[bool] = None
 
     @staticmethod
     def from_json(file_name: str, json_string: str):
@@ -55,7 +46,6 @@ class RoomTester:
     def __init__(self, test_room_dir: str):
         self._test_room_dir = test_room_dir
         self._tests: List[Test] = []
-        self._failed_tests: List[Test] = []
 
     def load_test_rooms(self):
         self._tests = []
@@ -64,19 +54,16 @@ class RoomTester:
                 self._tests.append(Test.from_json(file_name, f.read()))
 
     def run_tests(self):
-        self._failed_tests = []
         for test in self._tests:
             try:
                 time_before = time.time()
                 solve_room(test.room, test.objective)
                 time_taken = time.time() - time_before
+                test.passed = True
                 print(f"Solved test room {test.file_name} in {time_taken}s")
             except NoSolutionError:
                 print(f"Failed to solve test room {test.file_name}")
-                self._failed_tests.append(test)
+                test.passed = False
 
     def get_tests(self):
         return self._tests
-
-    def get_failed_tests(self):
-        return self._failed_tests
