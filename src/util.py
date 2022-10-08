@@ -415,6 +415,17 @@ def room_from_dict(room_dict):
 def objective_to_dict(
     objective: Union[OrObjective, ReachObjective, StabObjective, MonsterCountObjective]
 ):
+    """Convert an objective to a dict, for JSON serialization.
+
+    Parameters
+    ----------
+    objective
+        The objective.
+
+    Returns
+    -------
+    A dict representation of the objective.
+    """
     if isinstance(objective, OrObjective):
         return {
             "kind": "OrObjective",
@@ -430,3 +441,31 @@ def objective_to_dict(
             "monsters": objective.monsters,
             "allow_less": objective.allow_less,
         }
+
+
+def objective_from_dict(objective_dict: dict):
+    """Get an objective from a dict representation, for JSON deserialization.
+
+    Parameters
+    ----------
+    objective_dict
+        The dict representation of the objective.
+
+    Returns
+    -------
+    An objective.
+    """
+    kind = objective_dict["kind"]
+    if kind == "OrObjective":
+        return OrObjective(
+            [objective_from_dict(o) for o in objective_dict["objectives"]]
+        )
+    if kind == "ReachObjective":
+        return ReachObjective(tiles=set([(x, y) for x, y in objective_dict["tiles"]]))
+    if kind == "StabObjective":
+        return StabObjective(tiles=set([(x, y) for x, y in objective_dict["tiles"]]))
+    if kind == "MonsterCountObjective":
+        return MonsterCountObjective(
+            monsters=objective_dict["monsters"], allow_less=objective_dict["allow_less"]
+        )
+    raise RuntimeError(f"Unknown objective kind {kind}")

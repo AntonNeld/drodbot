@@ -21,6 +21,8 @@
   solvable with that direction but not the one we end up facing, we can get into an infinite
   loop.
 - Fix tiny memory leak
+- Check what's up with First Level: 6N2W taking 20 seconds after playing through the level from start,
+  but 15s when it's the first room (or when running tests)
 
 ## Functional improvements
 

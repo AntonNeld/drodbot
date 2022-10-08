@@ -1,7 +1,9 @@
 import asyncio
 import threading
 import tkinter
+import sys
 
+from common import UserError
 import room_simulator
 from tile_classifier import TileClassifier
 from room_interpreter import RoomInterpreter
@@ -14,6 +16,9 @@ from apps import (
     PlayingAppBackend,
     RoomSolverAppBackend,
 )
+from test_rooms import test_rooms
+
+TEST_ROOM_DIR = "saved_test_rooms"
 
 
 def main():
@@ -31,7 +36,7 @@ def main():
     classifier = TileClassifier()
     classifier.load_tile_data("tile_data")
     interpreter = RoomInterpreter(classifier, play_interface)
-    bot = DrodBot("bot_state.json", "test_rooms", play_interface, interpreter)
+    bot = DrodBot("bot_state.json", TEST_ROOM_DIR, play_interface, interpreter)
 
     classification_app_backend = ClassificationAppBackend(
         classifier, "tile_data", "sample_tiles", editor_interface
@@ -61,4 +66,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) == 1:
+        main()
+    elif sys.argv[1] == "--test":
+        room_simulator.initialize()
+        test_rooms(TEST_ROOM_DIR)
+    else:
+        raise UserError("Weird command line arguments")
