@@ -16,7 +16,7 @@ from apps import (
     PlayingAppBackend,
     RoomSolverAppBackend,
 )
-from test_rooms import test_rooms
+from room_tester import test_rooms_standalone
 
 TEST_ROOM_DIR = "saved_test_rooms"
 
@@ -70,6 +70,6 @@ if __name__ == "__main__":
         main()
     elif sys.argv[1] == "--test":
         room_simulator.initialize()
-        test_rooms(TEST_ROOM_DIR)
+        test_rooms_standalone(TEST_ROOM_DIR)
     else:
         raise UserError("Weird command line arguments")

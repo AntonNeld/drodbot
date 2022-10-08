@@ -43,38 +43,37 @@ class Test:
         )
 
 
-def test_rooms(test_room_dir: str):
-    """Test saved rooms
+class RoomTester:
+    """Tests saved rooms.
 
     Parameters
     ----------
     test_room_dir
-        Location of saved rooms
+        Location of saved test rooms
     """
-    tests = _load_test_rooms(test_room_dir)
-    failed_tests: List[Test] = []
-    for test in tests:
-        try:
-            time_before = time.time()
-            solve_room(test.room, test.objective)
-            time_taken = time.time() - time_before
-            print(f"Solved test room {test.file_name} in {time_taken}s")
-        except NoSolutionError:
-            print(f"FAILED to solve test room {test.file_name}")
-            failed_tests.append(test)
-    print("---")
-    if len(failed_tests) == 0:
-        print("Solved all rooms")
-    else:
-        print("Failed to solve these rooms:")
-        for test in failed_tests:
-            print(test.file_name)
 
+    def __init__(self, test_room_dir: str):
+        self._test_room_dir = test_room_dir
+        self._tests: List[Test] = []
+        self._failed_tests: List[Test] = []
 
-def _load_test_rooms(test_room_dir: str) -> List[Test]:
-    test_rooms = []
-    for file_name in os.listdir(test_room_dir):
-        with open(os.path.join(test_room_dir, file_name), "r") as f:
-            test_rooms.append(Test.from_json(file_name, f.read()))
+    def load_test_rooms(self):
+        self._tests = []
+        for file_name in os.listdir(self._test_room_dir):
+            with open(os.path.join(self._test_room_dir, file_name), "r") as f:
+                self._tests.append(Test.from_json(file_name, f.read()))
 
-    return test_rooms
+    def run_tests(self):
+        self._failed_tests = []
+        for test in self._tests:
+            try:
+                time_before = time.time()
+                solve_room(test.room, test.objective)
+                time_taken = time.time() - time_before
+                print(f"Solved test room {test.file_name} in {time_taken}s")
+            except NoSolutionError:
+                print(f"Failed to solve test room {test.file_name}")
+                self._failed_tests.append(test)
+
+    def get_failed_tests(self):
+        return self._failed_tests
