@@ -32,6 +32,7 @@
 - Regression tests of solving rooms
 - Regression tests to not break apps
 - Improve start time by saving textures better
+- Give better names to test rooms, for example the actual room title if we can get it
 
 ## Done but not presented
 

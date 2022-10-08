@@ -1,16 +1,23 @@
 from enum import Enum
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
+import json
+import os
+import os.path
 
 from room_simulator import (
     ObjectiveReacher,
+    OrObjective,
+    ReachObjective,
+    MonsterCountObjective,
+    StabObjective,
     PlanningProblem,
     Room,
     SearcherDerivedRoomObjective,
     FailureReason,
 )
 from search import NoSolutionError
-from util import expand_planning_solution
+from util import expand_planning_solution, objective_to_dict, room_to_dict
 
 
 class SaveTestRoomBehavior(str, Enum):
@@ -22,7 +29,7 @@ class SaveTestRoomBehavior(str, Enum):
 
 def solve_room(
     room: Room,
-    objective,
+    objective: Union[OrObjective, ReachObjective, StabObjective, MonsterCountObjective],
     save_test_rooms: SaveTestRoomBehavior = SaveTestRoomBehavior.NO_SAVING,
     test_room_location: Optional[Path | str] = None,
 ):
@@ -49,12 +56,13 @@ def solve_room(
             iteration_limited=solution.failure_reason
             == FailureReason.ITERATION_LIMIT_REACHED
         )
-    maybe_save_room(room, save_test_rooms, test_room_location)
+    _maybe_save_room(room, objective, save_test_rooms, test_room_location)
     return expand_planning_solution(solution.actions, objective_reacher)
 
 
-def maybe_save_room(
+def _maybe_save_room(
     room: Room,
+    objective: Union[OrObjective, ReachObjective, StabObjective, MonsterCountObjective],
     save_test_rooms: SaveTestRoomBehavior,
     test_room_location: Optional[Path | str] = None,
 ):
@@ -69,7 +77,27 @@ def maybe_save_room(
     test_room_location
         Where to save test rooms
     """
-    if save_test_rooms != SaveTestRoomBehavior.NO_SAVING and test_room_location is None:
+    if save_test_rooms == SaveTestRoomBehavior.NO_SAVING:
+        pass
+    elif save_test_rooms == SaveTestRoomBehavior.SAVE_ALL:
+        _save_test_room(room, objective, test_room_location)
+    else:
+        raise RuntimeError(f"Unknown SaveTestRoomBehavior {save_test_rooms}")
+
+
+def _save_test_room(
+    room: Room,
+    objective: Union[OrObjective, ReachObjective, StabObjective, MonsterCountObjective],
+    test_room_location: Optional[Path | str],
+):
+    if test_room_location is None:
         raise RuntimeError("test_room_location needs to be set if saving test rooms")
-    if save_test_rooms != SaveTestRoomBehavior.NO_SAVING:
-        print(f"TODO: Save room to {test_room_location}")
+    if not os.path.exists(test_room_location):
+        os.makedirs(test_room_location)
+    file_content = json.dumps(
+        {"objective": objective_to_dict(objective), "room": room_to_dict(room)}
+    )
+    file_name = hex(abs(hash(file_content))).replace("0x", "")
+    print(f"Saving room+objective as {file_name}")
+    with open(os.path.join(test_room_location, f"{file_name}.json"), "w") as f:
+        f.write(file_content)

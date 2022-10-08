@@ -1,6 +1,7 @@
 # My own stuff
 tile_data
 sample_tiles
+test_rooms
 bot_state.json
 fake_drod_home
 *.pyi
