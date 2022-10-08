@@ -90,7 +90,7 @@ class RoomTesterApp(tkinter.Frame):
         """
         self._active_test_room = state.active_test_room
         self._active_test_room_image = state.active_test_room_image
-        self._tests = state.tests
+        self._tests = sorted(state.tests, key=_test_sort_value)
         self._set_tests()
         self._draw_view()
 
@@ -107,7 +107,9 @@ class RoomTesterApp(tkinter.Frame):
         self._radio_buttons = [
             tkinter.Radiobutton(
                 self._tests_frame.scrollable_frame,
-                text=test.file_name,
+                text=test.file_name
+                if test.time_taken is None
+                else f"{test.file_name} ({test.time_taken:.2g}s)",
                 value=test.file_name,
                 variable=self._selected_active_test,
                 fg=_get_test_color(test),
@@ -168,3 +170,11 @@ def _get_test_color(test: Test):
     if test.passed is False:
         return "red"
     return "black"
+
+
+def _test_sort_value(test: Test):
+    if test.passed is False:
+        return -100000
+    if test.time_taken is not None:
+        return -test.time_taken
+    return test.file_name

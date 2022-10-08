@@ -23,6 +23,7 @@ class Test:
     objective: Union[OrObjective, ReachObjective, StabObjective, MonsterCountObjective]
     room: Room
     passed: Optional[bool] = None
+    time_taken: Optional[float] = None
 
     @staticmethod
     def from_json(file_name: str, json_string: str):
@@ -60,6 +61,7 @@ class RoomTester:
                 solve_room(test.room, test.objective)
                 time_taken = time.time() - time_before
                 test.passed = True
+                test.time_taken = time_taken
                 print(f"Solved test room {test.file_name} in {time_taken}s")
             except NoSolutionError:
                 print(f"Failed to solve test room {test.file_name}")
