@@ -3,6 +3,9 @@ import time
 import queue
 
 from common import UserError
+from drod_bot import DrodBot
+from drod_interface import PlayInterface
+from room_interpreter import RoomInterpreter
 from room_simulator import (
     ReachObjective,
     StabObjective,
@@ -20,6 +23,7 @@ from room_simulator import (
     simulate_actions,
     get_full_room,
 )
+from room_tester import RoomTester
 from util import expand_planning_solution
 
 
@@ -51,13 +55,24 @@ class RoomSolverAppBackend:
         The interface for playing rooms, to initialize it.
     room_interpreter
         The room interpreter, to get a room from a screenshot.
+    bot
+        The DRODbot, for getting the current room
+    room_tester
+        The room tester, for getting the marked room
     """
 
-    def __init__(self, play_interface, room_interpreter, bot):
-        self._queue = queue.Queue()
+    def __init__(
+        self,
+        play_interface: PlayInterface,
+        room_interpreter: RoomInterpreter,
+        bot: DrodBot,
+        room_tester: RoomTester,
+    ):
+        self._queue: queue.Queue = queue.Queue()
         self._interface = play_interface
         self._interpreter = room_interpreter
         self._bot = bot
+        self._room_tester = room_tester
         self._room = None
         self._searcher = None  # May also be an ObjectiveReacher
         # Keep a reference to the problem. Since the C++ code gets
@@ -91,6 +106,12 @@ class RoomSolverAppBackend:
     async def get_room_from_bot(self):
         """Set the current room to the current room from the bot."""
         self._room = self._bot.get_current_room()
+        self._show_data()
+
+    async def get_room_from_tester(self):
+        """Set the current room to the current room from the tester."""
+        test = self._room_tester.get_marked_test()
+        self._room = test.room
         self._show_data()
 
     async def init_search(

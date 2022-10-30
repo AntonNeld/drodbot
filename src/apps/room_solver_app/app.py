@@ -90,6 +90,12 @@ class RoomSolverApp(tkinter.Frame):
             command=self._get_room_from_bot,
         )
         self._get_room_from_bot_button.pack(side=tkinter.LEFT)
+        self._get_room_from_tests_button = tkinter.Button(
+            self._get_room_area,
+            text="Get room from tests",
+            command=self._get_room_from_tests,
+        )
+        self._get_room_from_tests_button.pack(side=tkinter.LEFT)
         self._toggle_view_size_button = tkinter.Button(
             self._control_panel, text="Enlarge view", command=self._toggle_view_size
         )
@@ -300,6 +306,9 @@ class RoomSolverApp(tkinter.Frame):
 
     def _get_room_from_bot(self):
         self._run_coroutine(self._backend.get_room_from_bot())
+
+    def _get_room_from_tests(self):
+        self._run_coroutine(self._backend.get_room_from_tester())
 
     def _init_search(self):
         goal_value = self._selected_goal.get()
