@@ -38,7 +38,6 @@ class RoomTesterAppBackend:
         self._queue: queue.Queue[RoomTesterAppState] = queue.Queue()
         self._queue.put(RoomTesterAppState())
         self._event_loop = event_loop
-        self._active_test_name: Optional[str] = None
 
     def get_queue(self):
         """Get a queue with state updates.
@@ -63,7 +62,7 @@ class RoomTesterAppBackend:
         test_name
             The name of the test to set as active
         """
-        self._active_test_name = test_name
+        self._room_tester.mark_test(test_name)
         self._push_state_update()
 
     def run_tests(self):
@@ -75,12 +74,8 @@ class RoomTesterAppBackend:
         self._push_state_update()
 
     def _push_state_update(self):
-        if self._active_test_name is not None:
-            active_test = next(
-                t
-                for t in self._room_tester.get_tests()
-                if t.file_name == self._active_test_name
-            )
+        active_test = self._room_tester.get_marked_test()
+        if active_test is not None:
             room = active_test.room
             room_image = self._interpreter.reconstruct_room_image(room)
         else:

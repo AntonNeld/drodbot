@@ -47,6 +47,7 @@ class RoomTester:
     def __init__(self, test_room_dir: str):
         self._test_room_dir = test_room_dir
         self._tests: List[Test] = []
+        self._marked_test_name: Optional[str] = None
 
     def load_test_rooms(self):
         self._tests = []
@@ -69,3 +70,13 @@ class RoomTester:
 
     def get_tests(self):
         return self._tests
+
+    def mark_test(self, name: str):
+        self._marked_test_name = name
+
+    def get_marked_test(self):
+        if self._marked_test_name is None:
+            return None
+        return next(
+            t for t in self.get_tests() if t.file_name == self._marked_test_name
+        )
